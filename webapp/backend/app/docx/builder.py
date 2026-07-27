@@ -96,18 +96,43 @@ class PklDocBuilder:
             hs.paragraph_format.line_spacing = 1.5
             hs.paragraph_format.space_after = Pt(0)
 
-    def setup_page_numbering(self, section: Any, fmt: str = "arabic", start: int = 1) -> None:
+    def setup_page_numbering(self, section: Any, fmt: str = "arabic", start: int = 1, align: str = "right") -> None:
         """fmt: 'arabic' | 'lowerRoman' | 'upperRoman' | 'none'."""
         sectPr = section._sectPr
         for el in sectPr.findall(qn("w:pgNumType")):
             sectPr.remove(el)
+        
+        # Unlink footer so it doesn't inherit from previous section
+        section.footer.is_linked_to_previous = False
+        
         if fmt == "none":
+            for p in list(section.footer.paragraphs):
+                p_elem = p._p
+                p_elem.getparent().remove(p_elem)
             return
+
         fmt_map = {"arabic": "decimal", "lowerRoman": "lowerRoman", "upperRoman": "upperRoman"}
         pg_num = parse_xml(
             f'<w:pgNumType {nsdecls("w")} w:fmt="{fmt_map.get(fmt, "decimal")}" w:start="{start}"/>'
         )
         sectPr.append(pg_num)
+
+        # Tambahkan footer dengan field PAGE fisik agar nomor halaman tercetak di bawah & TOC Word mengevaluasinya
+        p_footer = section.footer.paragraphs[0] if section.footer.paragraphs else section.footer.add_paragraph()
+        p_footer.text = ""  # Bersihkan teks lama
+        if align == "center":
+            p_footer.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        else:
+            p_footer.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+        p_footer.paragraph_format.space_before = Pt(0)
+        p_footer.paragraph_format.space_after = Pt(0)
+
+        fld_xml = parse_xml(
+            f'<w:fldSimple {nsdecls("w")} w:instr="PAGE">'
+            f'<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>'
+            f'<w:sz w:val="24"/></w:rPr><w:t>1</w:t></w:r></w:fldSimple>'
+        )
+        p_footer._p.append(fld_xml)
 
     def add_section_break(self) -> Any:
         new_section = self.doc.add_section()
