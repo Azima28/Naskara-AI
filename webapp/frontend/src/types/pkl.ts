@@ -178,7 +178,7 @@ export interface JobDescription {
   tugas: string[]
 }
 
-export interface ProfilPerusahaan {
+export type ProfilPerusahaan = {
   logo_perusahaan: string     // path/URL logo perusahaan
   sejarah: string
   visi: string
@@ -187,7 +187,8 @@ export interface ProfilPerusahaan {
   area_cabang: AreaCabang[]   // wajib minimal 1 jika ada cabang
   struktur_organisasi: string // path/URL gambar bagan
   narasi_struktur: string     // AI-generated narasi manfaat struktur
-  tata_tertib: string[]
+  tata_tertib: string[]       // legacy field (tidak dipakai lagi di UI baru)
+  tata_tertib_perusahaan: string[]  // tata tertib dari perusahaan (akan di-polish AI)
   jam_kerja: JamKerja[]
   job_descriptions: JobDescription[]
 }
@@ -384,6 +385,7 @@ export const emptyProfilPerusahaan = (): ProfilPerusahaan => ({
   area_cabang: [],
   struktur_organisasi: '', narasi_struktur: '',
   tata_tertib: [],
+  tata_tertib_perusahaan: [],
   jam_kerja: [], job_descriptions: [],
 })
 

@@ -397,34 +397,52 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
 
       {/* ── Tata Tertib ──────────────────────────────────────────────────── */}
       <FieldGroup title="Tata Tertib Perusahaan" full>
+        <p className="muted" style={{ margin: '-0.5rem 0 0.75rem', fontSize: '0.85rem' }}>
+          Isi tata tertib <strong>khusus dari perusahaanmu</strong> — aturan unik yang tidak ada di sekolah.
+          AI akan membantu merapikan bahasanya saat kamu download laporan.
+        </p>
+
+        {/* Info: 8 poin SMKN4 otomatis */}
+        <div style={{ background: '#eff6ff', border: '1px solid #93c5fd', borderRadius: 8, padding: '0.75rem', marginBottom: '0.75rem', fontSize: '0.83rem', color: '#1e40af' }}>
+          <strong>ℹ️ Sudah termasuk otomatis:</strong> 8 aturan resmi SMKN 4 Bandar Lampung selalu muncul di laporan
+          (mematuhi aturan industri, menggunakan seragam, tidak mengaktifkan HP, dst).
+          Yang kamu isi di sini adalah <em>tambahan khusus</em> dari perusahaanmu.
+        </div>
+
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
           <button
             type="button"
             onClick={() => setShowContohTataTertib(v => !v)}
             style={{ fontSize: '0.75rem', color: 'var(--green-700)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
           >
-            {showContohTataTertib ? '↑ Sembunyikan contoh' : 'Lihat contoh aturan'}
+            {showContohTataTertib ? '↑ Sembunyikan contoh' : 'Lihat contoh aturan perusahaan'}
           </button>
         </div>
         {showContohTataTertib && (
           <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 8, padding: '0.75rem', marginBottom: '0.75rem', fontSize: '0.82rem', color: '#166534' }}>
-            <strong>Contoh tata tertib umum:</strong>
+            <strong>Contoh tata tertib khusus perusahaan:</strong>
             <ul style={{ margin: '0.25rem 0 0 1rem', paddingLeft: '0.5rem' }}>
-              <li>Datang dan absen tepat waktu sebelum jam 08.30</li>
-              <li>Wajib memakai name tag di kantor maupun saat di lapangan</li>
-              <li>Menjaga ketertiban dan kesopanan di lingkungan kerja</li>
-              <li>Menyelesaikan pekerjaan sesuai target yang telah ditentukan</li>
+              <li>Datang dan absen tepat waktu sebelum jam 08.00</li>
+              <li>Wajib menggunakan name tag perusahaan di area kantor</li>
+              <li>Melaporkan setiap pekerjaan selesai kepada pembimbing lapangan</li>
+              <li>Dilarang mengakses sistem komputer kantor tanpa izin supervisor</li>
+              <li>Menjaga kerahasiaan data dan informasi perusahaan</li>
             </ul>
+            <p style={{ marginTop: '0.5rem', marginBottom: 0, fontStyle: 'italic' }}>
+              💡 Boleh singkat — AI akan otomatis memformalkan ke kalimat yang lebih profesional
+            </p>
           </div>
         )}
         <StringArrayField
-          label="Aturan / Tata Tertib"
-          items={pr.tata_tertib}
-          onChange={tata_tertib => upd({ tata_tertib })}
+          label="Aturan / Tata Tertib Khusus Perusahaan"
+          items={pr.tata_tertib_perusahaan ?? []}
+          onChange={tata_tertib_perusahaan => upd({ tata_tertib_perusahaan })}
           addLabel="+ Tambah Aturan"
-          placeholder="cth: Datang tepat waktu sebelum jam 08.30"
+          placeholder="cth: datang tepat waktu jam 08.00"
+          importance="opsional"
         />
       </FieldGroup>
+
 
       {/* ── Jam Kerja: susun slot LANGSUNG di tabel bentuk laporan ────────── */}
       <FieldGroup title="Jadwal Jam Kerja" full>
