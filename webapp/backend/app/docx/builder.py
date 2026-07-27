@@ -96,7 +96,7 @@ class PklDocBuilder:
             hs.paragraph_format.line_spacing = 1.5
             hs.paragraph_format.space_after = Pt(0)
 
-    def setup_page_numbering(self, section: Any, fmt: str = "arabic", start: int = 1, align: str = "right") -> None:
+    def setup_page_numbering(self, section: Any, fmt: str = "arabic", start: int = 1, align: str = "center") -> None:
         """fmt: 'arabic' | 'lowerRoman' | 'upperRoman' | 'none'."""
         sectPr = section._sectPr
         for el in sectPr.findall(qn("w:pgNumType")):
@@ -117,13 +117,13 @@ class PklDocBuilder:
         )
         sectPr.append(pg_num)
 
-        # Tambahkan footer dengan field PAGE fisik agar nomor halaman tercetak di bawah & TOC Word mengevaluasinya
+        # Tambahkan footer dengan field PAGE fisik (Bawah Tengah)
         p_footer = section.footer.paragraphs[0] if section.footer.paragraphs else section.footer.add_paragraph()
         p_footer.text = ""  # Bersihkan teks lama
-        if align == "center":
-            p_footer.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        else:
+        if align == "right":
             p_footer.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+        else:
+            p_footer.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p_footer.paragraph_format.space_before = Pt(0)
         p_footer.paragraph_format.space_after = Pt(0)
 
@@ -222,9 +222,7 @@ class PklDocBuilder:
         """Daftar Isi berupa field TOC asli Word di dalam SDT.
 
         Sama seperti dokumen referensi (Niken): `TOC \\o "1-3" \\h \\z \\u`
-        di dalam w:sdt gallery "Table of Contents". Word mengisi seluruh
-        entri (BAB, sub-bab, sub-sub) + nomor halaman saat dokumen dibuka
-        karena `updateFields` diaktifkan.
+        di dalam w:sdt gallery "Table of Contents".
         """
         self.enable_update_fields()
         size_half_pt = self.heading_sizes[1] * 2
@@ -241,26 +239,46 @@ class PklDocBuilder:
             '<w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>'
             f'<w:b/><w:sz w:val="{size_half_pt}"/></w:rPr>'
             f'<w:t>{title}</w:t></w:r></w:p>'
-            # Field TOC (dirty → Word meng-update saat dibuka)
-            '<w:p><w:r><w:fldChar w:fldCharType="begin" w:dirty="true"/></w:r>'
-            '<w:r><w:instrText xml:space="preserve"> TOC \\o "1-3" \\h \\z \\u </w:instrText></w:r>'
-            '<w:r><w:fldChar w:fldCharType="separate"/></w:r>'
-            '<w:r><w:rPr>'
-            '<w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>'
-            '<w:sz w:val="24"/></w:rPr>'
-            '<w:t>Daftar isi terisi otomatis saat dokumen dibuka di Word '
-            '(atau klik kanan → Update Field).</w:t></w:r>'
-            '<w:r><w:fldChar w:fldCharType="end"/></w:r></w:p>'
             '</w:sdtContent></w:sdt>'
         )
         body = self.doc.element.body
-        # body diakhiri w:sectPr — SDT harus masuk SEBELUM sectPr, kalau
-        # tidak daftar isi "terlempar" ke akhir dokumen.
         sectPr = body.find(qn("w:sectPr"))
         if sectPr is not None:
             sectPr.addprevious(sdt)
         else:
             body.append(sdt)
+
+    def populate_native_toc(self, sections_list: list[tuple[str, str | int, int]]) -> None:
+        """Populasi entri paragraf ber-PAGEREF di dalam w:sdtContent agar MS Word & PDF 100% menampilkan nomor halaman presisi."""
+        sdtContent_list = self.doc.element.body.xpath('.//w:sdtContent')
+        if not sdtContent_list:
+            return
+        sdtContent = sdtContent_list[0]
+
+        # fldChar begin
+        sdtContent.append(parse_xml(
+            f'<w:p {nsdecls("w")}><w:r><w:fldChar w:fldCharType="begin" w:dirty="true"/></w:r>'
+            f'<w:r><w:instrText xml:space="preserve"> TOC \\o "1-3" \\h \\z \\u </w:instrText></w:r>'
+            f'<w:r><w:fldChar w:fldCharType="separate"/></w:r></w:p>'
+        ))
+
+        for text, page, level in sections_list:
+            indent_dxa = "0" if level == 1 else ("360" if level == 2 else "720")
+            p_xml = parse_xml(
+                f'<w:p {nsdecls("w")}>'
+                f'<w:pPr><w:pStyle w:val="TOC{level}"/>'
+                f'<w:tabs><w:tab w:val="right" w:leader="dot" w:pos="7654"/></w:tabs>'
+                f'<w:ind w:left="{indent_dxa}"/>'
+                f'<w:spacing w:line="360" w:lineRule="auto" w:after="0"/></w:pPr>'
+                f'<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="24"/></w:rPr><w:t>{text}</w:t></w:r>'
+                f'<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="24"/></w:rPr><w:tab/></w:r>'
+                f'<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="24"/></w:rPr><w:t>{page}</w:t></w:r>'
+                f'</w:p>'
+            )
+            sdtContent.append(p_xml)
+
+        # fldChar end
+        sdtContent.append(parse_xml(f'<w:p {nsdecls("w")}><w:r><w:fldChar w:fldCharType="end"/></w:r></w:p>'))
 
     def enable_update_fields(self) -> None:
         """Minta Word meng-update semua field (PAGEREF) saat dokumen dibuka."""

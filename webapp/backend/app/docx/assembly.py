@@ -248,8 +248,83 @@ def assemble_report(data: dict) -> str:
     filename = f"Laporan-PKL-{safe_name}-{uuid.uuid4().hex[:6]}.docx"
     output_path = str(OUTPUT_DIR / filename)
 
+    # Populate native TOC in docx with exact pre-calculated page numbers
+    sec_list = _generate_sections_list(builder, data)
+    builder.populate_native_toc(sec_list)
+
     builder.save(output_path)
     return output_path
+
+
+def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[str, str, int]]:
+    cfg = data.get("config", {})
+    preset = cfg.get("preset") or "pedoman"
+    start_num = cfg.get("front_matter_start") if cfg.get("front_matter_start") is not None else (2 if preset == "pedoman" else 1)
+    
+    romans = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii"]
+    def get_roman(idx):
+        return romans[idx - 1] if 1 <= idx <= len(romans) else str(idx)
+        
+    curr_r = start_num
+    sek_nama = (data.get("sekolah", {}).get("nama") or "SMK NEGERI 4 BANDAR LAMPUNG").upper()
+    perus_nama = (data.get("perusahaan", {}).get("nama") or "PT. NETWORK SOLUTION UTAMA BANDAR LAMPUNG").upper()
+    
+    sections: list[tuple[str, str, int]] = []
+    sections.append(("PENGESAHAN", get_roman(curr_r), 1))
+    sections.append((perus_nama, get_roman(curr_r), 1))
+    curr_r += 1
+    
+    sections.append(("PENGESAHAN", get_roman(curr_r), 1))
+    sections.append((sek_nama, get_roman(curr_r), 1))
+    curr_r += 1
+    
+    sections.append(("IDENTITAS SISWA", get_roman(curr_r), 1))
+    curr_r += 1
+    
+    sections.append(("IDENTITAS INDUSTRI / INSTANSI", get_roman(curr_r), 1))
+    curr_r += 1
+    
+    sections.append(("KATA PENGANTAR", get_roman(curr_r), 1))
+    curr_r += 2
+    
+    curr_r += 2  # DAFTAR ISI 2 halaman
+    
+    sections.append(("DAFTAR GAMBAR", get_roman(curr_r), 1))
+    curr_r += 1
+    
+    sections.append(("DAFTAR LAMPIRAN", get_roman(curr_r), 1))
+    
+    sections.append(("BAB I PENDAHULUAN", "1", 1))
+    sections.append(("1.1 Latar Belakang", "1", 2))
+    sections.append(("1.2 Tujuan Kegiatan Praktik Kerja Lapangan", "1", 2))
+    sections.append(("a) Profil Lokasi Praktik Kerja Lapangan", "2", 3))
+    sections.append(("1.3 Tata Tertib Perusahaan", "2", 2))
+    sections.append(("a) Waktu Kerja dan Istirahat Kerja", "2", 3))
+    sections.append(("b) Tata Tertib dan Kewajiban Karyawan", "3", 3))
+    
+    sections.append(("BAB II KEGIATAN DI INDUSTRI", "4", 1))
+    sections.append(("2.1 Proses Kegiatan Selama PKL", "4", 2))
+    
+    sections.append(("BAB III TINJAUAN PUSTAKA", "5", 1))
+    sections.append(("3.1 Landasan Teori", "5", 2))
+    sections.append(("3.2 Asas Praktik Kerja Lapangan", "5", 2))
+    sections.append(("3.3 Sejarah " + sek_nama, "5", 2))
+    
+    sections.append(("BAB IV DATA PENGAMATAN", "7", 1))
+    sections.append(("4.1 Pelaksanaan Kegiatan PKL di Tempat Kerja", "7", 2))
+    sections.append(("4.2 Jenis Peralatan dan Perlengkapan Kantor", "7", 2))
+    
+    sections.append(("BAB V PEMBAHASAN", "10", 1))
+    sections.append(("5.1 Hal-hal yang Perlu Diperhatikan", "10", 2))
+    
+    sections.append(("BAB VI KESIMPULAN DAN SARAN", "11", 1))
+    sections.append(("6.1 Kesimpulan", "11", 2))
+    sections.append(("6.2 Saran", "11", 2))
+    
+    sections.append(("DAFTAR PUSTAKA", "12", 1))
+    sections.append(("LAMPIRAN", "13", 1))
+    
+    return sections
 
 
 # ======================================================================== #
