@@ -270,10 +270,11 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
 
   return (
     <>
-      <h2>Profil Perusahaan</h2>
+      <h2>Profil Perusahaan <span style={{ fontSize: '0.7em', fontWeight: 400, color: '#6b7280', background: '#f3f4f6', padding: '2px 8px', borderRadius: 6, marginLeft: 6 }}>BAB II</span></h2>
       <p className="muted">
-        Informasi detail tentang perusahaan tempat kamu PKL. Bagian ini jadi bab awal laporan, yang isinya
-        memperkenalkan perusahaan ke pembaca.
+        Informasi detail tentang perusahaan tempat kamu PKL. Sesuai aturan resmi SMKN4,
+        bagian ini menjadi <strong>BAB II Profil Perusahaan</strong> tersendiri (bukan lagi bagian dari BAB I).
+        Isi sebanyak yang kamu tahu — semakin lengkap semakin baik, tapi semua opsional kecuali yang wajib.
       </p>
 
       <ImportanceLegend />

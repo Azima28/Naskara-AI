@@ -33,8 +33,18 @@ logger = logging.getLogger(__name__)
 # Modul BAB yang dikenal (mapping key → writer function name).
 # Ini urutan kanonik: BAB selalu ditulis dalam urutan ini, apa pun urutan
 # yang dikirim frontend.
+#
+# Aturan resmi SMKN4 (7 BAB):
+#   I   PENDAHULUAN
+#   II  PROFIL_PERUSAHAAN
+#   III KEGIATAN_INDUSTRI
+#   IV  TINJAUAN_PUSTAKA
+#   V   DATA_PENGAMATAN
+#   VI  PEMBAHASAN
+#   VII KESIMPULAN_SARAN
 ALL_BAB_MODULES = [
     "PENDAHULUAN",
+    "PROFIL_PERUSAHAAN",
     "KEGIATAN_INDUSTRI",
     "TINJAUAN_PUSTAKA",
     "DATA_PENGAMATAN",
@@ -45,10 +55,6 @@ ALL_BAB_MODULES = [
 # Frontend, schemas.py, dan sample-pkl-data.json memakai nama modul lain untuk
 # konsep yang sama. Tanpa pemetaan ini, `writers.get()` mengembalikan None dan
 # BAB-nya hilang dari dokumen tanpa error apa pun.
-#
-# Nilai None = konsep valid tetapi tidak menghasilkan BAB terpisah.
-# PROFIL_PERUSAHAAN isinya sudah menyatu di BAB I (sub-bab 1.3–1.8), mengikuti
-# struktur dokumen Niken.
 MODULE_ALIASES: dict[str, str | None] = {
     "PELAKSANAAN": "KEGIATAN_INDUSTRI",
     "PROSES_KEGIATAN": "KEGIATAN_INDUSTRI",
@@ -56,17 +62,16 @@ MODULE_ALIASES: dict[str, str | None] = {
     "PENUTUP": "KESIMPULAN_SARAN",
     "KESIMPULAN": "KESIMPULAN_SARAN",
     "HAMBATAN": "PEMBAHASAN",
-    "PROFIL_PERUSAHAAN": None,
 }
 
 # Roman numerals for BAB numbering.
-_ROMANS = {1: "I", 2: "II", 3: "III", 4: "IV", 5: "V", 6: "VI", 7: "VII"}
+_ROMANS = {1: "I", 2: "II", 3: "III", 4: "IV", 5: "V", 6: "VI", 7: "VII", 8: "VIII"}
 
 # Judul default tiap modul BAB: (judul pedoman, judul legacy, key judul_override).
-# Pedoman 1.7.1: "Kegiatan di Industri", "Kesimpulan dan Saran" — legacy meniru
-# dokumen lama.
+# Aturan resmi SMKN4 — Profil Perusahaan adalah BAB II tersendiri.
 _BAB_TITLES = {
     "PENDAHULUAN": ("PENDAHULUAN", "PENDAHULUAN", "bab_pendahuluan"),
+    "PROFIL_PERUSAHAAN": ("PROFIL PERUSAHAAN", "PROFIL PERUSAHAAN", "bab_profil_perusahaan"),
     "KEGIATAN_INDUSTRI": ("KEGIATAN DI INDUSTRI", "KEGIATAN INDUSTRI", "bab_kegiatan_industri"),
     "TINJAUAN_PUSTAKA": ("TINJAUAN PUSTAKA", "TINJAUAN PUSTAKA", "bab_tinjauan_pustaka"),
     "DATA_PENGAMATAN": ("DATA PENGAMATAN", "DATA PENGAMATAN", "bab_data_pengamatan"),
@@ -297,32 +302,38 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
     sections.append(("BAB I PENDAHULUAN", "1", 1))
     sections.append(("1.1 Latar Belakang", "1", 2))
     sections.append(("1.2 Tujuan Kegiatan Praktik Kerja Lapangan", "1", 2))
-    sections.append(("a) Profil Lokasi Praktik Kerja Lapangan", "2", 3))
-    sections.append(("1.3 Tata Tertib Perusahaan", "2", 2))
-    sections.append(("a) Waktu Kerja dan Istirahat Kerja", "2", 3))
-    sections.append(("b) Tata Tertib dan Kewajiban Karyawan", "3", 3))
-    
-    sections.append(("BAB II KEGIATAN DI INDUSTRI", "4", 1))
-    sections.append(("2.1 Proses Kegiatan Selama PKL", "4", 2))
-    
-    sections.append(("BAB III TINJAUAN PUSTAKA", "5", 1))
-    sections.append(("3.1 Landasan Teori", "5", 2))
-    sections.append(("3.2 Asas Praktik Kerja Lapangan", "5", 2))
-    sections.append(("3.3 Sejarah " + sek_nama, "5", 2))
-    
-    sections.append(("BAB IV DATA PENGAMATAN", "7", 1))
-    sections.append(("4.1 Pelaksanaan Kegiatan PKL di Tempat Kerja", "7", 2))
-    sections.append(("4.2 Jenis Peralatan dan Perlengkapan Kantor", "7", 2))
-    
-    sections.append(("BAB V PEMBAHASAN", "10", 1))
-    sections.append(("5.1 Hal-hal yang Perlu Diperhatikan", "10", 2))
-    
-    sections.append(("BAB VI KESIMPULAN DAN SARAN", "11", 1))
-    sections.append(("6.1 Kesimpulan", "11", 2))
-    sections.append(("6.2 Saran", "11", 2))
-    
-    sections.append(("DAFTAR PUSTAKA", "12", 1))
-    sections.append(("LAMPIRAN", "13", 1))
+
+    sections.append(("BAB II PROFIL PERUSAHAAN", "3", 1))
+    sections.append(("2.1 Sejarah Singkat " + perus_nama, "3", 2))
+    sections.append(("a) Visi dan Misi", "3", 3))
+    sections.append(("b) Profil Lokasi Praktik Kerja Lapangan", "4", 3))
+    sections.append(("2.2 Tata Tertib Perusahaan", "4", 2))
+    sections.append(("a) Waktu Kerja dan Istirahat Kerja", "4", 3))
+    sections.append(("b) Tata Tertib dan Kewajiban Karyawan", "5", 3))
+    sections.append(("2.3 Bagan Struktur " + perus_nama, "6", 2))
+    sections.append(("2.4 Job Description " + perus_nama, "6", 2))
+
+    sections.append(("BAB III KEGIATAN DI INDUSTRI", "7", 1))
+    sections.append(("3.1 Proses Kegiatan Selama PKL", "7", 2))
+
+    sections.append(("BAB IV TINJAUAN PUSTAKA", "8", 1))
+    sections.append(("4.1 Landasan Teori", "8", 2))
+    sections.append(("4.2 Asas Praktik Kerja Lapangan", "8", 2))
+    sections.append(("4.3 Sejarah " + sek_nama, "9", 2))
+
+    sections.append(("BAB V DATA PENGAMATAN", "10", 1))
+    sections.append(("5.1 Pelaksanaan Kegiatan PKL di Tempat Kerja", "10", 2))
+    sections.append(("5.2 Jenis Peralatan dan Perlengkapan Kantor", "11", 2))
+
+    sections.append(("BAB VI PEMBAHASAN", "13", 1))
+    sections.append(("6.1 Hal-hal yang Perlu Diperhatikan", "13", 2))
+
+    sections.append(("BAB VII KESIMPULAN DAN SARAN", "14", 1))
+    sections.append(("7.1 Kesimpulan", "14", 2))
+    sections.append(("7.2 Saran", "14", 2))
+
+    sections.append(("DAFTAR PUSTAKA", "15", 1))
+    sections.append(("LAMPIRAN", "16", 1))
     
     return sections
 
@@ -829,6 +840,7 @@ def _build_bab_content(
     """Tulis semua BAB berurutan mengikuti struktur Niken."""
     writers = {
         "PENDAHULUAN": _write_pendahuluan,
+        "PROFIL_PERUSAHAAN": _write_profil_perusahaan,
         "KEGIATAN_INDUSTRI": _write_kegiatan_industri,
         "TINJAUAN_PUSTAKA": _write_tinjauan_pustaka,
         "DATA_PENGAMATAN": _write_data_pengamatan,
@@ -854,10 +866,13 @@ def _build_bab_content(
 # ---------------------------------------------------------------------- #
 #  BAB I — PENDAHULUAN + PROFIL PERUSAHAAN                               #
 #  (Mengikuti struktur Niken: Latar Belakang, Tujuan,                    #
-#   Sejarah Singkat, Visi&Misi, Profil Lokasi, Tata Tertib,             #
-#   Bagan Struktur, Job Description)                                     #
-# ---------------------------------------------------------------------- #
+#   Sejarah Singkat, Visi&Misi, Profil Lokasi, Tata Ter# ---------------------------------------------------------------------- #
 def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None:
+    """BAB I PENDAHULUAN — hanya 2 sub-bab sesuai aturan resmi SMKN4.
+
+    Konten Profil Perusahaan (Sejarah, Visi/Misi, Tata Tertib, Struktur,
+    Job Desc) telah dipindahkan ke BAB II (PROFIL_PERUSAHAAN).
+    """
     builder.add_bab_heading(
         bab_num, _bab_title("PENDAHULUAN", data), bookmark=f"bab_{bab_num}"
     )
@@ -865,19 +880,14 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
 
     siswa = data.get("siswa", {})
     perusahaan = data.get("perusahaan", {})
-    profil = data.get("profil_perusahaan", {})
     gen = data.get("generated_sections", {})
     judul = data.get("judul_override", {})
 
-    # Nama perusahaan dipakai di banyak sub-bab di bawah, jadi diikat sekali di
-    # sini. (Dulu hanya di-assign di cabang else latar belakang, sehingga
-    # laporan dengan latar belakang hasil AI crash: UnboundLocalError.)
     nama_prsh = perusahaan.get("nama") or "[Perusahaan]"
-    nama_prsh_full = perusahaan.get("nama_lengkap") or nama_prsh
 
     sub = 1
 
-    # 1.1 Latar Belakang
+    # 1.1 Latar Belakang — dinamis: AI-generated atau fallback 2 paragraf
     builder.add_sub_heading(bab_num, sub, judul.get("latar_belakang", "Latar Belakang"))
     gen_latar = gen.get("latar_belakang")
     if gen_latar:
@@ -891,7 +901,6 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
             "di dunia usaha dan industri (DUDI) sesuai dengan kompetensi keahlian yang "
             "dipelajari di sekolah."
         )
-        # Frasa jurusan hanya disebut kalau datanya ada.
         sebagai = f"sebagai siswa kompetensi keahlian {jurusan}" if jurusan else "sebagai siswa SMK"
         builder.add_body(
             f"Penulis melaksanakan Praktik Kerja Lapangan di {nama_prsh} "
@@ -901,7 +910,7 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
         )
     sub += 1
 
-    # 1.2 Tujuan Kegiatan Praktik Kerja Lapangan
+    # 1.2 Tujuan Kegiatan Praktik Kerja Lapangan — dinamis: poin tujuan bebas jumlahnya
     builder.add_sub_heading(
         bab_num, sub, judul.get("tujuan", "Tujuan Kegiatan Praktik Kerja Lapangan")
     )
@@ -916,65 +925,96 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
         builder.add_numbered(t, i)
     sub += 1
 
-    # 1.3 Sejarah Singkat Perusahaan (+ Visi/Misi & Profil Lokasi sebagai sub-sub)
+
+# ---------------------------------------------------------------------- #
+#  BAB II — PROFIL PERUSAHAAN                                            #
+#  (Aturan resmi SMKN4: Profil Perusahaan berdiri sendiri sebagai BAB)  #
+#  Sub-bab: Sejarah Singkat, Visi & Misi, Profil Lokasi,                #
+#            Tata Tertib, Bagan Struktur, Job Description                #
+#  Semua sub-bab DINAMIS — hadir jika data tersedia, dilewati jika tidak#
+# ---------------------------------------------------------------------- #
+def _write_profil_perusahaan(builder: PklDocBuilder, data: dict, bab_num: int) -> None:
+    """BAB II PROFIL PERUSAHAAN — konten Profil sesuai aturan resmi SMKN4.
+
+    Seluruh sub-bab bersifat DINAMIS:
+    - Panjang teks tidak dibatasi (1 paragraf atau 10 paragraf, sama saja)
+    - Sub-bab hanya muncul jika datanya ada (tidak ada isian kosong)
+    - Penomoran sub-bab otomatis mengikuti urutan data yang tersedia
+    """
+    builder.add_bab_heading(
+        bab_num, _bab_title("PROFIL_PERUSAHAAN", data), bookmark=f"bab_{bab_num}"
+    )
+    builder.add_spacing(1)
+
+    perusahaan = data.get("perusahaan", {})
+    profil = data.get("profil_perusahaan", {})
+    gen = data.get("generated_sections", {})
+    judul = data.get("judul_override", {})
+
+    nama_prsh = perusahaan.get("nama") or "[Perusahaan]"
+    nama_prsh_full = perusahaan.get("nama_lengkap") or nama_prsh
+
+    sub = 1
+
+    # 2.1 Sejarah Singkat Perusahaan — dinamis: bisa 1-N paragraf
     sejarah = profil.get("sejarah", "")
     logo = profil.get("logo_perusahaan", "")
     if sejarah or logo:
-        builder.add_sub_heading(bab_num, sub, f"Sejarah Singkat {nama_prsh_full}")
+        builder.add_sub_heading(
+            bab_num, sub, judul.get("sejarah_perusahaan", f"Sejarah Singkat {nama_prsh_full}")
+        )
         if sejarah:
             _write_paragraphs(builder, sejarah)
-        # Logo ditempatkan setelah narasi sejarah, tanpa caption — mengikuti
-        # tata letak dokumen referensi.
         if logo:
             _try_image(builder, logo, width_cm=6)
+
+        sub3 = 0
+
+        # a) Visi dan Misi — opsional, dinamis
+        visi = profil.get("visi", "")
+        misi = profil.get("misi", [])
+        if visi or misi:
+            sub3 += 1
+            builder.add_sub_heading_3(f"{_LETTERS[sub3 - 1]}) Visi dan Misi")
+            intro_vm = profil.get("visi_misi_intro")
+            if intro_vm:
+                builder.add_body(intro_vm)
+            if visi:
+                builder.add_body("VISI", bold=True)
+                builder.add_numbered(visi, 1)
+            if misi:
+                builder.add_body("MISI", bold=True)
+                for i, m in enumerate(misi, 1):
+                    builder.add_numbered(m, i)
+
+        # b) Profil Lokasi Praktik Kerja Lapangan — opsional, dinamis
+        alamat = perusahaan.get("alamat", "")
+        area_cabang = profil.get("area_cabang", [])
+        if alamat or area_cabang:
+            sub3 += 1
+            builder.add_sub_heading_3(
+                f"{_LETTERS[sub3 - 1]}) Profil Lokasi Praktik Kerja Lapangan"
+            )
+            lokasi = profil.get("profil_lokasi")
+            if lokasi:
+                _write_paragraphs(builder, lokasi)
+            elif alamat:
+                builder.add_body(f"{nama_prsh_full} beralamat di {alamat}.")
+            for idx_a, area in enumerate(area_cabang):
+                nama_area = (area or {}).get("nama_area", "").strip()
+                if nama_area:
+                    nama_area_clean = re.sub(r'^[^\w\s]+', '', nama_area).strip()
+                    if nama_area_clean:
+                        marker = _LETTERS[idx_a % 26] + "."
+                        builder.add_lettered(nama_area_clean, marker, indent_level=0, bold=True)
+                for idx_c, cab in enumerate((area or {}).get("cabang", []), 1):
+                    nama_cab = cab.get("nama", "") if isinstance(cab, dict) else str(cab)
+                    if nama_cab.strip():
+                        builder.add_numbered(nama_cab.strip(), idx_c, indent_level=1)
+
         sub += 1
 
-    sub3 = 0  # penomoran a) b) c) untuk sub-sub bab di bawah 1.3
-
-    # a) Visi dan Misi
-    visi = profil.get("visi", "")
-    misi = profil.get("misi", [])
-    if visi or misi:
-        sub3 += 1
-        builder.add_sub_heading_3(f"{_LETTERS[sub3 - 1]}) Visi dan Misi")
-        intro_vm = profil.get("visi_misi_intro")
-        if intro_vm:
-            builder.add_body(intro_vm)
-        if visi:
-            builder.add_body("VISI", bold=True)
-            builder.add_numbered(visi, 1)
-        if misi:
-            builder.add_body("MISI", bold=True)
-            for i, m in enumerate(misi, 1):
-                builder.add_numbered(m, i)
-
-    # b) Profil Lokasi Praktik Kerja Lapangan (+ daftar area/cabang)
-    alamat = perusahaan.get("alamat", "")
-    area_cabang = profil.get("area_cabang", [])
-    if alamat or area_cabang:
-        sub3 += 1
-        builder.add_sub_heading_3(
-            f"{_LETTERS[sub3 - 1]}) Profil Lokasi Praktik Kerja Lapangan"
-        )
-        lokasi = profil.get("profil_lokasi")
-        if lokasi:
-            _write_paragraphs(builder, lokasi)
-        elif alamat:
-            builder.add_body(f"{nama_prsh_full} beralamat di {alamat}.")
-        for idx_a, area in enumerate(area_cabang):
-            nama_area = (area or {}).get("nama_area", "").strip()
-            if nama_area:
-                # Bersihkan karakter simbol aneh (seperti '' atau '□') di awal teks
-                nama_area_clean = re.sub(r'^[^\w\s]+', '', nama_area).strip()
-                if nama_area_clean:
-                    marker = _LETTERS[idx_a % 26] + "."
-                    builder.add_lettered(nama_area_clean, marker, indent_level=0, bold=True)
-            for idx_c, cab in enumerate((area or {}).get("cabang", []), 1):
-                nama_cab = cab.get("nama", "") if isinstance(cab, dict) else str(cab)
-                if nama_cab.strip():
-                    builder.add_numbered(nama_cab.strip(), idx_c, indent_level=1)
-
-    # 1.4 Tata Tertib Perusahaan (Selalu gunakan 8 aturan resmi SMKN 4 dari referensi_PKL)
+    # 2.2 Tata Tertib Perusahaan — selalu ada (8 aturan resmi SMKN4), tabel jam kerja dinamis
     OFFICIAL_SMKN4_TATA_TERTIB = [
         "Mematuhi aturan dan tata tertib yang berlaku di industri;",
         "Melaksanakan kegiatan PKL sesuai jam kerja yang berlaku di industri;",
@@ -987,38 +1027,36 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
     ]
     tata_tertib = OFFICIAL_SMKN4_TATA_TERTIB
     jam_kerja = data.get("jam_kerja") or profil.get("jam_kerja") or []
-    if tata_tertib or jam_kerja:
-        builder.add_sub_heading(bab_num, sub, judul.get("tata_tertib", "Tata Tertib Perusahaan"))
-        builder.add_body(profil.get("tata_tertib_intro") or (
-            f"Tata Tertib {nama_prsh_full}, tata tertib yang diberikan perusahaan bertujuan "
-            f"untuk menciptakan lingkungan kerja yang kondusif, efisien, dan profesional."
-        ))
-        tt_sub = 0
-        if jam_kerja:
-            tt_sub += 1
-            builder.add_sub_heading_3(
-                f"{_LETTERS[tt_sub - 1]}) Waktu Kerja dan Istirahat Kerja"
-            )
-            builder.add_body(
-                profil.get("jam_kerja_intro") or f"Jadwal kerja yang ada di {nama_prsh}:"
-            )
-            builder.add_table(*_jam_kerja_table(jam_kerja))
-            builder.add_spacing(1)
 
-        if tata_tertib:
-            tt_sub += 1
-            builder.add_sub_heading_3(
-                f"{_LETTERS[tt_sub - 1]}) Tata Tertib dan Kewajiban Karyawan"
-            )
-            builder.add_body(
-                profil.get("tata_tertib_list_intro")
-                or f"Berikut adalah tata tertib dan kewajiban karyawan {nama_prsh}:"
-            )
-            for i, tt in enumerate(tata_tertib, 1):
-                builder.add_numbered(tt, i)
-        sub += 1
+    builder.add_sub_heading(bab_num, sub, judul.get("tata_tertib", "Tata Tertib Perusahaan"))
+    builder.add_body(profil.get("tata_tertib_intro") or (
+        f"Tata Tertib {nama_prsh_full}, tata tertib yang diberikan perusahaan bertujuan "
+        f"untuk menciptakan lingkungan kerja yang kondusif, efisien, dan profesional."
+    ))
+    tt_sub = 0
 
-    # 1.5 Bagan Struktur Organisasi
+    # a) Waktu Kerja dan Istirahat Kerja — dinamis: tabel mengikuti data jam kerja user
+    if jam_kerja:
+        tt_sub += 1
+        builder.add_sub_heading_3(f"{_LETTERS[tt_sub - 1]}) Waktu Kerja dan Istirahat Kerja")
+        builder.add_body(
+            profil.get("jam_kerja_intro") or f"Jadwal kerja yang ada di {nama_prsh}:"
+        )
+        builder.add_table(*_jam_kerja_table(jam_kerja))
+        builder.add_spacing(1)
+
+    # b) Tata Tertib dan Kewajiban Karyawan — dinamis: poin bertambah sesuai data
+    tt_sub += 1
+    builder.add_sub_heading_3(f"{_LETTERS[tt_sub - 1]}) Tata Tertib dan Kewajiban Karyawan")
+    builder.add_body(
+        profil.get("tata_tertib_list_intro")
+        or f"Berikut adalah tata tertib dan kewajiban karyawan {nama_prsh}:"
+    )
+    for i, tt in enumerate(tata_tertib, 1):
+        builder.add_numbered(tt, i)
+    sub += 1
+
+    # 2.3 Bagan Struktur Organisasi — opsional, gambar + narasi dinamis
     struktur = profil.get("struktur_organisasi", "")
     if struktur:
         builder.add_sub_heading(bab_num, sub, f"Bagan Struktur {nama_prsh}")
@@ -1027,16 +1065,14 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
         )
         if not _try_image(builder, struktur, width_cm=14):
             builder.add_body(f"[GAMBAR STRUKTUR ORGANISASI: {struktur}]")
-        # Narasi manfaat struktur menyusul gambarnya.
         narasi = profil.get("narasi_struktur") or gen.get("narasi_struktur")
         if narasi:
             _write_paragraphs(builder, narasi)
         sub += 1
 
-    # 1.6 Job Description
+    # 2.4 Job Description — opsional, jumlah posisi & tugas bebas
     job_descs = profil.get("job_descriptions", [])
     if job_descs:
-        # Job desc menyebut unit kerja tempat PKL — nama badan hukum + cabang.
         nama_cabang = perusahaan.get("nama_cabang") or nama_prsh_full
         builder.add_sub_heading(bab_num, sub, f"Job Description {nama_cabang}")
         builder.add_body(f"Berikut tugas dan tanggung jawab karyawan {nama_cabang}:")
@@ -1049,13 +1085,14 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
         sub += 1
 
 
+
 # ---------------------------------------------------------------------- #
-#  BAB II — PROSES KEGIATAN (ringkasan singkat per divisi)               #
+#  BAB III — KEGIATAN DI INDUSTRI (ringkasan singkat per divisi)         #
 # ---------------------------------------------------------------------- #
 def _write_kegiatan_industri(builder: PklDocBuilder, data: dict, bab_num: int) -> None:
-    """BAB II: ringkasan proses kegiatan per divisi (poin-poin singkat).
+    """BAB III KEGIATAN DI INDUSTRI: ringkasan proses kegiatan per divisi.
 
-    Berbeda dengan BAB IV (detail cerita). Di sini hanya garis besar.
+    Berbeda dengan BAB V (detail cerita). Di sini hanya garis besar per divisi.
     """
     builder.add_bab_heading(
         bab_num, _bab_title("KEGIATAN_INDUSTRI", data), bookmark=f"bab_{bab_num}"

@@ -28,7 +28,7 @@ const STEPS: StepDef[] = [
   { id: 'sekolah', title: 'Sekolah', render: (c, s) => <SekolahStep ctx={c} set={s} /> },
   { id: 'perusahaan', title: 'Perusahaan', render: (c, s) => <PerusahaanStep ctx={c} set={s} /> },
   { id: 'pkl', title: 'Periode PKL', render: (c, s) => <PklStep ctx={c} set={s} /> },
-  { id: 'profil', title: 'Profil Perusahaan', render: (c, s) => <ProfilStep ctx={c} set={s} /> },
+  { id: 'profil', title: 'Profil Perusahaan (BAB II)', render: (c, s) => <ProfilStep ctx={c} set={s} /> },
   { id: 'cerita', title: 'Cerita Pengalaman', render: (c, s) => <CeritaStep ctx={c} set={s} /> },
   { id: 'review-ai', title: 'Kegiatan & Peralatan', render: (c, s) => <ReviewAIStep ctx={c} set={s} /> },
   { id: 'closing', title: 'Penutup', render: (c, s) => <ClosingStep ctx={c} set={s} /> },
