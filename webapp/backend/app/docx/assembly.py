@@ -1078,7 +1078,7 @@ def _write_profil_perusahaan(builder: PklDocBuilder, data: dict, bab_num: int) -
 
         sub += 1
 
-    # 2.2 Tata Tertib Perusahaan — selalu ada (8 aturan resmi SMKN4), tabel jam kerja dinamis
+    # 2.2 Tata Tertib Perusahaan — 8 poin resmi SMKN4 + tata tertib perusahaan (jika ada)
     OFFICIAL_SMKN4_TATA_TERTIB = [
         "Mematuhi aturan dan tata tertib yang berlaku di industri;",
         "Melaksanakan kegiatan PKL sesuai jam kerja yang berlaku di industri;",
@@ -1089,8 +1089,13 @@ def _write_profil_perusahaan(builder: PklDocBuilder, data: dict, bab_num: int) -
         "Membawa alat keselamatan kerja (kecuali jika sudah disediakan oleh industri/instansi) dan senantiasa menerapkannya selama bekerja;",
         "Menerapkan etika dalam bersosialisasi dengan lingkungan kerja."
     ]
-    tata_tertib = OFFICIAL_SMKN4_TATA_TERTIB
     jam_kerja = data.get("jam_kerja") or profil.get("jam_kerja") or []
+
+    # Tata tertib perusahaan spesifik (dari input user yang sudah di-polish AI)
+    tt_perusahaan = gen.get("tata_tertib_perusahaan_polished") or \
+                    profil.get("tata_tertib_perusahaan") or []
+    if isinstance(tt_perusahaan, str):
+        tt_perusahaan = [t.strip() for t in tt_perusahaan.split("\n") if t.strip()]
 
     builder.add_sub_heading(bab_num, sub, judul.get("tata_tertib", "Tata Tertib Perusahaan"))
     builder.add_body(profil.get("tata_tertib_intro") or (
@@ -1109,16 +1114,25 @@ def _write_profil_perusahaan(builder: PklDocBuilder, data: dict, bab_num: int) -
         builder.add_table(*_jam_kerja_table(jam_kerja))
         builder.add_spacing(1)
 
-    # b) Tata Tertib dan Kewajiban Karyawan — dinamis: poin bertambah sesuai data
+    # b) Tata Tertib SMKN4 Resmi (selalu ada)
     tt_sub += 1
     builder.add_sub_heading_3(f"{_LETTERS[tt_sub - 1]}) Tata Tertib dan Kewajiban Karyawan")
     builder.add_body(
         profil.get("tata_tertib_list_intro")
         or f"Berikut adalah tata tertib dan kewajiban karyawan {nama_prsh}:"
     )
-    for i, tt in enumerate(tata_tertib, 1):
+    for i, tt in enumerate(OFFICIAL_SMKN4_TATA_TERTIB, 1):
         builder.add_numbered(tt, i)
+
+    # c) Tata Tertib Perusahaan Spesifik (opsional — dari input user)
+    if tt_perusahaan:
+        tt_sub += 1
+        builder.add_sub_heading_3(f"{_LETTERS[tt_sub - 1]}) Tata Tertib Khusus {nama_prsh}")
+        for i, tt in enumerate(tt_perusahaan, 1):
+            builder.add_numbered(tt if isinstance(tt, str) else str(tt), i)
+
     sub += 1
+
 
     # 2.3 Bagan Struktur Organisasi — opsional, gambar + narasi dinamis
     struktur = profil.get("struktur_organisasi", "")

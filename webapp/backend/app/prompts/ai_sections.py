@@ -239,3 +239,255 @@ def generate_default_daftar_pustaka(ctx: dict) -> list[dict]:
         })
 
     return referensi
+
+
+# ======================================================================== #
+#  AUTO-POLISH PROMPTS — dipanggil otomatis saat Download, bukan manual    #
+#  Tujuan: merapikan/memformalkan input mentah user → kalimat akademik     #
+# ======================================================================== #
+
+# ── POLISH 1: Visi & Misi Perusahaan ─────────────────────────────────────── #
+def prompt_visi_misi(ctx: dict) -> str:
+    profil = ctx.get("profil_perusahaan", {})
+    perusahaan = ctx.get("perusahaan", {})
+    nama = perusahaan.get("nama", "perusahaan")
+
+    visi_raw = (profil.get("visi") or "").strip()
+    misi_raw = profil.get("misi") or []
+    if isinstance(misi_raw, str):
+        misi_raw = [m.strip() for m in misi_raw.split("\n") if m.strip()]
+
+    misi_str = "\n".join(f"  {i+1}. {m}" for i, m in enumerate(misi_raw)) if misi_raw else "  (kosong)"
+
+    return f"""Rapikan dan formalkan Visi & Misi perusahaan berikut untuk laporan PKL akademik.
+
+DATA NYATA dari user (ground truth - JANGAN ubah makna/isi, hanya rapikan bahasa):
+- Nama perusahaan: {nama}
+- VISI (input user): {visi_raw if visi_raw else '(kosong)'}
+- MISI (input user):
+{misi_str}
+
+Instruksi:
+1. Jika VISI tidak kosong: rapikan menjadi 1 kalimat formal bahasa Indonesia baku.
+   JANGAN ubah makna. Hanya perbaiki tata bahasa dan ejaan.
+2. Jika MISI tidak kosong: rapikan tiap poin menjadi kalimat formal yang lengkap.
+   Setiap poin harus diawali kata kerja (Memberikan, Meningkatkan, Mewujudkan, dll).
+   Panjang tiap poin: minimal 1 kalimat utuh, maksimal 2 kalimat.
+3. Jika VISI atau MISI kosong: tulis "(tidak tersedia)" untuk bagian yang kosong.
+
+FORMAT OUTPUT WAJIB:
+[VISI]
+(teks visi yang sudah dirapikan)
+
+[MISI]
+1. (poin misi 1 yang sudah dirapikan)
+2. (poin misi 2 yang sudah dirapikan)
+... dst
+
+ATURAN KERAS:
+- DILARANG mengarang visi/misi baru yang tidak ada di input user.
+- HANYA rapikan bahasa, jangan tambah atau kurangi poin misi.
+- Output dalam Bahasa Indonesia formal (EYD).
+- Tag [VISI] dan [MISI] WAJIB ada persis seperti itu.
+"""
+
+
+# ── POLISH 2: Tata Tertib Perusahaan (dari input user) ───────────────────── #
+def prompt_tata_tertib_perusahaan(ctx: dict) -> str:
+    profil = ctx.get("profil_perusahaan", {})
+    perusahaan = ctx.get("perusahaan", {})
+    nama = perusahaan.get("nama", "perusahaan")
+
+    tata_tertib_raw = profil.get("tata_tertib_perusahaan") or []
+    if isinstance(tata_tertib_raw, str):
+        tata_tertib_raw = [t.strip() for t in tata_tertib_raw.split("\n") if t.strip()]
+
+    if not tata_tertib_raw:
+        return ""  # Tidak ada input → skip
+
+    tt_str = "\n".join(f"  {i+1}. {t}" for i, t in enumerate(tata_tertib_raw))
+
+    return f"""Rapikan dan formalkan tata tertib perusahaan berikut untuk laporan PKL akademik.
+
+DATA NYATA dari user (ground truth - JANGAN ubah isi aturan, hanya rapikan bahasa):
+- Nama perusahaan: {nama}
+- Tata tertib (input user):
+{tt_str}
+
+Instruksi:
+1. Rapikan tiap poin menjadi kalimat formal bahasa Indonesia baku.
+2. Setiap poin harus diawali kata kerja imperatif formal:
+   "Mematuhi...", "Melaksanakan...", "Tidak diperkenankan...", "Wajib...", dst.
+3. Akhiri setiap poin dengan tanda titik koma (;) kecuali poin terakhir pakai titik (.).
+4. Jika ada poin yang sama atau sangat mirip, gabungkan menjadi 1 poin.
+
+FORMAT OUTPUT WAJIB - hanya daftar poin yang sudah dirapikan, satu per baris:
+1. (poin 1 yang sudah dirapikan)
+2. (poin 2 yang sudah dirapikan)
+... dst
+
+ATURAN KERAS:
+- DILARANG mengarang aturan baru yang tidak ada di input user.
+- JANGAN kurangi poin yang ada, kecuali duplikat.
+- Output dalam Bahasa Indonesia formal (EYD).
+- Output HANYA daftar bernomor, tanpa pengantar, tanpa penutup.
+"""
+
+
+# ── POLISH 3: Job Description ─────────────────────────────────────────────── #
+def prompt_job_descriptions(ctx: dict) -> str:
+    profil = ctx.get("profil_perusahaan", {})
+    perusahaan = ctx.get("perusahaan", {})
+    nama = perusahaan.get("nama", "perusahaan")
+
+    job_descs = profil.get("job_descriptions", [])
+    if not job_descs:
+        return ""
+
+    jd_lines = []
+    for jd in job_descs:
+        posisi = jd.get("posisi", "")
+        tugas = jd.get("tugas", [])
+        if posisi:
+            jd_lines.append(f"\nPosisi: {posisi}")
+        for t in tugas:
+            if t.strip():
+                jd_lines.append(f"  - {t.strip()}")
+    jd_str = "\n".join(jd_lines) if jd_lines else "(kosong)"
+
+    return f"""Rapikan job description berikut menjadi kalimat formal untuk laporan PKL akademik.
+
+DATA NYATA dari user (ground truth - JANGAN ubah jenis tugas, hanya rapikan bahasa):
+- Nama perusahaan: {nama}
+- Job description (input user):
+{jd_str}
+
+Instruksi:
+1. Untuk tiap POSISI, rapikan deskripsi tugasnya menjadi kalimat formal.
+2. Tiap tugas harus dimulai dengan kata kerja aktif: "Melakukan...", "Memastikan...", "Mengelola...", "Bertanggung jawab atas...", dst.
+3. Jika tugas sangat singkat (< 5 kata), expand menjadi kalimat lengkap yang profesional.
+   Contoh: "bersihkan pc" → "Melakukan pembersihan dan perawatan rutin perangkat komputer"
+4. JANGAN tambahkan tugas yang tidak disebutkan user.
+
+FORMAT OUTPUT WAJIB:
+[POSISI: nama posisi 1]
+1. (tugas 1 yang sudah dirapikan)
+2. (tugas 2 yang sudah dirapikan)
+
+[POSISI: nama posisi 2]
+1. (tugas 1 yang sudah dirapikan)
+... dst
+
+ATURAN KERAS:
+- Tag [POSISI: ...] WAJIB ada untuk setiap posisi.
+- DILARANG mengarang tugas baru.
+- Output dalam Bahasa Indonesia formal (EYD).
+"""
+
+
+# ── POLISH 4: Detail Kegiatan per Bidang ─────────────────────────────────── #
+def prompt_detail_kegiatan(ctx: dict) -> str:
+    kegiatan = ctx.get("kegiatan", [])
+    perusahaan = ctx.get("perusahaan", {})
+    nama = perusahaan.get("nama", "perusahaan")
+    siswa = ctx.get("siswa", {})
+
+    if not kegiatan:
+        return ""
+
+    keg_lines = []
+    for k in kegiatan:
+        bidang = k.get("bidang", "")
+        deskripsi = k.get("deskripsi_umum", "")
+        tugas = k.get("tugas", [])
+        if bidang:
+            keg_lines.append(f"\nBidang: {bidang}")
+        if deskripsi:
+            keg_lines.append(f"  Deskripsi: {deskripsi}")
+        for t in tugas:
+            nama_t = t.get("nama_tugas") or t.get("nama") or ""
+            detail_t = t.get("detail") or ""
+            if nama_t:
+                keg_lines.append(f"  Tugas: {nama_t}")
+            if detail_t:
+                keg_lines.append(f"    Detail: {detail_t}")
+    keg_str = "\n".join(keg_lines) if keg_lines else "(kosong)"
+
+    return f"""Rapikan narasi kegiatan PKL berikut menjadi teks formal untuk laporan akademik.
+
+DATA NYATA dari user (ground truth - JANGAN ubah fakta kegiatan):
+- Tempat PKL: {nama}
+- Jurusan siswa: {siswa.get('jurusan', '')}
+- Kegiatan (input user):
+{keg_str}
+
+Instruksi:
+1. Untuk tiap BIDANG, buat 1-2 kalimat narasi pengantar yang mendeskripsikan bidang tersebut secara formal.
+   Gunakan kalimat: "Penulis ditempatkan pada bidang [X] yang bertugas untuk..."
+2. Untuk tiap TUGAS: jika detail terlalu singkat, expand menjadi kalimat formal lengkap.
+   JANGAN ubah jenis/nama tugasnya, hanya perbaiki bahasanya.
+3. Jika deskripsi sudah cukup baik (> 20 kata), cukup perbaiki ejaan/tata bahasa saja.
+
+FORMAT OUTPUT WAJIB:
+[BIDANG: nama bidang 1]
+(narasi 1-2 kalimat pengantar bidang)
+[TUGAS: nama tugas 1]
+(deskripsi tugas yang sudah dirapikan)
+[TUGAS: nama tugas 2]
+(deskripsi tugas yang sudah dirapikan)
+
+[BIDANG: nama bidang 2]
+... dst
+
+ATURAN KERAS:
+- Tag [BIDANG: ...] dan [TUGAS: ...] WAJIB ada.
+- DILARANG mengarang kegiatan/tugas baru.
+- Output dalam Bahasa Indonesia formal (EYD).
+- Gunakan kata 'Penulis', bukan 'saya'.
+"""
+
+
+# ── POLISH 5: Deskripsi Peralatan ────────────────────────────────────────── #
+def prompt_peralatan_deskripsi(ctx: dict) -> str:
+    peralatan = ctx.get("peralatan", [])
+    perusahaan = ctx.get("perusahaan", {})
+    nama = perusahaan.get("nama", "perusahaan")
+
+    if not peralatan:
+        return ""
+
+    alat_lines = []
+    for i, p in enumerate(peralatan, 1):
+        nama_alat = p.get("nama", f"Alat {i}")
+        deskripsi = p.get("deskripsi", "")
+        alat_lines.append(f"{i}. {nama_alat}: {deskripsi if deskripsi else '(tidak ada deskripsi)'}")
+    alat_str = "\n".join(alat_lines)
+
+    return f"""Rapikan deskripsi peralatan dan perlengkapan kantor berikut untuk laporan PKL akademik.
+
+DATA NYATA dari user (ground truth - nama alat tidak boleh diubah):
+- Tempat PKL: {nama}
+- Peralatan (input user):
+{alat_str}
+
+Instruksi:
+1. Untuk tiap alat: tulis 1-2 kalimat deskripsi formal yang menjelaskan fungsi alat tersebut dalam konteks PKL.
+2. Jika user sudah mengisi deskripsi: rapikan dan expand jadi kalimat formal (minimal 1 kalimat lengkap).
+3. Jika deskripsi kosong ('tidak ada deskripsi'): buat 1 kalimat umum tentang fungsi alat tersebut.
+   Contoh: untuk "Komputer PC" → "Komputer PC digunakan sebagai perangkat utama untuk menyelesaikan pekerjaan administratif dan teknis selama PKL."
+4. JANGAN mengarang fungsi yang tidak relevan dengan nama alat.
+
+FORMAT OUTPUT WAJIB - satu alat per blok:
+[ALAT: nama alat 1]
+(deskripsi 1-2 kalimat formal)
+
+[ALAT: nama alat 2]
+(deskripsi 1-2 kalimat formal)
+... dst
+
+ATURAN KERAS:
+- Tag [ALAT: ...] WAJIB ada dengan nama alat PERSIS dari data (jangan diubah).
+- Output dalam Bahasa Indonesia formal (EYD).
+- DILARANG mengarang fungsi alat yang tidak masuk akal untuk konteks PKL.
+"""
+
