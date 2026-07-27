@@ -426,8 +426,32 @@ class PklDocBuilder:
             run_logo = p_logo.add_run()
             run_logo.add_picture(logo_sekolah_path, width=Cm(4.2))
 
-        # Jarak vertikal: 2x Enter paragraf dari Logo SMKN 4 ke Kop Footer (mentok border bawah)
-        for _ in range(2):
+        # Perhitungan spasi vertikal dinamis (Dynamic Cover Spacing Fallback)
+        # Menghitung perkiraan tinggi baris yang terpakai di atas logo
+        title_lines = 1  # "LAPORAN"
+        title_lines += (len(judul_pkl) // 25) + 1  # "PRAKTIK KERJA LAPANGAN (PKL)"
+        title_lines += (len(f"DI {nama_prsh.upper()}") // 25) + 1
+        if pedoman and kota_prsh and kota_prsh.upper() not in nama_prsh.upper():
+            title_lines += 1
+        
+        subtitle_lines = 3  # "Disusun untuk memenuhi..."
+        if len(nama_sekolah) > 30:
+            subtitle_lines += 1
+            
+        author_lines = 1  # "disusun oleh :"
+        author_lines += (len(nama) // 25) + 1  # Nama Siswa
+        if nomor:
+            author_lines += 1
+            
+        logo_lines = 8.5 if (logo_sekolah_path and os.path.exists(logo_sekolah_path)) else 0
+        total_top_lines = title_lines + subtitle_lines + author_lines + logo_lines + 3.0
+        
+        # Target kapasitas baris Halaman Cover sebelum Kop Footer
+        target_lines_before_kop = 24.5
+        needed_enters = int(round(target_lines_before_kop - total_top_lines))
+        final_enters = max(1, min(5, needed_enters))
+
+        for _ in range(final_enters):
             p_sp = self.doc.add_paragraph()
             p_sp.paragraph_format.line_spacing = 1.15
             p_sp.paragraph_format.space_before = Pt(0)
@@ -1133,18 +1157,15 @@ class PklDocBuilder:
         return table
 
     def add_caption(self, text: str, bookmark: str | None = None) -> None:
-        """Caption gambar (Gambar 4. 1) — style Caption, center.
-
-        Caption >1 baris memakai 1 spasi (pedoman 1.7.2).
-        Warna teks WAJIB HITAM (RGB 0,0,0).
-        """
+        """Caption gambar (Gambar 4. 1) — Times New Roman 10pt Italic, center."""
         p = self.doc.add_paragraph()
         p.style = self.doc.styles["Caption"]
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p.paragraph_format.line_spacing = 1.0
         run = p.add_run(text)
         run.font.name = "Times New Roman"
-        run.font.size = Pt(11)
+        run.font.size = Pt(10)
+        run.italic = True
         run.font.color.rgb = RGBColor(0x00, 0x00, 0x00)
         if bookmark:
             self.attach_bookmark(p, bookmark)
@@ -1159,6 +1180,10 @@ class PklDocBuilder:
             p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
             p_cap.style = self.doc.styles.get("Caption", self.doc.styles["Normal"])
             run = p_cap.add_run(caption)
+            run.font.name = "Times New Roman"
+            run.font.size = Pt(10)
+            run.italic = True
+            run.font.color.rgb = RGBColor(0x00, 0x00, 0x00)
             run.font.name = "Times New Roman"
             run.font.size = Pt(10)
             run.font.color.rgb = RGBColor(0x00, 0x00, 0x00)
