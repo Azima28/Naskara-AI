@@ -224,7 +224,6 @@ class PklDocBuilder:
         Sama seperti dokumen referensi (Niken): `TOC \\o "1-3" \\h \\z \\u`
         di dalam w:sdt gallery "Table of Contents".
         """
-        self.enable_update_fields()
         size_half_pt = self.heading_sizes[1] * 2
         sdt = parse_xml(
             f'<w:sdt {nsdecls("w")}>'
@@ -257,7 +256,7 @@ class PklDocBuilder:
 
         # fldChar begin
         sdtContent.append(parse_xml(
-            f'<w:p {nsdecls("w")}><w:r><w:fldChar w:fldCharType="begin" w:dirty="true"/></w:r>'
+            f'<w:p {nsdecls("w")}><w:r><w:fldChar w:fldCharType="begin"/></w:r>'
             f'<w:r><w:instrText xml:space="preserve"> TOC \\o "1-3" \\h \\z \\u </w:instrText></w:r>'
             f'<w:r><w:fldChar w:fldCharType="separate"/></w:r></w:p>'
         ))

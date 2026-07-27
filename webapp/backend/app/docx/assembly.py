@@ -259,7 +259,7 @@ def assemble_report(data: dict) -> str:
 def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[str, str, int]]:
     cfg = data.get("config", {})
     preset = cfg.get("preset") or "pedoman"
-    start_num = cfg.get("front_matter_start") if cfg.get("front_matter_start") is not None else (2 if preset == "pedoman" else 1)
+    start_num = cfg.get("front_matter_start") if cfg.get("front_matter_start") is not None else 1
     
     romans = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii"]
     def get_roman(idx):
@@ -693,7 +693,7 @@ def _build_front_matter(
     preset = cfg.get("preset") or "pedoman"
     cover_num_fmt = cfg.get("cover_page_number") or "none"
     front_fmt = cfg.get("front_matter_format") or "lowerRoman"
-    front_start = cfg.get("front_matter_start") if cfg.get("front_matter_start") is not None else (2 if preset == "pedoman" else 1)
+    front_start = cfg.get("front_matter_start") if cfg.get("front_matter_start") is not None else 1
 
     if cover_num_fmt != "none":
         builder.setup_page_numbering(builder.doc.sections[0], fmt=cover_num_fmt, start=1)
