@@ -1,0 +1,113 @@
+/* ============================================================================
+   TEMA "KERTAS LAPORAN"
+   Aplikasi ini membantu siswa menyusun dokumen — UI-nya dibuat seperti buku
+   kerja: latar kertas hangat, tinta gelap, satu aksen hijau akademik.
+   Satu tema terang yang konsisten (tanpa auto dark-mode) supaya semua
+   komponen selalu terbaca.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* Kertas & tinta */
+  --paper: #f4f1ea;          /* latar halaman — kertas hangat */
+  --paper-2: #ece8de;        /* latar sekunder (legend, nested) */
+  --surface: #fffdf8;        /* kartu / panel — putih gading */
+  --ink: #262521;            /* teks utama */
+  --ink-soft: #6d675c;       /* teks sekunder */
+  --line: #ddd6c8;           /* garis/border hangat */
+  --line-strong: #b9b09c;
+
+  /* Aksen utama: hijau akademik */
+  --green-700: #14614a;
+  --green-600: #187257;
+  --green-500: #1d8465;
+  --green-100: #e2efe7;
+  --green-50: #eef6f1;
+
+  /* Pendukung */
+  --amber-700: #92610c;      /* "Penting" */
+  --amber-100: #f6ead0;
+  --red-600: #b3372c;        /* "Wajib" / bahaya */
+  --red-100: #f7e2df;
+  --blue-700: #2b5d8a;       /* "Otomatis" */
+  --blue-100: #e0ebf4;
+
+  /* Alias semantik — dipakai komponen lama, JANGAN dihapus */
+  --bg: var(--paper);
+  --bg-secondary: var(--paper-2);
+  --panel: var(--surface);
+  --border: var(--line);
+  --text: var(--ink);
+  --text-muted: var(--ink-soft);
+  --primary: var(--green-600);
+  --primary-hover: var(--green-700);
+  --danger: var(--red-600);
+  --success: var(--green-600);
+
+  /* Alias palet lama (masih dirujuk beberapa komponen) */
+  --slate-100: var(--paper-2);
+  --slate-200: var(--line);
+  --slate-300: var(--line-strong);
+  --slate-400: #a39b89;
+  --slate-500: var(--ink-soft);
+  --slate-600: #55503f;
+  --slate-700: #3d3931;
+  --indigo-500: var(--green-600);
+  --indigo-600: var(--green-600);
+  --indigo-700: var(--green-700);
+  --emerald-100: var(--green-100);
+  --emerald-600: var(--green-700);
+  --rose-600: #96291f;
+
+  --card-shadow: 0 1px 2px rgba(60, 52, 31, 0.06), 0 4px 14px rgba(60, 52, 31, 0.06);
+  --card-border: 1px solid var(--line);
+
+  /* Tipografi: heading serif seperti dokumen, body sans yang tenang */
+  --font-serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  font-size: 15.5px;
+  color: var(--ink);
+  background:
+    /* garis tepi halus seperti kertas folio */
+    linear-gradient(var(--paper), var(--paper));
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-serif);
+  color: var(--ink);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.005em;
+}
+
+h4, h5, h6 {
+  color: var(--ink);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+::selection {
+  background: var(--green-100);
+}

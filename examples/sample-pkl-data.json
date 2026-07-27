@@ -1,0 +1,240 @@
+{
+  "version": "1.0",
+  "status": "ready",
+  "created_at": "2025-01-15T10:00:00+07:00",
+  "updated_at": "2025-01-15T12:30:00+07:00",
+
+  "config": {
+    "jumlah_bab": 5,
+    "bab_modules": ["PENDAHULUAN", "PROFIL_PERUSAHAAN", "LANDASAN_TEORI", "PELAKSANAAN", "PENUTUP"],
+    "margin": { "atas": 4, "bawah": 3, "kiri": 4, "kanan": 3 },
+    "font": "Times New Roman",
+    "font_size": 12,
+    "spasi": 1.5,
+    "pedoman_sekolah": null
+  },
+
+  "siswa": {
+    "nama": "Niken Vena As-Syifa",
+    "nis": "13979",
+    "nisn": "0075724244",
+    "kelas": "XII",
+    "jurusan": "Akuntansi Keuangan Lembaga",
+    "jurusan_key": "AKL",
+    "tempat_lahir": "Bandar Lampung",
+    "tanggal_lahir": "07 Desember 2006",
+    "jenis_kelamin": "Perempuan",
+    "golongan_darah": "O",
+    "catatan_kesehatan": "-",
+    "no_telp": "0895-2251-1042",
+    "alamat": "Jl. Abimanyu Gg. Kopi No.34 Jagabaya II",
+    "nama_ortu": "Asri Hermawati",
+    "alamat_ortu": "Jl. Abimanyu Gg. Kopi No.34 Jagabaya II",
+    "telp_ortu": "0853-8243-1854"
+  },
+
+  "sekolah": {
+    "nama": "SMK Negeri 4 Bandar Lampung",
+    "nama_lengkap": "SMK NEGERI 4 BANDAR LAMPUNG",
+    "alamat": "JL. HOS Cokroaminoto No.102 Telp.(0721) 262637 Fax. 0721251202",
+    "kota": "Bandar Lampung",
+    "telp": "(0721) 261637",
+    "email": "smkn4bl@yahoo.co.id",
+    "website": "www.smkn4-bdl.sch.id",
+    "kop": {
+      "baris_1": "PEMERINTAH PROVINSI LAMPUNG",
+      "baris_2": "DINAS PENDIDIKAN DAN KEBUDAYAAN",
+      "baris_3": "SMK NEGERI 4 BANDAR LAMPUNG",
+      "npsn": "10807215",
+      "nss": "401126003028"
+    },
+    "kepala_sekolah": {
+      "nama": "HJ. Dewi Ningsih",
+      "nip": "",
+      "gelar": "S.Pd., M.Pd."
+    },
+    "waka_humas": {
+      "nama": "Mas Azizah",
+      "nip": "197810152009022001",
+      "gelar": "M.Pd"
+    },
+    "ketua_kk": {
+      "nama": "Herlina",
+      "nip": "197606082000122003",
+      "gelar": "S.Pd."
+    },
+    "pembimbing_sekolah": {
+      "nama": "Hj. Zahria Hadiyati",
+      "nip": "197507062005012005",
+      "gelar": "S.Pd."
+    }
+  },
+
+  "perusahaan": {
+    "nama": "PT Reksa Finance",
+    "nama_lengkap": "PT Reksa Finance Cabang Lampung",
+    "alamat": "Jl. Sultan Agung Ruko No. 28/11F Kel. Way Halim Permai, Kota Bandar Lampung",
+    "bidang_usaha": "Jasa",
+    "status": "PMDN",
+    "no_telp": "(0721) 781878",
+    "fax": "-",
+    "email": "-",
+    "website": "https://reksafinance.co.id/",
+    "pimpinan": {
+      "nama": "Andi Khairil",
+      "jabatan": "Kepala Cabang / Branch Manager"
+    },
+    "hrd": {
+      "nama": "Puja Lestari",
+      "jabatan": "Administration Division Head",
+      "telp": "(0721) 781878",
+      "email": "Reksalpg.Adh@Reksafinance.com"
+    },
+    "pembimbing_industri": {
+      "nama": "Puja Lestari",
+      "jabatan": "Administration Division Head (ADH)",
+      "telp": "0821-8270-0063",
+      "email": "Reksalpg.Adh@Reksafinance.com"
+    }
+  },
+
+  "pkl": {
+    "tanggal_mulai": "Juli 2024",
+    "tanggal_selesai": "Desember 2024",
+    "durasi_bulan": 6,
+    "jam_pelajaran": null,
+    "bagian_ditempatkan": "Operation dan Collection",
+    "tahun_ajaran": "2024/2025"
+  },
+
+  "profil_perusahaan": {
+    "sejarah": "Reksa Finance didirikan pada tanggal 24 Oktober 1984 setelah disahkan oleh Keputusan Menteri Kehakiman. Perusahaan bergerak di bidang jasa pembiayaan kendaraan bermotor.",
+    "visi": "Menjadi perusahaan pembiayaan yang memiliki kualifikasi aset dalam kelompok perusahaan pembiayaan bertumbuh secara berkelanjutan dan sehat.",
+    "misi": [
+      "Berkontribusi positif terhadap pasar pembiayaan di Indonesia dan berpartisipasi dalam peningkatan ekonomi nasional.",
+      "Mengembangkan sumber daya manusia dan teknologi.",
+      "Sebagai mitra bisnis terbaik bagi pemangku kepentingan dan berpartisipasi dalam peningkatan taraf hidup masyarakat."
+    ],
+    "struktur_organisasi": "gambar-struktur.png",
+    "tata_tertib": [
+      "Datang dan absen tepat waktu sebelum 08.30.",
+      "Wajib memakai name tag di kantor maupun saat berada di lapangan.",
+      "Menjaga Ketertiban dan kesopanan.",
+      "Menyelesaikan pekerjaan yang telah diberikan dan sesuai dengan target yang telah ditentukan."
+    ],
+    "jam_kerja": [
+      {"hari": "Senin-Jumat", "jam": "08.30 - 16.30", "keterangan": "Briefing 08.30-09.00, Istirahat 12.00-13.00"},
+      {"hari": "Sabtu", "jam": "08.30 - 12.00", "keterangan": "Briefing 08.30-09.00"}
+    ],
+    "job_descriptions": [
+      {"posisi": "Branch Manager", "tugas": ["Memastikan semua operasional dicabang sesuai dengan SOP.", "Menjalin hubungan baik kepada main dealer.", "Memonitoring kedisiplinan semua pegawai."]},
+      {"posisi": "Collection Head", "tugas": ["Menjaga kualitas portofolio kredit lancar.", "Membentuk tim collection yang kuat.", "Monitoring hasil penagihan."]},
+      {"posisi": "Cashier", "tugas": ["Pencatatan semua transaksi.", "Bertanggung jawab setiap pembayaran.", "Cash opname setiap hari."]}
+    ]
+  },
+
+  "kegiatan": [
+    {
+      "bidang": "Operation",
+      "deskripsi_umum": "Kegiatan pelaksanaan Praktik Kerja Industri yang dilaksanakan oleh Penulis, ditempatkan di bagian Operation.",
+      "tugas": [
+        {"nama": "Scan & folder berkas", "detail": "Menscan dan memfolderkan berkas claim payment request, form reversal, dan berkas tagihan biro jasa.", "assets": []},
+        {"nama": "Reject kwitansi", "detail": "Mereject kwitansi kasir setiap akhir bulan.", "assets": []},
+        {"nama": "Input reject kwitansi", "detail": "Menginput dan mensortir reject kwitansi ke dalam excel sesuai dengan pembayaran debitur.", "assets": []},
+        {"nama": "Print kwitansi", "detail": "Memprint kwitansi pembayaran debitur.", "assets": []},
+        {"nama": "Menulis laporan kas", "detail": "Menulis dan mensortir berkas laporan kas, kwitansi kasir, kwitansi collector, log book cash in & out.", "assets": []},
+        {"nama": "Log book BPKB", "detail": "Menulis log book BPKB in & out.", "assets": []},
+        {"nama": "Menulis invoice", "detail": "Menulis lembar invoice.", "assets": []},
+        {"nama": "Scan dokumen", "detail": "Menscan dan memfotocopy berkas fidusia, form verifikasi debitur, surat kuasa, dan ceklist pemeriksaan.", "assets": []},
+        {"nama": "Kwitansi pelunasan", "detail": "Menulis kwitansi pelunasan dan DP.", "assets": []}
+      ]
+    },
+    {
+      "bidang": "Collection",
+      "deskripsi_umum": "Tugas yang penulis kerjakan dalam bidang Collection.",
+      "tugas": [
+        {"nama": "Surat Peringatan", "detail": "Mencetak Surat Peringatan 1, 2, dan 3 melalui sistem Reksaloan sesuai tanggal jatuh tempo.", "assets": []},
+        {"nama": "FID", "detail": "Mencetak Formulir Identifikasi Debitur melalui sistem Reksaloan.", "assets": []},
+        {"nama": "Tagihan Collector", "detail": "Mencetak Tagihan Collector setiap awal dan pertengahan bulan.", "assets": []},
+        {"nama": "Scan pelunasan", "detail": "Menscan berkas Permohonan Pelunasan dan Permohonan Denda debitur.", "assets": []},
+        {"nama": "Late Charges", "detail": "Mencetak Late Charges Calculate melalui sistem Reksaloan.", "assets": []},
+        {"nama": "BASTK & SKT", "detail": "Memprint Berita Acara Serah Terima Kendaraan dan Surat Keterangan Tarik.", "assets": []},
+        {"nama": "Kunjungan debitur", "detail": "Melakukan kunjungan debitur jatuh tempo.", "assets": []},
+        {"nama": "Somasi Remedial", "detail": "Mengirim Surat Somasi Remedial.", "assets": []}
+      ]
+    }
+  ],
+
+  "studi_kasus": {
+    "judul": "Mendata dan Memeriksa Kelengkapan Dokumen Waive Discount",
+    "latar_belakang": "Melakukan pendataan dan dokumen Waive Discount dengan menghitung total dari persentase pengurangan denda keterlambatan angsuran dari debitur yang telah disepakati oleh Head Collection dan debitur.",
+    "proses_atau_formula": "Total Angsuran × 0.5% = Denda Harian. Total Denda = Denda Harian + Collection Fee. Hasil = Total Denda - (Total Denda × % Negosiasi)",
+    "data_angka": [
+      {"label": "Total Angsuran", "nilai": "Rp 3.478.000"},
+      {"label": "Denda 0.5%/hari", "nilai": "Rp 17.390"},
+      {"label": "Total Denda", "nilai": "Rp 4.596.800"},
+      {"label": "% Negosiasi", "nilai": "37.99%"},
+      {"label": "Denda setelah potongan", "nilai": "Rp 2.851.000"}
+    ],
+    "hasil": "Setelah disetujui oleh kantor PT Reksa Finance Cabang Lampung, debitur cukup membayar Rp 2.851.000 dari total denda awal Rp 4.596.800.",
+    "assets": []
+  },
+
+  "peralatan": [
+    {"nama": "Printer", "deskripsi": "Untuk memudahkan karyawan dalam memfotokopi atau memprint surat-surat dan dokumen debitur lainnya.", "gambar": ""},
+    {"nama": "Komputer", "deskripsi": "Peralatan kantor yang sangat penting, hampir 100% operasional menggunakan komputer.", "gambar": ""},
+    {"nama": "Alat Tulis", "deskripsi": "Karyawan tetap membutuhkan alat tulis kantor dalam menunjang pekerjaan sehari-hari.", "gambar": ""},
+    {"nama": "Stempel", "deskripsi": "Perlengkapan yang digunakan dalam menunjang produktivitas karyawan untuk mengesahkan dokumen.", "gambar": ""}
+  ],
+
+  "kendala": [
+    {
+      "masalah": "Adaptasi awal dengan sistem Reksaloan yang belum familiar.",
+      "solusi": "Mempelajari secara bertahap dengan bimbingan dari Administration Head."
+    }
+  ],
+
+  "pelajaran": [
+    "Pentingnya kedisiplinan dan tanggung jawab dalam dunia kerja",
+    "Cara berkomunikasi profesional dengan nasabah/debitur",
+    "Memahami alur kerja operasional perusahaan pembiayaan"
+  ],
+
+  "refleksi": "Dengan kegiatan ini Penulis merasakan langsung bagaimana terjun ke dunia kerja yang belum pernah Penulis rasakan sebelumnya. Lingkungan kerja juga dapat memberikan pelajaran bagaimana cara mengumpulkan informasi dan data yang dibutuhkan.",
+
+  "kata_pengantar": {
+    "ucapan_syukur": "Puji syukur kepada Tuhan Yang Maha Esa, karena karunia dan nikmat yang diberikan-Nya sehingga Penulis dapat menyelesaikan penyusunan Laporan Praktik Kerja Lapangan (PKL) ini tepat pada waktunya.",
+    "hierarki_terima_kasih": [
+      "Tuhan Yang Maha Esa, atas berkat dan rahmat-Nya Penulis bisa menyusun laporan Praktik Kerja Lapangan ini.",
+      "Kedua Orang Tua, yang selalu memberi dukungan dan motivasi kepada Penulis dalam menyusun laporan Praktik Kerja Lapangan ini.",
+      "Ibu Puja Lestari, selaku kepala administrasi yang telah memberikan kesempatan kepada Penulis untuk melaksanakan PKL.",
+      "Ibu HJ. Dewi Ningsih, S.Pd., M.Pd., selaku kepala SMK Negeri 4 Bandar Lampung yang telah memberikan izin untuk melaksanakan PKL.",
+      "Ibu Herlina S.Pd., selaku kepala jurusan Akuntansi Keuangan Lembaga di SMK Negeri 4 Bandar Lampung.",
+      "Ibu Hj. Zahria Hadiyati, S.Pd., selaku guru pembimbing PKL dari SMK Negeri 4 Bandar Lampung.",
+      "Pihak lain yang tidak dapat Penulis sebutkan satu persatu."
+    ],
+    "harapan": "Penulis berharap semoga hasil laporan yang Penulis susun ini dapat bermanfaat bagi peningkatan Mutu Pendidikan di masa yang akan datang.",
+    "kota": "Bandar Lampung",
+    "tanggal": "20 Desember 2024"
+  },
+
+  "daftar_pustaka": [
+    "reksafinance.co.id. (2023 – PT Reksa Finance). Sejarah Perusahaan. Diakses pada 6 September 2024, dari https://reksafinance.co.id/.",
+    "smkn4-bdl.sch.id. (2024 – SMKN 4 BANDAR LAMPUNG). Sejarah Sekolah. Diakses pada 24 September 2024, dari https://smkn4-bdl.sch.id/.",
+    "www.kajianpustaka.com. (2024 – Kajian Pustaka). Praktik Kerja Lapangan. Diakses pada 24 September 2024."
+  ],
+
+  "assets": [],
+
+  "gaps": [],
+
+  "lampiran": {
+    "jurnal_kegiatan": false,
+    "absensi": false,
+    "sertifikat": false,
+    "penilaian": false,
+    "surat_permohonan": false,
+    "surat_balasan": false,
+    "foto_dokumentasi": true
+  }
+}

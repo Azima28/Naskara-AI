@@ -1,0 +1,807 @@
+{
+ "version": "1.0",
+ "status": "ready",
+ "config": {
+  "preset": "legacy",
+  "margin": {
+   "atas": 2.44,
+   "bawah": 0.48,
+   "kiri": 1.55,
+   "kanan": 1.66
+  },
+  "h1_size": 16,
+  "h2_size": 13,
+  "h3_size": 12,
+  "bab_modules": [
+   "PENDAHULUAN",
+   "KEGIATAN_INDUSTRI",
+   "TINJAUAN_PUSTAKA",
+   "DATA_PENGAMATAN",
+   "PEMBAHASAN",
+   "KESIMPULAN_SARAN"
+  ]
+ },
+ "siswa": {
+  "nama": "Adinda Fatimah Putri",
+  "nis": "0082047955",
+  "nisn": "0075724244",
+  "kelas": "XII AKL 1",
+  "jurusan": "Akuntansi",
+  "jurusan_key": "akuntansi",
+  "tempat_lahir": "Bandar Lampung",
+  "tanggal_lahir": "07 Desember 2006",
+  "jenis_kelamin": "Perempuan",
+  "golongan_darah": "O",
+  "catatan_kesehatan": "-",
+  "no_telp": "0895-2251-1042",
+  "nama_ortu": "Asri Hermawati",
+  "alamat_ortu": "Jl. Abimanyu Gg. Kopi No.34 Jagabaya II",
+  "telp_ortu": "0853-8243-1854"
+ },
+ "sekolah": {
+  "nama": "SMK Negeri 4 Bandar Lampung",
+  "nama_lengkap": "SMK NEGERI 4 BANDAR LAMPUNG",
+  "alamat": "JL. HOS Cokroaminoto No. 102",
+  "kota": "Bandar Lampung",
+  "telp": "(0721) 261637",
+  "email": "smkn4bl@yahoo.co.id",
+  "website": "www.smkn4-bdl.sch.id",
+  "kop": {
+   "baris_1": "PEMERINTAH PROVINSI LAMPUNG",
+   "baris_2": "DINAS PENDIDIKAN DAN KEBUDAYAAN",
+   "baris_3": "SMK NEGERI 4 BANDAR LAMPUNG",
+   "baris_alamat_2": "Kel. Enggal - Kec. Enggal - Kota Bandar Lampung 35118",
+   "npsn": "10807215",
+   "nss": "401126003028"
+  },
+  "kepala_sekolah": {
+   "nama": "HJ. Dewi Ningsih, S.Pd., M.Pd."
+  },
+  "waka_humas": {
+   "nama": "Mas Azizah, M.Pd",
+   "nip": "197810152009022001"
+  },
+  "ketua_kk": {
+   "nama": "Herlina, S.Pd.",
+   "nip": "197606082000122003"
+  },
+  "pembimbing_sekolah": {
+   "nama": "Hj. Zahria Hadiyati, S.Pd.",
+   "nip": "197507062005012005"
+  }
+ },
+ "perusahaan": {
+  "nama": "Reksa Finance",
+  "nama_lengkap": "PT. Reksa Finance",
+  "nama_cabang": "PT. Reksa Finance Cabang Lampung",
+  "nama_cover": "Reksa Finance Lampung",
+  "nama_pengesahan": "PT. REKSA FINANCE",
+  "alamat": "Jl. Sultan Agung Ruko No. 28/Ii F Kel. Way Halim Permai Kec. Sukarame Kota Bandar Lampung",
+  "bidang_usaha": "Jasa",
+  "status": "PMDN",
+  "no_telp": "(0721) 781878",
+  "fax": "-",
+  "email": "-",
+  "website": "https://reksafinance.co.id/",
+  "pimpinan": {
+   "nama": "Andi Khairil",
+   "jabatan": "Kepala Cabang"
+  },
+  "hrd": {
+   "nama": "Puja Lestari",
+   "telp": "(0721) 781878",
+   "email": "Reksalpg.Adh@Reksafinance.com"
+  },
+  "pembimbing_industri": {
+   "nama": "Puja Lestari",
+   "jabatan": "Administration Division Head (ADH)",
+   "label_pengesahan": "Pembimbing Industri I",
+   "telp": "0821-8270-0063",
+   "email": "Reksalpg.Adh@Reksafinance.com"
+  }
+ },
+ "pkl": {
+  "tanggal_mulai": "2024-06-24",
+  "tanggal_selesai": "2024-12-20",
+  "durasi_bulan": 6,
+  "bagian_ditempatkan": "Operation dan Collection",
+  "tahun_ajaran": "2024/2025"
+ },
+ "profil_perusahaan": {
+  "logo_perusahaan": "sim-logo-reksa.png",
+  "sejarah": "Reksa Finance didirikan pada tanggal 24 Oktober 1984 setelah disahkan oleh Keputusan Menteri Kehakiman dengan Nama PT Reksa Semesta Lesing. Pada tahun 1995 PT Reksa Semesta Lesing mengalami perubahan nama menjadi PT Reksa Artha Pertiwi. Pada Tahun 2006 sesuai dengan Akta Notaris menyetujui perubahan nama perseroan dari PT Reksaartha Pertiwi menjadi PT Reksa Finance. Dengan semangat dan pengalaman Manajemen baru yang telah teruji dan terpercaya dalam Industri Lembaga Keuangan pada Tahun 2011 PT Reksa Finance berkembang sangat pesat melakukan ekspansi dengan melakukan Pembukaan Cabang yang tersebar di berbagai Pulau Jawa, Sumatera dan Kalimantan dengan membuka 8 cabang. Pada Tahun 2012 PT Reksa Finance melakukan pembukaan 8 cabang kembali sehingga Total Cabang yang dimiliki oleh PT Reksa Finance sebanyak 16 Cabang yang tersebar di Pulau Jawa, Sumatera dan Kalimantan. Dengan Modal pengalaman, keahlian dan kepercayaan dari Bank pendukung PT Reksa Finance akan terus mempertahankan kepercayaan dari Bank pendukung.",
+  "visi": "Menjadi perusahaan pembiayaan yang memiliki kualifikasi aset dalam kelompok perusahaan pembiayaan besar dan memiliki kualitas portofolio yang baik.",
+  "misi": [
+   "Berkontribusi positif terhadap pasar pembiayaan di Indonesia dan berpartisipasi dalam peningkatan ekonomi nasional.",
+   "Mengembangkan sumber daya manusia dan teknologi.",
+   "Sebagai mitra bisnis terbaik bagi pemangku kepentingan dan berpartisipasi dalam peningkatan taraf hidup."
+  ],
+  "visi_misi_intro": "Berikut adalah Visi dan Misi Reksa Finance:",
+  "profil_lokasi": "PT. Reksa Finance Cabang Lampung beralamat di Jl. Sultan Agung Ruko No. 28/Ii F Kel. Way Halim Permai Kec. Sukarame Kota Bandar Lampung 35133 (0721) 78-187. Sedangkan Head Office beralamat Jalan Tentara Pelajar Blok B No. 3&5 (Rukan Permata Senayan), Kebayoran Lama, Jakarta Selatan 12210. Lalu PT. Reksa Finance memiliki 18 cabang dibagi atas 4 area kerja secara nasional yaitu:",
+  "area_cabang": [
+   {
+    "nama_area": " Area I",
+    "cabang": [
+     {
+      "nama": "PT. Reksa Finance Cabang Pangkal Pinang"
+     },
+     {
+      "nama": "PT. Reksa Finance Cabang Pematang Siantar"
+     },
+     {
+      "nama": "PT. Reksa Finance Cabang Pekan Baru"
+     },
+     {
+      "nama": "PT. Reksa Finance Cabang Tangerang"
+     }
+    ]
+   },
+   {
+    "nama_area": " Area II",
+    "cabang": [
+     {
+      "nama": "PT. Reksa Finance Cabang Palembang"
+     },
+     {
+      "nama": "PT. Reksa Finance Cabang Tulang Bawang"
+     },
+     {
+      "nama": "PT. Reksa Finance Cabang Bandar Jaya"
+     },
+     {
+      "nama": "PT. Reksa Finance Cabang Lampung"
+     }
+    ]
+   },
+   {
+    "nama_area": " Area III",
+    "cabang": [
+     {
+      "nama": "PT. Reksa Finance Cabang Bandung"
+     },
+     {
+      "nama": "PT. Reksa Finance Cabang Cirebon"
+     },
+     {
+      "nama": "PT. Reksa Finance Cabang Bekasi"
+     },
+     {
+      "nama": "PT. Reksa Finance Cabang Semarang"
+     },
+     {
+      "nama": "PT. Reksa Finance Cabang Purwokerto"
+     }
+    ]
+   },
+   {
+    "nama_area": " Area IV",
+    "cabang": [
+     {
+      "nama": "PT. Reksa Finance Cabang Tanjung"
+     },
+     {
+      "nama": "PT. Reksa Finance Cabang Palang Karaya"
+     },
+     {
+      "nama": "PT. Reksa Finance Cabang Samarinda"
+     },
+     {
+      "nama": "PT. Reksa Finance Cabang Berau"
+     },
+     {
+      "nama": "PT. Reksa Finance Cabang Banjar Masin"
+     }
+    ]
+   }
+  ],
+  "struktur_organisasi": "sim-struktur.png",
+  "narasi_struktur": "Manfaat Struktur organisasi adalah mempermudah proses pencapaian tujuan dari suatu lembaga, dalam hal ini perusahaan pada umumnya dan PT Reksa Finance Cabang Lampung khususnya. Dengan adanya struktur organisasi ini dapat diketahui asal kesalahan atau penyimpangan di dalam suatu proses kegiatan.\nSelain itu juga dengan adanya struktur organisasi ini dapat memberikan ketegasan dalam hal wewenang dan tanggung jawab kepada masing-masing pejabat atau orang yang akan ditugaskan ini maka mereka dapat menunaikan tugasnya dengan baik. Sesuai dengan Surat Keputusan No. Kep.SUU/1650/1977 Tanggal 19 September 1977 mengenai pokok-pokok organisasi PT. Reksa Finance Cabang Lampung.\nSedangkan untuk PT. Reksa Finance yang bertempat di jalan Sultan Agung No. 28/11F, Way Halim Permai, Kec. Way Halim, Kota Bandar Lampung, terdiri dari 1 Kepala cabang (Branch Manager), 1 Kepala Administrasi (Administration Head), 1 Kepala Marketing (Credit Marketing Head), dan 1 Kepala Penagihan (Collecting Head).",
+  "bagan_intro": "Berikut adalah struktur organisasi Reksa Finance:",
+  "tata_tertib_intro": "Tata Tertib PT. Reksa Finance, tata tertib yang diberikan perusahaan bertujuan untuk menciptakan lingkungan kerja yang nyaman dan terkendali bagi seluruh karyawan, tata tertib yang berlaku dan harus di taati seluruh karyawan PT. Reksa Finance adalah sebagai berikut :",
+  "jam_kerja_intro": "Jadwal kerja yang ada di Reksa Finance:",
+  "tata_tertib": [
+   "Datang dan absen tepat waktu sebelum 08.30.",
+   "Wajib memakai name tag di kantor maupun saat berada di lapangan.",
+   "Menjaga Ketertiban dan kesopanan.",
+   "Menyelesaikan pekerjaan yang telah diberikan dan sesuai dengan target yang telah ditentukan."
+  ],
+  "jam_kerja": [
+   {
+    "hari": "SENIN",
+    "jam": "08.30 - 09.00",
+    "keterangan": "BRIEFING"
+   },
+   {
+    "hari": "",
+    "jam": "09.00 - 12.00",
+    "keterangan": "OPERASIONAL"
+   },
+   {
+    "hari": "",
+    "jam": "12.00 - 13.00",
+    "keterangan": "ISTIRAHAT"
+   },
+   {
+    "hari": "",
+    "jam": "13.00 - 16.30",
+    "keterangan": "OPERASIONAL"
+   },
+   {
+    "hari": "",
+    "jam": "16.30",
+    "keterangan": "TUTUP"
+   },
+   {
+    "hari": "SELASA",
+    "jam": "08.30 - 09.00\n09.00 - 12.00\n12.00 - 13.00\n13.00 - 16.30\n16.30",
+    "keterangan": "BRIEFING\nOPERASIONAL\nISTIRAHAT\nOPERASIONAL\nTUTUP"
+   },
+   {
+    "hari": "RABU",
+    "jam": "08.30 - 09.00\n09.00 - 12.00\n12.00 - 13.00\n13.00 - 16.30\n16.30",
+    "keterangan": "BRIEFING\nOPERASIONAL\nISTIRAHAT\nOPERASIONAL\nTUTUP"
+   },
+   {
+    "hari": "KAMIS",
+    "jam": "08.30 - 09.00\n09.00 - 12.00\n12.00 - 13.00\n13.00 - 16.30\n16.30",
+    "keterangan": "BRIEFING\nOPERASIONAL\nISTIRAHAT\nOPERASIONAL\nTUTUP"
+   },
+   {
+    "hari": "JUMAT",
+    "jam": "08.30 - 09.00\n09.00 - 12.00\n12.00 - 13.00\n13.00 - 16.30\n16.30",
+    "keterangan": "BRIEFING\nOPERASIONAL\nISTIRAHAT\nOPERASIONAL\nTUTUP"
+   },
+   {
+    "hari": "SABTU",
+    "jam": "08.30 - 09.00\n09.00 - 12.00\n12.00",
+    "keterangan": "BRIEFING\nOPERASIONAL\nTUTUP"
+   }
+  ],
+  "job_descriptions": [
+   {
+    "posisi": "Branch Manager",
+    "tugas": [
+     "Memastikan semua operasional dicabang baik marketing, credit, opertiation, dan collection sesuai dengan SOP perusahaan.",
+     "Menjalin hubungan baik kepada main dealer atau showroom rekanan dan atau yang telah MOU (Memorandum Of Understanding).",
+     "Memonitoring kedisiplinan semua pegawai yang ada dikantor cabang.",
+     "Bertanggung jawab terhadap pencapaian Key Performance Indicator (KPI) cabang sesuai target yang telah ditentukan perusahaan.",
+     "Bertanggung jawab terhadap aplikasi kredit yang masuk, termasuk memutuskan batasan Wewenang Memutuskan Kredit (WMK), review dan survey langsung terhadap setiap aplikasi kredit di cabangnya."
+    ]
+   },
+   {
+    "posisi": "Collection Head",
+    "tugas": [
+     "Menjaga agar kualitas portofolio kredit lancar dan monitoring pembayaran atas setiap account yang ada di cabang.",
+     "Membentuk tim collection sesuai dengan bucket dan membangun tim collection yang kuat, serta membina hubungan baik ke aparat kepolisian dan profesional collection (Eksternal).",
+     "Monitoring setiap hasil penagihan dari Collector.",
+     "Melakukan pencatatan di sistem atas informasi yang diperoleh (DCR) dalam aktivitas penagihan dan melakukan tindakan-tindakan recovery secara cepat dan tepat.",
+     "Mengelola team collector baik dari pemetaan wilayah penagihan, membuat jadwal penagihan, dan lain-lain.",
+     "Bertanggung jawab terhadap key performance indicator (KPI) Head Collection yang telah ditetapkan oleh perusahaan yaitu current rate dan overdue 1-30 hari.",
+     "Reporting bulanan kepada collection manager kantor pusat."
+    ]
+   },
+   {
+    "posisi": "Collector",
+    "tugas": [
+     "Melakukan proses penagihan angsuran kepada costumer dan segera menyetorkan.",
+     "Mengirimkan Welcoming Latter (Copy kontrak, polis asuransi, cara pembayaran, dan lain lain) ke costumeryang baru Golive.",
+     "Melakukan identifikasi ulang dan mengisi form identifikasi ulang terhadap costumer yang baru Golive.",
+     "Memberikan laporan pada Collection Head atau Branch Manager setiap hasil penagihan."
+    ]
+   },
+   {
+    "posisi": "Remedial Staff",
+    "tugas": [
+     "Membuat dan menerbitkan surat kuasa tarik serta berita acara penarikan kendaraan untuk executor eksternal yang sudah dituju oleh area collection dan ditandatangani oleh Branch Manager.",
+     "Menerima dan mencek list (BASTIK) kembali unit yang berhasil ditarik oleh executor eksternal.",
+     "Membuat dan melakukan kesepakatan kerjasama melalui perjanjian kerjasama (MOU) dengan executor eksternal secara tertulis.",
+     "Melakukan identifikasi dan investigasi dilapangan bila memungkinkan melakukan penarikan lapangan kendaraan.",
+     "Melayani complain dan penyelesaian kredit terhadap costumer yang berhubungan dengan surat kuasa tarik (SKT) dan penarikan kendaraan.",
+     "Membuat laporan hasil kerja bulanan kepada Branch Manager dan Area Collection.",
+     "Menjaga kualitas AR overdue 30 hari ke atas dengan baik sesuai dengan target yang telah ditetapkan."
+    ]
+   },
+   {
+    "posisi": "Credit Marketing Head",
+    "tugas": [
+     "Melakukan survey ulang atas setiap pengajuan kredit yang diajukan oleh Credit Marketing Office.",
+     "Menjalin hubungan baik dan membuka pangsa pasar dengan dealer atau showroom rekanan.",
+     "Membuat perjanjian kerjasama dengan showroom rekanan baru.",
+     "Melakukan verifikasi dan pengecekan kelengkapan atas setiap dokumen kredit yang diterima.",
+     "Mengisi kelengkapan dokumen pada lembar survey.",
+     "Menganalisa kelayakan setiap pengajuan kredit baik diaplikasi maupun disistem.",
+     "Melakukan credit scoring di sistem dan mengisi rekomendasi persetujuan kredit.",
+     "Bertangggung jawab terhadap EDP (Early Payment Default) atau dengan angsuran yang ditetapkan oleh perusahaan.",
+     "Bertanggung jawab terhadap Key Performance Indicator (KPI) CMH yang telah ditetapkan oleh perusahaan.",
+     "Reporting bulanan kepada kredit manager kantor pusat."
+    ]
+   },
+   {
+    "posisi": "Credit Marketing Office (CMO)",
+    "tugas": [
+     "Mendapatkan aplikasi kredit sesuai dengan target lending yang telah ditetapkan.",
+     "Melengkapi dokumen wajib dan pendukung calon costumer sesuai SOP yang berlaku.",
+     "Melakukan survey cek lingkungan rumah / usaha dan mereview kelayakan kredit calon costumer.",
+     "Menjalin hubungan baik dengan dealer atau showroom rekanan.",
+     "Mengisi lembar hasil survey (LHS) dengan benar dan jujur serta bebas dari KKN.",
+     "Bertanggung jawab terhadap EPD (Early Payment Day) atau angsuran yang prematur."
+    ]
+   },
+   {
+    "posisi": "Administrasion Head",
+    "tugas": [
+     "Bertanggung jawab terhadap jalannya segala kegiatan administrasi di cabang.",
+     "Bertanggung jawab terhadap support operasional di cabang seperti hal-hal yang berkaitan dengan credit, marketing, dan collection.",
+     "Memonitoring setiap kas masuk dan keluar.",
+     "Memastikan semua pegawai yang dibawah ADH telah melaksanakan dan patuh terhadap SOP perusahaan.",
+     "Mengecek kelengkapan dokumen kredit yang dibawa oleh CMO disetiap lembar survey yang telah dilakukan.",
+     "Melakukan proses verifikasi kelengkapan data dokumen kredit yang sudah di input oleh admin credit.",
+     "Membantu followup pengiriman dokumen, pengajuan aplikasi, kekurangan data aplikasi dan data pencairan sampai dengan pencairan ke dealer.",
+     "Monitoring dan mengelola BAPK, STNK, dan kunci kendaraan AYDA (inventory).",
+     "Monitoring BPKB yang telah di request dari kantor pusat."
+    ]
+   },
+   {
+    "posisi": "Cashier",
+    "tugas": [
+     "Membantu Administration Head (ADH) dalam melakukan pencatatan atas semua tranksaksi yang terjadi dikantor cabang.",
+     "Bertanggung jawab setiap pembayaran customer baik secara tunai via kasir,cheque bilyet/giro atau transfer via bank.",
+     "Bertanggung jawab atas setiap pembayaran angsuran customer dari collector.",
+     "Menginfentarisir dan bertanggung jawab atas semua dokumen yang berhubungan dengan kasir, seperti bon putih, kuning, dan merah serta invoice customer.",
+     "Melakukan cash opname setiap hari.",
+     "Melakukan open/close cashier di sistem setiap hari.",
+     "Menyetorkan uang angsuran customer ke bank setiap hari kerja.",
+     "Bertanggung jawab atas penyimpanan uang jika disimpan di brankas kantor cabang."
+    ]
+   },
+   {
+    "posisi": "Admin Credit",
+    "tugas": [
+     "Membantu Administration Head (ADH) dalam melakukan setiap proses administrasi di kantor cabang.",
+     "Verifikasi keaslian setiap dokumen kredit yang masuk.",
+     "Melakukan inputan setiap dokumen kredit ke sistem reksaloan dengan teliti.",
+     "Menyusun setiap form aplikasi yang akan dibawa oleh CMO.",
+     "Melakukan penyimpanan dokumen secara rapih dan teregister yang ada di cabang.",
+     "Melakukan print perjanjian pembiayaan atas setiap aplikasi yang sudah GO LIVE."
+    ]
+   },
+   {
+    "posisi": "Office Boy",
+    "tugas": [
+     "Bertanggung jawab terhadap kebersihan kantor dan pemeliharaan inventaris kantor.",
+     "Mengantarkan segala surat maupun dokumen kepada kantor ekspedisi/kantor pos.",
+     "Menjaga kebersihan ruang kerja, kamar mandi, dapur, dan gudang.",
+     "Mengawasi pekerja petugas service ac, mesin fotocopy, dsb."
+    ]
+   },
+   {
+    "posisi": "Security",
+    "tugas": [
+     "Menjaga keamanan dan semua inventaris kantor.",
+     "Mengawasi orang yang masuk dan keluar kantor.",
+     "Bertanggung jawab terhadap keamanan dan inventaris perusahaan.",
+     "Bertanggung jawab keselamatan karyawan dalam lingkungan kawasannya."
+    ]
+   }
+  ]
+ },
+ "kegiatan": [
+  {
+   "bidang": "Operation",
+   "tugas": [
+    {
+     "nama": "Menscan & Memfolderkan berkas claim payment request, form reversal, dan berkas tagihan biro jasa."
+    },
+    {
+     "nama": "Mereject Kwitansi kasir setiap akhir bulan."
+    },
+    {
+     "nama": "Menginput & mensortir reject kwitansi ke dalam excel sesuai dengan pembayaran debitur."
+    },
+    {
+     "nama": "Memprint kwitansi pembayaran debitur."
+    },
+    {
+     "nama": "Menulis & Mensortir berkas laporan kas, kwitansi kasir, kwitansi collector, log book cash in & out, dan log book petty cash."
+    },
+    {
+     "nama": "Mengirim berkas laporan kas, kwitansi kasir, kwitansi collector, log book cash in & out, dan log book petty cash ke Head Office di Jakarta."
+    },
+    {
+     "nama": "Menulis log book BPKB in & out."
+    },
+    {
+     "nama": "Menulis lembar invoice."
+    },
+    {
+     "nama": "Mencsan & memfotocopy berkas fidusia, Form verifikasi debitur, surat kuasa, dan ceklist pemeriksaan dokumen pembiayaan."
+    },
+    {
+     "nama": "Menulis Kwitansi Pelunasan & DP."
+    }
+   ],
+   "deskripsi_umum": "Adapun tugas yang penulis kerjakan dalam bidang Operation adalah:"
+  },
+  {
+   "bidang": "Collection",
+   "tugas": [
+    {
+     "nama": "Mencetak Surat Peringatan 1,2,dan 3 melalui sistem Reksaloan sesuai dengan tanggal jatuh tempo debitur."
+    },
+    {
+     "nama": "Mencetak FID (Formulir Identifikasi Debitur) melalui sistem Reksaloan."
+    },
+    {
+     "nama": "Mencetak Tagihan Collector (TaColl) setiap awal bulan dan pertengahan bulan."
+    },
+    {
+     "nama": "Menscan berkas Permohonan Pelunasan dan Permohonan Denda debitur."
+    },
+    {
+     "nama": "Mensortir Surat Peringatan, Surat Permohonan Pelunasan, Surat Permohonan Denda, dan Ceklist Dokumen Kunjungan."
+    },
+    {
+     "nama": "Mencetak Late Charges Calculate melalui sistem Reksaloan."
+    },
+    {
+     "nama": "Memprint BASTK (Berita Acara Serah Terima Kendaran) & SKT (Surat Keterangan Tarik)."
+    },
+    {
+     "nama": "Mensortir debitur Current, 1-30,31-60, 61-90,dan NPL."
+    },
+    {
+     "nama": "Melakukan Kunjungan debitur jatuh tempo."
+    },
+    {
+     "nama": "Mengirim Surat Somasi Remedial."
+    }
+   ],
+   "deskripsi_umum": "Adapun tugas yang penulis kerjakan dalam bidang Collection adalah:"
+  }
+ ],
+ "detail_kegiatan": [
+  {
+   "judul": "Mendata dan Memeriksa Kelengkapan Dokumen Waive Discount",
+   "blocks": [
+    {
+     "tipe": "poin",
+     "teks": "Melakukan pendataan dan dokumen Waive Discount dengan menghitung total dari persentase pengurangan denda debitur, sedikit informasi Waive Discount adalah kebijaksanaan perusahaan untuk memberikan potongan/ pengurangan denda dari total pinjaman keseluruhan yang besarnya ditentukan oleh PT. Reksa Finance, dan pengajuan ini diketahui oleh pihak cabang dan direksi utama. Tapi ini juga dapat berakibat kerugian atas pihak PT. Reksa Finance, dikarenakan debitur meminta potongan harga senilai 50% dari total keseluruhan."
+    },
+    {
+     "tipe": "poin",
+     "teks": "Untuk penghitungan persentase yang Penulis ambil dari salah satu sampel debitur dengan no. kontrak 8021220180700001 atas nama Dede Wahyudin maka ditentukan dari hasil negosiasi antara pihak perusahaan yang mewakili yaitu Head Collection dengan pihak Debitur, setelah terjadi kesepakatan antara perusahaan dan Debitur maka didapat penghitungan sebagai berikut :"
+    },
+    {
+     "tipe": "poin",
+     "teks": " Total Angsuran Rp 3.478.000 x 0,5% = Rp 17.390,-/hari"
+    },
+    {
+     "tipe": "poin",
+     "teks": " Total denda dari awal akad kredit bulan Juli 2018 adalah"
+    },
+    {
+     "tipe": "tabel",
+     "rows": [
+      [
+       "Denda Harian",
+       "Rp 4.146.800,"
+      ],
+      [
+       "Collection Fee",
+       "Rp   450.000,"
+      ],
+      [
+       "Total Denda",
+       "Rp 4.596.800,"
+      ]
+     ]
+    },
+    {
+     "tipe": "poin",
+     "teks": " Total denda - persentase hasil negosiasi denda"
+    },
+    {
+     "tipe": "poin",
+     "teks": "Rp 4.596.800 - 37,99% = Rp 2.850.475,68"
+    },
+    {
+     "tipe": "poin",
+     "teks": "Dibulatkan menjadi Rp 2.851.000,-"
+    },
+    {
+     "tipe": "poin",
+     "teks": "Hasil dari penghitungan diketahui bahwa setelah di setujui oleh kantor PT Reksa Finance Cabang Lampung, debitur akan membayar sebesar Rp 2.851.000,-. Jika pengajuan yang diajukan di setujui oleh kantor pusat PT Reksa Finance."
+    },
+    {
+     "tipe": "poin",
+     "teks": "Setelah memeriksa penghitungan, maka yang dilakukan selanjutnya adalah memeriksa kelengkapan dari dokumen Waive Discount yaitu :"
+    },
+    {
+     "tipe": "poin",
+     "teks": " Surat Permohonan Waive Discount"
+    },
+    {
+     "tipe": "poin",
+     "teks": " Foto debitur pada saat menulis Surat Permohonan"
+    },
+    {
+     "tipe": "poin",
+     "teks": " Kartu Tanda Penduduk yang telah di fotokopi"
+    },
+    {
+     "tipe": "poin",
+     "teks": " Form pengajuan Waive Discount yang telah di cetak oleh sistem"
+    },
+    {
+     "tipe": "poin",
+     "teks": " Form kronologis isi percakapan antara Head Collection dan debitur setelah seluruh berkas cukup maka dijadikan satu dan di arsip berdasarkan tanggal."
+    }
+   ]
+  },
+  {
+   "judul": "Cetak Form dan Mengarsip Pelunasan Khusus",
+   "blocks": [
+    {
+     "tipe": "poin",
+     "teks": "Melakukan kegiatan cetak dokumen pelunasan khusus dari komputer, setelah dicetak Form Pelunasan Khusus di serahkan oleh Head Coll untuk diisi data lengkap dari debitur beserta total pelunasan tertunggak normal yang nantinya terjadi negosiasi antara Head Coll dengan debitur untuk mendapati kesepakatan mengenai Pelunasan yang disepakatkan."
+    },
+    {
+     "tipe": "poin",
+     "teks": "Berbeda dengan Waive Discount yang sifatnya hanya mengurangi beban denda, maka Pelunasan Khusus sifatnya adalah memberikan keringanan seringan mungkin kepada pihak debitur. Jarang sekali pihak perusahaan memberikan hak Pelunasan Khusus kepada debitur, mengingat jika diberikannya pelunasan khusus maka besarnya kerugian perusahaan dari satu debitur. Diketahui debitur atas nama Kustino dengan beban total hutang sebagai berikut :"
+    },
+    {
+     "tipe": "tabel",
+     "rows": [
+      [
+       "Sisa Pokok Hutang",
+       "Rp 16.448.301,-"
+      ],
+      [
+       "Denda Harian",
+       "Rp 29.367.000,-"
+      ],
+      [
+       "Collection Fee",
+       "Rp 360.000,-"
+      ],
+      [
+       "Reposession Fee",
+       "Rp 1.500.000,-"
+      ],
+      [
+       "Total",
+       "Rp 47.675.301,-"
+      ]
+     ]
+    },
+    {
+     "tipe": "poin",
+     "teks": "Dari data diatas didapatkan bahwa total yang harus dibayarkan oleh debitur normalnya adalah Rp 47.675.301,- dari total pelunasan yang telah dihitung¸ debitur hanya mampu membayar Rp 20.020.000,- maka terjadilah negosiasi antara Head Coll dengan debitur untuk menyepakati total pelunasan yang mampu dibayarkan debitur dengan disertai alasan debitur mengajukan Pelunasan Khusus. Setelah proses panjang pengajuan yang sampai kantor pusat, maka berkas yang telah terdapat tanda tangan persetujuan dari beberapa Direktur di cetak kembali dan diarsipkan berdasarkan tanggal pengajuan."
+    }
+   ]
+  },
+  {
+   "judul": "Merekap kuitansi Kasir dan Collector",
+   "blocks": [
+    {
+     "tipe": "poin",
+     "teks": "Melakukan pendataan mengenai kuitansi pembayaran debitur yang di input ke dalam data Base komputer, tujuan di inputnya data tersebut untuk dapat diketahui berapa banyak jumlah transaksi yang dilakukan secara Cash oleh Kasir dan Kolektor dalam sebulan dan berapa banyak pendapatan perusahaan yang dihasilkan dari pembayaran debitur berupa Cash. Sesuai hasil Training Kasir pada tanggal 22 Maret 2019 yang berlokasi di Kantor Pusat, maka PT. Reksa Finance sedang menggalakkan program Cashless atau pembayaran secara digital melalui Payment Channel yang disediakan oleh PT. Reksa Finance dikarenakan untuk mengurangi terjadinya fraud yang mengakibatkan kerugian terhadap perusahaan."
+    }
+   ]
+  },
+  {
+   "judul": "Scanning Doc",
+   "blocks": [
+    {
+     "tipe": "poin",
+     "teks": "Melakukan kegiatan Scanning dokumen waive discount yang telah di setujui oleh Branch Manager yang nantinya di ubah menjadi format PDF melalui mesin scanner dan Dokumen yang telah terscan akan diarsipkan oleh komputer ADH dan di e-mail ke Head Office/ Pusat."
+    },
+    {
+     "tipe": "poin",
+     "teks": "Kegiatan lainnya dalam Praktik Kerja Industri seperti yang terlampir pada lampiran Jurnal Praktik Kerja Industri adalah kegiatan diluar lingkup jurusan Akuntansi. Tetapi kegiatan tersebut juga memiliki peran sangat penting sebagai salah satu siswa Praktik Kerja Industri pada khususnya dan perusahaan pada umumnya."
+    }
+   ]
+  },
+  {
+   "judul": "Balance laporan Rekening Koran BRI",
+   "blocks": [
+    {
+     "tipe": "poin",
+     "teks": "Melakukan balance antara Rekening Koran (RK) BRI yang tercetak melalui online, laporan saldo Sistem BRI Reksa Loan dan Laporan Penerimaan Pembayaran dari BRI PT. Reksa Finance yang dibuat oleh Microsoft Excel. Pada tahap ini Penulis ditugaskan Kasir untuk membantu sekaligus belajar bagaimana balance total pendapatan cabang dari sekian banyak debitur yang bayar melalui Payment Channel BRI. Penulis melakukan cek satu persatu data debitur yang melakukan pembayaran melalui Payment Channel BRI dengan membandingkan antara RK BRI, laporan saldo Sistem BRI Reksa Loan dan Laporan Penerimaan Pembayaran dari BRI berdasarkan nominal yang masuk antara ketiga laporan tersebut. Jika hasil cek terjadi unbalance maka Penulis melaporkan ke kasir adanya miss data yang tidak terinput atau miss data yang terinput dua kali agar dapat dilakukan tindakan adjusting trial balance."
+    },
+    {
+     "tipe": "poin",
+     "teks": "Kegiatan ini sangat wajib dilakukan mengingat parameter keuntungan Kantor Cabang ditentukan berdasarkan banyaknya angka pencapaian kredit dan pembayaran tunggakan debitur."
+    }
+   ]
+  }
+ ],
+ "peralatan": [
+  {
+   "nama": "Printer",
+   "deskripsi": "Untuk memudahkan karyawan dalam memfotokopi atau memprint surat surat dan dokumen debitur lainnya, perusahaan memberikan printer yang dapat beroperasi dengan baik dan cepat dalam hal memprint hal hal yang diperlukan.",
+   "gambar": "sim-alat-1.png"
+  },
+  {
+   "nama": "Komputer",
+   "deskripsi": "Peralatan kantor yang satu ini sangat penting dalam pekerjaan sehari hari kantor, hampir 100% operasional di PT. Reksa Finance Lampung menggunakan komputer baik dalam pembuatan surat peringatan, melakukan inputan ke sistem reksaloan, melakukan credit scoring, dan lainnya.",
+   "gambar": "sim-alat-2.png"
+  },
+  {
+   "nama": "Alat Tulis",
+   "deskripsi": "Walaupun hampir 100% operasional menggunakan komputer namun tetap saja karyawan tetap membutuhkan alat tulis untuk digunakan dalam mengisi berkas slik, rekap data keluar dan masuk BPKB, serta mendukung produktivitas manual yang biasa terjadi selama operasional PT. Reksa Finance Lampung.",
+   "gambar": "sim-alat-3.png"
+  },
+  {
+   "nama": "Stempel",
+   "deskripsi": "Perlengkapan terakhir yang digunakan dalam menunjang produktivitas karyawan adalah stempel yang biasa digunakan untuk surat peringatan, surat blokir BPKB, dan keperluan dokumen debitur lainnya.",
+   "gambar": "sim-alat-4.png"
+  }
+ ],
+ "kendala": [],
+ "pelajaran": [],
+ "tujuan_pkl": [
+  "Membekali siswa dengan pengalaman yang sebenarnya dalam dunia kerja sebagai persiapan guna menyesuaikan diri dalam dunia kerja dan masyarakat.",
+  "Meningkatkan, memperluas, dan memantapkan keterampilan siswa-siswi yang diperoleh dari latihan praktik di sekolah yang membentuk kemampuan siswa-siswi sebagai bekal memasuki lapangan kerja yang sesuai dengan program studi pilihan.",
+  "Menumbuh kembangkan sikap profesionalisme yang diperlukan siswa- siswi untuk memenuhi lapangan kerja yang sesuai dengan bidangnya.",
+  "Memantapkan disiplin dan tanggung jawab siswa dalam melaksanakan tugasnya.",
+  "Memberikan kesempatan kepada siswa-siswi untuk mengenal suasana/iklim lingkungan kerja yang sebenarnya, baik sebagai pekerja penerima upah (employe) maupun pekerja mandiri (enterprence), terutama yang berkenaan dengan disiplin ilmu dalam bekerja.",
+  "Mendorong siswa-siswi untuk berjiwa wiraswasta dan mandiri.",
+  "Meningkatkan, memperluas, dan memantapkan proses penyerapan teknologi baru dari lapangan kerja ke sekolah dan sebaliknya.",
+  "Mampu memahami, memantapkan, dan mengembangkan pelajaran yang diperoleh di sekolah dan penerapannya di dunia kerja.",
+  "Memperoleh masukan & umpan balik dari dunia kerja untuk memperbaiki dan memantapkan Pendidikan Kejuruan.",
+  "Mengembangkan Program untuk menjajaki penetapan lulusan dan memberikan peluang kerja sama dengan instansi sekolah."
+ ],
+ "asas_pkl": [
+  {
+   "teks": "UU No. 20 Tahun 2003 Tentang Sistem Pendidikan Nasional Undang-undang ini menjadi dasar dari sistem pendidikan yang ada di Indonesia. Berdasarkan pasal 1 angka 1 UU No.20 Tahun 2003, Pendidikan adalah usaha sadar dan terencana untuk mewujudkan suasana belajar dan proses pembelajaran agar peserta didik secara aktif mengembangkan potensi dirinya untuk memiliki kekuatan spiritual keagamaan, pengendalian diri, kepribadian, kecerdasan, akhlak mulia, serta keterampilan yang diperlukan dirinya, masyarakat, bangsa dan negara.",
+   "sub": []
+  },
+  {
+   "teks": "Keputusan Menteri Pendidikan dan Kebudayaan Republik Indonesia nomor 323/U/1997 tentang Penyelenggaraan Pendidikan Sistem Ganda Pada Sekolah Menengah Kejuruan. Keputusan Mendikbud tahun 1997 juga menjadi landasan dijalankannya praktik kerja industri. Penerapannya mulai diterapkan di tahun ajaran 1998/1999.",
+   "sub": []
+  },
+  {
+   "teks": "PP No.29 Tahun 1990 Tentang Pendidikan Menengah Dalam peraturan pemerintah ini, ada disebutkan dalam Pasal 29 ayat 1, 2 dan 3 dimana;",
+   "sub": [
+    " Penyelenggara dari SMK dapat bekerja sama dengan masyarakat terutama dunia usaha dan para dermawan untuk memperoleh sumber daya dalam rangka mendukung penyelenggaraan dan pengembangan dari pendidikan. (ayat 1).",
+    " Kerja sama SMK dengan dunia usaha ini dimaksudkan agar mendayagunakan secara bersama sarana dan prasarana yang ada pada kedua pihak serta untuk lebih menjamin kesesuaian antara kurikulum dengan tuntutan lapangan kerja yang tersedia. (Penjelasan pasal 29 ayat (1)",
+    " Untuk mempersiapkan siswa SMK menjadi tenaga kerja, dapat didirikan unit produksi yang beroperasi secara profesional (ayat 2)",
+    " Pelaksanaan dari kegiatan ini juga diatur oleh Menteri (ayat 3)"
+   ]
+  },
+  {
+   "teks": "Kemendikbud No. 080/V/1993 Tentang Kurikulum Sekolah Menengah Kejuruan. Adapun keputusan menteri pendidikan dan kebudayaan kala itu berisikan :",
+   "sub": [
+    " Menggunakan unit produksi sekolah beroperasi secara profesional sebagai wahana pelatihan kejuruan.",
+    " Melaksanakan sebagian kelompok mata pelajaran kejuruan di sekolah, dan sebagian lainnya di dunia usaha dan industri.",
+    " Melaksanakan kelompok mata pelajaran keahlian kejuruan sepenuhnya di masyarakat dunia usaha dan industri."
+   ]
+  },
+  {
+   "teks": "Berdasarkan Permendikbud Nomor 50 Tahun 2020 tentang Praktik Kerja Lapangan Bagi Peserta didik, Praktik Kerja Lapangan (PKL) adalah pembelajaran bagi peserta didik Sekolah Menengah Kejuruan (SMK)/Madrasah Aliyah Kejuruan (MAK) yang dilaksanakan melalui praktik Kerja, di dunia kerja dalam jangka waktu tertentu sesuai dengan kurikulum dan kebutuhan kerja.",
+   "sub": []
+  },
+  {
+   "teks": "Selanjutnya pada Kepmendikbudristek Nomor 262/M/2022 tentang Perubahan Atas Kepmendikbudristek Nomor 56/M/222 tentang Pedoman Penerapan Kurikulum Dalam Rangka Pemulihan Pembelajaran yang kemudian disebut Kurikulum Merdeka, ditetapkan bahwa PKL merupakan salah satu mata pelajaran sebagai wahana pembelajaran di dunia kerja (termasuk teaching factory).",
+   "sub": []
+  },
+  {
+   "teks": "Pada Kurikulum Merdeka, PKL menjadi mata pelajaran yang harus diikuti oleh seluruh peserta didik SMK dengan ketentuan sekurang-kurangnya 6 bulan (792 jam pelajaran) di kelas XII pada SMK program 3 tahun dan sekurang-kurangnya 10 bulan (1.368 jam pelajaran) di kelas XIII pada SMK program 4 tahun.",
+   "sub": []
+  },
+  {
+   "teks": "Mata pelajaran PKL dilaksanakan di satuan pendidikan dan dunia kerja. Sesuai dengan ketentuan Kemendikbudristek tersebut, SMK/MAK bersama dengan mitra dunia kerja berkewajiban untuk membuat perencanaan pembelajaran yang meliputi: Tujuan Pembelajaran (TP), Alur Tujuan Pembelajaran (ATP), dan Perencanaan Pembelajaran sesuai dengan Capaian Pembelajaran (CP) pada Keputusan Kepala Badan Standar, Kurikulum, dan Asesmen Pendidikan Kemendikbudristek Nomor 033/H/KR/2022.",
+   "sub": []
+  },
+  {
+   "teks": "Pada CP tersebut ditegaskan bahwa PKL merupakan penyelarasan akhir atau kulminasi dari seluruh mata pelajaran pada jenjang SMK. Pembelajaran PKL diselenggarakan berbasis proses bisnis dan mengikuti Prosedur Operasional Standar (POS) yang berlaku di dunia kerja. Sebagai mata pelajaran,",
+   "sub": []
+  },
+  {
+   "teks": "Pelaksanaan PKL mengacu pada Panduan Pembelajaran dan Asesmen Kurikulum Merdeka. Untuk pembelajaran PKL yang lebih dominan dilaksanakan di dunia kerja perlu dibuat kepanduan PKL yang secara khusus mengacu pada Permendikbud Nomor 50 Tahun 2020 guna memandu sekolah dan pihak-pihak lain yang terlibat dalam pelaksanaannya.",
+   "sub": []
+  }
+ ],
+ "kata_pengantar": {
+  "ucapan_syukur": "Puji syukur kepada Tuhan Yang Maha Esa, karena karunia dan nikmat yang diberikan-Nya sehingga Penulis dapat menyusun dan menyelesaikan Laporan Praktik Kerja Lapangan Penulis di PT. Reksa Finance",
+  "pengantar_laporan": "Laporan ini Penulis susun sebagai salah satu bentuk persyaratan untuk memenuhi persyaratan dalam menyelesaikan studi di SMK Negeri 4 Bandar Lampung. Penulis menyadari bahwa penyusunan laporan ini masih jauh dari kata sempurna, oleh karena itu Penulis selaku siswa/i Praktik Kerja Lapangan mengharapkan kritik dan saran dari semua pihak pembimbing yang bersifat membangun agar laporan ini menjadi lebih baik dan dapat bermanfaat bagi Penulis.",
+  "intro_terima_kasih": "Pada kesempatan ini juga, Penulis mengucapkan terima kasih atas bimbingan dan pelajaran yang telah di berikan, terutama kepada:",
+  "hierarki_terima_kasih": [
+   "Tuhan Yang Maha Esa, atas berkat dan rahmat-Nya Penulis bisa menyusun laporan Praktik Kerja Lapangan ini dengan sebaik-baiknya.",
+   "Kedua Orang Tua, yang selalu memberi dukungan dan motivasi kepada Penulis dalam menyusun laporan Praktik Kerja Lapangan ini.",
+   "Ibu Puja Lestari, selaku kepala administrasi yang telah memberikan kesempatan kepada Penulis untuk melaksanakan Praktik Kerja Lapangan.",
+   "Ibu HJ. Dewi Ningsih, S.Pd., M.Pd., selaku kepala SMK Negeri 4 Bandar Lampung yang telah memberikan dukungan dan kemudahan pada Penulis untuk melaksanakan Praktik Kerja Lapangan.",
+   "Ibu Herlina S.Pd., di SMK Negeri 4 Bandar Lampung, selaku kepala jurusan Akuntansi Keuangan Lembaga yang sudah memberikan kemudahan bagi Penulis dalam Praktik Kerja Lapangan.",
+   "Ibu Hj. Zahria Hadiyati, S.Pd., selaku guru pembimbing Praktik Kerja Lapangan dari SMK Negeri 4 Bandar Lampung.",
+   "Pihak lain yang tidak dapat Penulis sebutkan satu persatu."
+  ],
+  "harapan": "Penulis berharap semoga hasil laporan yang Penulis susun ini dapat bermanfaat bagi peningkatan Mutu Pembelajaran di SMK Negeri 4 Bandar Lampung. Terimakasih atas bimbingannya, dan Penulis mohon maaf apabila terdapat kesalahan atau perilaku yang tidak berkenan selama Praktik Kerja Lapangan ini berlangsung.",
+  "kota": "Bandar Lampung",
+  "tanggal": "2024-12-20"
+ },
+ "generated_sections": {
+  "latar_belakang": "Pelatihan Kerja Lapangan (PKL) merupakan bagian dari pembelajaran akademik yang dilalui oleh siswa agar bisa meningkatkan kemampuannya menjadi seorang tenaga kerja. Kegiatan ini diharapkan nantinya mampu untuk mengembangkan serta meningkatkan kemampuan yang dimiliki siswa. Terutama dengan tujuan untuk menjadikan siswa sebagai calon tenaga kerja yang berkualitas dan bisa bersaing di dalam industri. Siswa bisa mempersiapkan dirinya dengan baik, termasuk dari segi kemampuan, keterampilan, pengalaman, dan pengetahuan yang dimiliki. PKL dilaksanakan untuk membantu menghubungkan antara dunia pendidikan dengan dunia industri untuk saling mendukung kemajuannya. Terutama dari pengalaman yang didapatkan oleh siswa selama menjalani masa PKL. Siswa bisa memenuhi kewajibannya dalam bidang pendidikan sekaligus mempersiapkan diri dalam menghadapi dunia kerja.",
+  "tujuan_intro": "Dalam rangka meningkatkan mutu Pendidikan Sekolah Menengah Kejuruan di Bandar Lampung, maka perlu adanya suatu usaha yang lebih konkret untuk lebih menunjang teori-teori yang telah diterima siswa-siswi di sekolah usaha ke arah yang lebih konkret tersebut yang telah dilakukan oleh Dinas Pendidikan dan Kebudayaan Daerah Provinsi Lampung dengan memuat Praktik Kerja Lapangan dalam salah satu kurikulum Sekolah Menengah Kejuruan. Praktik Kerja Lapangan tersebut bertujuan untuk :",
+  "kegiatan_industri_intro": "Kegiatan pelaksanaan Praktik Kerja Industri yang dilaksanakan oleh Penulis, ditempatkan di bagian Operation staff pada kantor PT Reksa Finance Cabang Lampung, menurut pengertian dari beberapa sumber artikel yang Penulis dapatkan dari internet, Penulis simpulkan bahwa bagian operation adalah bagian yang menjalankan kegiatan dari seluruh fungsi-fungsi yang ada pada sebuah perusahaan agar dapat terlaksananya rencana-rencana strategis untuk mencapai tujuan perusahaan. Sedangkan menurut LinovHR bagian Collection adalah bagian yang memiliki tugas dan tanggung jawab dalam proses penagihan utang dari debitur atau klien.",
+  "landasan_teori": "Pelaksanaan Praktik Kerja Lapangan secara tidak langsung akan memberikan pengetahuan dan pengalaman dalam bekerja. Pengalaman yang diperoleh saat melaksanakan praktik industri, selain mempelajari bagaimana cara mendapatkan pekerjaan, juga belajar bagaimana memiliki pekerjaan yang relevan dengan bakat dan minat yang dimiliki oleh siswa tersebut. Praktik kerja lapangan menurut Oemar Hambalik (2001: 21) adalah Praktik kerja lapangan atau di sekolah sering disebut dengan on the job training merupakan model pelatihan yang bertujuan untuk memberikan kecakapan yang diperlukan dalam pekerjaan tertentu sesuai dengan tuntutan kemampuan bagi pekerja. Hal ini sangat berguna sekali bagi para siswa untuk dapat beradaptasi dan siap terjun ke dunia kerja, sehingga di dalam bekerja nantinya dapat sesuai dengan tuntutan dunia kerja. Praktik kerja lapangan merupakan kegiatan yang dulunya disebut dengan pendidikan sistem ganda yaitu pendidikan dan pelatihan yang dilakukan di sekolah, dipraktikkan di dunia industri, sehingga akan terjadi kesesuaian antara. kemampuan yang diperoleh di sekolah dengan tuntutan di dunia industri (Minarti dan Usaman 2009: 108). Wardiman Djojonegoro (1998: 79) PKL adalah suatu bentuk penyelenggaraan pendidikan dan pelatihan keahlian kejuruan yang memadukan secara sistematik dan sinkron program pendidikan di sekolah dan program penguasaan keahlian yang diperoleh melalui bekerja di dunia kerja, terarah untuk mencapai suatu tingkat keahlian profesional tertentu. Dalam hal ini ada dua belah pihak yaitu lembaga pendidikan dan pelatihan, dan lapangan kerja (industri/perusahaan/instansi tertentu) yang secara bersama-sama menyelenggarakan suatu program pendidikan dan pelatihan kejuruan. Kedua belah pihak ini, secara sungguh-sungguh terlibat dan bertanggungjawab dari tahap perencanaan program, tahap penyelenggaraan, sampai tahap penilaian dan penentuan kelulusan peserta didik, serta upaya pemasaran tamatannya. Ahmad Rizali, dkk, (2009: 45) Praktik Kerja Lapangan atau yang sering disebut PKL adalah realisasi dari bagian Pendidikan Sistem Ganda (PSG). Kebijakan Pendidikan Sistem Ganda dikembangkan berdasarkan konsep dual system di Jerman, yaitu suatu bentuk penyelenggaraan pendidikan dan pelatihan keahlian kejuruan yang secara sistematik dan sinkron antara program pendidikan di sekolah dengan program penguasaan keahlian yang diperoleh melalui kegiatan bekerja langsung di dunia kerja. Pada hakikatnya penerapan PKL ini meliputi pelaksanaan di sekolah dan di dunia usaha atau dunia industri (institusi pasangan).",
+  "sejarah_sekolah": "SMK Negeri 4 Bandar Lampung dibuka dan dirikan pada tahun pelajaran 1989/1990 melalui SK Mendikbud Nomor : 0389/ D/ 1990 tanggal 6 November 1990. Pembangunan gedung SMK Negeri 4 Bandar Lampung/ SMEA Negeri 2 Tanjung karang melalui Program Voctec Tahun 1988 dengan luas lahan 10.425 M2. Kegiatan Belajar Mengajar pertama kali dilakukan pada tanggal 17 Juli 1989 dan saat itu bernama SMEA Negeri 2 Tanjung Karang yang merupakan 'pecahan' dari SMEA Negeri 1 Tajung Karang. Jurusan yang ada pada saat itu adalah :Akuntansi, Kesekretarisan, Ketatausahaan dan Pemasaran.\nPada tahun 1992 dibuka jurusan baru yaitu Usaha Perjalanan Wisata. Melalui SK Mendiknas nomor : 034/0/1997, nomen kultur SMEA menjadi SMK termasuk di sekolah kita yang menjadi SMK Negeri 4 Bandar Lampung. Pada tahun 2008 dibuka lagi jurusan baru yaitu :Perbankan dan Teknik Komputer Jaringan. Dengan penambahan tersebut saat ini terdapat 6 jurusan/kompetensi keahlian, yaitu :Akuntansi, Administrasi perkantoran, Pemasaran, Usaha Perjalanan Wisata, Perbankan dan Teknik Komputer Jaringan, dengan akreditasi seluruh Program Keahlian A. Pada Tahun Pelajaran 2016/2017 dibuka Program Keahlian baru yaitu Akomodasi Perhotelan (APH) dan Rekayasa Perangkat Lunak (RPL) dengan jumlah siswa seluruhnya pada Tahun Pelajaran 2016/2017 adalah 2.975 orang siswa. Dengan data ini, maka tanggal 17 Juli dapat dijadikan sebagai Hari Jadi SMK Negeri 4 Bandar Lampung.\nSMK Negeri 4 Bandar Lampung adalah sekolah bertaraf internasional, sekolah dengan prestasi yang banyak, keadaan sekolah yang bersih, fasilitas belajar mengajar memadai memiliki lab komputer yang lengkap memiliki tempat praktik jurusan yang lengkap dari bank, Travel, hotel dan lainnya. SMK Negeri 4 Bandar Lampung juga ada praktik kerja industri yang melatih siswa siswi per jurusannya agar bisa mendalami jurusannya masing-masing dan membuat seluruh siswanya tahu bagaimana kerja di lapangan yang sesungguhnya. Selain pendidikannya yang baik, tingkat kebersihannya juga sangat baik. Bahkan SMK Negeri 4 Bandar Lampung pernah menjurai LKS dan sekolah bersih juara nasional serta menjadi salah satu SMK super rujukan atau SMK rujukan.",
+  "pelaksanaan_intro": "Pelaksanaan Kegiatan Praktik Kerja Lapangan (PKL) yang Penulis laksanakan kurang lebih 6 bulan dari tanggal 22 Juli 2024 Sampai 20 Desember 2024. Selama 6 hari setiap minggu (Senin-Sabtu) dari pukul 08.30-16.30 dan kegiatan yang Penulis lakukan adalah sebagai berikut :",
+  "peralatan_intro": "Berikut ini beberapa alat dan perlengkapan untuk menunjang karyawan dalam bekerja :",
+  "pembahasan": "Sebelumnya, Dengan Adanya Pelaksanaan Kegiatan Praktik Kerja Lapangan (PKL) yang Penulis laksanakan. Pastinya Penulis banyak mendapatkan berbagai macam hal-hal baru yang belum pernah Penulis dapatkan sebelumnya.\nDengan Kegiatan sini Penulis merasakan langsung bagaimana terjun ke dunia kerja yang belum pernah Penulis lakukan. Dan tentu menjadi salah satu faktor untuk Penulis pun diarahkan bagaimana cara melakukan pekerjaan yang baik dan benar. Dengan bantuan dari pembimbing dari pihak sekolah / tempat industri bahkan Penulis pun di berikan kritik dan saran, dengan itu Penulis dapat meningkatkan kualitas dari diri Penulis baik secara kelompok ataupun individu dengan ini bisa menjadi pendorong agar Penulis menjadi lebih baik lagi, maju dan lebih berkembang kedepannya.\nBahkan tidak hanya itu Lingkungan kerja juga dapat memberikan pelajaran bagaimana cara mengumpulkan tugas tepat waktu telah diberikan, sikap santun yang harus di terapkan dimanapun, rasa tanggung jawab dalam bekerja hal ini pun menjadi salah satu faktor dimana kita harus bertanggung jawab dengan tugas-tugas yang telah diberikan kepada pihak industri, Hal tersebut dapat menjadi masukan bagi Penulis agar dapat meningkatkan rasa bertanggung jawab dan dapat disiplin dalam melakukan apa pun yang diberikan."
+ },
+ "kesimpulan_user": "Dalam kegiatan Praktik Kerja Lapangan (PKL) ini, Penulis selaku siswa/siswi dari SMK Negeri 4 Bandar Lampung yang sudah diberikan banyak kesempatan untuk mempelajari, memahami, dan mengetahui berbagai hal baru yang belum pernah Penulis pelajari sebelumnya dalam dunia kerja.\nTentunya dengan keterbatasan waktu yang Penulis miliki, Penulis belum sepenuhnya menerima semua pelajaran yang seharusnya bisa Penulis pelajari, tetapi dengan semua bimbingan, arahan yang diberikan dari pihak industri Penulis dapat mempelajari berbagai macam kegiatan yang Penulis lakukan selama PKL, Penulis dapat mengetahui dunia kerja secara lebih luas lagi.",
+ "saran_intro": "Saran-Saran yang hanya dapat Penulis berikan selama melakukan kegiatan Praktik Kerja Lapangan (PKL) antara lain:",
+ "saran_items": [
+  "Kepada pihak SMKN 4 Bandar Lampung, Penulis selaku siswa/i SMKN 4 Bandar Lampung mengharapkan agar sekolah dapat memberikan bimbingan lebih kepada para siswa/i yang akan mengikuti kegiatan Praktik Kerja Lapangan agar kiranya para siswa/i dapat mempersiapkan diri untuk kegiatan PKL ini.",
+  "Kepada pihak PT. Reksa Finance Lampung tentunya Penulis mengharapkan agar para siswa/i yang melaksanakan Praktik Kerja Lapangan di perusahaan ini bisa mendapatkan lebih banyak pengalaman dan pelajaran yang dapat diterima setelah melakukan PKL di PT. Reksa Finance Lampung ini, agar kiranya kualitas dari sumber daya manusia yang dihasilkan agar berkembang dengan bantuan campur tangan perusahaan ini."
+ ],
+ "judul_override": {
+  "bab_kesimpulan_saran": "KESIMPULAN DAN SARAN",
+  "pembahasan_utama": "Hal-hal yang perlu di perhatikan",
+  "kesimpulan": "Kesimpulan Dari Semua Kegiatan",
+  "saran": "Saran-Saran Untuk Sekolah/Industri",
+  "pelaksanaan_kegiatan": "Pelaksanaan Kegiatan PKL Di Tempat Kerja",
+  "peralatan": "Jenis Peralatan & Perlengkapan Kantor",
+  "sejarah_sekolah": "Sejarah SMK Negeri 4 Bandar Lampung",
+  "landasan_teori": "Landasan Teori",
+  "asas_pkl": "Asas Praktik Kerja Lapangan"
+ },
+ "daftar_pustaka": [
+  "reksafinance.co.id. (2023 - PT Reksa Finance). Sejarah Perusahaan. Diakses pada 6 September 2024, dari https://reksafinance.co.id/sejarah.php#",
+  "reksafinance.co.id. (2023 - PT Reksa Finance). Visi Misi Perusahaan. Diakses pada 6 September 2024, dari https://reksafinance.co.id/visimisi.php",
+  "smkn4-bdl.sch.id. (2024 - SMKN 4 BANDAR LAMPUNG). Sejarah Sekolah. Diakses pada 24 September 2024, dari https://smkn4-bdl.sch.id/sejarah",
+  "www.kajianpustaka.com. (2024 - Kajian Pustaka). Praktik Kerja Lapangan (Pengertian, Tujuan, Manfaat, Pelaksanaan dan Penilaian). Diakses pada 24 September 2024, dari https://www.kajianpustaka.com/2021/03/praktik-kerja-lapangan.html",
+  "Noris, Rahmatullah dkk. (2023). Praktik Kerja Lapangan Sebagai Mata Pelajaran. DKI Jakarta: Direktur Jenderal Pendidikan Vokasi https://kurikulum.kemdikbud.go.id/file/1687442514_manage_file.pdf",
+  "www.perumperindo.co.id. (2024 - Perumperindo). 10 Rekomendasi Daftar Alat Tulis Kantor Terbaik. Diakses pada 24 September 2024, dari https://homecare24.id/daftar-alat-tulis-kantor-dan-sekolah-2/",
+  "simbolnext.com. (2024 - Bang Anam). Apa Itu Stempel? Mengenal Jenis-Jenis Stempel dan Fungsinya. Diakses pada 24 September 2024, dari https://simbolnext.com/apa-itu-stempel/",
+  "alamat-corporate.blogspot.com. (2017 - PT. REKSA FINANCE). Diakses pada 24 September 2024, Dari, https://alamat-corporate.blogspot.com/2019/05/pt-reksa-finance.html",
+  "www.linovhr.com. (2024 - Putri Prima Soraya). Collection Officer: Pengertian, Tugas, Skill, dan Gajinya. Diakses pada 06 Desember 2024, dari https://www.linovhr.com/collection-officer/"
+ ],
+ "assets": [],
+ "lampiran": {
+  "foto_dokumentasi": true,
+  "foto_kegiatan": [
+   {
+    "gambar": "sim-lampiran-1.png",
+    "keterangan": "Kantor Cabang PT. Reksa Finance Lampung."
+   },
+   {
+    "gambar": "sim-lampiran-2.png",
+    "keterangan": "Foto bersama karyawan PT. Reksa Finance Lampung."
+   },
+   {
+    "gambar": "sim-lampiran-3.png",
+    "keterangan": "Mencetak Surat Peringatan melalui sistem reksaloan."
+   },
+   {
+    "gambar": "sim-lampiran-4.png",
+    "keterangan": "Mengikuti lembur akhir bulan & membantu kasir menghitung jumlah angsuran yang masuk."
+   },
+   {
+    "gambar": "sim-lampiran-5.png",
+    "keterangan": "Melakukan kunjungan bersama Head Collection & Collector."
+   },
+   {
+    "gambar": "sim-lampiran-6.png",
+    "keterangan": "Mengirim Surat Peringatan Ke rumah debitur tertunggak."
+   },
+   {
+    "gambar": "sim-lampiran-7.png",
+    "keterangan": "Melakukan survei Marketing ke rumah calon debitur."
+   },
+   {
+    "gambar": "sim-lampiran-8.png",
+    "keterangan": "Foto bersama Tim Operation Reksa Finance Lampung."
+   },
+   {
+    "gambar": "sim-lampiran-9.png",
+    "keterangan": "Foto bersama Tim Collection Reksa Finance Lampung."
+   },
+   {
+    "gambar": "sim-lampiran-10.png",
+    "keterangan": "Foto bersama Tim Marketing Reksa Finance Lampung."
+   }
+  ]
+ }
+}

@@ -1,0 +1,925 @@
+/* ============================================================================
+   KOMPONEN — tema "Kertas Laporan"
+   Semua class name dipertahankan dari versi lama; hanya tampilannya dirombak.
+   ========================================================================== */
+
+.shell {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: clamp(1rem, 2.5vw, 2rem) clamp(1rem, 3vw, 2.5rem) 4rem;
+}
+
+.shell__header h1 {
+  margin: 0;
+  font-size: 1.45rem;
+}
+
+.shell__header h1 a {
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+
+.shell__header h1 a:hover {
+  color: var(--green-700);
+}
+
+.shell__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.shell__user {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* --- Cards ------------------------------------------------------------- */
+
+.card {
+  width: 100%;
+  margin-top: 1.25rem;
+  padding: clamp(1.1rem, 2vw, 1.75rem) clamp(1.1rem, 2.5vw, 2rem);
+  border: var(--card-border);
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: var(--card-shadow);
+}
+
+.card h2 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.card__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* --- Buttons ------------------------------------------------------------ */
+
+button, .btn-sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 1.2rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  color: #ffffff;
+  background: var(--green-600);
+  border: 1px solid var(--green-700);
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+button:hover:not(:disabled):not(.btn-outline):not(.btn-danger) {
+  background: var(--green-700);
+}
+
+button:disabled {
+  background: var(--slate-400);
+  border-color: var(--slate-400);
+  cursor: not-allowed;
+}
+
+.btn-sm {
+  padding: 0.38rem 0.8rem;
+  font-size: 0.84rem;
+  border-radius: 7px;
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--ink-soft);
+  border: 1px solid var(--line-strong);
+}
+
+.btn-outline:hover:not(:disabled) {
+  border-color: var(--green-600);
+  color: var(--green-700);
+  background: var(--green-50);
+}
+
+.btn-danger {
+  background: transparent;
+  color: var(--red-600);
+  border: 1px solid var(--line);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: var(--red-100);
+  border-color: var(--red-600);
+}
+
+.btn-primary {
+  background: var(--green-600);
+  color: #fff;
+  border: 1px solid var(--green-700);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--green-700);
+}
+
+/* --- Halaman auth (login/register) -------------------------------------- */
+
+.page-auth {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background: var(--paper);
+}
+
+.page-auth .card {
+  width: 100%;
+  max-width: 420px;
+  padding: 2.25rem 2rem;
+  border-radius: 12px;
+  border-top: 4px solid var(--green-600);
+}
+
+.page-auth h1 {
+  margin: 0 0 0.35rem;
+  font-size: 1.6rem;
+  text-align: center;
+  color: var(--ink);
+}
+
+.page-auth label {
+  display: block;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.page-auth input {
+  display: block;
+  width: 100%;
+  margin-top: 0.4rem;
+  padding: 0.7rem 0.9rem;
+  font-size: 1rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+}
+
+.page-auth input:focus {
+  outline: none;
+  border-color: var(--green-600);
+  box-shadow: 0 0 0 3px var(--green-100);
+}
+
+.page-auth button {
+  width: 100%;
+  margin-top: 1.5rem;
+  padding: 0.75rem;
+  font-size: 1rem;
+}
+
+.link-text {
+  margin-top: 1.25rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.link-text a {
+  color: var(--green-700);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.link-text a:hover {
+  text-decoration: underline;
+}
+
+/* --- Draft list ---------------------------------------------------------- */
+
+.draft-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+}
+
+.draft-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.draft-item:last-child {
+  border-bottom: none;
+}
+
+.draft-item__info strong {
+  font-size: 0.95rem;
+}
+
+.draft-item__actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+/* --- Utilities ----------------------------------------------------------- */
+
+.muted { color: var(--text-muted); }
+
+.ok { color: var(--green-700); font-weight: 500; }
+
+.error { color: var(--red-600); font-weight: 500; margin: 0.5rem 0; }
+
+code {
+  background: var(--paper-2);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+/* --- Stepper: pil bernomor DENGAN label ---------------------------------- */
+
+.stepper {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 1.1rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.stepper__dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.32rem 0.75rem 0.32rem 0.4rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  width: auto;
+  height: auto;
+}
+
+.stepper__dot:hover {
+  border-color: var(--line-strong);
+  background: var(--green-50);
+  color: var(--ink);
+}
+
+/* Nomor bulat di dalam pil */
+.stepper__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  font-size: 0.78rem;
+  background: var(--paper-2);
+  color: var(--ink-soft);
+  flex: 0 0 auto;
+}
+
+.stepper__dot.is-active {
+  background: var(--green-600);
+  border-color: var(--green-700);
+  color: #fff;
+}
+
+.stepper__dot.is-active .stepper__num {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+
+.stepper__dot.is-done {
+  border-color: var(--green-500);
+  color: var(--green-700);
+  background: var(--green-50);
+}
+
+.stepper__dot.is-done .stepper__num {
+  background: var(--green-100);
+  color: var(--green-700);
+}
+
+.stepper__dot.is-done.is-active {
+  background: var(--green-600);
+  color: #fff;
+}
+
+.stepper__label {
+  margin-top: 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* --- Completeness bar ----------------------------------------------------- */
+
+.completeness__bar {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.completeness__fill {
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+.completeness__fill.is-low { background: var(--red-600); }
+.completeness__fill.is-mid { background: #c98a1b; }
+.completeness__fill.is-ready { background: var(--green-500); }
+
+.completeness__text {
+  margin-top: 0.35rem;
+  font-size: 0.9rem;
+}
+
+.completeness__warn { color: var(--red-600); }
+.completeness__ok { color: var(--green-700); font-weight: 500; }
+
+/* --- Save indicator ------------------------------------------------------- */
+
+.save-indicator {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* --- Wizard nav ------------------------------------------------------------ */
+
+.wizard-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+  padding-bottom: 2rem;
+}
+
+/* --- Field groups ----------------------------------------------------------- */
+
+.field-group {
+  margin-top: 1.75rem;
+  border-top: 1px solid var(--line);
+  padding-top: 1.1rem;
+}
+
+.field-group__title {
+  margin: 0 0 0.85rem;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--green-700);
+  font-family: var(--font-serif);
+}
+
+.field-group__body {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 1.1rem 1.25rem;
+  align-items: start;
+}
+
+@media (min-width: 1500px) {
+  .field-group__body {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.field-group__body--full {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 1500px) {
+  .field-group__body--full {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.span-all {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.field--full {
+  grid-column: 1 / -1;
+}
+
+.field__label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.field__req {
+  color: var(--red-600);
+  margin-left: 2px;
+}
+
+.field__badge {
+  font-size: 0.64rem;
+  padding: 0.14rem 0.5rem;
+  border-radius: 4px;
+  margin-left: 0.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  vertical-align: middle;
+}
+
+.field__badge--penting {
+  background-color: var(--amber-100);
+  color: var(--amber-700);
+}
+
+.field__badge--opsional {
+  background-color: var(--paper-2);
+  color: var(--ink-soft);
+}
+
+.field__badge--auto {
+  background-color: var(--blue-100);
+  color: var(--blue-700);
+}
+
+.field--auto .field__input {
+  background: var(--paper-2);
+  color: var(--ink-soft);
+  cursor: default;
+}
+
+.field__hint {
+  font-size: 0.79rem;
+  color: var(--ink-soft);
+  margin-top: 0.2rem;
+  line-height: 1.45;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Legenda arti penanda field. */
+.legend {
+  list-style: none;
+  margin: 0 0 1.25rem;
+  padding: 0.7rem 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.5rem;
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.legend .field__badge {
+  margin-left: 0;
+}
+
+.prefill-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.85rem;
+  padding: 0.7rem 0.9rem;
+  background: var(--green-50);
+  border: 1px dashed var(--green-500);
+  border-radius: 8px;
+}
+
+.prefill-note__text {
+  margin: 0;
+  flex: 1 1 16rem;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.btn-active {
+  background: var(--green-500);
+  border-color: var(--green-600);
+}
+
+/* ── Repeater baris ─────────────────────────────────────────────────────── */
+
+.array {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.array__row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.array__row .field__input {
+  flex: 1;
+  min-width: 0;
+}
+
+.array__num {
+  flex: 0 0 auto;
+  min-width: 1.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-align: right;
+}
+
+.array__add {
+  align-self: flex-start;
+  margin-top: 0.1rem;
+}
+
+.field__input {
+  padding: 0.6rem 0.75rem;
+  font-size: 0.93rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 7px;
+  background: #fff;
+  color: var(--ink);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  font-family: inherit;
+}
+
+.field__input:hover {
+  border-color: var(--slate-400);
+}
+
+.field__input:focus {
+  outline: none;
+  border-color: var(--green-600);
+  box-shadow: 0 0 0 3px var(--green-100);
+}
+
+.field__textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* --- Array (add/remove rows) --- */
+
+.array__row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+  margin-bottom: 0.5rem;
+}
+
+.array__row .field {
+  flex: 1;
+}
+
+.array__remove {
+  flex-shrink: 0;
+  margin-bottom: 0;
+  padding: 0.45rem 0.55rem;
+}
+
+.array__add {
+  margin-top: 0.25rem;
+}
+
+/* --- Nested card ----------------------------------------------------------- */
+
+.nested-card {
+  margin-top: 1.25rem;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--green-500);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.nested-card--inner {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+  box-shadow: none;
+}
+
+.nested-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+/* --- Checkbox chips --------------------------------------------------------- */
+
+.checkbox-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 0.5rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.38rem 0.8rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+
+.chip input {
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--green-600);
+}
+
+.chip:hover {
+  background: var(--green-50);
+  border-color: var(--green-500);
+}
+
+.chip--on {
+  background: var(--green-100);
+  border-color: var(--green-600);
+  color: var(--green-700);
+}
+
+/* --- Simple table ------------------------------------------------------------ */
+
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.simple-table {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  margin-top: 0.75rem;
+}
+
+.simple-table th,
+.simple-table td {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.simple-table th {
+  font-weight: 600;
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ── Tabel isian langsung (jadwal jam kerja, dsb) ───────────────────────────
+   Meniru tampilan tabel di laporan: ber-border penuh, isi diketik LANGSUNG
+   di dalam sel. */
+
+.fill-table {
+  border-collapse: collapse;
+  width: 100%;
+  background: #fff;
+  font-size: 0.88rem;
+}
+
+.fill-table th {
+  border: 1px solid var(--line-strong);
+  background: var(--paper-2);
+  color: var(--ink);
+  font-weight: 700;
+  padding: 0.5rem 0.6rem;
+  text-align: center;
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
+}
+
+.fill-table td {
+  border: 1px solid var(--line-strong);
+  padding: 0;
+  vertical-align: middle;
+}
+
+/* Input/select menyatu dengan sel — tanpa border sendiri */
+.fill-table input,
+.fill-table select {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0.55rem 0.6rem;
+  font-size: 0.88rem;
+  font-family: inherit;
+  color: var(--ink);
+  outline: none;
+}
+
+.fill-table td:focus-within {
+  background: var(--green-50);
+  box-shadow: inset 0 0 0 2px var(--green-500);
+}
+
+.fill-table .fill-table__remove {
+  border: none;
+  background: transparent;
+  color: var(--red-600);
+  font-size: 0.9rem;
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+  width: 100%;
+}
+
+.fill-table .fill-table__remove:hover {
+  background: var(--red-100);
+}
+
+/* Pratinjau hasil (collapsible) */
+.doc-preview {
+  margin-top: 0.9rem;
+}
+
+.doc-preview summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--green-700);
+  user-select: none;
+}
+
+.doc-preview[open] summary {
+  margin-bottom: 0.6rem;
+}
+
+.doc-preview table {
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  font-family: 'Times New Roman', serif;
+  background: #fff;
+}
+
+.doc-preview th,
+.doc-preview td {
+  border: 1px solid var(--ink-soft);
+  padding: 4px 14px;
+  text-align: center;
+  vertical-align: top;
+}
+
+/* --- Empty state --------------------------------------------------------------- */
+
+.empty-state {
+  text-align: center;
+  padding: 2rem 1rem;
+  border: 2px dashed var(--line-strong);
+  border-radius: 10px;
+  color: var(--ink-soft);
+  background: var(--surface);
+}
+
+.empty-state button {
+  margin-top: 0.75rem;
+}
+
+/* --- Editor Layout --------------------------------------------------------------- */
+
+.editor-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(280px, 24vw, 380px);
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  align-items: start;
+}
+
+.editor-sections {
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-sidebar {
+  position: sticky;
+  top: 1rem;
+}
+
+/* --- Responsive --------------------------------------------------------------------- */
+
+@media (max-width: 1024px) {
+  .editor-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .editor-sidebar {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .field-group__body {
+    grid-template-columns: 1fr;
+  }
+
+  .wizard-nav {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .wizard-nav button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .shell__row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* Di layar kecil, label langkah disembunyikan — sisakan nomornya */
+  .stepper__dot .stepper__text {
+    display: none;
+  }
+
+  .stepper__dot {
+    padding: 0.32rem 0.4rem;
+  }
+
+  .array__row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .array__remove {
+    align-self: flex-end;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    border-radius: 8px;
+    padding: 1rem;
+  }
+
+  .nested-card {
+    padding: 0.9rem;
+  }
+
+  .shell__header h1 {
+    font-size: 1.15rem;
+  }
+
+  .legend {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
