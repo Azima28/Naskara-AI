@@ -285,12 +285,14 @@ def _try_image(builder: PklDocBuilder, filename: str, width_cm: float = 10) -> b
 def _write_blocks(builder: PklDocBuilder, blocks: list) -> None:
     """Render blok isi kegiatan detail (BAB IV).
 
-    Tipe blok: `paragraf` (narasi), `poin` (sub-poin tanpa nomor),
+    Tipe blok: `paragraf` (narasi), `poin` (sub-poin berurutan a), b), c)),
     `tabel` (rincian nominal tanpa header).
     """
+    item_counter = 0
     for b in blocks or []:
         if not isinstance(b, dict):
             builder.add_body(str(b))
+            item_counter = 0
             continue
         tipe = b.get("tipe", "paragraf")
         if tipe == "tabel":
@@ -300,12 +302,24 @@ def _write_blocks(builder: PklDocBuilder, blocks: list) -> None:
             else:
                 builder.add_simple_table(rows)
             builder.add_spacing(1)
-        elif tipe == "poin":
-            builder.add_sub_item(b.get("teks", ""), indent_level=1)
+            item_counter = 0
         else:
-            teks = b.get("teks", "")
-            if teks.strip():
-                builder.add_body(teks.strip())
+            teks_raw = str(b.get("teks", "")).strip()
+            if not teks_raw:
+                continue
+
+            # Cek apakah teks asli diawali karakter simbol bullet (seperti '', '□', '•', '-')
+            is_bullet_item = bool(re.match(r"^[\uf0a7\uf0b7□▪•\-\d+\.\)]", teks_raw))
+            # Bersihkan karakter simbol bullet di awal teks
+            teks_clean = re.sub(r"^[\uf0a7\uf0b7□▪•\-\s]+", "", teks_raw).strip()
+
+            if is_bullet_item:
+                letter = _LETTERS[item_counter % 26] + ")"
+                builder.add_lettered(teks_clean, letter, indent_level=1)
+                item_counter += 1
+            else:
+                builder.add_body(teks_clean)
+                item_counter = 0
 
 
 # Urutan hari untuk meng-expand rentang ("Senin-Jumat" → 5 baris).
@@ -340,9 +354,30 @@ def _jam_kerja_table(jam_kerja: list) -> tuple[list[str], list[list[str]]]:
     """
     headers = ["HARI", "JAM KERJA", "KETERANGAN"]
 
+    # Pre-process: Group items where hari is empty ("") into the preceding day item
+    grouped_items: list[dict] = []
+    curr_item: dict | None = None
+    for jk in jam_kerja:
+        h_raw = (jk.get("hari") or "").strip()
+        if not h_raw and curr_item is not None:
+            j_prev = curr_item.get("jam", "")
+            j_new = jk.get("jam", "")
+            if not j_new:
+                mulai, selesai = jk.get("jam_mulai", ""), jk.get("jam_selesai", "")
+                j_new = f"{mulai} - {selesai}" if mulai and selesai else (mulai or selesai or "")
+            if j_new:
+                curr_item["jam"] = f"{j_prev}\n{j_new}" if j_prev else j_new
+            k_prev = curr_item.get("keterangan", "")
+            k_new = jk.get("keterangan", "")
+            if k_new:
+                curr_item["keterangan"] = f"{k_prev}\n{k_new}" if k_prev else k_new
+        else:
+            curr_item = dict(jk)
+            grouped_items.append(curr_item)
+
     # 1. Expand rentang hari jadi baris per hari.
     expanded: list[dict] = []
-    for jk in jam_kerja:
+    for jk in grouped_items:
         hari = (jk.get("hari") or "").strip()
         m = _DAY_RANGE.match(hari)
         if m and m.group(1).upper() in _DAY_ORDER and m.group(2).upper() in _DAY_ORDER:
@@ -799,18 +834,32 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
             _write_paragraphs(builder, lokasi)
         elif alamat:
             builder.add_body(f"{nama_prsh_full} beralamat di {alamat}.")
-        for area in area_cabang:
-            nama_area = (area or {}).get("nama_area", "")
+        for idx_a, area in enumerate(area_cabang):
+            nama_area = (area or {}).get("nama_area", "").strip()
             if nama_area:
-                builder.add_sub_item(nama_area)
-            for i, cab in enumerate((area or {}).get("cabang", []), 1):
+                # Bersihkan karakter simbol aneh (seperti '' atau '□') di awal teks
+                nama_area_clean = re.sub(r'^[^\w\s]+', '', nama_area).strip()
+                if nama_area_clean:
+                    marker = _LETTERS[idx_a % 26] + "."
+                    builder.add_lettered(nama_area_clean, marker, indent_level=0, bold=True)
+            for idx_c, cab in enumerate((area or {}).get("cabang", []), 1):
                 nama_cab = cab.get("nama", "") if isinstance(cab, dict) else str(cab)
                 if nama_cab.strip():
-                    builder.add_numbered(nama_cab.strip(), i, indent_level=1)
+                    builder.add_numbered(nama_cab.strip(), idx_c, indent_level=1)
 
-    # 1.4 Tata Tertib Perusahaan
-    tata_tertib = profil.get("tata_tertib", [])
-    jam_kerja = profil.get("jam_kerja", [])
+    # 1.4 Tata Tertib Perusahaan (Selalu gunakan 8 aturan resmi SMKN 4 dari referensi_PKL)
+    OFFICIAL_SMKN4_TATA_TERTIB = [
+        "Mematuhi aturan dan tata tertib yang berlaku di industri;",
+        "Melaksanakan kegiatan PKL sesuai jam kerja yang berlaku di industri;",
+        "Memberi tahu pembimbing jika sakit dan dibuktikan dengan surat keterangan sakit dari dokter;",
+        "Tidak mengaktifkan \"handphone/smartphone\" selama jam bekerja;",
+        "Tidak diperkenankan minta izin dengan alasan keperluan sekolah kecuali ada surat resmi dari sekolah;",
+        "Pakaian rapi, rambut tidak gondrong. Jenis pakaian sesuai dengan ketentuan industri;",
+        "Membawa alat keselamatan kerja (kecuali jika sudah disediakan oleh industri/instansi) dan senantiasa menerapkannya selama bekerja;",
+        "Menerapkan etika dalam bersosialisasi dengan lingkungan kerja."
+    ]
+    tata_tertib = OFFICIAL_SMKN4_TATA_TERTIB
+    jam_kerja = data.get("jam_kerja") or profil.get("jam_kerja") or []
     if tata_tertib or jam_kerja:
         builder.add_sub_heading(bab_num, sub, judul.get("tata_tertib", "Tata Tertib Perusahaan"))
         builder.add_body(profil.get("tata_tertib_intro") or (

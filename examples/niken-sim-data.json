@@ -208,28 +208,8 @@
   "jam_kerja": [
    {
     "hari": "SENIN",
-    "jam": "08.30 - 09.00",
-    "keterangan": "BRIEFING"
-   },
-   {
-    "hari": "",
-    "jam": "09.00 - 12.00",
-    "keterangan": "OPERASIONAL"
-   },
-   {
-    "hari": "",
-    "jam": "12.00 - 13.00",
-    "keterangan": "ISTIRAHAT"
-   },
-   {
-    "hari": "",
-    "jam": "13.00 - 16.30",
-    "keterangan": "OPERASIONAL"
-   },
-   {
-    "hari": "",
-    "jam": "16.30",
-    "keterangan": "TUTUP"
+    "jam": "08.30 - 09.00\n09.00 - 12.00\n12.00 - 13.00\n13.00 - 16.30\n16.30",
+    "keterangan": "BRIEFING\nOPERASIONAL\nISTIRAHAT\nOPERASIONAL\nTUTUP"
    },
    {
     "hari": "SELASA",

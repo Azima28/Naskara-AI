@@ -243,15 +243,20 @@ class PklDocBuilder:
         if settings.find(qn("w:updateFields")) is None:
             settings.append(parse_xml(f'<w:updateFields {nsdecls("w")} w:val="true"/>'))
 
-    def add_spacing(self, lines: int = 1) -> None:
+    def add_spacing(self, lines: int = 1, keep_with_next: bool = False) -> Any:
+        last_p = None
         for _ in range(lines):
             p = self.doc.add_paragraph()
             p.paragraph_format.line_spacing = 1.5
             p.paragraph_format.space_after = Pt(0)
             p.paragraph_format.space_before = Pt(0)
+            if keep_with_next:
+                p.paragraph_format.keep_with_next = True
             run = p.add_run("")
             run.font.name = "Times New Roman"
             run.font.size = Pt(12)
+            last_p = p
+        return last_p
 
     # ------------------------------------------------------------------ #
     #  Cover                                                              #
@@ -262,9 +267,15 @@ class PklDocBuilder:
         perusahaan = data.get("perusahaan", {})
         pedoman = self.preset == "pedoman"
 
-        # Apply cover page border frame (persis seperti LAPORAN PKL NIKEN FIXED.docx)
+        # Apply cover page section margins & border frame (persis seperti LAPORAN PKL NIKEN FIXED.docx)
         try:
-            sectPr = self.doc.sections[0]._sectPr
+            sec0 = self.doc.sections[0]
+            sec0.left_margin = Cm(1.55)
+            sec0.right_margin = Cm(1.65)
+            sec0.top_margin = Cm(2.44)
+            sec0.bottom_margin = Cm(0.50)
+
+            sectPr = sec0._sectPr
             for child in list(sectPr):
                 if child.tag.endswith('pgBorders'):
                     sectPr.remove(child)
@@ -373,8 +384,15 @@ class PklDocBuilder:
             run_logo = p_logo.add_run()
             run_logo.add_picture(logo_sekolah_path, width=Cm(6.0))
 
-        # Jarak vertikal agar Kop Sekolah mentok paling bawah halaman
-        self.add_spacing(3)
+        # Jarak vertikal: 7x Enter paragraf (Times New Roman 12pt) dari Logo SMKN 4 ke Kop Footer (mentok border bawah)
+        for _ in range(7):
+            p_sp = self.doc.add_paragraph()
+            p_sp.paragraph_format.line_spacing = 1.15
+            p_sp.paragraph_format.space_before = Pt(0)
+            p_sp.paragraph_format.space_after = Pt(0)
+            r_sp = p_sp.add_run()
+            r_sp.font.name = "Times New Roman"
+            r_sp.font.size = Pt(12)
 
         # Footer Kop sekolah + Logo Lampung di sebelah kiri
         logo_prov_path = sekolah.get("logo_provinsi_path")
@@ -398,39 +416,54 @@ class PklDocBuilder:
 
         email = sekolah.get("email", "") or ""
         website = sekolah.get("website", "") or ""
-        npsn = kop.get("npsn", "") or ""
-        nss = kop.get("nss", "") or ""
+        npsn = kop.get("npsn", "") or "10807215"
+        nss = kop.get("nss", "") or "401126003028"
 
-        # Menggunakan tabel 2 kolom tanpa border agar Logo Lampung di kiri dan Kop Sekolah di kanan/tengah
+        # Menggunakan tabel 1-baris x 2-kolom tanpa border:
+        # Cell left: Logo Lampung (kiri top-aligned)
+        # Cell right: Kop Teks Sekolah + baris NSS (kiri) & NPSN (kanan) 14pt Bold
         table = self.doc.add_table(rows=1, cols=2)
-        table.alignment = WD_TABLE_ALIGNMENT.CENTER
-        # Hapus border tabel
-        for row in table.rows:
-            for cell in row.cells:
-                tcPr = cell._element.get_or_add_tcPr()
-                tcBorders = parse_xml(
-                    r'<w:tcBorders xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
-                    r'<w:top w:val="none"/><w:left w:val="none"/><w:bottom w:val="none"/><w:right w:val="none"/>'
-                    r'</w:tcBorders>'
-                )
-                tcPr.append(tcBorders)
+        table.alignment = WD_TABLE_ALIGNMENT.LEFT
+        tblPr_cov = table._tbl.tblPr
+        tblInd_cov = parse_xml(r'<w:tblInd xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:w="0" w:type="dxa"/>')
+        tblPr_cov.append(tblInd_cov)
 
         cell_left = table.cell(0, 0)
         cell_right = table.cell(0, 1)
-        cell_left.width = Cm(2.8)
-        cell_right.width = Cm(13.2)
+        cell_left.width = Cm(3.2)
+        cell_right.width = Cm(14.6)
 
-        # Gambar Logo Lampung di cell kiri
+        # Hapus border tabel
+        for cell in (cell_left, cell_right):
+            tcPr = cell._element.get_or_add_tcPr()
+            tcBorders = parse_xml(
+                r'<w:tcBorders xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+                r'<w:top w:val="none"/><w:left w:val="none"/><w:bottom w:val="none"/><w:right w:val="none"/>'
+                r'</w:tcBorders>'
+            )
+            tcPr.append(tcBorders)
+
+        # Set top vertical alignment & zero cell margin untuk cell_left agar mentok border
+        for cell in (cell_left, cell_right):
+            tcPr = cell._element.get_or_add_tcPr()
+            tcPr.append(parse_xml(r'<w:vAlign xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:val="top"/>'))
+        tcPr_l = cell_left._element.get_or_add_tcPr()
+        tcPr_l.append(parse_xml(r'<w:tcMar xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:left w:w="0" w:type="dxa"/><w:right w:w="0" w:type="dxa"/></w:tcMar>'))
+
+        # 1. Gambar Logo Pemprov Lampung di cell_left (Top Aligned mentok border kiri)
         if logo_prov_path and os.path.exists(logo_prov_path):
             p_prov = cell_left.paragraphs[0]
             p_prov.alignment = WD_ALIGN_PARAGRAPH.LEFT
+            p_prov.paragraph_format.left_indent = Cm(0)
+            p_prov.paragraph_format.space_before = Pt(0)
+            p_prov.paragraph_format.space_after = Pt(0)
             r_prov = p_prov.add_run()
-            r_prov.add_picture(logo_prov_path, width=Cm(2.2))
+            r_prov.add_picture(logo_prov_path, width=Cm(3.2))
 
-        # Teks Kop Sekolah di cell kanan (Centered)
-        # Hapus paragraf default pertama di cell_right jika perlu, atau gunakan paragraf pertama
+        # 2. Teks Kop Sekolah di cell_right (Top Aligned Centered, simetris dengan halaman)
         p_right_first = cell_right.paragraphs[0]
         p_right_first.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_right_first.paragraph_format.right_indent = Cm(1.0)
 
         for idx, (text, size, bold) in enumerate(kop_lines):
             if idx == 0:
@@ -438,9 +471,10 @@ class PklDocBuilder:
             else:
                 p = cell_right.add_paragraph()
                 p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                p.paragraph_format.right_indent = Cm(1.0)
             p.paragraph_format.line_spacing = 1.15
             p.paragraph_format.space_before = Pt(0)
-            p.paragraph_format.space_after = Pt(2)
+            p.paragraph_format.space_after = Pt(1)
             run = p.add_run(text)
             run.font.name = "Times New Roman"
             run.font.size = Pt(size)
@@ -449,22 +483,34 @@ class PklDocBuilder:
         if email or website:
             p = cell_right.add_paragraph()
             p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p.paragraph_format.right_indent = Cm(1.0)
             p.paragraph_format.line_spacing = 1.15
             p.paragraph_format.space_before = Pt(0)
-            p.paragraph_format.space_after = Pt(2)
+            p.paragraph_format.space_after = Pt(1)
             run = p.add_run(f"E-mail: {email}    {website}")
             run.font.name = "Times New Roman"
-            run.font.size = Pt(11)
+            run.font.size = Pt(9.5)
 
-        if npsn or nss:
-            p = cell_right.add_paragraph()
-            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            p.paragraph_format.line_spacing = 1.15
-            p.paragraph_format.space_before = Pt(0)
-            p.paragraph_format.space_after = Pt(2)
-            run = p.add_run(f"NPSN : {npsn}            NSS : {nss}")
-            run.font.name = "Times New Roman"
-            run.font.size = Pt(11)
+        # 3. Baris NSS (Kiri) dan NPSN (Kanan) 14pt Bold digabung di paragraf Kop (sesuai instruksi user)
+        p_ids = cell_right.add_paragraph()
+        p_ids.alignment = WD_ALIGN_PARAGRAPH.LEFT
+        p_ids.paragraph_format.line_spacing = 1.15
+        p_ids.paragraph_format.space_before = Pt(8)
+        p_ids.paragraph_format.space_after = Pt(0)
+        p_ids.paragraph_format.right_indent = Cm(0)
+        p_ids.paragraph_format.tab_stops.add_tab_stop(Cm(13.2), WD_TAB_ALIGNMENT.RIGHT)
+
+        r_nss = p_ids.add_run(f"NSS : {nss}")
+        r_nss.font.name = "Times New Roman"
+        r_nss.font.size = Pt(14)
+        r_nss.bold = True
+
+        p_ids.add_run("\t")
+
+        r_npsn = p_ids.add_run(f"NPSN : {npsn}")
+        r_npsn.font.name = "Times New Roman"
+        r_npsn.font.size = Pt(14)
+        r_npsn.bold = True
 
     # ------------------------------------------------------------------ #
     #  Pengesahan                                                         #
@@ -497,6 +543,10 @@ class PklDocBuilder:
         )
 
         self.add_spacing(2)
+        if isinstance(pimpinan, str):
+            pimpinan = {"nama": pimpinan, "jabatan": "General Manager"}
+        elif not isinstance(pimpinan, dict):
+            pimpinan = {}
         jabatan = pimpinan.get("jabatan") or "Kepala"
         self._ttd_block(f"{jabatan},", _sig_name(pimpinan.get("nama")), size=14)
 
@@ -555,31 +605,43 @@ class PklDocBuilder:
     ) -> None:
         """Dua blok tanda tangan berdampingan.
 
-        Dibuat sebagai tabel 2 kolom tanpa border — dengan tab stop, nama
-        bergelar panjang membungkus ke baris kiri dan merusak layout.
+        Dibuat sebagai tabel 2-baris x 2-kolom tanpa border:
+        Row 0: Label Jabatan (top-aligned)
+        Row 1: Ruang TTD + Nama Terang & NIP (selalu 100% sejajar horizontal)
         """
-        table = self.doc.add_table(rows=1, cols=2)
+        table = self.doc.add_table(rows=2, cols=2)
         table.style = "Normal Table"
         self._remove_all_borders(table)
 
-        for cell, label, nama, nip in (
-            (table.rows[0].cells[0], label_kiri, nama_kiri, nip_kiri),
-            (table.rows[0].cells[1], label_kanan, nama_kanan, nip_kanan),
-        ):
-            cell.text = ""
-            # Label jabatan (16pt bold Times New Roman, matching LAPORAN PKL NIKEN FIXED.docx)
+        # Row 0: Label Jabatan
+        row0 = table.rows[0]
+        for cell, label in ((row0.cells[0], label_kiri), (row0.cells[1], label_kanan)):
+            tcPr = cell._element.get_or_add_tcPr()
+            tcPr.append(parse_xml(r'<w:vAlign xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:val="top"/>'))
             p = cell.paragraphs[0]
             p.alignment = WD_ALIGN_PARAGRAPH.CENTER
             p.paragraph_format.line_spacing = 1.5
+            p.paragraph_format.space_before = Pt(0)
+            p.paragraph_format.space_after = Pt(0)
             run = p.add_run(label)
             run.font.name = "Times New Roman"
             run.font.size = Pt(size)
             run.bold = True
+
+        # Row 1: Nama Terang + NIP (Selalu sejajar horizontal di baris terpisah)
+        row1 = table.rows[1]
+        for cell, nama, nip in ((row1.cells[0], nama_kiri, nip_kiri), (row1.cells[1], nama_kanan, nip_kanan)):
+            tcPr = cell._element.get_or_add_tcPr()
+            tcPr.append(parse_xml(r'<w:vAlign xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:val="top"/>'))
             # Ruang tanda tangan (3 baris kosong)
-            for _ in range(3):
+            p_first = cell.paragraphs[0]
+            p_first.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p_first.paragraph_format.line_spacing = 1.5
+            for _ in range(2):
                 sp = cell.add_paragraph()
                 sp.paragraph_format.line_spacing = 1.5
-            # Nama (underline) + NIP di bawahnya (16pt bold underline Times New Roman)
+
+            # Nama (underline)
             pn = cell.add_paragraph()
             pn.alignment = WD_ALIGN_PARAGRAPH.CENTER
             pn.paragraph_format.line_spacing = 1.5
@@ -588,6 +650,7 @@ class PklDocBuilder:
             rn.font.size = Pt(size)
             rn.bold = True
             rn.underline = True
+
             if nip:
                 pnip = cell.add_paragraph()
                 pnip.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -629,57 +692,92 @@ class PklDocBuilder:
             ("Alamat Orang Tua/Wali", siswa.get("alamat_ortu", "")),
             ("No. Telp Orang Tua/Wali", siswa.get("telp_ortu", "")),
         ]
-        self._add_borderless_table(rows)
+        # Hitung estimasi total baris teks (termasuk baris terurai/line-wrap)
+        total_line_count = len(rows)
+        for label, val in rows:
+            if val and len(str(val)) > 35:
+                total_line_count += (len(str(val)) // 35)
 
-        # Enters (jarak vertikal) agar blok Pas Foto & TTD terdorong ke bagian bawah halaman (persis Niken fixed)
-        self.add_spacing(3)
+        # Hitung sisa ruang vertikal halaman secara eksak (Kapasitas halaman A4 ~28-29 baris)
+        # Heading (2) + Tabel Atas (total_line_count) + Tabel Bawah (7 baris) = Total baris terpakai
+        used_lines = 2 + total_line_count + 7
+        available_enters = max(1, 28 - used_lines)
+
+        # Jika sisa ruang mepet, kecilkan group_space_before & enter agar tetap muat di 1 halaman
+        if available_enters <= 1 and total_line_count > 17:
+            group_space_before = 4
+            spacing_enters = 1
+        elif available_enters <= 2:
+            group_space_before = 6
+            spacing_enters = available_enters
+        else:
+            group_space_before = 10
+            spacing_enters = available_enters
+
+        self._add_borderless_table(rows, group_space_before=group_space_before)
+
+        # Enters (jarak vertikal) dinamis hasil kalkulasi sisa kapasitas halaman
+        self.add_spacing(spacing_enters, keep_with_next=True)
 
         # Tabel 2 kolom bagian bawah: Pas Foto 3x4 di kiri bawah, TTD Siswa di kanan bawah
         table_bot = self.doc.add_table(rows=1, cols=2)
         table_bot.style = "Normal Table"
         self._remove_all_borders(table_bot)
 
+        # Kunci baris agar tidak terpisah (cantSplit)
+        trPr_bot = table_bot.rows[0]._tr.get_or_add_trPr()
+        trPr_bot.append(parse_xml(r'<w:cantSplit xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"/>'))
+
+        # Set Table Left Indent for bottom table (0.18 cm matching Niken)
+        tblPr_bot = table_bot._tbl.tblPr
+        tblInd_bot = parse_xml(r'<w:tblInd xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:w="100" w:type="dxa"/>')
+        tblPr_bot.append(tblInd_bot)
+
         cell_foto = table_bot.rows[0].cells[0]
         cell_ttd = table_bot.rows[0].cells[1]
-        cell_foto.width = Cm(8.0)
-        cell_ttd.width = Cm(8.0)
+        cell_foto.width = Cm(6.89)
+        cell_ttd.width = Cm(8.90)
 
-        # Sel Kiri: Pas Foto 3x4 (posisi pas di kiri bawah, beri indentasi 2.0cm)
+        # Sel Kiri: Pas Foto 3x4 (posisi pas di kiri bawah, offset 1.5cm persis Niken)
         foto = (siswa.get("foto") or "").strip()
         if not foto or not os.path.exists(foto):
-            # Fallback ke gambar sampel jika tidak ada foto (untuk testing)
+            # Fallback ke pas foto siswa jika tidak ada foto (untuk testing)
             alt_foto = os.path.join(os.path.dirname(__file__), "smkn4_assets", "image10.jpeg")
             if not os.path.exists(alt_foto):
                 alt_foto = os.path.join(os.path.dirname(__file__), "smkn4_assets", "logo_smkn4.jpeg")
             foto = alt_foto
 
         p_f = cell_foto.paragraphs[0]
-        p_f.paragraph_format.left_indent = Cm(1.5)  # 1.52cm persis seperti LAPORAN PKL NIKEN FIXED.docx
-        p_f.paragraph_format.space_before = Pt(0)
+        p_f.paragraph_format.left_indent = Cm(0)  # Mentok sejajar di kiri dengan teks Nama Sekolah / Nama Orang Tua
+        p_f.paragraph_format.space_before = Pt(6)
         p_f.paragraph_format.space_after = Pt(0)
+        p_f.paragraph_format.keep_with_next = True
         if foto and os.path.exists(foto):
             try:
                 r_f = p_f.add_run()
-                r_f.add_picture(foto, width=Cm(3.0), height=Cm(4.0))
+                r_f.add_picture(foto, width=Cm(3.04), height=Cm(4.10))
             except Exception:
                 pass
 
-        # Sel Kanan: Tanda Tangan Siswa (Yang Bersangkutan,)
+        # Sel Kanan: Tanda Tangan Siswa (Yang Bersangkutan, - Rata Kanan sejajar margin kanan)
         p_t1 = cell_ttd.paragraphs[0]
-        p_t1.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_t1.alignment = WD_ALIGN_PARAGRAPH.RIGHT
         p_t1.paragraph_format.line_spacing = 1.15
+        p_t1.paragraph_format.keep_with_next = True
         r_t1 = p_t1.add_run("Yang Bersangkutan,")
         r_t1.font.name = "Times New Roman"
         r_t1.font.size = Pt(14)
         r_t1.bold = True
 
-        for _ in range(3):
+        for _ in range(4):
             sp = cell_ttd.add_paragraph()
             sp.paragraph_format.line_spacing = 1.15
+            sp.paragraph_format.keep_with_next = True
 
         p_t2 = cell_ttd.add_paragraph()
-        p_t2.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_t2.alignment = WD_ALIGN_PARAGRAPH.RIGHT
         p_t2.paragraph_format.line_spacing = 1.15
+        p_t2.paragraph_format.keep_with_next = True
         r_t2 = p_t2.add_run(_sig_name(siswa.get("nama")))
         r_t2.font.name = "Times New Roman"
         r_t2.font.size = Pt(14)
@@ -856,10 +954,11 @@ class PklDocBuilder:
     #  Body content helpers                                               #
     # ------------------------------------------------------------------ #
     def add_body(self, text: str, bold: bool = False) -> Any:
-        """Body: justify, indent 1.27cm, TNR 12pt, 1.5 spacing."""
+        """Body: justify, indent 0.75cm, TNR 12pt, 1.5 spacing."""
         p = self.doc.add_paragraph()
-        p.paragraph_format.first_line_indent = Cm(1.27)
+        p.paragraph_format.first_line_indent = Cm(0.75)
         p.paragraph_format.line_spacing = 1.5
+        p.paragraph_format.space_before = Pt(0)
         p.paragraph_format.space_after = Pt(0)
         p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
         run = p.add_run(text)
@@ -878,9 +977,11 @@ class PklDocBuilder:
         # Pedoman 1.7.2.b: jarak judul bab ke teks = 3 spasi. Penulis BAB
         # menambah 1 spasi sendiri, jadi di sini cukup 2 tambahan.
         if self.preset == "pedoman":
-            self.add_spacing(2)
+            self.add_spacing(1)
 
     def add_sub_heading(self, nomor_bab: int, nomor_sub: int, judul: str) -> None:
+        # Tambahkan 1 baris Enter pemisah sebelum Sub-BAB (persis dokumen Niken)
+        self.add_spacing(1)
         text = f"{nomor_bab}.{nomor_sub} {judul}"
         h = self._heading2(text)
         # Registrasi ke outline + bookmark — jadi entri level-2 Daftar Isi.
@@ -891,9 +992,14 @@ class PklDocBuilder:
 
     def add_sub_heading_3(self, judul: str) -> None:
         """Heading level 3 (tanpa penomoran, untuk sub-sub bab seperti Waktu Kerja dll)."""
+        # Tambahkan 1 baris Enter pemisah sebelum Sub-Sub-BAB (persis dokumen Niken)
+        self.add_spacing(1)
         p = self.doc.add_paragraph()
         p.style = self.doc.styles["Heading 3"]
         p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+        p.paragraph_format.line_spacing = 1.5
+        p.paragraph_format.space_before = Pt(0)
+        p.paragraph_format.space_after = Pt(0)
         run = p.add_run(judul)
         run.font.name = "Times New Roman"
         run.font.size = Pt(self.heading_sizes[3])
@@ -928,17 +1034,40 @@ class PklDocBuilder:
         if bold:
             run.bold = True
 
-    def add_sub_item(self, text: str, indent_level: int = 1) -> None:
+    def add_sub_item(self, text: str, indent_level: int = 1, bold: bool = False) -> None:
         """Sub-poin tanpa penanda nomor/huruf — dipakai untuk rincian di bawah
-        sebuah item bernomor (mis. daftar berkas, langkah perhitungan)."""
+        sebuah item bernomor (mis. Area I, Area II)."""
         p = self.doc.add_paragraph()
         p.paragraph_format.line_spacing = 1.5
+        p.paragraph_format.space_before = Pt(0)
         p.paragraph_format.space_after = Pt(0)
         p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
         p.paragraph_format.left_indent = Cm(1.27 * (indent_level + 1))
         run = p.add_run(text)
         run.font.name = "Times New Roman"
         run.font.size = Pt(12)
+        if bold:
+            run.bold = True
+
+    def add_bullet_item(self, text: str, indent_level: int = 1, bullet_char: str = "•", bold: bool = False) -> None:
+        """Buletan hitam (•) untuk rincian cabang di bawah Area I - III."""
+        p = self.doc.add_paragraph()
+        p.paragraph_format.line_spacing = 1.5
+        p.paragraph_format.space_before = Pt(0)
+        p.paragraph_format.space_after = Pt(0)
+        p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+        p.paragraph_format.left_indent = Cm(1.27 * (indent_level + 1))
+        p.paragraph_format.first_line_indent = Cm(-0.5)
+        run_b = p.add_run(f"{bullet_char}  ")
+        run_b.font.name = "Times New Roman"
+        run_b.font.size = Pt(12)
+        if bold:
+            run_b.bold = True
+        run_t = p.add_run(text)
+        run_t.font.name = "Times New Roman"
+        run_t.font.size = Pt(12)
+        if bold:
+            run_t.bold = True
 
     def add_simple_table(self, rows: list[list[str]]) -> Any:
         """Tabel data tanpa baris header (mis. rincian nominal: label | nilai)."""
@@ -948,17 +1077,26 @@ class PklDocBuilder:
         table = self.doc.add_table(rows=len(rows), cols=cols)
         table.style = "Table Grid"
         table.alignment = WD_TABLE_ALIGNMENT.CENTER
+        
+        # Proporsional lebar kolom agar selebar area teks (misal 13.5cm)
+        if cols == 2:
+            table.autofit = False
+            for row in table.rows:
+                row.cells[0].width = Cm(8.5)
+                row.cells[1].width = Cm(5.0)
+
         for r_idx, row_data in enumerate(rows):
             for c_idx in range(cols):
                 cell = table.rows[r_idx].cells[c_idx]
                 value = str(row_data[c_idx]) if c_idx < len(row_data) else ""
-                self._fill_cell(cell, value, size=12)
+                self._fill_cell(cell, value, size=11)
         return table
 
     def add_caption(self, text: str, bookmark: str | None = None) -> None:
         """Caption gambar (Gambar 4. 1) — style Caption, center.
 
         Caption >1 baris memakai 1 spasi (pedoman 1.7.2).
+        Warna teks WAJIB HITAM (RGB 0,0,0).
         """
         p = self.doc.add_paragraph()
         p.style = self.doc.styles["Caption"]
@@ -967,6 +1105,7 @@ class PklDocBuilder:
         run = p.add_run(text)
         run.font.name = "Times New Roman"
         run.font.size = Pt(11)
+        run.font.color.rgb = RGBColor(0x00, 0x00, 0x00)
         if bookmark:
             self.attach_bookmark(p, bookmark)
 
@@ -982,6 +1121,7 @@ class PklDocBuilder:
             run = p_cap.add_run(caption)
             run.font.name = "Times New Roman"
             run.font.size = Pt(10)
+            run.font.color.rgb = RGBColor(0x00, 0x00, 0x00)
 
     def add_table(self, headers: list[str], rows: list[list[str]]) -> Any:
         table = self.doc.add_table(rows=1 + len(rows), cols=len(headers))
@@ -1089,6 +1229,7 @@ class PklDocBuilder:
         self, rows_data: list[tuple[str, str | None]],
         col_widths: tuple[float, float, float] = (6.89, 0.84, 8.06),
         font_size: int = 14,
+        group_space_before: int = 10,
     ) -> None:
         table = self.doc.add_table(rows=len(rows_data), cols=3)
         table.style = "Normal Table"
@@ -1100,13 +1241,17 @@ class PklDocBuilder:
         tblPr.append(tblInd)
 
         for i, (label, value) in enumerate(rows_data):
-            cells = table.rows[i].cells
+            row = table.rows[i]
+            trPr = row._tr.get_or_add_trPr()
+            trPr.append(parse_xml(r'<w:cantSplit xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"/>'))
+
+            cells = row.cells
             cells[0].width = Cm(col_widths[0])
             cells[1].width = Cm(col_widths[1])
             cells[2].width = Cm(col_widths[2])
 
             # Jarak spasi kelompok (space_before) sebelum header kelompok data
-            space_before_pt = 10 if label in (
+            space_before_pt = group_space_before if label in (
                 "Nama Sekolah", "Nama Orang Tua/Wali",
                 "Pimpinan", "HRD / Ka. Tu", "Pembimbing"
             ) else 0
@@ -1129,6 +1274,7 @@ class PklDocBuilder:
         p.paragraph_format.line_spacing = 1.15
         p.paragraph_format.space_before = Pt(space_before)
         p.paragraph_format.space_after = Pt(2)
+        p.paragraph_format.keep_with_next = True
         run = p.add_run(str(text or ""))
         run.font.name = "Times New Roman"
         run.font.size = Pt(size)

@@ -2,15 +2,15 @@
  "version": "1.0",
  "status": "ready",
  "config": {
-  "preset": "legacy",
+  "preset": "pedoman",
   "margin": {
-   "atas": 2.44,
-   "bawah": 0.48,
-   "kiri": 1.55,
-   "kanan": 1.66
+   "atas": 3,
+   "bawah": 3,
+   "kiri": 4,
+   "kanan": 3
   },
-  "h1_size": 16,
-  "h2_size": 13,
+  "h1_size": 14,
+  "h2_size": 12,
   "h3_size": 12,
   "bab_modules": [
    "PENDAHULUAN",
@@ -208,28 +208,8 @@
   "jam_kerja": [
    {
     "hari": "SENIN",
-    "jam": "08.30 - 09.00",
-    "keterangan": "BRIEFING"
-   },
-   {
-    "hari": "",
-    "jam": "09.00 - 12.00",
-    "keterangan": "OPERASIONAL"
-   },
-   {
-    "hari": "",
-    "jam": "12.00 - 13.00",
-    "keterangan": "ISTIRAHAT"
-   },
-   {
-    "hari": "",
-    "jam": "13.00 - 16.30",
-    "keterangan": "OPERASIONAL"
-   },
-   {
-    "hari": "",
-    "jam": "16.30",
-    "keterangan": "TUTUP"
+    "jam": "08.30 - 09.00\n09.00 - 12.00\n12.00 - 13.00\n13.00 - 16.30\n16.30",
+    "keterangan": "BRIEFING\nOPERASIONAL\nISTIRAHAT\nOPERASIONAL\nTUTUP"
    },
    {
     "hari": "SELASA",
