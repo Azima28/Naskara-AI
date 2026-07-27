@@ -619,9 +619,9 @@ def _build_front_matter(
     builder.add_page_break()
     builder.add_cover(data)
 
-    # Mulai section baru untuk penomoran Roman
+    # Mulai section baru untuk penomoran Roman (Option B: Halaman Judul/Cover Dalam dihitung i, Pengesahan Industri start ii)
     section_roman = builder.add_section_break()
-    builder.setup_page_numbering(section_roman, fmt="lowerRoman", start=1)
+    builder.setup_page_numbering(section_roman, fmt="lowerRoman", start=2)
 
     # Pengesahan Industri
     builder.add_pengesahan_industri(data)
