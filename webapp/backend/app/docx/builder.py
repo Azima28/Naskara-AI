@@ -1166,6 +1166,9 @@ class PklDocBuilder:
             run.font.color.rgb = RGBColor(0x00, 0x00, 0x00)
 
     def add_table(self, headers: list[str], rows: list[list[str]]) -> Any:
+        if headers == ["HARI", "JAM KERJA", "KETERANGAN"]:
+            return self.add_waktu_kerja_table(headers, rows)
+
         table = self.doc.add_table(rows=1 + len(rows), cols=len(headers))
         table.style = "Table Grid"
         table.alignment = WD_TABLE_ALIGNMENT.CENTER
@@ -1183,6 +1186,107 @@ class PklDocBuilder:
             for c_idx, cell_text in enumerate(row_data):
                 cell = table.rows[r_idx + 1].cells[c_idx]
                 self._fill_cell(cell, str(cell_text), size=11)
+        return table
+
+    def add_waktu_kerja_table(self, headers: list[str], rows: list[list[str]]) -> Any:
+        """Tabel Waktu Kerja & Istirahat Kerja persis seperti dokumen Niken:
+        - Setiap slot jam/keterangan dipecah menjadi baris fisik terpisah.
+        - Kolom 0 (HARI) di-merge vertikal (vMerge) mencakup seluruh slot jam di hari tersebut.
+        - Teks HARI di-align vertikal CENTER dan horizontal CENTER.
+        - Seluruh kolom (HARI, JAM KERJA, KETERANGAN) di-align CENTER.
+        - Header Bold, Centered, Times New Roman 11pt.
+        - Style Table Grid, cantSplit pada setiap baris.
+        """
+        expanded_slots: list[tuple[str, list[tuple[str, str]]]] = []
+        for row in rows:
+            hari = row[0] if len(row) > 0 else ""
+            jam_raw = row[1] if len(row) > 1 else ""
+            ket_raw = row[2] if len(row) > 2 else ""
+            
+            jam_list = [j.strip() for j in jam_raw.split("\n") if j.strip()] if jam_raw else ["-"]
+            ket_list = [k.strip() for k in ket_raw.split("\n") if k.strip()] if ket_raw else ["-"]
+            
+            num_slots = max(len(jam_list), len(ket_list))
+            slots: list[tuple[str, str]] = []
+            for idx in range(num_slots):
+                j_val = jam_list[idx] if idx < len(jam_list) else ""
+                k_val = ket_list[idx] if idx < len(ket_list) else ""
+                slots.append((j_val, k_val))
+            expanded_slots.append((hari, slots))
+
+        total_rows = 1 + sum(len(slots) for _, slots in expanded_slots)
+        table = self.doc.add_table(rows=total_rows, cols=3)
+        table.style = "Table Grid"
+        table.alignment = WD_TABLE_ALIGNMENT.CENTER
+
+        col_widths = (Cm(3.5), Cm(4.5), Cm(5.5))
+
+        hdr_cells = table.rows[0].cells
+        for i, h_text in enumerate(headers):
+            hdr_cells[i].width = col_widths[i]
+            p = hdr_cells[i].paragraphs[0]
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p.paragraph_format.line_spacing = 1.0
+            p.paragraph_format.space_before = Pt(3)
+            p.paragraph_format.space_after = Pt(3)
+            run = p.add_run(h_text)
+            run.font.name = "Times New Roman"
+            run.font.size = Pt(11)
+            run.bold = True
+
+        current_row_idx = 1
+        for hari, slots in expanded_slots:
+            start_row_idx = current_row_idx
+            num_slots = len(slots)
+
+            for slot_i, (jam_val, ket_val) in enumerate(slots):
+                row = table.rows[current_row_idx]
+                trPr = row._tr.get_or_add_trPr()
+                trPr.append(parse_xml(r'<w:cantSplit xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"/>'))
+
+                cells = row.cells
+                for col_i in range(3):
+                    cells[col_i].width = col_widths[col_i]
+
+                p0 = cells[0].paragraphs[0]
+                p0.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                p0.paragraph_format.line_spacing = 1.0
+                p0.paragraph_format.space_before = Pt(2)
+                p0.paragraph_format.space_after = Pt(2)
+                if slot_i == 0:
+                    run0 = p0.add_run(hari)
+                    run0.font.name = "Times New Roman"
+                    run0.font.size = Pt(11)
+
+                p1 = cells[1].paragraphs[0]
+                p1.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                p1.paragraph_format.line_spacing = 1.0
+                p1.paragraph_format.space_before = Pt(2)
+                p1.paragraph_format.space_after = Pt(2)
+                run1 = p1.add_run(jam_val)
+                run1.font.name = "Times New Roman"
+                run1.font.size = Pt(11)
+
+                p2 = cells[2].paragraphs[0]
+                p2.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                p2.paragraph_format.line_spacing = 1.0
+                p2.paragraph_format.space_before = Pt(2)
+                p2.paragraph_format.space_after = Pt(2)
+                run2 = p2.add_run(ket_val)
+                run2.font.name = "Times New Roman"
+                run2.font.size = Pt(11)
+
+                current_row_idx += 1
+
+            if num_slots > 1:
+                cell_top = table.rows[start_row_idx].cells[0]
+                cell_bottom = table.rows[start_row_idx + num_slots - 1].cells[0]
+                cell_top.merge(cell_bottom)
+
+            tcPr = table.rows[start_row_idx].cells[0]._tc.get_or_add_tcPr()
+            vAlign = parse_xml(r'<w:vAlign xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:val="center"/>')
+            tcPr.append(vAlign)
+
         return table
 
     def _fill_cell(self, cell: Any, text: str, size: int = 11) -> None:
