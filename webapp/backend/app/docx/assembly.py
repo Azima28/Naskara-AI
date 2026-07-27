@@ -331,9 +331,25 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
 #  Sanitization & Helpers                                                   #
 # ======================================================================== #
 
+def _clean_markdown(text: str) -> str:
+    """Bersihkan sintaks markdown yang sering di-output oleh AI seperti **Paragraf 1** atau ## Header."""
+    if not text:
+        return ""
+    # Hapus penanda paragraf buatan AI seperti **Paragraf 1**
+    text = re.sub(r'^\s*\*\*\s*Paragraf\s*\d+\s*\*\*\s*', '', text, flags=re.MULTILINE | re.IGNORECASE)
+    # Hapus simbol header markdown ###
+    text = re.sub(r'^\s*#{1,6}\s*', '', text, flags=re.MULTILINE)
+    # Ubah **bold** menjadi teks biasa
+    text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)
+    # Ubah *italic* menjadi teks biasa
+    text = re.sub(r'\*(.*?)\*', r'\1', text)
+    return text.strip()
+
+
 def _write_paragraphs(builder: PklDocBuilder, text: str) -> None:
     """Tulis blok teks multi-baris sebagai beberapa paragraf body."""
-    for para in (text or "").split("\n"):
+    clean_text = _clean_markdown(text)
+    for para in (clean_text or "").split("\n"):
         if para.strip():
             builder.add_body(para.strip())
 
@@ -634,6 +650,31 @@ def _scrub_vague(node):
 def _sanitize_data(data: dict) -> None:
     # Buang jawaban vague & rapikan spasi di semua field.
     _scrub_vague(data)
+
+    # Normalize aliases for kegiatan & peralatan
+    if not data.get("kegiatan") and data.get("kegiatan_harian"):
+        data["kegiatan"] = [{
+            "bidang": "Ringkasan Kegiatan Harian PKL",
+            "deskripsi_umum": "Berikut adalah rincian kegiatan harian yang dilaksanakan oleh Penulis selama Praktik Kerja Lapangan:",
+            "tugas": [
+                {
+                    "nama_tugas": f"Tanggal {item.get('tgl', '')}",
+                    "detail": item.get("deskripsi", "")
+                }
+                for item in data["kegiatan_harian"]
+                if isinstance(item, dict) and (item.get("deskripsi") or item.get("tgl"))
+            ]
+        }]
+    if not data.get("peralatan") and data.get("peralatan_list"):
+        data["peralatan"] = [
+            {
+                "nama": item.get("nama", ""),
+                "deskripsi": f"{item.get('spesifikasi', '')}\nFungsi: {item.get('fungsi', '')}".strip(),
+                "gambar": item.get("gambar", "")
+            }
+            for item in data["peralatan_list"]
+            if isinstance(item, dict) and item.get("nama")
+        ]
 
     # Format date in kata_pengantar; kalau kosong pakai tanggal selesai PKL.
     kp = data.setdefault("kata_pengantar", {})

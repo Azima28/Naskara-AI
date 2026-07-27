@@ -424,10 +424,10 @@ class PklDocBuilder:
             p_logo = self.doc.add_paragraph()
             p_logo.alignment = WD_ALIGN_PARAGRAPH.CENTER
             run_logo = p_logo.add_run()
-            run_logo.add_picture(logo_sekolah_path, width=Cm(6.0))
+            run_logo.add_picture(logo_sekolah_path, width=Cm(4.2))
 
-        # Jarak vertikal: 7x Enter paragraf (Times New Roman 12pt) dari Logo SMKN 4 ke Kop Footer (mentok border bawah)
-        for _ in range(7):
+        # Jarak vertikal: 2x Enter paragraf dari Logo SMKN 4 ke Kop Footer (mentok border bawah)
+        for _ in range(2):
             p_sp = self.doc.add_paragraph()
             p_sp.paragraph_format.line_spacing = 1.15
             p_sp.paragraph_format.space_before = Pt(0)
@@ -909,19 +909,17 @@ class PklDocBuilder:
         )
         self.add_body(harapan)
 
-        self.add_spacing(2)
+        self.add_spacing(1)
 
         kota = kp.get("kota") or sekolah.get("kota", "") or ""
         tanggal = (kp.get("tanggal") or "").strip()
-        # "Kota, Tanggal" — bagian yang tidak diketahui dilewati, tidak
-        # dicetak sebagai placeholder.
         tanda_tempat = ", ".join(x for x in (kota, tanggal) if x)
         p = self.doc.add_paragraph()
         p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
         run = p.add_run(tanda_tempat)
         run.font.size = Pt(12)
         run.bold = True
-        self.add_spacing(3)
+        self.add_spacing(1)
 
         nama = siswa.get("nama", "[Nama]") or "[Nama]"
         p = self.doc.add_paragraph()
