@@ -162,9 +162,11 @@ def assemble_report(data: dict) -> str:
     # --- 1. Front Matter ------------------------------------------------- #
     _build_front_matter(builder, data, bab_modules)
 
-    # --- 2. Section break: switch ke arabic numbering -------------------- #
+    # --- 2. Section break: switch ke body numbering ---------------------- #
+    body_fmt = config.get("body_matter_format") or "arabic"
+    body_start = config.get("body_matter_start") if config.get("body_matter_start") is not None else 1
     new_section = builder.add_section_break()
-    builder.setup_page_numbering(new_section, fmt="arabic", start=1)
+    builder.setup_page_numbering(new_section, fmt=body_fmt, start=body_start if body_start > 0 else 1)
 
     # --- 3. BAB content -------------------------------------------------- #
     _build_bab_content(builder, data, bab_modules)
@@ -612,16 +614,25 @@ def _build_front_matter(
         foto_path = UPLOADS_DIR / "assets" / siswa["foto"]
         siswa["foto"] = str(foto_path) if foto_path.exists() else ""
 
-    # Cover luar (tanpa nomor halaman)
+    cfg = data.get("config", {})
+    preset = cfg.get("preset") or "pedoman"
+    cover_num_fmt = cfg.get("cover_page_number") or "none"
+    front_fmt = cfg.get("front_matter_format") or "lowerRoman"
+    front_start = cfg.get("front_matter_start") if cfg.get("front_matter_start") is not None else (2 if preset == "pedoman" else 1)
+
+    if cover_num_fmt != "none":
+        builder.setup_page_numbering(builder.doc.sections[0], fmt=cover_num_fmt, start=1)
+
+    # Cover luar
     builder.add_cover(data)
 
     # Cover dalam (identik cover luar)
     builder.add_page_break()
     builder.add_cover(data)
 
-    # Mulai section baru untuk penomoran Roman (Option B: Halaman Judul/Cover Dalam dihitung i, Pengesahan Industri start ii)
-    section_roman = builder.add_section_break()
-    builder.setup_page_numbering(section_roman, fmt="lowerRoman", start=2)
+    # Mulai section baru untuk Halaman Depan
+    section_front = builder.add_section_break()
+    builder.setup_page_numbering(section_front, fmt=front_fmt, start=front_start)
 
     # Pengesahan Industri
     builder.add_pengesahan_industri(data)

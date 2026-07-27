@@ -33,6 +33,12 @@ export interface Margin {
 }
 
 export interface PklConfig {
+  preset?: 'pedoman' | 'custom'
+  cover_page_number?: 'none' | 'lowerRoman' | 'arabic'
+  front_matter_format?: 'lowerRoman' | 'arabic'
+  front_matter_start?: number
+  body_matter_format?: 'arabic' | 'lowerRoman'
+  body_matter_start?: number
   jumlah_bab: number | null
   bab_modules: BabModule[]
   margin: Margin
@@ -317,6 +323,12 @@ export interface PklContext {
 export const emptyMargin = (): Margin => ({ atas: 3, bawah: 3, kiri: 4, kanan: 3 })
 
 export const emptyConfig = (): PklConfig => ({
+  preset: 'pedoman',
+  cover_page_number: 'none',
+  front_matter_format: 'lowerRoman',
+  front_matter_start: 2,
+  body_matter_format: 'arabic',
+  body_matter_start: 1,
   jumlah_bab: null,
   bab_modules: [],
   margin: emptyMargin(),
