@@ -6,22 +6,34 @@ Membangun user prompt berdasarkan PklContext.
 def prompt_latar_belakang(ctx: dict, jurusan_context: str) -> str:
     siswa = ctx.get("siswa", {})
     perusahaan = ctx.get("perusahaan", {})
-    
+    pkl = ctx.get("pkl", {})
+
     return f"""Buat narasi untuk bagian 'Latar Belakang' Laporan PKL.
 
-Konteks Data:
-- Siswa: {siswa.get('nama', '')}
-- Jurusan: {siswa.get('jurusan', '')}
-- Tempat PKL: {perusahaan.get('nama', '')} yang bergerak di bidang {perusahaan.get('bidang_usaha', '')}
+DATA NYATA (ground truth — SATU-SATUNYA sumber fakta, jangan tambah fakta lain):
+- Nama siswa    : {siswa.get('nama', '') or '[tidak diisi]'}
+- Jurusan       : {siswa.get('jurusan', '') or '[tidak diisi]'}
+- Tempat PKL    : {perusahaan.get('nama', '') or '[tidak diisi]'}
+- Bidang usaha  : {perusahaan.get('bidang_usaha', '') or '[tidak diisi]'}
+- Kota PKL      : {perusahaan.get('kota', '') or '[tidak diisi]'}
+- Durasi PKL    : {pkl.get('durasi_bulan', '') or '[tidak diisi]'} bulan
 
-Konteks Jurusan (Gunakan istilah ini jika relevan):
+Konteks Jurusan (istilah teknis relevan — hanya gunakan jika memang relevan dengan data):
 {jurusan_context}
 
-Instruksi Khusus:
-1. Jelaskan mengapa PKL penting untuk siswa jurusan tersebut.
-2. Alasan mengapa memilih tempat PKL tersebut (hubungkan bidang usaha perusahaan dengan jurusan).
-3. Tulis sebanyak 3-4 paragraf yang mengalir secara kronologis.
-4. Ingat Aturan Mutlak: JANGAN gunakan awalan paragraf generik seperti "Dalam era globalisasi...".
+Struktur yang WAJIB diikuti — tulis 3 paragraf:
+- Paragraf 1 [topik: definisi & pentingnya PKL untuk jurusan ini]
+  → Hanya gunakan nama jurusan dari data. Jangan menyebut nama orang atau tempat spesifik.
+- Paragraf 2 [topik: alasan memilih tempat PKL]
+  → WAJIB sebutkan: nama tempat PKL dan bidang usahanya dari data.
+  → DILARANG menyebut detail (tahun berdiri, jumlah karyawan, dll) yang tidak ada di data.
+- Paragraf 3 [topik: relevansi PKL dengan jurusan dan harapan]
+  → WAJIB sebutkan: nama jurusan dari data.
+  → Akhiri dengan harapan siswa dari PKL ini.
+
+ATURAN TAMBAHAN:
+- Jika ada field [tidak diisi] → tulis kalimat umum untuk topik itu, tanpa mengarang detail spesifik.
+- DILARANG menulis frasa: "Dalam era globalisasi", "Di era modern", "Seiring perkembangan zaman".
 """
 
 def prompt_tujuan_manfaat(ctx: dict) -> str:
@@ -36,18 +48,26 @@ Instruksi Khusus:
 def prompt_profil_perusahaan(ctx: dict) -> str:
     perusahaan = ctx.get("perusahaan", {})
     profil = ctx.get("profil_perusahaan", {})
-    
-    return f"""Buat narasi untuk bagian 'Sejarah Singkat' perusahaan.
 
-Konteks Data:
-- Nama Perusahaan: {perusahaan.get('nama', '')}
-- Bidang Usaha: {perusahaan.get('bidang_usaha', '')}
-- Alamat: {perusahaan.get('alamat', '')}
-- Catatan Sejarah/Data mentah: {profil.get('sejarah', 'Tuliskan sejarah fiktif yang realistis untuk bidang usaha tersebut jika data kosong.')}
+    sejarah_raw = (profil.get('sejarah') or "").strip()
 
-Instruksi Khusus:
-1. Ubah catatan data mentah menjadi paragraf naratif yang utuh dan profesional.
-2. Minimal 2 paragraf.
+    return f"""Buat narasi untuk bagian 'Sejarah Singkat' perusahaan dalam laporan PKL.
+
+DATA NYATA (ground truth — SATU-SATUNYA sumber fakta):
+- Nama perusahaan : {perusahaan.get('nama', '') or '[tidak diisi]'}
+- Nama lengkap   : {perusahaan.get('nama_lengkap', '') or '[sama dengan nama]'}
+- Bidang usaha   : {perusahaan.get('bidang_usaha', '') or '[tidak diisi]'}
+- Alamat         : {perusahaan.get('alamat', '') or '[tidak diisi]'}
+- Catatan sejarah: {sejarah_raw if sejarah_raw else '[kosong]'}
+
+Instruksi:
+1. Jika 'Catatan sejarah' TIDAK KOSONG: ubah menjadi 2-3 paragraf naratif profesional.
+   HANYA kembangkan fakta yang ADA di catatan. JANGAN tambahkan fakta baru.
+2. Jika 'Catatan sejarah' KOSONG: tulis 1 paragraf umum tentang perusahaan berdasarkan
+   nama dan bidang usahanya SAJA — tanpa menyebut tahun berdiri, pendiri, atau detail
+   apapun yang tidak ada di data.
+3. DILARANG KERAS mengarang: tahun berdiri, nama pendiri, jumlah karyawan, atau
+   pencapaian spesifik yang tidak ada di data.
 """
 
 def prompt_pelaksanaan(ctx: dict, bidang: str, deskripsi_umum: str) -> str:

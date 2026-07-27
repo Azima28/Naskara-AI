@@ -12,6 +12,7 @@ from ..models import User
 from ..ai.client import get_ai_provider
 from ..prompts.base import SYSTEM_PROMPT_TEMPLATE
 from ..prompts.jurusan_knowledge import get_jurusan_context
+from ..prompts.validator import validate_ai_output, truncate_to_limit, AIOutputError
 import json
 from ..prompts import sections
 from ..prompts import ai_sections
@@ -38,7 +39,11 @@ async def draft_section(
     req: DraftSectionRequest,
     user: User = Depends(get_current_user)
 ) -> dict[str, str]:
-    """Generate draf awal untuk bagian tertentu dari laporan PKL."""
+    """Generate draf awal untuk bagian tertentu dari laporan PKL.
+    
+    Validasi output AI sebelum dikembalikan ke frontend.
+    Auto-retry 1x jika validasi gagal dengan sistem prompt lebih ketat.
+    """
     provider = get_ai_provider()
     
     ctx = req.context_data
@@ -46,7 +51,6 @@ async def draft_section(
     jurusan_key = siswa.get("jurusan_key", "")
     jurusan_context = get_jurusan_context(jurusan_key)
     
-    # Pilih prompt berdasarkan section_key
     key = req.section_key
     if key == "latar_belakang":
         user_prompt = sections.prompt_latar_belakang(ctx, jurusan_context)
@@ -59,14 +63,14 @@ async def draft_section(
     elif key == "pembahasan":
         user_prompt = ai_sections.prompt_hal_diperhatikan(ctx)
     elif key == "kesimpulan_saran":
-        user_prompt = ai_sections.prompt_kesimpulan_saran(ctx)
+        # BAB VII = index 7 dalam struktur 7-BAB SMKN4
+        user_prompt = ai_sections.prompt_kesimpulan_saran(ctx, bab_num=7)
     elif key in ["tujuan", "manfaat"]:
         user_prompt = sections.prompt_tujuan_manfaat(ctx)
     elif key == "profil_sejarah":
         user_prompt = sections.prompt_profil_perusahaan(ctx)
     elif key.startswith("kegiatan_") and key.endswith("_intro"):
         bidang = key.replace("kegiatan_", "").replace("_intro", "").replace("_", " ").title()
-        # Cari deskripsi umum bidang tersebut dari data kegiatan
         deskripsi = ""
         for keg in ctx.get("kegiatan", []):
             if isinstance(keg, dict) and keg.get("bidang", "").lower() == bidang.lower():
@@ -79,11 +83,51 @@ async def draft_section(
     else:
         user_prompt = f"Buat narasi untuk bagian {key.replace('_', ' ')}. Ingat: Jangan pakai bullet point."
 
-    try:
-        draft = await provider.generate(SYSTEM_PROMPT_TEMPLATE, user_prompt)
-        return {"content": draft.strip()}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    # ── Generate dengan validasi + auto-retry ──────────────────────────────
+    last_error = None
+    for attempt in range(2):  # attempt 0 = normal, attempt 1 = retry dengan sistem lebih ketat
+        try:
+            system = SYSTEM_PROMPT_TEMPLATE
+            if attempt == 1:
+                # Retry: tambahkan penekanan ulang aturan keras di awal user prompt
+                user_prompt = (
+                    "[PERCOBAAN KEDUA — OUTPUT SEBELUMNYA DITOLAK]\n"
+                    "Ikuti aturan keras berikut dengan SANGAT KETAT:\n"
+                    "1. Output HANYA paragraf narasi. DILARANG menulis heading, label, atau tag selain yang diminta.\n"
+                    "2. Jika diminta tag [KESIMPULAN] dan [SARAN], tuliskan PERSIS seperti itu sebagai baris tersendiri.\n"
+                    "3. Output dalam Bahasa Indonesia formal.\n\n"
+                ) + user_prompt
+
+            draft = await provider.generate(system, user_prompt)
+            draft = draft.strip()
+
+            # Validasi output
+            result = validate_ai_output(draft, key, ctx)
+
+            if result.passed:
+                # Truncate jika melebihi word limit
+                draft = truncate_to_limit(draft, key)
+                # Log warnings jika ada (tidak blokir output)
+                if result.warnings:
+                    print(f"[AI Warning] section={key}: {'; '.join(result.warnings)}")
+                return {"content": draft, "warnings": result.warnings}
+            else:
+                last_error = result.errors
+                print(f"[AI Validation Failed] section={key} attempt={attempt}: {result.errors}")
+                # Jika masih ada attempt → retry
+                continue
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+    # Semua attempt gagal
+    raise HTTPException(
+        status_code=422,
+        detail={
+            "message": "AI output tidak valid setelah 2 percobaan. Coba generate ulang.",
+            "validation_errors": last_error or [],
+        }
+    )
 
 @router.post("/regenerate")
 async def regenerate(

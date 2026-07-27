@@ -343,26 +343,90 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
 # ======================================================================== #
 
 def _clean_markdown(text: str) -> str:
-    """Bersihkan sintaks markdown yang sering di-output oleh AI seperti **Paragraf 1** atau ## Header."""
+    """Bersihkan sintaks markdown dari output AI.
+    
+    Alias untuk _sanitize_ai_output agar backward-compatible.
+    """
+    return _sanitize_ai_output(text)
+
+
+def _sanitize_ai_output(text: str) -> str:
+    """Sanitasi komprehensif output AI sebelum masuk ke dokumen.
+    
+    Menangani semua pola heading/label yang sering di-output AI:
+    - **bold** dan *italic*
+    - ## Markdown headers
+    - Label baris: "Paragraf 1:", "A. Judul", "Kesimpulan:"
+    - Baris pendek yang diakhiri titik dua (heading palsu)
+    
+    TIDAK menghapus:
+    - [KESIMPULAN] dan [SARAN] tags (dibutuhkan oleh assembly parser)
+    - Angka bernomor "1. 2. 3." (daftar yang valid)
+    - Teks narasi normal
+    """
     if not text:
         return ""
-    # Hapus penanda paragraf buatan AI seperti **Paragraf 1**
-    text = re.sub(r'^\s*\*\*\s*Paragraf\s*\d+\s*\*\*\s*', '', text, flags=re.MULTILINE | re.IGNORECASE)
-    # Hapus simbol header markdown ###
-    text = re.sub(r'^\s*#{1,6}\s*', '', text, flags=re.MULTILINE)
-    # Ubah **bold** menjadi teks biasa
+
+    # 1. Hapus penanda paragraf buatan AI: **Paragraf 1** atau **Paragraf 1:**
+    text = re.sub(r'^\s*\*\*\s*Paragraf\s*\d+\s*:?\s*\*\*\s*', '', text,
+                  flags=re.MULTILINE | re.IGNORECASE)
+
+    # 2. Hapus markdown headers ###
+    text = re.sub(r'^\s*#{1,6}\s+', '', text, flags=re.MULTILINE)
+
+    # 3. Ubah **bold** menjadi teks biasa (kecuali [TAG] yang sudah di strip-bold)
     text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)
-    # Ubah *italic* menjadi teks biasa
+
+    # 4. Ubah *italic* menjadi teks biasa
     text = re.sub(r'\*(.*?)\*', r'\1', text)
+
+    # 5. Hapus label huruf di awal baris: "A. Judul", "B. Judul" (jika hanya label, bukan poin daftar)
+    #    Pola: huruf kapital tunggal diikuti titik dan teks pendek < 8 kata pada baris sendiri
+    def _strip_letter_label(m):
+        content = m.group(1).strip()
+        # Jika kontennya pendek dan diakhiri titik dua → label, hapus
+        if content.endswith(':') and len(content.split()) <= 7:
+            return ''
+        # Kalau bukan label, biarkan
+        return m.group(0)
+    text = re.sub(r'^([A-Z])\.\s+(.+)$', _strip_letter_label, text, flags=re.MULTILINE)
+
+    # 6. Hapus baris yang HANYA berisi label pendek diakhiri titik dua
+    #    mis: "Alasan Memilih Perusahaan:", "Kesimpulan:", "Latar Belakang:"
+    #    (tapi JANGAN hapus [KESIMPULAN] atau [SARAN])
+    def _strip_fake_heading(line: str) -> str:
+        stripped = line.strip()
+        if stripped.startswith('[') and stripped.endswith(']'):
+            return line  # preserve [TAG] lines
+        if stripped.endswith(':') and 1 <= len(stripped.split()) <= 8:
+            return ''  # hapus heading palsu
+        return line
+    lines = [_strip_fake_heading(l) for l in text.split('\n')]
+    text = '\n'.join(lines)
+
+    # 7. Collapse multiple blank lines menjadi satu
+    text = re.sub(r'\n{3,}', '\n\n', text)
+
     return text.strip()
 
 
 def _write_paragraphs(builder: PklDocBuilder, text: str) -> None:
-    """Tulis blok teks multi-baris sebagai beberapa paragraf body."""
-    clean_text = _clean_markdown(text)
+    """Tulis blok teks multi-baris sebagai beberapa paragraf body.
+    
+    Output AI disanitasi dulu sebelum ditulis ke dokumen.
+    Baris [KESIMPULAN] dan [SARAN] dilewati karena ditangani
+    oleh parser khusus di _write_kesimpulan_saran().
+    """
+    clean_text = _sanitize_ai_output(text)
     for para in (clean_text or "").split("\n"):
-        if para.strip():
-            builder.add_body(para.strip())
+        stripped = para.strip()
+        if not stripped:
+            continue
+        # Skip tag markers — ditangani oleh parser lain
+        if stripped in ("[KESIMPULAN]", "[SARAN]"):
+            continue
+        builder.add_body(stripped)
+
 
 
 def _try_image(builder: PklDocBuilder, filename: str, width_cm: float = 10) -> bool:

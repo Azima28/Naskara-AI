@@ -11,30 +11,24 @@ def prompt_tujuan_pkl(ctx: dict) -> str:
     perusahaan = ctx.get("perusahaan", {})
     pkl = ctx.get("pkl", {})
 
-    return f"""Buat narasi untuk bagian "1.2 Tujuan Kegiatan Praktik Kerja Lapangan" dalam laporan PKL siswa SMK.
+    return f"""Buat narasi untuk bagian "Tujuan Kegiatan Praktik Kerja Lapangan" dalam laporan PKL siswa SMK.
 
-Data:
-- Nama siswa: {siswa.get('nama', 'siswa')}
-- Jurusan: {siswa.get('jurusan', '')}
-- Tempat PKL: {perusahaan.get('nama', '')} (bidang: {perusahaan.get('bidang_usaha', '')})
-- Durasi PKL: {pkl.get('durasi_bulan', 3)} bulan
+DATA NYATA (ground truth — gunakan fakta ini):
+- Jurusan  : {siswa.get('jurusan', '') or '[tidak diisi]'}
+- Tempat PKL: {perusahaan.get('nama', '') or '[tidak diisi]'}
+- Durasi   : {pkl.get('durasi_bulan', 3)} bulan
 
-Instruksi WAJIB:
-1. Tulis paragraf pembuka 2-3 kalimat tentang tujuan PKL dalam konteks peningkatan mutu pendidikan SMK.
-2. Kemudian tulis TEPAT 9 poin tujuan PKL dengan format "• [tujuan]" — satu per baris.
-3. Setiap poin harus spesifik dan berbeda kata-katanya dari contoh berikut (JANGAN copy paste):
-   - Membekali siswa pengalaman nyata di dunia kerja
-   - Meningkatkan dan memantapkan keterampilan yang diperoleh di sekolah
-   - Menumbuhkan sikap profesionalisme
-   - Memantapkan disiplin dan tanggung jawab
-   - Memberikan kesempatan mengenal suasana kerja sebenarnya
-   - Mendorong jiwa wirausaha
-   - Meningkatkan proses penyerapan teknologi dari lapangan
-   - Memahami dan mengembangkan pelajaran di dunia kerja
-   - Memperoleh masukan dan umpan balik dari dunia industri
-4. Gunakan variasi kalimat yang unik — paraphrase dengan gaya bahasa yang sedikit berbeda
-5. Hubungkan beberapa poin dengan konteks jurusan {siswa.get('jurusan', '')} jika relevan
-6. OUTPUT HANYA teks laporan — tanpa label, tanpa penjelasan tambahan
+Struktur output WAJIB:
+1. Tulis 1 paragraf pembuka (2-3 kalimat) tentang tujuan PKL dalam konteks peningkatan
+   mutu pendidikan SMK — sebutkan kota dari data jika ada.
+2. Tulis TEPAT 6 poin tujuan PKL dengan format "1. [tujuan]" — satu per baris.
+   Setiap poin adalah kalimat lengkap (bukan frasa pendek).
+   Hubungkan minimal 2 poin dengan jurusan/tempat PKL dari data jika relevan.
+
+ATURAN KERAS:
+- DILARANG menulis label "Tujuan:", "A.", "B.", atau heading apapun.
+- DILARANG menyebut nama orang atau angka yang tidak ada di data.
+- Tulis dalam 1 blok teks: paragraf pembuka diikuti 6 poin bernomor.
 """
 
 
@@ -135,7 +129,7 @@ Instruksi WAJIB:
 
 
 # ── GAP 12: BAB VI Kesimpulan & Saran — enhance atau generate ────────────── #
-def prompt_kesimpulan_saran(ctx: dict) -> str:
+def prompt_kesimpulan_saran(ctx: dict, bab_num: int = 7) -> str:
     siswa = ctx.get("siswa", {})
     perusahaan = ctx.get("perusahaan", {})
     pkl = ctx.get("pkl", {})
@@ -143,48 +137,52 @@ def prompt_kesimpulan_saran(ctx: dict) -> str:
     kesimpulan_user = ctx.get("kesimpulan_user", "")
     saran_user = ctx.get("saran_user", "")
 
-    # Ringkas kegiatan
     bidang_list = [k.get("bidang", "") for k in kegiatan if k.get("bidang")]
     bidang_str = ", ".join(bidang_list) if bidang_list else "berbagai bidang"
 
-    mode_kesimpulan = "ENHANCE (perbaiki dan kembangkan)" if kesimpulan_user.strip() else "GENERATE (buat dari data yang ada)"
-    mode_saran = "ENHANCE (perbaiki dan kembangkan)" if saran_user.strip() else "GENERATE (buat dari data yang ada)"
+    sub1 = f"{bab_num}.1"
+    sub2 = f"{bab_num}.2"
 
-    return f"""Buat konten untuk BAB VI "Kesimpulan dan Saran" dalam laporan PKL.
+    mode_kesimpulan = "ENHANCE (perbaiki dan kembangkan)" if (kesimpulan_user or "").strip() else "GENERATE (buat dari data yang ada)"
+    mode_saran = "ENHANCE (perbaiki dan kembangkan)" if (saran_user or "").strip() else "GENERATE (buat dari data yang ada)"
 
-Data:
-- Nama siswa: {siswa.get('nama', 'Penulis')}
-- Jurusan: {siswa.get('jurusan', '')}
-- Tempat PKL: {perusahaan.get('nama', '')}
-- Durasi PKL: {pkl.get('durasi_bulan', 3)} bulan
-- Bidang kegiatan: {bidang_str}
+    return f"""Buat konten untuk BAB {bab_num} "Kesimpulan dan Saran" dalam laporan PKL.
+
+DATA NYATA (ground truth — SATU-SATUNYA sumber fakta):
+- Nama siswa   : {siswa.get('nama', 'Penulis') or 'Penulis'}
+- Jurusan      : {siswa.get('jurusan', '') or '[tidak diisi]'}
+- Tempat PKL   : {perusahaan.get('nama', '') or '[tidak diisi]'}
+- Durasi PKL   : {pkl.get('durasi_bulan', 3)} bulan
+- Bidang kerja : {bidang_str}
 
 Input Kesimpulan dari Siswa (mode: {mode_kesimpulan}):
-{kesimpulan_user if kesimpulan_user.strip() else "(kosong — generate dari data di atas)"}
+{(kesimpulan_user or '').strip() or "(kosong — generate dari data di atas)"}
 
 Input Saran dari Siswa (mode: {mode_saran}):
-{saran_user if saran_user.strip() else "(kosong — generate dari data di atas)"}
+{(saran_user or '').strip() or "(kosong — generate dari data di atas)"}
 
-Instruksi WAJIB:
-1. Tulis sub-bab "6.1 Kesimpulan" dengan 2 paragraf:
-   - Paragraf 1: Apa yang siswa pelajari dan alami selama PKL secara umum.
-   - Paragraf 2: Refleksi tentang pengalaman di dunia kerja vs pembelajaran di sekolah.
-   Jika ada input dari siswa → kembangkan dan perbaiki kalimatnya agar lebih profesional.
-   
-2. Tulis sub-bab "6.2 Saran" dengan format 2 poin:
-   - Saran untuk pihak SMKN 4 Bandar Lampung
-   - Saran untuk pihak {perusahaan.get('nama', 'perusahaan')}
-   Jika ada input dari siswa → poles dan kembangkan. Jika kosong → buat saran yang wajar dan relevan.
-   
-3. Format output:
-   [KESIMPULAN]
-   (teks 2 paragraf)
-   
-   [SARAN]
-   (teks 2 poin/paragraf)
-   
-4. Gunakan sudut pandang "Penulis"
-5. OUTPUT HANYA teks laporan yang terstruktur sesuai format di atas
+FORMAT OUTPUT WAJIB — SANGAT PENTING, IKUTI PERSIS:
+Baris pertama output: [KESIMPULAN]
+Lalu 2 paragraf teks kesimpulan.
+Lalu 1 baris kosong.
+Lalu baris: [SARAN]
+Lalu 2 paragraf atau poin teks saran.
+
+Contoh format yang BENAR (jangan copy isinya, hanya ikuti strukturnya):
+[KESIMPULAN]
+Pelaksanaan Praktik Kerja Lapangan selama ... bulan di ... memberikan pengalaman...
+Melalui kegiatan ini, Penulis dapat memahami secara langsung...
+
+[SARAN]
+Bagi pihak SMKN 4 Bandar Lampung, diharapkan...
+Bagi pihak {perusahaan.get('nama', 'perusahaan')}, diharapkan...
+
+ATURAN KERAS:
+- Tag [KESIMPULAN] dan [SARAN] WAJIB ada, ditulis PERSIS seperti itu (huruf kapital, dalam kurung siku).
+- JANGAN menulis "Kesimpulan:", "### Kesimpulan", atau variasi lain. HANYA [KESIMPULAN].
+- JANGAN menulis sub-bab {sub1} atau {sub2} — sistem akan menambahnya otomatis.
+- DILARANG mengarang kegiatan atau fakta yang tidak ada di data.
+- Gunakan kata 'Penulis', bukan 'saya'.
 """
 
 
