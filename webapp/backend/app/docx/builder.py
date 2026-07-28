@@ -481,7 +481,7 @@ class PklDocBuilder:
             p_logo = self.doc.add_paragraph()
             p_logo.alignment = WD_ALIGN_PARAGRAPH.CENTER
             run_logo = p_logo.add_run()
-            run_logo.add_picture(logo_sekolah_path, width=Cm(4.2))
+            run_logo.add_picture(logo_sekolah_path, width=Cm(5.5))  # Diperbesar 30% (dari 4.2cm ke 5.5cm)
 
         # Perhitungan spasi vertikal dinamis (Dynamic Cover Spacing Fallback)
         # Menghitung perkiraan tinggi baris yang terpakai di atas logo
@@ -490,17 +490,17 @@ class PklDocBuilder:
         title_lines += (len(f"DI {nama_prsh.upper()}") // 25) + 1
         if pedoman and kota_prsh and kota_prsh.upper() not in nama_prsh.upper():
             title_lines += 1
-        
+
         subtitle_lines = 3  # "Disusun untuk memenuhi..."
         if len(nama_sekolah) > 30:
             subtitle_lines += 1
-            
+
         author_lines = 1  # "disusun oleh :"
         author_lines += (len(nama) // 25) + 1  # Nama Siswa
         if nomor:
             author_lines += 1
-            
-        logo_lines = 8.5 if (logo_sekolah_path and os.path.exists(logo_sekolah_path)) else 0
+
+        logo_lines = 11.0 if (logo_sekolah_path and os.path.exists(logo_sekolah_path)) else 0
         total_top_lines = title_lines + subtitle_lines + author_lines + logo_lines + 3.0
         
         # Target kapasitas baris Halaman Cover sebelum Kop Footer
