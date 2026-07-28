@@ -92,11 +92,24 @@ DATA_FULL: dict = {
             "mengembangkan SDM yang kompeten di bidang IT",
         ],
         "profil_lokasi": "PT Solusi Digital Kreatif berlokasi di Jl. Diponegoro No. 112, Bandar Lampung, yang mudah dijangkau dari pusat kota.",
-        "tata_tertib_perusahaan": [
-            "datang tepat waktu sesuai jam kerja",
+        "tata_tertib": [
+            "datang tepat waktu sesuai jam kerja pukul 08.00 WIB",
             "pake seragam sesuai hari yang ditentukan",
-            "dilarang main hp saat kerja",
+            "dilarang main hp saat jam kerja",
             "minta izin dulu kalau mau keluar ruangan",
+        ],
+        "tata_tertib_perusahaan": [
+            "datang tepat waktu sesuai jam kerja pukul 08.00 WIB",
+            "pake seragam sesuai hari yang ditentukan",
+            "dilarang main hp saat jam kerja",
+            "minta izin dulu kalau mau keluar ruangan",
+        ],
+        "jam_kerja": [
+            {"hari": "SENIN", "jam": "08.00 - 12.00\n13.00 - 16.00", "jam_mulai": "08.00", "jam_selesai": "16.00", "jam_istirahat": "12.00 - 13.00", "keterangan": "OPERASIONAL\nOPERASIONAL"},
+            {"hari": "SELASA", "jam": "08.00 - 12.00\n13.00 - 16.00", "jam_mulai": "08.00", "jam_selesai": "16.00", "jam_istirahat": "12.00 - 13.00", "keterangan": "OPERASIONAL\nOPERASIONAL"},
+            {"hari": "RABU", "jam": "08.00 - 12.00\n13.00 - 16.00", "jam_mulai": "08.00", "jam_selesai": "16.00", "jam_istirahat": "12.00 - 13.00", "keterangan": "OPERASIONAL\nOPERASIONAL"},
+            {"hari": "KAMIS", "jam": "08.00 - 12.00\n13.00 - 16.00", "jam_mulai": "08.00", "jam_selesai": "16.00", "jam_istirahat": "12.00 - 13.00", "keterangan": "OPERASIONAL\nOPERASIONAL"},
+            {"hari": "JUMAT", "jam": "08.00 - 11.30\n13.00 - 16.00", "jam_mulai": "08.00", "jam_selesai": "16.00", "jam_istirahat": "11.30 - 13.00", "keterangan": "OPERASIONAL\nOPERASIONAL"},
         ],
         "job_descriptions": [
             {"posisi": "Backend Developer",
@@ -115,8 +128,11 @@ DATA_FULL: dict = {
         "bagian_ditempatkan": "Backend Development",
     },
     "jam_kerja": [
-        {"hari": "Senin-Jumat", "jam": "08:00 - 16:00", "jam_mulai": "08:00",
-         "jam_selesai": "16:00", "jam_istirahat": "12:00 - 13:00", "keterangan": "OPERASIONAL"},
+        {"hari": "SENIN", "jam": "08.00 - 12.00\n13.00 - 16.00", "jam_mulai": "08.00", "jam_selesai": "16.00", "jam_istirahat": "12.00 - 13.00", "keterangan": "OPERASIONAL\nOPERASIONAL"},
+        {"hari": "SELASA", "jam": "08.00 - 12.00\n13.00 - 16.00", "jam_mulai": "08.00", "jam_selesai": "16.00", "jam_istirahat": "12.00 - 13.00", "keterangan": "OPERASIONAL\nOPERASIONAL"},
+        {"hari": "RABU", "jam": "08.00 - 12.00\n13.00 - 16.00", "jam_mulai": "08.00", "jam_selesai": "16.00", "jam_istirahat": "12.00 - 13.00", "keterangan": "OPERASIONAL\nOPERASIONAL"},
+        {"hari": "KAMIS", "jam": "08.00 - 12.00\n13.00 - 16.00", "jam_mulai": "08.00", "jam_selesai": "16.00", "jam_istirahat": "12.00 - 13.00", "keterangan": "OPERASIONAL\nOPERASIONAL"},
+        {"hari": "JUMAT", "jam": "08.00 - 11.30\n13.00 - 16.00", "jam_mulai": "08.00", "jam_selesai": "16.00", "jam_istirahat": "11.30 - 13.00", "keterangan": "OPERASIONAL\nOPERASIONAL"},
     ],
     "kegiatan": [
         {"bidang": "Backend Development",
@@ -148,8 +164,8 @@ DATA_FULL: dict = {
         "Bekerja dalam tim pengembang software",
     ],
     "refleksi": "Selama PKL saya belajar banyak tentang backend development yang sebenarnya. Ternyata ngoding di dunia kerja jauh berbeda dengan tugas di sekolah karena harus mengikuti standar tim.",
-    "kesimpulan_user": "",
-    "saran_user": "",
+    "kesimpulan_user": "Berdasarkan hasil Praktik Kerja Lapangan yang dilaksanakan di PT Solusi Digital Kreatif, Penulis dapat menyimpulkan bahwa pengembangan backend menggunakan Express.js dan MySQL membutuhkan pemahaman yang baik tentang arsitektur REST API dan desain database terstruktur.",
+    "saran_user": "Disarankan agar pihak sekolah meningkatkan porsi praktik ngoding di laboratorium, dan pihak industri memberikan dokumentasi API yang lebih detail kepada siswa PKL baru.",
     "config": {
         "preset": "pedoman",
         "bab_modules": ["PENDAHULUAN", "KEGIATAN_INDUSTRI", "TINJAUAN_PUSTAKA",
