@@ -823,11 +823,11 @@ def _build_front_matter(
         builder.setup_page_numbering(builder.doc.sections[0], fmt=cover_num_fmt, start=1)
 
     # Cover luar
-    builder.add_cover(data)
+    builder.add_cover(data, is_cover_dalam=False)
 
-    # Cover dalam (identik cover luar)
-    builder.add_page_break()
-    builder.add_cover(data)
+    # Cover dalam (dengan margin standar pedoman 4cm kiri, 3cm kanan/atas/bawah)
+    builder.add_section_break()
+    builder.add_cover(data, is_cover_dalam=True)
 
     # Mulai section baru untuk Halaman Depan
     section_front = builder.add_section_break()

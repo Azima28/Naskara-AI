@@ -360,35 +360,51 @@ class PklDocBuilder:
     # ------------------------------------------------------------------ #
     #  Cover                                                              #
     # ------------------------------------------------------------------ #
-    def add_cover(self, data: dict) -> None:
+    def add_cover(self, data: dict, is_cover_dalam: bool = False) -> None:
         sekolah = data.get("sekolah", {})
         siswa = data.get("siswa", {})
         perusahaan = data.get("perusahaan", {})
         pedoman = self.preset == "pedoman"
 
-        # Apply cover page section margins & border frame (persis seperti LAPORAN PKL NIKEN FIXED.docx)
-        try:
-            sec0 = self.doc.sections[0]
-            sec0.left_margin = Cm(1.55)
-            sec0.right_margin = Cm(1.65)
-            sec0.top_margin = Cm(2.44)
-            sec0.bottom_margin = Cm(0.50)
+        if not is_cover_dalam:
+            # Apply cover page section margins & border frame (Cover Luar / Page 1)
+            try:
+                sec0 = self.doc.sections[0]
+                sec0.left_margin = Cm(1.55)
+                sec0.right_margin = Cm(1.65)
+                sec0.top_margin = Cm(2.44)
+                sec0.bottom_margin = Cm(0.50)
 
-            sectPr = sec0._sectPr
-            for child in list(sectPr):
-                if child.tag.endswith('pgBorders'):
-                    sectPr.remove(child)
-            borders_xml = parse_xml(
-                r'<w:pgBorders xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:display="firstPage" w:offsetFrom="page">'
-                r'<w:top w:val="thinThickThinSmallGap" w:color="auto" w:sz="24" w:space="24"/>'
-                r'<w:left w:val="thinThickThinSmallGap" w:color="auto" w:sz="24" w:space="24"/>'
-                r'<w:bottom w:val="thinThickThinSmallGap" w:color="auto" w:sz="24" w:space="24"/>'
-                r'<w:right w:val="thinThickThinSmallGap" w:color="auto" w:sz="24" w:space="24"/>'
-                r'</w:pgBorders>'
-            )
-            sectPr.append(borders_xml)
-        except Exception:
-            pass
+                sectPr = sec0._sectPr
+                for child in list(sectPr):
+                    if child.tag.endswith('pgBorders'):
+                        sectPr.remove(child)
+                borders_xml = parse_xml(
+                    r'<w:pgBorders xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:display="firstPage" w:offsetFrom="page">'
+                    r'<w:top w:val="thinThickThinSmallGap" w:color="auto" w:sz="24" w:space="24"/>'
+                    r'<w:left w:val="thinThickThinSmallGap" w:color="auto" w:sz="24" w:space="24"/>'
+                    r'<w:bottom w:val="thinThickThinSmallGap" w:color="auto" w:sz="24" w:space="24"/>'
+                    r'<w:right w:val="thinThickThinSmallGap" w:color="auto" w:sz="24" w:space="24"/>'
+                    r'</w:pgBorders>'
+                )
+                sectPr.append(borders_xml)
+            except Exception:
+                pass
+        else:
+            # Cover Dalam (Page 2): Menggunakan MARGIN STANDAR LAPORAN (Left 4cm, Right 3cm, Top 3cm, Bottom 3cm)
+            sec_curr = self.doc.sections[-1]
+            m = self.margin
+            sec_curr.top_margin = Cm(m.get("atas", 3))
+            sec_curr.bottom_margin = Cm(m.get("bawah", 3))
+            sec_curr.left_margin = Cm(m.get("kiri", 4))
+            sec_curr.right_margin = Cm(m.get("kanan", 3))
+            try:
+                sectPr = sec_curr._sectPr
+                for child in list(sectPr):
+                    if child.tag.endswith('pgBorders'):
+                        sectPr.remove(child)
+            except Exception:
+                pass
 
         # Logo Pemprov di bagian atas cover (contoh resmi hal. 33) — opsional.
         if pedoman:
