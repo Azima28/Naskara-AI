@@ -585,9 +585,10 @@ class PklDocBuilder:
             r_prov.add_picture(logo_prov_path, width=Cm(3.2))
 
         # 2. Teks Kop Sekolah di cell_right (Top Aligned Centered, simetris dengan halaman)
+        # Indent kanan 3.2cm menyamai lebar Logo Lampung (3.2cm) di kiri agar teks Kop presisi di tengah halaman
         p_right_first = cell_right.paragraphs[0]
         p_right_first.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p_right_first.paragraph_format.right_indent = Cm(1.0)
+        p_right_first.paragraph_format.right_indent = Cm(3.2)
 
         for idx, (text, size, bold) in enumerate(kop_lines):
             if idx == 0:
@@ -595,7 +596,7 @@ class PklDocBuilder:
             else:
                 p = cell_right.add_paragraph()
                 p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                p.paragraph_format.right_indent = Cm(1.0)
+                p.paragraph_format.right_indent = Cm(3.2)
             p.paragraph_format.line_spacing = 1.15
             p.paragraph_format.space_before = Pt(0)
             p.paragraph_format.space_after = Pt(1)
@@ -607,7 +608,7 @@ class PklDocBuilder:
         if email or website:
             p = cell_right.add_paragraph()
             p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            p.paragraph_format.right_indent = Cm(1.0)
+            p.paragraph_format.right_indent = Cm(3.2)
             p.paragraph_format.line_spacing = 1.15
             p.paragraph_format.space_before = Pt(0)
             p.paragraph_format.space_after = Pt(1)
