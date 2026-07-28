@@ -1,6 +1,24 @@
 # BAB Catalog — Modul BAB Laporan PKL
+# Panduan Resmi SMKN4 Bandar Lampung TP 2026-2027
 
 Setiap BAB adalah **modul** yang bisa di-include atau di-skip. Agent pilih modul berdasarkan data yang tersedia + preferensi user.
+
+> **PEMBARUAN TP 2026-2027**: Struktur resmi SMKN4 adalah **6 BAB**. Profil Perusahaan
+> (Sejarah, Visi-Misi, Tata Tertib, Struktur Organisasi, Job Description) **tidak lagi**
+> berdiri sebagai BAB tersendiri — melainkan menjadi sub-bab 1.3–1.6 di dalam BAB I PENDAHULUAN.
+
+---
+
+## Struktur Resmi 6 BAB SMKN4 TP 2026-2027
+
+| No | Modul | Judul | Sub-bab |
+|:---:|:---|:---|:---|
+| I | `PENDAHULUAN` | PENDAHULUAN | 1.1 Latar Belakang, 1.2 Tujuan, 1.3 Sejarah Perusahaan, 1.4 Tata Tertib, 1.5 Struktur Organisasi, 1.6 Job Description |
+| II | `KEGIATAN_INDUSTRI` | KEGIATAN DI INDUSTRI | 2.1 Proses Kegiatan Selama PKL |
+| III | `TINJAUAN_PUSTAKA` | TINJAUAN PUSTAKA | 3.1 Landasan Teori, 3.2 Asas PKL, 3.3 Sejarah SMKN4 |
+| IV | `DATA_PENGAMATAN` | DATA PENGAMATAN | 4.1 Pelaksanaan Kegiatan, 4.2 Peralatan & Perlengkapan |
+| V | `PEMBAHASAN` | PEMBAHASAN | 5.1 Hambatan, 5.2 Pemecahan Masalah, 5.3 Hal yang Perlu Diperhatikan |
+| VI | `KESIMPULAN_SARAN` | KESIMPULAN DAN SARAN | 6.1 Kesimpulan, 6.2 Saran |
 
 ---
 
@@ -8,175 +26,107 @@ Setiap BAB adalah **modul** yang bisa di-include atau di-skip. Agent pilih modul
 
 ### `PENDAHULUAN` — Selalu Include
 
-**Judul default:** BAB [N] PENDAHULUAN
+**Judul default:** BAB I PENDAHULUAN
 
 | Sub-bab | ID | Include Condition | Enumerasi |
-|---------|----|--------------------|-----------|
+|---------|----|--------------------|-----------| 
 | Latar Belakang | `1.1` | ✅ Selalu | Paragraf naratif |
-| Rumusan Masalah | `1.2` | Kalau ada pertanyaan spesifik | `1. 2. 3.` (angka) |
-| Batasan Masalah | `1.3` | Kalau scope perlu dijelaskan | `a. b. c.` (huruf) |
-| Tujuan PKL | `1.4` | ✅ Selalu (tujuan umum + khusus) | `1. 2. 3.` (angka) |
-| Manfaat PKL | `1.5` | Sering (bagi siswa, sekolah, perusahaan) | `a. b. c.` (huruf) |
-| Waktu dan Tempat Pelaksanaan | `1.6` | ✅ Selalu | Paragraf / tabel |
-| Metode Pengumpulan Data | `1.7` | Kalau diminta sekolah | `1. 2. 3.` (angka) |
-| Sistematika Penulisan | `1.8` | Kalau diminta sekolah | Paragraf per BAB |
+| Tujuan PKL | `1.2` | ✅ Selalu (tujuan umum + khusus) | `1. 2. 3.` (angka) |
+| Sejarah Singkat Perusahaan | `1.3` | Kalau `profil_perusahaan.sejarah` ada | Paragraf + sub-sub a) Visi-Misi, b) Profil Lokasi |
+| Tata Tertib Perusahaan | `1.4` | ✅ Selalu (8 poin resmi SMKN4 + poin khusus) | Sub-sub a) Jam Kerja, b) Tata Tertib, c) Khusus |
+| Bagan Struktur Organisasi | `1.5` | Kalau ada gambar/data struktur | Gambar + narasi |
+| Job Description | `1.6` | Kalau ada `job_descriptions` | Posisi + daftar tugas |
 
-**Data needed:** `pkl.tanggal_mulai`, `pkl.tanggal_selesai`, `perusahaan.nama`, `perusahaan.alamat`, `siswa.jurusan`
+**Data needed:** `pkl.tanggal_mulai`, `perusahaan.nama`, `profil_perusahaan.*`, `siswa.jurusan`
 
-**Konten Latar Belakang:** Ditulis berdasarkan konteks jurusan + perusahaan. BUKAN template generic "Perkembangan teknologi..." (lihat humanisasi.md).
+> **CATATAN:** `PROFIL_PERUSAHAAN` sebagai modul terpisah sudah **tidak berlaku** sejak TP 2026-2027.
+> Backend menerima nilai ini untuk kompatibilitas mundur, tetapi akan diabaikan (dialiaskan ke `None`).
+> Konten profil perusahaan otomatis masuk ke BAB I sub-bab 1.3-1.6.
 
 ---
 
-### `PROFIL_PERUSAHAAN` — Include kalau ada data perusahaan detail
+### `KEGIATAN_INDUSTRI` (alias: `PELAKSANAAN`, `PROSES_KEGIATAN`) — Selalu Include
 
-**Judul default:** BAB [N] PROFIL PERUSAHAAN / GAMBARAN UMUM INSTANSI
+**Judul default:** BAB II KEGIATAN DI INDUSTRI
 
 | Sub-bab | Include Condition |
 |---------|-------------------|
-| Sejarah Singkat | Kalau `profil_perusahaan.sejarah` ada |
-| Visi dan Misi | Kalau `profil_perusahaan.visi` / `misi` ada |
-| Struktur Organisasi | Kalau ada data atau gambar |
-| Bidang Usaha | Dari `perusahaan.bidang_usaha` |
-| Lokasi / Cabang | Kalau relevan |
-| Tata Tertib Perusahaan | Kalau `profil_perusahaan.tata_tertib` ada |
-| Jam Kerja | Kalau ada data jam kerja |
-| Job Description | Kalau ada data posisi + deskripsi tugas |
+| Proses Kegiatan Selama PKL | ✅ Selalu — dari `kegiatan[]` per bidang |
 
 **Judul alternatif:**
-- "Tinjauan Umum Perusahaan"
-- "Gambaran Umum PT [Nama]"
-- "Profil Instansi / DUDI"
+- "Kegiatan di Industri"
+- "Proses Kegiatan"
 
 ---
 
-### `LANDASAN_TEORI` — Include kalau user mau 5-6 BAB
+### `TINJAUAN_PUSTAKA` (alias: `LANDASAN_TEORI`) — Selalu Include
 
-**Judul default:** BAB [N] LANDASAN TEORI / TINJAUAN PUSTAKA
+**Judul default:** BAB III TINJAUAN PUSTAKA
 
 | Sub-bab | Konten |
 |---------|--------|
 | Landasan Teori | Definisi PKL dari ahli (Oemar Hamalik, Minarti & Usman, Wardiman) |
-| Landasan Hukum / Asas PKL | UU No.20/2003, PP No.29/1990, Kepmendikbud No.323/U/1997, Permendikbud No.50/2020, Kepmendikbudristek No.262/M/2022 |
-| Teori Teknis Jurusan | Teori yang relevan dengan kegiatan PKL (opsional) |
-| Profil/Sejarah Sekolah | Opsional, beberapa sekolah taruh di sini |
+| Asas / Landasan Hukum | UU No.20/2003, PP No.29/1990, Kepmendikbud No.323/U/1997, Permendikbud No.50/2020 |
+| Sejarah SMKN4 | Sejarah singkat SMK Negeri 4 Bandar Lampung |
 
-**Load dari:** `references/laporan-pkl-landasan-hukum.md`
+**Load dari:** `references/laporan-pkl-landasan-hukum.md`, `references/smkn4_sejarah.py`
 
 ---
 
-### `PELAKSANAAN` — Selalu Include (inti laporan)
+### `DATA_PENGAMATAN` — Include (inti laporan detail)
 
-**Judul default:** BAB [N] PELAKSANAAN PKL / KEGIATAN INDUSTRI
+**Judul default:** BAB IV DATA PENGAMATAN
 
 | Sub-bab | Include Condition |
 |---------|-------------------|
-| Uraian Kegiatan per Bidang | ✅ Selalu — dari `kegiatan[]` |
-| Studi Kasus / Analisis Teknis | Kalau `studi_kasus` ada — load referensi dari `jurusan-knowledge.md` |
-| Peralatan & Perlengkapan | Kalau `peralatan[]` ada — dengan gambar |
-| Dokumentasi Foto | Kalau `assets[]` ada yang type foto/screenshot |
-
-**Judul alternatif:**
-- "Kegiatan Industri"
-- "Pembahasan"
-- "Hasil Pelaksanaan PKL"
-- "Data Pengamatan"
-
-**Format kegiatan:**
-```
-[Bidang: Operation]
-Adapun tugas yang penulis kerjakan dalam bidang Operation adalah:
-a. [Tugas 1 + detail]
-b. [Tugas 2 + detail]
-...
-
-[Bidang: Collection]
-Adapun tugas yang penulis kerjakan dalam bidang Collection adalah:
-a. [Tugas 1 + detail]
-...
-```
+| Pelaksanaan Kegiatan PKL | ✅ Selalu — narasi detail dari `kegiatan[]` |
+| Jenis Peralatan dan Perlengkapan | Kalau `peralatan[]` ada — dengan gambar |
 
 ---
 
-### `PEMBAHASAN` — Include kalau ada analisis mendalam
+### `PEMBAHASAN` (alias: `HAMBATAN`) — Include kalau ada analisis
 
-**Judul default:** BAB [N] PEMBAHASAN
+**Judul default:** BAB V PEMBAHASAN
 
 | Sub-bab | Include Condition |
 |---------|-------------------|
-| Analisis Masalah | Kalau ada problem solving yang dikerjakan |
-| Refleksi Pengalaman | Kalau `refleksi` ada |
-| Perbandingan Teori vs Praktik | Kalau ada LANDASAN_TEORI dan bisa dibandingkan |
-| Hal-hal yang Perlu Diperhatikan | General reflection |
-
-**Note:** Modul ini sering digabung dengan PELAKSANAAN di struktur 4 BAB.
+| Hambatan yang Dialami | Kalau `kendala[]` ada |
+| Pemecahan Masalah | Kalau `kendala[]` ada (pasangan dari hambatan) |
+| Hal-hal yang Perlu Diperhatikan | ✅ Selalu — pembelajaran/refleksi |
 
 ---
 
-### `HAMBATAN` — Include kalau ada data kendala signifikan
+### `KESIMPULAN_SARAN` (alias: `PENUTUP`, `KESIMPULAN`) — Selalu Include
 
-**Judul default:** BAB [N] HAMBATAN DAN SOLUSI
-
-| Sub-bab | Konten |
-|---------|--------|
-| Hambatan | Dari `kendala[].masalah` |
-| Solusi / Upaya | Dari `kendala[].solusi` |
-
-**Note:** Modul ini sering menjadi sub-bab di PELAKSANAAN atau PENUTUP di struktur < 6 BAB.
-
----
-
-### `PENUTUP` — Selalu Include
-
-**Judul default:** BAB [N] KESIMPULAN DAN SARAN / PENUTUP
+**Judul default:** BAB VI KESIMPULAN DAN SARAN
 
 | Sub-bab | Enumerasi |
 |---------|-----------|
 | Kesimpulan | `1. 2. 3.` (angka) — ringkasan dari semua kegiatan |
-| Saran untuk Sekolah | `1. 2. 3.` (angka) |
-| Saran untuk Perusahaan | `1. 2. 3.` (angka) |
-
-**Konten Kesimpulan:** Sintesis dari data kegiatan + refleksi. BUKAN "Semoga bermanfaat..." (lihat humanisasi.md).
+| Saran | `1. 2. 3.` (angka) — untuk sekolah dan industri |
 
 ---
 
 ## Logika Pemilihan Otomatis
 
-Agent analisis data yang terkumpul dan rekomendasikan jumlah BAB:
+Agent analisis data yang terkumpul dan rekomendasikan struktur **6 BAB resmi** SMKN4:
 
 ```
-RULE 1: Kalau data minimal (cuma nama + kegiatan dasar)
-  → 3 BAB: PENDAHULUAN + PELAKSANAAN + PENUTUP
+RULE 1 (Resmi SMKN4 TP 2026-2027):
+  SELALU gunakan 6 BAB:
+    BAB I   PENDAHULUAN       → termasuk Profil Perusahaan (1.3-1.6)
+    BAB II  KEGIATAN INDUSTRI → ringkasan proses kegiatan
+    BAB III TINJAUAN PUSTAKA  → Landasan Teori + Asas PKL + Sejarah SMKN4
+    BAB IV  DATA PENGAMATAN   → detail kegiatan + peralatan
+    BAB V   PEMBAHASAN        → hambatan + solusi + refleksi
+    BAB VI  KESIMPULAN & SARAN
 
-RULE 2: Kalau ada data perusahaan detail (sejarah/visi misi/struktur)
-  → 4 BAB: + PROFIL_PERUSAHAAN
-
-RULE 3: Kalau ada data perusahaan + perlu landasan teori
-  → 5 BAB: + LANDASAN_TEORI
-
-RULE 4: Kalau ada studi kasus teknis + analisis mendalam
-  → 5-6 BAB: + PEMBAHASAN (terpisah dari PELAKSANAAN)
-
-RULE 5: Kalau ada kendala signifikan yang perlu BAB sendiri
-  → +1 BAB: HAMBATAN (biasanya jadi BAB V di struktur 6 BAB)
+RULE 2 (Sub-bab BAB I yang muncul/tidak):
+  - 1.3 Sejarah: muncul kalau profil_perusahaan.sejarah ada
+  - 1.4 Tata Tertib: SELALU ada (8 poin resmi SMKN4 + poin khusus perusahaan)
+  - 1.5 Struktur: muncul kalau ada gambar struktur_organisasi
+  - 1.6 Job Desc: muncul kalau ada job_descriptions
 ```
-
-**Format rekomendasi ke user:**
-
-> Berdasarkan data kamu, saya sarankan **[N] BAB**:
-> 
-> BAB I — Pendahuluan
-> BAB II — Profil [Nama Perusahaan]
-> BAB III — Pelaksanaan PKL
-> BAB IV — Penutup
-> 
-> **Alasan:** [penjelasan singkat]
-> 
-> Mau pakai ini, atau mau ubah? Bisa tambah BAB Landasan Teori, atau kurangin jadi 3 BAB.
-
-**User bisa override:**
-- "Saya mau 6 BAB" → agent sesuaikan
-- "Tambah BAB hambatan" → agent tambahkan modul HAMBATAN
-- "Gabung aja profil perusahaan ke pendahuluan" → agent merge
 
 ---
 
@@ -185,12 +135,14 @@ RULE 5: Kalau ada kendala signifikan yang perlu BAB sendiri
 Setelah modul dipilih, BAB di-nomor ulang secara sekuensial:
 
 ```python
-selected_modules = ["PENDAHULUAN", "PROFIL_PERUSAHAAN", "PELAKSANAAN", "PENUTUP"]
+selected_modules = ["PENDAHULUAN", "KEGIATAN_INDUSTRI", "TINJAUAN_PUSTAKA",
+                    "DATA_PENGAMATAN", "PEMBAHASAN", "KESIMPULAN_SARAN"]
 for i, module in enumerate(selected_modules, 1):
-    bab_number = to_roman(i)  # I, II, III, IV
+    bab_number = to_roman(i)  # I, II, III, IV, V, VI
 ```
 
 Sub-bab mengikuti nomor BAB:
-- BAB I → 1.1, 1.2, 1.3
-- BAB II → 2.1, 2.2, 2.3
+- BAB I → 1.1, 1.2, 1.3, 1.4, 1.5, 1.6
+- BAB II → 2.1
+- BAB III → 3.1, 3.2, 3.3
 - dst.

@@ -1,17 +1,17 @@
-"""Assembler laporan PKL — kodifikasi referensi Niken LAPORAN PKL FIXED.docx.
+"""Assembler laporan PKL — mengikuti Panduan Resmi SMKN4 Bandar Lampung TP 2026-2027.
 
 Fungsi utama: `assemble_report(data)` menerima PklContext dict dan menghasilkan
-file .docx utuh dengan urutan PERSIS dokumen Niken:
+file .docx utuh dengan urutan:
   Cover → Cover dalam → Pengesahan → Identitas → Kata Pengantar → BAB (arabic)
 
-Struktur BAB mengikuti Niken:
-  BAB I   PENDAHULUAN      (Latar Belakang, Tujuan, Sejarah Perusahaan, Visi Misi,
+Struktur BAB mengikuti Panduan Resmi SMKN4 TP 2026-2027 (6 BAB):
+  BAB I   PENDAHULUAN      (Latar Belakang, Tujuan, Sejarah Perusahaan, Visi-Misi,
                              Profil Lokasi, Tata Tertib, Struktur Organisasi, Job Desc)
-  BAB II  PROSES KEGIATAN  (ringkasan tugas per-divisi, singkat)
-  BAB III TINJAUAN PUSTAKA (Sejarah SMKN 4, Landasan Hukum)
-  BAB IV  DATA PENGAMATAN  (detail cerita kegiatan + Peralatan & Perlengkapan)
-  BAB V   PEMBAHASAN       (Hambatan, Solusi, Pembelajaran)
-  BAB VI  PENUTUP          (Kesimpulan, Saran)
+  BAB II  KEGIATAN INDUSTRI (ringkasan proses kegiatan per seksi/divisi)
+  BAB III TINJAUAN PUSTAKA  (Landasan Teori, Asas PKL, Sejarah SMKN 4)
+  BAB IV  DATA PENGAMATAN   (detail kegiatan + Peralatan & Perlengkapan)
+  BAB V   PEMBAHASAN        (Hambatan, Solusi, Hal yang Perlu Diperhatikan)
+  BAB VI  KESIMPULAN & SARAN (Kesimpulan, Saran untuk Sekolah & Industri)
 """
 from __future__ import annotations
 
@@ -34,17 +34,15 @@ logger = logging.getLogger(__name__)
 # Ini urutan kanonik: BAB selalu ditulis dalam urutan ini, apa pun urutan
 # yang dikirim frontend.
 #
-# Aturan resmi SMKN4 (7 BAB):
-#   I   PENDAHULUAN
-#   II  PROFIL_PERUSAHAAN
-#   III KEGIATAN_INDUSTRI
-#   IV  TINJAUAN_PUSTAKA
-#   V   DATA_PENGAMATAN
-#   VI  PEMBAHASAN
-#   VII KESIMPULAN_SARAN
+# Aturan resmi SMKN4 TP 2026-2027 (6 BAB):
+#   I   PENDAHULUAN  (Latar Belakang, Tujuan, Sejarah, Struktur, Tata Tertib)
+#   II  KEGIATAN_INDUSTRI
+#   III TINJAUAN_PUSTAKA
+#   IV  DATA_PENGAMATAN
+#   V   PEMBAHASAN
+#   VI  KESIMPULAN_SARAN
 ALL_BAB_MODULES = [
     "PENDAHULUAN",
-    "PROFIL_PERUSAHAAN",
     "KEGIATAN_INDUSTRI",
     "TINJAUAN_PUSTAKA",
     "DATA_PENGAMATAN",
@@ -56,6 +54,10 @@ ALL_BAB_MODULES = [
 # konsep yang sama. Tanpa pemetaan ini, `writers.get()` mengembalikan None dan
 # BAB-nya hilang dari dokumen tanpa error apa pun.
 MODULE_ALIASES: dict[str, str | None] = {
+    # PROFIL_PERUSAHAAN tidak lagi berdiri sebagai BAB tersendiri.
+    # Kontennya (Sejarah, Visi-Misi, Tata Tertib, Struktur, Job Desc)
+    # sekarang menjadi sub-bab 1.3-1.5 di dalam BAB I PENDAHULUAN.
+    "PROFIL_PERUSAHAAN": None,
     "PELAKSANAAN": "KEGIATAN_INDUSTRI",
     "PROSES_KEGIATAN": "KEGIATAN_INDUSTRI",
     "LANDASAN_TEORI": "TINJAUAN_PUSTAKA",
@@ -68,10 +70,9 @@ MODULE_ALIASES: dict[str, str | None] = {
 _ROMANS = {1: "I", 2: "II", 3: "III", 4: "IV", 5: "V", 6: "VI", 7: "VII", 8: "VIII"}
 
 # Judul default tiap modul BAB: (judul pedoman, judul legacy, key judul_override).
-# Aturan resmi SMKN4 — Profil Perusahaan adalah BAB II tersendiri.
+# Aturan resmi SMKN4 TP 2026-2027 — 6 BAB, Profil Perusahaan masuk BAB I.
 _BAB_TITLES = {
     "PENDAHULUAN": ("PENDAHULUAN", "PENDAHULUAN", "bab_pendahuluan"),
-    "PROFIL_PERUSAHAAN": ("PROFIL PERUSAHAAN", "PROFIL PERUSAHAAN", "bab_profil_perusahaan"),
     "KEGIATAN_INDUSTRI": ("KEGIATAN DI INDUSTRI", "KEGIATAN INDUSTRI", "bab_kegiatan_industri"),
     "TINJAUAN_PUSTAKA": ("TINJAUAN PUSTAKA", "TINJAUAN PUSTAKA", "bab_tinjauan_pustaka"),
     "DATA_PENGAMATAN": ("DATA PENGAMATAN", "DATA PENGAMATAN", "bab_data_pengamatan"),
@@ -299,38 +300,38 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
     
     sections.append(("DAFTAR LAMPIRAN", get_roman(curr_r), 1))
     
+    # BAB I PENDAHULUAN — 6 BAB resmi SMKN4 TP 2026-2027
+    # Sub-bab 1.3-1.5 adalah Profil Perusahaan yang masuk dalam BAB I
     sections.append(("BAB I PENDAHULUAN", "1", 1))
     sections.append(("1.1 Latar Belakang", "1", 2))
-    sections.append(("1.2 Tujuan Kegiatan Praktik Kerja Lapangan", "1", 2))
-
-    sections.append(("BAB II PROFIL PERUSAHAAN", "3", 1))
-    sections.append(("2.1 Sejarah Singkat " + perus_nama, "3", 2))
+    sections.append(("1.2 Tujuan Kegiatan Praktik Kerja Lapangan", "2", 2))
+    sections.append(("1.3 Sejarah Singkat " + perus_nama, "3", 2))
     sections.append(("a) Visi dan Misi", "3", 3))
     sections.append(("b) Profil Lokasi Praktik Kerja Lapangan", "4", 3))
-    sections.append(("2.2 Tata Tertib Perusahaan", "4", 2))
+    sections.append(("1.4 Tata Tertib Perusahaan", "4", 2))
     sections.append(("a) Waktu Kerja dan Istirahat Kerja", "4", 3))
     sections.append(("b) Tata Tertib dan Kewajiban Karyawan", "5", 3))
-    sections.append(("2.3 Bagan Struktur " + perus_nama, "6", 2))
-    sections.append(("2.4 Job Description " + perus_nama, "6", 2))
+    sections.append(("1.5 Bagan Struktur " + perus_nama, "6", 2))
+    sections.append(("1.6 Job Description " + perus_nama, "6", 2))
 
-    sections.append(("BAB III KEGIATAN DI INDUSTRI", "7", 1))
-    sections.append(("3.1 Proses Kegiatan Selama PKL", "7", 2))
+    sections.append(("BAB II KEGIATAN DI INDUSTRI", "7", 1))
+    sections.append(("2.1 Proses Kegiatan Selama PKL", "7", 2))
 
-    sections.append(("BAB IV TINJAUAN PUSTAKA", "8", 1))
-    sections.append(("4.1 Landasan Teori", "8", 2))
-    sections.append(("4.2 Asas Praktik Kerja Lapangan", "8", 2))
-    sections.append(("4.3 Sejarah " + sek_nama, "9", 2))
+    sections.append(("BAB III TINJAUAN PUSTAKA", "8", 1))
+    sections.append(("3.1 Landasan Teori", "8", 2))
+    sections.append(("3.2 Asas Praktik Kerja Lapangan", "8", 2))
+    sections.append(("3.3 Sejarah " + sek_nama, "9", 2))
 
-    sections.append(("BAB V DATA PENGAMATAN", "10", 1))
-    sections.append(("5.1 Pelaksanaan Kegiatan PKL di Tempat Kerja", "10", 2))
-    sections.append(("5.2 Jenis Peralatan dan Perlengkapan Kantor", "11", 2))
+    sections.append(("BAB IV DATA PENGAMATAN", "10", 1))
+    sections.append(("4.1 Pelaksanaan Kegiatan PKL di Tempat Kerja", "10", 2))
+    sections.append(("4.2 Jenis Peralatan dan Perlengkapan Kantor", "11", 2))
 
-    sections.append(("BAB VI PEMBAHASAN", "13", 1))
-    sections.append(("6.1 Hal-hal yang Perlu Diperhatikan", "13", 2))
+    sections.append(("BAB V PEMBAHASAN", "13", 1))
+    sections.append(("5.1 Hal-hal yang Perlu Diperhatikan", "13", 2))
 
-    sections.append(("BAB VII KESIMPULAN DAN SARAN", "14", 1))
-    sections.append(("7.1 Kesimpulan", "14", 2))
-    sections.append(("7.2 Saran", "14", 2))
+    sections.append(("BAB VI KESIMPULAN DAN SARAN", "14", 1))
+    sections.append(("6.1 Kesimpulan", "14", 2))
+    sections.append(("6.2 Saran", "14", 2))
 
     sections.append(("DAFTAR PUSTAKA", "15", 1))
     sections.append(("LAMPIRAN", "16", 1))
@@ -901,10 +902,10 @@ from .smkn4_sejarah import SEJARAH_SMKN4
 def _build_bab_content(
     builder: PklDocBuilder, data: dict, bab_modules: list[str]
 ) -> None:
-    """Tulis semua BAB berurutan mengikuti struktur Niken."""
+    """Tulis semua BAB berurutan mengikuti struktur resmi SMKN4 TP 2026-2027 (6 BAB)."""
     writers = {
         "PENDAHULUAN": _write_pendahuluan,
-        "PROFIL_PERUSAHAAN": _write_profil_perusahaan,
+        # PROFIL_PERUSAHAAN telah diintegrasikan ke dalam _write_pendahuluan (sub-bab 1.3-1.6)
         "KEGIATAN_INDUSTRI": _write_kegiatan_industri,
         "TINJAUAN_PUSTAKA": _write_tinjauan_pustaka,
         "DATA_PENGAMATAN": _write_data_pengamatan,
@@ -928,14 +929,24 @@ def _build_bab_content(
 
 
 # ---------------------------------------------------------------------- #
-#  BAB I — PENDAHULUAN + PROFIL PERUSAHAAN                               #
-#  (Mengikuti struktur Niken: Latar Belakang, Tujuan,                    #
-#   Sejarah Singkat, Visi&Misi, Profil Lokasi, Tata Ter# ---------------------------------------------------------------------- #
+#  BAB I — PENDAHULUAN (Panduan Resmi SMKN4 TP 2026-2027)               #
+#  Sub-bab:                                                              #
+#    1.1 Latar Belakang                                                  #
+#    1.2 Tujuan Kegiatan PKL                                             #
+#    1.3 Sejarah Singkat Perusahaan (+ Visi-Misi, Profil Lokasi)        #
+#    1.4 Tata Tertib Perusahaan (+ Jam Kerja, Tata Tertib SMKN4)       #
+#    1.5 Bagan Struktur Organisasi (opsional)                           #
+#    1.6 Job Description (opsional)                                      #
+# ---------------------------------------------------------------------- #
 def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None:
-    """BAB I PENDAHULUAN — hanya 2 sub-bab sesuai aturan resmi SMKN4.
+    """BAB I PENDAHULUAN — 6 sub-bab sesuai Panduan Resmi SMKN4 TP 2026-2027.
 
-    Konten Profil Perusahaan (Sejarah, Visi/Misi, Tata Tertib, Struktur,
-    Job Desc) telah dipindahkan ke BAB II (PROFIL_PERUSAHAAN).
+    Profil perusahaan (Sejarah, Visi-Misi, Tata Tertib, Struktur, Job Desc)
+    kini menjadi sub-bab 1.3–1.6 di dalam BAB I, bukan BAB tersendiri.
+
+    Seluruh sub-bab bersifat DINAMIS:
+    - Hadir jika datanya tersedia, dilewati jika tidak ada data.
+    - Penomoran sub-bab otomatis mengikuti urutan data yang tersedia.
     """
     builder.add_bab_heading(
         bab_num, _bab_title("PENDAHULUAN", data), bookmark=f"bab_{bab_num}"
@@ -944,14 +955,18 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
 
     siswa = data.get("siswa", {})
     perusahaan = data.get("perusahaan", {})
+    profil = data.get("profil_perusahaan", {})
     gen = data.get("generated_sections", {})
     judul = data.get("judul_override", {})
 
     nama_prsh = perusahaan.get("nama") or "[Perusahaan]"
+    nama_prsh_full = perusahaan.get("nama_lengkap") or nama_prsh
 
     sub = 1
 
+    # ------------------------------------------------------------------ #
     # 1.1 Latar Belakang — dinamis: AI-generated atau fallback 2 paragraf
+    # ------------------------------------------------------------------ #
     builder.add_sub_heading(bab_num, sub, judul.get("latar_belakang", "Latar Belakang"))
     gen_latar = gen.get("latar_belakang")
     if gen_latar:
@@ -974,7 +989,9 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
         )
     sub += 1
 
-    # 1.2 Tujuan Kegiatan Praktik Kerja Lapangan — dinamis: poin tujuan bebas jumlahnya
+    # ------------------------------------------------------------------ #
+    # 1.2 Tujuan Kegiatan PKL — dinamis: poin tujuan bebas jumlahnya
+    # ------------------------------------------------------------------ #
     builder.add_sub_heading(
         bab_num, sub, judul.get("tujuan", "Tujuan Kegiatan Praktik Kerja Lapangan")
     )
@@ -989,38 +1006,10 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
         builder.add_numbered(t, i)
     sub += 1
 
-
-# ---------------------------------------------------------------------- #
-#  BAB II — PROFIL PERUSAHAAN                                            #
-#  (Aturan resmi SMKN4: Profil Perusahaan berdiri sendiri sebagai BAB)  #
-#  Sub-bab: Sejarah Singkat, Visi & Misi, Profil Lokasi,                #
-#            Tata Tertib, Bagan Struktur, Job Description                #
-#  Semua sub-bab DINAMIS — hadir jika data tersedia, dilewati jika tidak#
-# ---------------------------------------------------------------------- #
-def _write_profil_perusahaan(builder: PklDocBuilder, data: dict, bab_num: int) -> None:
-    """BAB II PROFIL PERUSAHAAN — konten Profil sesuai aturan resmi SMKN4.
-
-    Seluruh sub-bab bersifat DINAMIS:
-    - Panjang teks tidak dibatasi (1 paragraf atau 10 paragraf, sama saja)
-    - Sub-bab hanya muncul jika datanya ada (tidak ada isian kosong)
-    - Penomoran sub-bab otomatis mengikuti urutan data yang tersedia
-    """
-    builder.add_bab_heading(
-        bab_num, _bab_title("PROFIL_PERUSAHAAN", data), bookmark=f"bab_{bab_num}"
-    )
-    builder.add_spacing(1)
-
-    perusahaan = data.get("perusahaan", {})
-    profil = data.get("profil_perusahaan", {})
-    gen = data.get("generated_sections", {})
-    judul = data.get("judul_override", {})
-
-    nama_prsh = perusahaan.get("nama") or "[Perusahaan]"
-    nama_prsh_full = perusahaan.get("nama_lengkap") or nama_prsh
-
-    sub = 1
-
-    # 2.1 Sejarah Singkat Perusahaan — dinamis: bisa 1-N paragraf
+    # ------------------------------------------------------------------ #
+    # 1.3 Sejarah Singkat Perusahaan — opsional: muncul jika ada data
+    #     Sub-sub: a) Visi dan Misi, b) Profil Lokasi PKL
+    # ------------------------------------------------------------------ #
     sejarah = profil.get("sejarah", "")
     logo = profil.get("logo_perusahaan", "")
     if sejarah or logo:
@@ -1034,7 +1023,7 @@ def _write_profil_perusahaan(builder: PklDocBuilder, data: dict, bab_num: int) -
 
         sub3 = 0
 
-        # a) Visi dan Misi — opsional, dinamis
+        # a) Visi dan Misi — opsional
         visi = profil.get("visi", "")
         misi = profil.get("misi", [])
         if visi or misi:
@@ -1051,7 +1040,7 @@ def _write_profil_perusahaan(builder: PklDocBuilder, data: dict, bab_num: int) -
                 for i, m in enumerate(misi, 1):
                     builder.add_numbered(m, i)
 
-        # b) Profil Lokasi Praktik Kerja Lapangan — opsional, dinamis
+        # b) Profil Lokasi Praktik Kerja Lapangan — opsional
         alamat = perusahaan.get("alamat", "")
         area_cabang = profil.get("area_cabang", [])
         if alamat or area_cabang:
@@ -1078,7 +1067,10 @@ def _write_profil_perusahaan(builder: PklDocBuilder, data: dict, bab_num: int) -
 
         sub += 1
 
-    # 2.2 Tata Tertib Perusahaan — 8 poin resmi SMKN4 + tata tertib perusahaan (jika ada)
+    # ------------------------------------------------------------------ #
+    # 1.4 Tata Tertib Perusahaan — 8 poin resmi SMKN4 + poin khusus
+    #     Sub-sub: a) Waktu Kerja, b) Tata Tertib Karyawan, c) Khusus
+    # ------------------------------------------------------------------ #
     OFFICIAL_SMKN4_TATA_TERTIB = [
         "Mematuhi aturan dan tata tertib yang berlaku di industri;",
         "Melaksanakan kegiatan PKL sesuai jam kerja yang berlaku di industri;",
@@ -1104,7 +1096,7 @@ def _write_profil_perusahaan(builder: PklDocBuilder, data: dict, bab_num: int) -
     ))
     tt_sub = 0
 
-    # a) Waktu Kerja dan Istirahat Kerja — dinamis: tabel mengikuti data jam kerja user
+    # a) Waktu Kerja dan Istirahat Kerja — dinamis: tabel jam kerja user
     if jam_kerja:
         tt_sub += 1
         builder.add_sub_heading_3(f"{_LETTERS[tt_sub - 1]}) Waktu Kerja dan Istirahat Kerja")
@@ -1133,8 +1125,9 @@ def _write_profil_perusahaan(builder: PklDocBuilder, data: dict, bab_num: int) -
 
     sub += 1
 
-
-    # 2.3 Bagan Struktur Organisasi — opsional, gambar + narasi dinamis
+    # ------------------------------------------------------------------ #
+    # 1.5 Bagan Struktur Organisasi — opsional, gambar + narasi dinamis
+    # ------------------------------------------------------------------ #
     struktur = profil.get("struktur_organisasi", "")
     if struktur:
         builder.add_sub_heading(bab_num, sub, f"Bagan Struktur {nama_prsh}")
@@ -1148,7 +1141,9 @@ def _write_profil_perusahaan(builder: PklDocBuilder, data: dict, bab_num: int) -
             _write_paragraphs(builder, narasi)
         sub += 1
 
-    # 2.4 Job Description — opsional, jumlah posisi & tugas bebas
+    # ------------------------------------------------------------------ #
+    # 1.6 Job Description — opsional, jumlah posisi & tugas bebas
+    # ------------------------------------------------------------------ #
     job_descs = profil.get("job_descriptions", [])
     if job_descs:
         nama_cabang = perusahaan.get("nama_cabang") or nama_prsh_full
@@ -1163,14 +1158,13 @@ def _write_profil_perusahaan(builder: PklDocBuilder, data: dict, bab_num: int) -
         sub += 1
 
 
-
 # ---------------------------------------------------------------------- #
-#  BAB III — KEGIATAN DI INDUSTRI (ringkasan singkat per divisi)         #
+#  BAB II — KEGIATAN DI INDUSTRI (ringkasan singkat per divisi)          #
 # ---------------------------------------------------------------------- #
 def _write_kegiatan_industri(builder: PklDocBuilder, data: dict, bab_num: int) -> None:
-    """BAB III KEGIATAN DI INDUSTRI: ringkasan proses kegiatan per divisi.
+    """BAB II KEGIATAN DI INDUSTRI: ringkasan proses kegiatan per divisi.
 
-    Berbeda dengan BAB V (detail cerita). Di sini hanya garis besar per divisi.
+    Berbeda dengan BAB IV (detail cerita). Di sini hanya garis besar per divisi.
     """
     builder.add_bab_heading(
         bab_num, _bab_title("KEGIATAN_INDUSTRI", data), bookmark=f"bab_{bab_num}"
@@ -1225,7 +1219,7 @@ def _write_kegiatan_industri(builder: PklDocBuilder, data: dict, bab_num: int) -
 
 
 # ---------------------------------------------------------------------- #
-#  BAB III — TINJAUAN PUSTAKA                                            #
+#  BAB III — TINJAUAN PUSTAKA                                             #
 # ---------------------------------------------------------------------- #
 def _write_tinjauan_pustaka(builder: PklDocBuilder, data: dict, bab_num: int) -> None:
     """BAB III: Landasan Teori → Asas/dasar hukum PKL → Sejarah sekolah."""
@@ -1282,7 +1276,7 @@ def _write_tinjauan_pustaka(builder: PklDocBuilder, data: dict, bab_num: int) ->
 
 
 # ---------------------------------------------------------------------- #
-#  BAB IV — DATA PENGAMATAN (detail + Peralatan & Perlengkapan)          #
+#  BAB IV — DATA PENGAMATAN (detail + Peralatan & Perlengkapan)           #
 # ---------------------------------------------------------------------- #
 def _write_data_pengamatan(builder: PklDocBuilder, data: dict, bab_num: int) -> None:
     """BAB IV: elaborasi detail setiap kegiatan + Peralatan & Perlengkapan Kantor.
@@ -1369,7 +1363,7 @@ def _write_data_pengamatan(builder: PklDocBuilder, data: dict, bab_num: int) -> 
 
 
 # ---------------------------------------------------------------------- #
-#  BAB V — PEMBAHASAN (Hambatan, Solusi, Pembelajaran)                   #
+#  BAB V — PEMBAHASAN (Hambatan, Solusi, Hal yang Perlu Diperhatikan)    #
 # ---------------------------------------------------------------------- #
 def _write_pembahasan(builder: PklDocBuilder, data: dict, bab_num: int) -> None:
     builder.add_bab_heading(
@@ -1437,7 +1431,7 @@ def _write_pembahasan(builder: PklDocBuilder, data: dict, bab_num: int) -> None:
 
 
 # ---------------------------------------------------------------------- #
-#  BAB VI — PENUTUP (Kesimpulan & Saran)                                #
+#  BAB VI — KESIMPULAN DAN SARAN                                          #
 # ---------------------------------------------------------------------- #
 def _write_kesimpulan_saran(builder: PklDocBuilder, data: dict, bab_num: int) -> None:
     judul = data.get("judul_override", {})

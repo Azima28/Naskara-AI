@@ -202,16 +202,17 @@ function buildSectionList(ctx: PklContext) {
   const bab = ctx.config?.bab_modules || []
   const list: { key: string; title: string }[] = []
 
+  // BAB I PENDAHULUAN — termasuk profil perusahaan (sub-bab 1.3-1.6)
+  // sesuai Panduan Resmi SMKN4 TP 2026-2027
   if (bab.includes('PENDAHULUAN')) {
-    list.push({ key: 'latar_belakang', title: 'Latar Belakang' })
-    list.push({ key: 'tujuan_pkl', title: 'Tujuan PKL' })
-  }
-  if (bab.includes('PROFIL_PERUSAHAAN')) {
-    list.push({ key: 'profil_sejarah', title: 'Sejarah Singkat Perusahaan' })
-    list.push({ key: 'narasi_struktur', title: 'Narasi Struktur Organisasi' })
+    list.push({ key: 'latar_belakang', title: 'Latar Belakang (1.1)' })
+    list.push({ key: 'tujuan_pkl', title: 'Tujuan PKL (1.2)' })
+    // Profil perusahaan kini sub-bab 1.3-1.6 di BAB I
+    list.push({ key: 'profil_sejarah', title: 'Sejarah Singkat Perusahaan (1.3)' })
+    list.push({ key: 'narasi_struktur', title: 'Narasi Struktur Organisasi (1.5)' })
   }
   if (bab.includes('LANDASAN_TEORI') || bab.includes('TINJAUAN_PUSTAKA')) {
-    list.push({ key: 'landasan_teori', title: 'Landasan Teori' })
+    list.push({ key: 'landasan_teori', title: 'Landasan Teori (BAB III)' })
   }
   if (bab.includes('PELAKSANAAN') || bab.includes('KEGIATAN_INDUSTRI') || bab.includes('DATA_PENGAMATAN')) {
     const kegiatan = ctx.kegiatan || []
@@ -231,7 +232,7 @@ function buildSectionList(ctx: PklContext) {
     list.push({ key: 'pembahasan', title: 'Pembahasan & Analisis (BAB V)' })
   }
   if (bab.includes('PENUTUP') || bab.includes('KESIMPULAN_SARAN')) {
-    list.push({ key: 'kesimpulan_saran', title: 'Kesimpulan dan Saran' })
+    list.push({ key: 'kesimpulan_saran', title: 'Kesimpulan dan Saran (BAB VI)' })
   }
 
   return list

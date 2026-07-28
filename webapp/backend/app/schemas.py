@@ -29,10 +29,16 @@ class Margin(BaseModel):
 # frontend) dan nama kanonik assembly.ALL_BAB_MODULES. assembly.MODULE_ALIASES yang
 # menyatukannya saat generate — kalau di sini hanya satu ejaan yang lolos, draft
 # dengan ejaan lain ditolak 422 walau sebenarnya bisa di-generate.
+#
+# CATATAN: PROFIL_PERUSAHAAN tidak lagi menjadi BAB tersendiri (Panduan Resmi SMKN4
+# TP 2026-2027). Kontennya (Sejarah, Visi-Misi, Tata Tertib, Struktur, Job Desc)
+# sudah terintegrasi ke dalam BAB I PENDAHULUAN (sub-bab 1.3–1.6). Jika frontend
+# mengirimkan PROFIL_PERUSAHAAN, assembly.MODULE_ALIASES akan mengaliaskannya ke None
+# (diabaikan) sehingga tidak menimbulkan error.
 BabModule = Literal[
     # nama katalog
     "PENDAHULUAN",
-    "PROFIL_PERUSAHAAN",
+    "PROFIL_PERUSAHAAN",   # alias ke None — konten masuk BAB I (sub 1.3-1.6)
     "LANDASAN_TEORI",
     "PELAKSANAAN",
     "PEMBAHASAN",

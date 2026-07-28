@@ -1,14 +1,17 @@
 import type { PklContext, BabModule } from '@/types/pkl'
 import { FieldGroup, NumberField, TextField } from '@/components/fields/FormFields'
 
-const ALL_MODULES: { id: BabModule; label: string }[] = [
-  { id: 'PENDAHULUAN', label: 'Pendahuluan' },
-  { id: 'PROFIL_PERUSAHAAN', label: 'Profil Perusahaan' },
-  { id: 'LANDASAN_TEORI', label: 'Landasan Teori' },
-  { id: 'PELAKSANAAN', label: 'Pelaksanaan' },
-  { id: 'PEMBAHASAN', label: 'Pembahasan' },
-  { id: 'HAMBATAN', label: 'Hambatan' },
-  { id: 'PENUTUP', label: 'Penutup' },
+// Modul BAB yang bisa dipilih user.
+// Sesuai Panduan Resmi SMKN4 TP 2026-2027: 6 BAB.
+// Profil Perusahaan (Sejarah, Visi-Misi, Tata Tertib, Struktur, Job Desc)
+// sudah otomatis masuk sebagai sub-bab 1.3-1.6 di BAB I PENDAHULUAN.
+const ALL_MODULES: { id: BabModule; label: string; desc?: string }[] = [
+  { id: 'PENDAHULUAN', label: 'BAB I — Pendahuluan', desc: 'Latar Belakang, Tujuan, Sejarah & Profil Perusahaan' },
+  { id: 'PELAKSANAAN', label: 'BAB II — Kegiatan di Industri', desc: 'Proses kegiatan per seksi/divisi' },
+  { id: 'LANDASAN_TEORI', label: 'BAB III — Tinjauan Pustaka', desc: 'Landasan Teori, Asas PKL, Sejarah SMKN4' },
+  { id: 'DATA_PENGAMATAN', label: 'BAB IV — Data Pengamatan', desc: 'Detail kegiatan & Peralatan' },
+  { id: 'PEMBAHASAN', label: 'BAB V — Pembahasan', desc: 'Hambatan, Solusi, Pembelajaran' },
+  { id: 'PENUTUP', label: 'BAB VI — Kesimpulan & Saran', desc: 'Kesimpulan dan saran' },
 ]
 
 export default function ConfigStep({ ctx, set }: { ctx: PklContext; set: (p: Partial<PklContext>) => void }) {
@@ -141,9 +144,9 @@ export default function ConfigStep({ ctx, set }: { ctx: PklContext; set: (p: Par
         </FieldGroup>
       )}
 
-      <FieldGroup title="Modul BAB">
+      <FieldGroup title="Modul BAB (Panduan Resmi SMKN4 — 6 BAB)">
         <p className="muted" style={{ marginTop: 0 }}>
-          Centang modul yang ingin dimasukkan. Rekomendasi otomatis muncul di langkah akhir.
+          Struktur laporan sesuai Panduan Resmi SMKN4 TP 2026-2027. Profil Perusahaan otomatis masuk sebagai sub-bab 1.3-1.6 di BAB I.
         </p>
         <div className="checkbox-grid">
           {ALL_MODULES.map((mod) => (
@@ -153,7 +156,10 @@ export default function ConfigStep({ ctx, set }: { ctx: PklContext; set: (p: Par
                 checked={c.bab_modules.includes(mod.id)}
                 onChange={() => toggleModule(mod.id)}
               />
-              {mod.label}
+              <span>
+                <strong>{mod.label}</strong>
+                {mod.desc && <span style={{ display: 'block', fontSize: '0.78rem', opacity: 0.7 }}>{mod.desc}</span>}
+              </span>
             </label>
           ))}
         </div>

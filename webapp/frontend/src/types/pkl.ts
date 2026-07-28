@@ -10,9 +10,13 @@
 // --------------------------------------------------------------------------- //
 // Dua ejaan diterima backend: nama katalog lama + nama kanonik assembly
 // (KEGIATAN_INDUSTRI dst.) — lihat schemas.py BabModule.
+//
+// CATATAN: PROFIL_PERUSAHAAN sudah dialiaskan ke None di backend (Panduan Resmi
+// SMKN4 TP 2026-2027). Kontennya sekarang masuk sebagai sub-bab 1.3-1.6 di
+// BAB I PENDAHULUAN. Nilai ini masih diterima backend agar kompatibel ke belakang.
 export type BabModule =
   | 'PENDAHULUAN'
-  | 'PROFIL_PERUSAHAAN'
+  | 'PROFIL_PERUSAHAAN'   // alias ke None — konten masuk BAB I sub-bab 1.3-1.6
   | 'LANDASAN_TEORI'
   | 'PELAKSANAAN'
   | 'PEMBAHASAN'
