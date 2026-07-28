@@ -84,7 +84,7 @@ export const deleteDraft = (id: string) =>
 // --------------------------------------------------------------------------- //
 //  Generate .docx                                                              //
 // --------------------------------------------------------------------------- //
-export const generateDocx = async (draftId: string): Promise<void> => {
+export const generateDocx = async (draftId: string): Promise<string> => {
   try {
     const response = await api.post(`/generate/${draftId}`, null, {
       responseType: 'blob',
@@ -108,6 +108,18 @@ export const generateDocx = async (draftId: string): Promise<void> => {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
+
+    // Bila sebagian polish AI gagal, backend menyertakan pesan notifikasi
+    // di header — kembalikan agar UI bisa menampilkannya ke user.
+    const noticeHeader = response.headers['x-polish-message']
+    if (noticeHeader) {
+      try {
+        return decodeURIComponent(noticeHeader)
+      } catch {
+        return noticeHeader
+      }
+    }
+    return ''
   } catch (err: any) {
     if (err.response && err.response.data instanceof Blob) {
       try {

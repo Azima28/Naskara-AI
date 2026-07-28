@@ -38,6 +38,18 @@ def _sig_name(nama: str | None) -> str:
     return n if n and n != "-" else SIG_DOTS
 
 
+def _xml_escape(text: str) -> str:
+    """Escape karakter khusus XML untuk teks yang disisipkan ke XML mentah."""
+    return (
+        str(text)
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+        .replace("'", "&apos;")
+    )
+
+
 class PklDocBuilder:
     """Builder stateless per-request. Tiap instance = satu dokumen."""
 
@@ -52,7 +64,8 @@ class PklDocBuilder:
         self.heading_sizes = {**DEFAULT_HEADING_SIZES, **(heading_sizes or {})}
         self.preset = preset
         self._bookmark_id = 100  # id unik untuk bookmarkStart/End
-        self._sub_counter = 0    # bookmark otomatis untuk sub-bab
+        self._sub_counter = 0    # bookmark otomatis untuk sub-bab (level 2)
+        self._sub3_counter = 0   # bookmark otomatis untuk sub-sub-bab (level 3)
         # Daftar (level, teks, bookmark) heading yang ditulis — bahan entri
         # Daftar Isi (diisi otomatis oleh add_bab_heading/add_sub_heading).
         self.outline: list[tuple[int, str, str]] = []
@@ -247,43 +260,87 @@ class PklDocBuilder:
         else:
             body.append(sdt)
 
-    def populate_native_toc(self, sections_list: list[tuple[str, str | int, int]]) -> None:
-        """Populasi entri paragraf ber-PAGEREF di dalam w:sdtContent agar MS Word & PDF 100% menampilkan nomor halaman presisi."""
+    def populate_native_toc(self, sections_list: list[tuple[str, str, int]]) -> None:
+        """Populasi Daftar Isi dengan field PAGEREF yang menunjuk bookmark nyata.
+
+        Tiap entri berupa field ``PAGEREF <bookmark> \\h`` sehingga nomor
+        halaman dihitung Word/LibreOffice dari posisi heading SEBENARNYA —
+        bukan angka hardcode yang cepat basi. Cache di dalam field dibiarkan
+        placeholder ("1") — angka asli diisi belakangan oleh
+        ``embed_toc_page_numbers`` (re-render via Word) atau oleh
+        ``enable_update_fields`` saat dokumen dibuka di Word. ``sections_list``
+        berisi ``(teks, bookmark, level)``; entri tanpa bookmark valid dilewati.
+        """
         sdtContent_list = self.doc.element.body.xpath('.//w:sdtContent')
         if not sdtContent_list:
             return
         sdtContent = sdtContent_list[0]
 
-        # fldChar begin
-        sdtContent.append(parse_xml(
-            f'<w:p {nsdecls("w")}><w:r><w:fldChar w:fldCharType="begin"/></w:r>'
-            f'<w:r><w:instrText xml:space="preserve"> TOC \\o "1-3" \\h \\z \\u </w:instrText></w:r>'
-            f'<w:r><w:fldChar w:fldCharType="separate"/></w:r></w:p>'
-        ))
-
-        for text, page, level in sections_list:
+        for text, bookmark, level in sections_list:
+            if not bookmark:
+                continue
             indent_dxa = "0" if level == 1 else ("360" if level == 2 else "720")
             p_xml = parse_xml(
                 f'<w:p {nsdecls("w")}>'
-                f'<w:pPr><w:pStyle w:val="TOC{level}"/>'
+                f'<w:pPr>'
                 f'<w:tabs><w:tab w:val="right" w:leader="dot" w:pos="7654"/></w:tabs>'
                 f'<w:ind w:left="{indent_dxa}"/>'
                 f'<w:spacing w:line="360" w:lineRule="auto" w:after="0"/></w:pPr>'
-                f'<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="24"/></w:rPr><w:t>{text}</w:t></w:r>'
+                f'<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="24"/></w:rPr><w:t xml:space="preserve">{_xml_escape(text)}</w:t></w:r>'
                 f'<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="24"/></w:rPr><w:tab/></w:r>'
-                f'<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="24"/></w:rPr><w:t>{page}</w:t></w:r>'
+                f'<w:fldSimple w:instr=" PAGEREF {bookmark} \\h ">'
+                f'<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="24"/></w:rPr><w:t>1</w:t></w:r>'
+                f'</w:fldSimple>'
                 f'</w:p>'
             )
             sdtContent.append(p_xml)
 
-        # fldChar end
-        sdtContent.append(parse_xml(f'<w:p {nsdecls("w")}><w:r><w:fldChar w:fldCharType="end"/></w:r></w:p>'))
+        # Word wajib me-update semua field (PAGEREF) saat dokumen dibuka agar
+        # nomor halaman Daftar Isi akurat mengikuti letak heading sebenarnya.
+        self.enable_update_fields()
 
     def enable_update_fields(self) -> None:
         """Minta Word meng-update semua field (PAGEREF) saat dokumen dibuka."""
         settings = self.doc.settings.element
         if settings.find(qn("w:updateFields")) is None:
             settings.append(parse_xml(f'<w:updateFields {nsdecls("w")} w:val="true"/>'))
+
+    def clear_update_fields(self) -> None:
+        """Hapus flag updateFields — dipakai setelah nomor halaman tertanam."""
+        settings = self.doc.settings.element
+        el = settings.find(qn("w:updateFields"))
+        if el is not None:
+            settings.remove(el)
+
+    # ------------------------------------------------------------------ #
+    #  Embed nomor halaman nyata ke Daftar Isi (tanpa butuh user update)  #
+    # ------------------------------------------------------------------ #
+    def embed_toc_page_numbers(self, pages: dict[str, str]) -> None:
+        """Tulis nomor halaman NYATA ke cache tiap field PAGEREF di Daftar Isi.
+
+        ``pages`` = pemetaan ``bookmark → nomor halaman`` (mis. ``"1"`` /
+        ``"ii"``) hasil komputasi engine Word. Setelah angka tertanam, flag
+        ``updateFields`` dicabut supaya Word tidak mengganti angka lagi —
+        dokumen langsung menampilkan Daftar Isi yang benar di semua viewer,
+        termasuk yang tidak mengeksekusi field (pratinjau, konversi PDF).
+        """
+        if not pages:
+            return
+        for fld in self.doc.element.body.xpath('.//w:fldSimple[contains(@w:instr, "PAGEREF")]'):
+            instr = fld.get(qn("w:instr")) or ""
+            parts = instr.split()
+            if len(parts) < 2:
+                continue
+            bookmark = parts[1]
+            if bookmark not in pages:
+                continue
+            # Ganti teks cache di dalam run field dengan nomor nyata.
+            ts = fld.findall('.//' + qn('w:t'))
+            if ts:
+                ts[0].text = str(pages[bookmark])
+                for extra in ts[1:]:
+                    extra.text = ""
+        self.clear_update_fields()
 
     def add_spacing(self, lines: int = 1, keep_with_next: bool = False) -> Any:
         last_p = None
@@ -1068,6 +1125,11 @@ class PklDocBuilder:
         run.font.name = "Times New Roman"
         run.font.size = Pt(self.heading_sizes[3])
         run.bold = True
+        # Registrasi ke outline + bookmark — jadi entri level-3 Daftar Isi.
+        self._sub3_counter += 1
+        bookmark = f"sub3_{self._sub3_counter}"
+        self.attach_bookmark(p, bookmark)
+        self.outline.append((3, judul, bookmark))
 
     def add_numbered(self, text: str, number: int, indent_level: int = 0) -> None:
         """1. text — enumerated list (no bullets per formatting rules)."""
@@ -1463,3 +1525,104 @@ class PklDocBuilder:
             "</w:tblBorders>"
         )
         tblPr.append(borders)
+
+
+def compute_toc_page_numbers(docx_path: str) -> dict[str, str]:
+    """Hitung nomor halaman tiap bookmark dengan me-render via Microsoft Word.
+
+    Memakai Word COM automation (Windows + MS Office): membuka dokumen hasil
+    build, membaca ``Bookmark.Range.Information(wdActiveEndPageNumber)`` untuk
+    tiap bookmark, dan menghitung nomor halaman relatif per section (Romawi
+    untuk front-matter, Arab mulai 1 untuk body-matter). Hasil dipakai
+    ``embed_toc_page_numbers`` untuk menanam angka final ke Daftar Isi.
+    """
+    try:
+        import pythoncom  # type: ignore
+        import win32com.client  # type: ignore
+    except Exception:
+        return {}
+
+    WD_ACTIVE_END_PAGE_NUMBER = 3
+    pages: dict[str, str] = {}
+    word = None
+    doc = None
+    pythoncom.CoInitialize()
+    try:
+        word = win32com.client.DispatchEx("Word.Application")
+        word.Visible = False
+        try:
+            word.DisplayAlerts = 0
+        except Exception:
+            pass
+        doc = word.Documents.Open(os.path.abspath(docx_path), ReadOnly=True, AddToRecentFiles=False)
+        doc.Repaginate()
+
+        # Paksa Word me-repaginate & hitung jumlah halaman fisik dokumen
+        doc.ComputeStatistics(2)  # wdStatisticPages = 2
+
+        # Map index section tempat bookmark berada
+        def _sec_index(bm) -> int:
+            try:
+                rng = bm.Range
+                sec = rng.Sections
+                return sec.Item(1).Index if sec.Count else 1
+            except Exception:
+                return 1
+
+        # Catat halaman fisik tempat tiap section DIMULAI:
+        # Information(3) pada Section(i).Range mengembalikan halaman AKHIR section i,
+        # sehingga section i+1 dimulai pada (halaman akhir section i) + 1.
+        sec_starts: dict[int, int] = {1: 1}
+        for i in range(1, doc.Sections.Count):
+            try:
+                end_pg = int(doc.Sections.Item(i).Range.Information(WD_ACTIVE_END_PAGE_NUMBER))
+                sec_starts[i + 1] = end_pg + 1
+            except Exception:
+                sec_starts[i + 1] = 1
+
+        for bm in doc.Bookmarks:
+            name = bm.Name
+            if not name or name.startswith("_"):
+                continue
+            try:
+                phys_page = int(bm.Range.Information(WD_ACTIVE_END_PAGE_NUMBER))
+                sec_idx = _sec_index(bm)
+                sec_start = sec_starts.get(sec_idx, 1)
+
+                rel_page = max(1, phys_page - sec_start + 1)
+                if sec_idx <= 2:
+                    # Section 1 (Cover) & Section 2 (Front Matter): Romawi kecil relatif per section (i, ii, iii, dst)
+                    pages[name] = _to_roman(rel_page).lower()
+                else:
+                    # Section 3+ (Body Matter): Arab relatif per section, reset mulai 1
+                    pages[name] = str(rel_page)
+            except Exception:
+                continue
+        return pages
+    except Exception:
+        return {}
+    finally:
+        try:
+            if doc is not None:
+                doc.Close(False)
+        except Exception:
+            pass
+        try:
+            if word is not None:
+                word.Quit()
+        except Exception:
+            pass
+        pythoncom.CoUninitialize()
+
+
+def _to_roman(n: int) -> str:
+    """Konversi integer ke angka Romawi (untuk fallback format footer)."""
+    vals = [(1000, "M"), (900, "CM"), (500, "D"), (400, "CD"), (100, "C"),
+            (90, "XC"), (50, "L"), (40, "XL"), (10, "X"), (9, "IX"),
+            (5, "V"), (4, "IV"), (1, "I")]
+    out = ""
+    for v, s in vals:
+        while n >= v:
+            out += s
+            n -= v
+    return out

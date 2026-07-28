@@ -21,14 +21,20 @@ DATA NYATA (ground truth — gunakan fakta ini):
 Struktur output WAJIB:
 1. Tulis 1 paragraf pembuka (2-3 kalimat) tentang tujuan PKL dalam konteks peningkatan
    mutu pendidikan SMK — sebutkan kota dari data jika ada.
-2. Tulis TEPAT 6 poin tujuan PKL dengan format "1. [tujuan]" — satu per baris.
+2. Tulis 4-8 poin tujuan PKL dengan format "1. [tujuan]" — satu per baris.
+   JUMLAH POIN DINAMIS sesuai kelengkapan data:
+   - Kalau data minim (hanya jurusan + tempat PKL) → 4-5 poin (tujuan umum PKL).
+   - Kalau data cukup (ada bidang usaha, divisi, durasi jelas) → 6-8 poin,
+     sebagian dikaitkan dengan data spesifik.
    Setiap poin adalah kalimat lengkap (bukan frasa pendek).
    Hubungkan minimal 2 poin dengan jurusan/tempat PKL dari data jika relevan.
+   DILARANG mengarang tujuan yang TIDAK BERHUBUNGAN dengan tujuan umum PKL
+   hanya untuk memenuhi jumlah poin.
 
 ATURAN KERAS:
 - DILARANG menulis label "Tujuan:", "A.", "B.", atau heading apapun.
 - DILARANG menyebut nama orang atau angka yang tidak ada di data.
-- Tulis dalam 1 blok teks: paragraf pembuka diikuti 6 poin bernomor.
+- Tulis dalam 1 blok teks: paragraf pembuka diikuti poin bernomor (4-8 poin).
 """
 
 
@@ -80,50 +86,66 @@ Instruksi WAJIB:
 
 # ── GAP 11: BAB V Pembahasan — AI generate dari data user ────────────────── #
 def prompt_hal_diperhatikan(ctx: dict) -> str:
+    """Prompt BAB V — sesuai Panduan SMKN4 TP 2026-2027.
+
+    Bab V membahas hal-hal yang perlu diperhatikan dalam proses peningkatan
+    kompetensi yang dikuasai selama PKL, mengacu pada standar yang ditetapkan
+    oleh industri/institusi tempat PKL.
+    """
     siswa = ctx.get("siswa", {})
     perusahaan = ctx.get("perusahaan", {})
     pkl = ctx.get("pkl", {})
-    kendala = ctx.get("kendala", [])
+    kegiatan = ctx.get("kegiatan", [])
     pelajaran = ctx.get("pelajaran", [])
     refleksi = ctx.get("refleksi", "")
     refleksi_bab5 = ctx.get("refleksi_bab5", "")
 
-    # Sumber data: prioritaskan refleksi_bab5, fallback ke refleksi umum
+    # Sumber data refleksi: prioritaskan refleksi_bab5, fallback ke refleksi umum
     sumber_cerita = refleksi_bab5 if refleksi_bab5.strip() else refleksi
 
-    # Format kendala
-    kendala_str = ""
-    for i, k in enumerate(kendala[:5]):
-        kendala_str += f"  {i+1}. Kendala: {k.get('masalah', '')} | Solusi: {k.get('solusi', '')}\n"
+    # Bidang/divisi tempat kompetensi dikuasai
+    bidang_list = [k.get("bidang", "") for k in kegiatan if k.get("bidang")]
+    bidang_str = ", ".join(bidang_list) if bidang_list else "berbagai bidang"
 
     # Format pelajaran
     pelajaran_str = "\n".join([f"  - {p}" for p in pelajaran[:8]]) if pelajaran else "  (tidak disebutkan)"
 
     return f"""Buat konten untuk sub-bab "Hal-hal yang Perlu Diperhatikan" (BAB V Pembahasan) dalam laporan PKL.
+Sub-bab ini adalah satu-satunya isi BAB V, sesuai Panduan SMK Negeri 4 Bandar Lampung.
 
-Data Siswa:
-- Nama: {siswa.get('nama', 'Penulis')}
-- Jurusan: {siswa.get('jurusan', '')}
-- Tempat PKL: {perusahaan.get('nama', '')}
-- Durasi: {pkl.get('durasi_bulan', 3)} bulan
+DATA NYATA — SATU-SATUNYA sumber fakta:
+- Nama siswa   : {siswa.get('nama', 'Penulis')}
+- Jurusan      : {siswa.get('jurusan', '') or '[tidak diisi]'}
+- Tempat PKL   : {perusahaan.get('nama', '') or '[tidak diisi]'}
+- Bidang usaha : {perusahaan.get('bidang_usaha', '') or '[tidak diisi]'}
+- Durasi       : {pkl.get('durasi_bulan', 3)} bulan
+- Divisi/Bidang: {bidang_str}
+- Standar acuan: standar kerja yang berlaku di {perusahaan.get('nama', 'perusahaan')}
 
-Cerita/Refleksi Pengalaman:
-{sumber_cerita[:800] if sumber_cerita else "(gunakan data kendala dan pelajaran di bawah)"}
-
-Kendala yang Dihadapi:
-{kendala_str if kendala_str else "  (tidak ada kendala spesifik yang disebutkan)"}
+Cerita/Refleksi Pengalaman (konteks tambahan):
+{sumber_cerita[:600] if sumber_cerita.strip() else '(tidak ada)'}
 
 Pelajaran yang Diperoleh:
 {pelajaran_str}
 
-Instruksi WAJIB:
-1. Tulis 3 paragraf refleksi pengalaman PKL yang mengalir natural.
-2. Paragraf 1: Perkenalan pengalaman baru yang didapat selama PKL — apa yang paling berkesan.
-3. Paragraf 2: Apa yang dirasakan saat terjun langsung ke dunia kerja — tantangan dan pembelajaran.
-4. Paragraf 3: Nilai/karakter yang terbentuk (disiplin, tanggung jawab, profesionalisme, dll).
+Instruksi WAJIB — ikuti PERSIS sesuai panduan:
+1. Fokus pada HAL-HAL YANG PERLU DIPERHATIKAN dalam proses peningkatan
+   kompetensi keahlian {siswa.get('jurusan', '')} yang dikuasai selama PKL.
+2. Acuan: standar yang ditetapkan oleh {perusahaan.get('nama', 'industri/institusi')}.
+   Sebutkan standar kerja, prosedur, atau target kompetensi yang berlaku di tempat PKL.
+3. Tulis 3 paragraf naratif yang mengalir:
+   - Paragraf 1: Pengantar — peningkatan kompetensi apa yang dicapai, dan acuan
+     standar apa yang berlaku di perusahaan.
+   - Paragraf 2: Hal-hal spesifik yang perlu diperhatikan untuk mencapai kompetensi
+     tersebut (kedisiplinan, ketelitian, prosedur, tools, dll).
+   - Paragraf 3: Refleksi — apa arti standar industri ini bagi pengembangan diri Penulis
+     ke depannya.
+4. JANGAN menulis sub-bab "Hambatan" atau "Solusi" — tidak termasuk BAB V
+   berdasarkan Panduan SMKN4 Bandar Lampung.
 5. JANGAN gunakan format bullet/numbered list — murni paragraf naratif.
-6. Gunakan sudut pandang orang pertama "Penulis" (bukan "saya").
-7. Jangan sama persis dengan: "Sebelumnya, Dengan Adanya Pelaksanaan Kegiatan PKL..."
+6. Gunakan sudut pandang "Penulis" (bukan "saya").
+7. Jika data standar kompetensi tidak ada, tulis kalimat umum tentang pentingnya
+   standar kerja di industri, JANGAN mengarang standar fiktif.
 8. OUTPUT HANYA teks laporan — tanpa label, tanpa penjelasan tambahan
 """
 

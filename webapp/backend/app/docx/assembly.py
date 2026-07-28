@@ -10,7 +10,7 @@ Struktur BAB mengikuti Panduan Resmi SMKN4 TP 2026-2027 (6 BAB):
   BAB II  KEGIATAN INDUSTRI (ringkasan proses kegiatan per seksi/divisi)
   BAB III TINJAUAN PUSTAKA  (Landasan Teori, Asas PKL, Sejarah SMKN 4)
   BAB IV  DATA PENGAMATAN   (detail kegiatan + Peralatan & Perlengkapan)
-  BAB V   PEMBAHASAN        (Hambatan, Solusi, Hal yang Perlu Diperhatikan)
+  BAB V   PEMBAHASAN        (Hal-hal Perlu Diperhatikan — peningkatan kompetensi)
   BAB VI  KESIMPULAN & SARAN (Kesimpulan, Saran untuk Sekolah & Industri)
 """
 from __future__ import annotations
@@ -259,83 +259,58 @@ def assemble_report(data: dict) -> str:
     builder.populate_native_toc(sec_list)
 
     builder.save(output_path)
+
+    # Tanam nomor halaman NYATA ke Daftar Isi via Word (bila MS Office ada):
+    # 1) re-render dokumen dengan Word untuk menghitung PAGEREF tiap bookmark,
+    # 2) tulis angka final ke cache field, lalu cabut flag updateFields.
+    # Hasilnya Daftar Isi langsung benar di semua viewer (pratinjau, PDF),
+    # user tidak perlu menekan F9. Bila Word tidak tersedia (Linux/dll),
+    # dokumen dibiarkan apa adanya dengan updateFields aktif — Word tetap
+    # menghitung ulang saat dibuka.
+    try:
+        from .builder import compute_toc_page_numbers
+        pages = compute_toc_page_numbers(output_path)
+        if pages:
+            builder.embed_toc_page_numbers(pages)
+            builder.save(output_path)
+    except Exception:
+        pass  # non-fatal: dokumen sudah valid; Word akan update field sendiri
+
     return output_path
 
 
 def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[str, str, int]]:
-    cfg = data.get("config", {})
-    preset = cfg.get("preset") or "pedoman"
-    start_num = cfg.get("front_matter_start") if cfg.get("front_matter_start") is not None else 1
-    
-    romans = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii"]
-    def get_roman(idx):
-        return romans[idx - 1] if 1 <= idx <= len(romans) else str(idx)
-        
-    curr_r = start_num
-    sek_nama = (data.get("sekolah", {}).get("nama") or "SMK NEGERI 4 BANDAR LAMPUNG").upper()
-    perus_nama = (data.get("perusahaan", {}).get("nama") or "PT. NETWORK SOLUTION UTAMA BANDAR LAMPUNG").upper()
-    
-    sections: list[tuple[str, str, int]] = []
-    sections.append(("PENGESAHAN", get_roman(curr_r), 1))
-    sections.append((perus_nama, get_roman(curr_r), 1))
-    curr_r += 1
-    
-    sections.append(("PENGESAHAN", get_roman(curr_r), 1))
-    sections.append((sek_nama, get_roman(curr_r), 1))
-    curr_r += 1
-    
-    sections.append(("IDENTITAS SISWA", get_roman(curr_r), 1))
-    curr_r += 1
-    
-    sections.append(("IDENTITAS INDUSTRI / INSTANSI", get_roman(curr_r), 1))
-    curr_r += 1
-    
-    sections.append(("KATA PENGANTAR", get_roman(curr_r), 1))
-    curr_r += 2
-    
-    curr_r += 2  # DAFTAR ISI 2 halaman
-    
-    sections.append(("DAFTAR GAMBAR", get_roman(curr_r), 1))
-    curr_r += 1
-    
-    sections.append(("DAFTAR LAMPIRAN", get_roman(curr_r), 1))
-    
-    # BAB I PENDAHULUAN — 6 BAB resmi SMKN4 TP 2026-2027
-    # Sub-bab 1.3-1.5 adalah Profil Perusahaan yang masuk dalam BAB I
-    sections.append(("BAB I PENDAHULUAN", "1", 1))
-    sections.append(("1.1 Latar Belakang", "1", 2))
-    sections.append(("1.2 Tujuan Kegiatan Praktik Kerja Lapangan", "2", 2))
-    sections.append(("1.3 Sejarah Singkat " + perus_nama, "3", 2))
-    sections.append(("a) Visi dan Misi", "3", 3))
-    sections.append(("b) Profil Lokasi Praktik Kerja Lapangan", "4", 3))
-    sections.append(("1.4 Tata Tertib Perusahaan", "4", 2))
-    sections.append(("a) Waktu Kerja dan Istirahat Kerja", "4", 3))
-    sections.append(("b) Tata Tertib dan Kewajiban Karyawan", "5", 3))
-    sections.append(("1.5 Bagan Struktur " + perus_nama, "6", 2))
-    sections.append(("1.6 Job Description " + perus_nama, "6", 2))
+    """Bangun entri Daftar Isi dari heading yang BENAR-BENAR tertulis.
 
-    sections.append(("BAB II KEGIATAN DI INDUSTRI", "7", 1))
-    sections.append(("2.1 Proses Kegiatan Selama PKL", "7", 2))
+    Menggabungkan bookmark front-matter (pengesahan, identitas, kata
+    pengantar) dengan ``builder.outline`` (BAB + sub-bab + sub-sub-bab yang
+    tercatat otomatis saat heading dibuat). Mengembalikan
+    ``(teks, bookmark, level)`` — nomor halaman tidak lagi di-hardcode,
+    melainkan diisi field PAGEREF oleh ``populate_native_toc`` sehingga selalu
+    akurat mengikuti letak heading sebenarnya.
+    """
+    sek_nama = (data.get("sekolah", {}).get("nama") or "SMK NEGERI 4 BANDAR LAMPUNG")
+    perus_nama = (
+        data.get("perusahaan", {}).get("nama_lengkap")
+        or data.get("perusahaan", {}).get("nama")
+        or "PERUSAHAAN"
+    )
 
-    sections.append(("BAB III TINJAUAN PUSTAKA", "8", 1))
-    sections.append(("3.1 Landasan Teori", "8", 2))
-    sections.append(("3.2 Asas Praktik Kerja Lapangan", "8", 2))
-    sections.append(("3.3 Sejarah " + sek_nama, "9", 2))
+    sections: list[tuple[str, str, int]] = [
+        ("PENGESAHAN", "peng_industri", 1),
+        (f"dari {perus_nama}", "peng_industri", 2),
+        ("PENGESAHAN", "peng_sekolah", 1),
+        (f"dari {sek_nama}", "peng_sekolah", 2),
+        ("IDENTITAS SISWA", "id_siswa", 1),
+        ("IDENTITAS INDUSTRI / INSTANSI", "id_industri", 1),
+        ("KATA PENGANTAR", "kata_pengantar", 1),
+    ]
 
-    sections.append(("BAB IV DATA PENGAMATAN", "10", 1))
-    sections.append(("4.1 Pelaksanaan Kegiatan PKL di Tempat Kerja", "10", 2))
-    sections.append(("4.2 Jenis Peralatan dan Perlengkapan Kantor", "11", 2))
+    # BAB + sub-bab + daftar pustaka + lampiran — diambil dari outline aktual
+    # sehingga judul & keberadaannya selalu sinkron dengan isi dokumen.
+    for level, text, bookmark in builder.outline:
+        sections.append((text, bookmark, level))
 
-    sections.append(("BAB V PEMBAHASAN", "13", 1))
-    sections.append(("5.1 Hal-hal yang Perlu Diperhatikan", "13", 2))
-
-    sections.append(("BAB VI KESIMPULAN DAN SARAN", "14", 1))
-    sections.append(("6.1 Kesimpulan", "14", 2))
-    sections.append(("6.2 Saran", "14", 2))
-
-    sections.append(("DAFTAR PUSTAKA", "15", 1))
-    sections.append(("LAMPIRAN", "16", 1))
-    
     return sections
 
 
@@ -344,11 +319,30 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
 # ======================================================================== #
 
 def _clean_markdown(text: str) -> str:
-    """Bersihkan sintaks markdown dari output AI.
-    
-    Alias untuk _sanitize_ai_output agar backward-compatible.
-    """
+    """Bersihkan sintaks markdown dari output AI."""
     return _sanitize_ai_output(text)
+
+
+def _strip_markdown_formatting(text: str) -> str:
+    """Strip bold/italic/backtick formatting symbols (*, **, `, _) from string."""
+    if not isinstance(text, str) or not text:
+        return text
+    s = text
+    s = re.sub(r'\*{1,3}([^*]+)\*{1,3}', r'\1', s)
+    s = re.sub(r'`([^`]+)`', r'\1', s)
+    s = re.sub(r'_{1,3}([^_]+)_{1,3}', r'\1', s)
+    return s
+
+
+def _clean_all_markdown_in_obj(obj: Any) -> Any:
+    """Bersihkan markdown formatting secara rekursif dari dict/list/str."""
+    if isinstance(obj, str):
+        return _strip_markdown_formatting(obj)
+    elif isinstance(obj, dict):
+        return {k: _clean_all_markdown_in_obj(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [_clean_all_markdown_in_obj(item) for item in obj]
+    return obj
 
 
 def _sanitize_ai_output(text: str) -> str:
@@ -727,6 +721,11 @@ def _sanitize_data(data: dict) -> None:
     # Buang jawaban vague & rapikan spasi di semua field.
     _scrub_vague(data)
 
+    # Bersihkan markdown formatting (*text*, **text**, `code`) dari field konten
+    for key in ("peralatan", "kegiatan", "profil_perusahaan", "pelajaran", "kendala", "generated_sections"):
+        if key in data and data[key]:
+            data[key] = _clean_all_markdown_in_obj(data[key])
+
     # Normalize aliases for kegiatan & peralatan
     if not data.get("kegiatan") and data.get("kegiatan_harian"):
         data["kegiatan"] = [{
@@ -769,6 +768,14 @@ def _sanitize_data(data: dict) -> None:
         profil = data["profil_perusahaan"]
         profil["misi"] = [m for m in profil.get("misi", []) if m]
         profil["tata_tertib"] = [t for t in profil.get("tata_tertib", []) if t]
+        # Migrasi field legacy: draft lama menyimpan tata tertib perusahaan di
+        # `tata_tertib`; kode baru membacanya dari `tata_tertib_perusahaan`.
+        # Tanpa ini, tata tertib khusus perusahaan hilang diam-diam dari dokumen.
+        if not profil.get("tata_tertib_perusahaan") and profil["tata_tertib"]:
+            profil["tata_tertib_perusahaan"] = list(profil["tata_tertib"])
+        profil["tata_tertib_perusahaan"] = [
+            t for t in profil.get("tata_tertib_perusahaan", []) if t
+        ]
 
     # Kegiatan: buang tugas kosong; buang bidang yang tidak punya tugas DAN
     # tidak punya deskripsi (bidang disebut tapi tidak ada isinya → jangan
@@ -1363,7 +1370,9 @@ def _write_data_pengamatan(builder: PklDocBuilder, data: dict, bab_num: int) -> 
 
 
 # ---------------------------------------------------------------------- #
-#  BAB V — PEMBAHASAN (Hambatan, Solusi, Hal yang Perlu Diperhatikan)    #
+#  BAB V — PEMBAHASAN (sesuai Panduan SMKN4 TP 2026-2027)                  #
+#  Sub-bab tunggal: "Hal-hal yang Perlu Diperhatikan" — peningkatan        #
+#  kompetensi yang dikuasai selama PKL, mengacu standar industri.          #
 # ---------------------------------------------------------------------- #
 def _write_pembahasan(builder: PklDocBuilder, data: dict, bab_num: int) -> None:
     builder.add_bab_heading(
@@ -1374,35 +1383,13 @@ def _write_pembahasan(builder: PklDocBuilder, data: dict, bab_num: int) -> None:
     judul = data.get("judul_override", {})
     sub = 1
 
-    kendala = data.get("kendala", [])
+    # Catatan: data kendala/solusi TIDAK ditampilkan di dokumen lagi.
+    # Panduan SMKN4 Bandar Lampung hanya mendefinisikan BAB V sebagai
+    # "hal-hal yang perlu diperhatikan dalam peningkatan kompetensi mengacu
+    # standar industri" — tanpa sub-bab Hambatan/Solusi. Data kendala user
+    # tetap tersimpan di DB (tidak dihapus), hanya tidak dicetak.
 
-    # Hambatan — hanya ditulis kalau memang ada kendala yang dicatat. Menulis
-    # sub-bab "tidak ada hambatan" cuma menambah bab kosong.
-    if kendala:
-        builder.add_sub_heading(bab_num, sub, judul.get("hambatan", "Hambatan yang Dialami"))
-        builder.add_body(
-            "Dalam pelaksanaan Praktik Kerja Lapangan, Penulis menghadapi beberapa "
-            "hambatan, antara lain:"
-        )
-        for i, k in enumerate(kendala, 1):
-            m = k.get("masalah", "")
-            if m:
-                builder.add_numbered(m, i)
-        sub += 1
-
-        # Solusi / Pemecahan Masalah
-        builder.add_sub_heading(bab_num, sub, judul.get("pemecahan", "Pemecahan Masalah"))
-        builder.add_body(
-            "Untuk mengatasi hambatan di atas, Penulis melakukan langkah-langkah "
-            "sebagai berikut:"
-        )
-        for i, k in enumerate(kendala, 1):
-            s = k.get("solusi", "")
-            if s:
-                builder.add_numbered(s, i)
-        sub += 1
-
-    # Pembelajaran / Refleksi
+    # Satu-satunya sub-bab BAB V: Hal-hal yang Perlu Diperhatikan.
     gen_pembahasan = data.get("generated_sections", {}).get("pembahasan")
     builder.add_sub_heading(
         bab_num, sub, judul.get("pembahasan_utama", "Hal-hal yang Perlu Diperhatikan")
@@ -1410,23 +1397,25 @@ def _write_pembahasan(builder: PklDocBuilder, data: dict, bab_num: int) -> None:
     if gen_pembahasan:
         _write_paragraphs(builder, gen_pembahasan)
     else:
-        pelajaran = data.get("pelajaran", [])
-        refleksi = data.get("refleksi", "")
-        if pelajaran:
-            builder.add_body(
-                "Melalui Praktik Kerja Lapangan ini, Penulis memperoleh pembelajaran "
-                "sebagai berikut:"
-            )
-            for i, p in enumerate(pelajaran, 1):
-                builder.add_numbered(p, i)
-        if refleksi:
-            builder.add_body(refleksi)
-        if not pelajaran and not refleksi:
-            builder.add_body(
-                "Selama pelaksanaan Praktik Kerja Lapangan, Penulis memperoleh banyak "
-                "pengalaman baru yang tidak diperoleh di bangku sekolah, terutama "
-                "mengenai budaya kerja, ketelitian, dan tanggung jawab."
-            )
+        # Fallback deterministik kalau AI belum generate / provider mati.
+        siswa = data.get("siswa", {})
+        perusahaan = data.get("perusahaan", {})
+        jurusan = (siswa.get("jurusan") or "").strip()
+        nama_prsh = perusahaan.get("nama", "perusahaan")
+        sebagai = f"kompetensi keahlian {jurusan}" if jurusan else "kompetensi keahlian"
+        builder.add_body(
+            f"Selama pelaksanaan Praktik Kerja Lapangan di {nama_prsh}, Penulis "
+            f"memperhatikan beberapa hal penting dalam proses peningkatan {sebagai} "
+            f"yang dikuasai, dengan mengacu pada standar kerja yang ditetapkan oleh "
+            f"{nama_prsh}. Hal-hal tersebut mencakup kedisiplinan, ketelitian dalam "
+            f"menjalankan prosedur kerja, serta penerapan standar keamanan dan "
+            f"kualitas yang berlaku di lingkungan industri."
+        )
+        builder.add_body(
+            "Pengalaman ini menunjukkan bahwa peningkatan kompetensi tidak hanya "
+            "bergantung pada penguasaan teknis, tetapi juga pada kesungguhan "
+            "mengikuti standar yang berlaku di tempat kerja."
+        )
     sub += 1
 
 

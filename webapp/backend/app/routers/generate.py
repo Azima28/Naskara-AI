@@ -28,6 +28,15 @@ from ..ai.client import get_ai_provider
 
 router = APIRouter(prefix="/generate", tags=["generate"])
 
+# Label ramah-user untuk section yang dipolish (dipakai di pesan notifikasi).
+_POLISH_LABELS = {
+    "visi_misi": "visi & misi",
+    "tata_tertib": "tata tertib perusahaan",
+    "job_descriptions": "job description",
+    "kegiatan": "detail kegiatan",
+    "peralatan": "deskripsi peralatan",
+}
+
 
 from ..prompts.ai_sections import (
     prompt_visi_misi,
@@ -212,62 +221,81 @@ def _parse_peralatan_polished(text: str, original_peralatan: list) -> list:
     return result
 
 
-async def _auto_polish_on_generate(data: dict) -> dict:
+async def _auto_polish_on_generate(data: dict) -> tuple[dict, bool]:
     """Panggil semua AI polish secara paralel sebelum assemble.
-    
+
     Mengisi/update data['generated_sections'] dan data mentah
     dengan versi yang sudah dirapikan AI.
-    
-    Jika AI gagal untuk satu section → skip section itu (fallback ke raw user input).
+
+    Jika AI gagal untuk satu section → skip section itu (fallback ke raw user input),
+    sementara section yang BERHASIL tetap dipakai. Return (data, changed) — `changed`
+    True bila ada polish yang berhasil diterapkan, supaya pemanggil bisa menyimpan
+    hasilnya ke draft (tidak perlu di-polish ulang dari awal pada download berikutnya).
     """
     import asyncio
+    from ..config import settings
 
     provider = get_ai_provider()
     gen = data.get("generated_sections", {})
     system = SYSTEM_PROMPT_TEMPLATE
+    changed = False
 
-    # ── Kumpulkan tasks yang perlu dijalankan ─────────────────────────────
-    tasks = {}
+    # ── Kumpulkan prompts yang perlu dijalankan ───────────────────────────
+    prompts: dict[str, str] = {}
 
     p_visi = prompt_visi_misi(data)
     if p_visi and (data.get("profil_perusahaan", {}).get("visi") or data.get("profil_perusahaan", {}).get("misi")):
-        tasks["visi_misi"] = provider.generate(system, p_visi)
+        prompts["visi_misi"] = p_visi
 
     p_tt = prompt_tata_tertib_perusahaan(data)
     if p_tt:
-        tasks["tata_tertib"] = provider.generate(system, p_tt)
+        prompts["tata_tertib"] = p_tt
 
     p_jd = prompt_job_descriptions(data)
     if p_jd:
-        tasks["job_descriptions"] = provider.generate(system, p_jd)
+        prompts["job_descriptions"] = p_jd
 
     p_keg = prompt_detail_kegiatan(data)
     if p_keg and data.get("kegiatan"):
-        tasks["kegiatan"] = provider.generate(system, p_keg)
+        prompts["kegiatan"] = p_keg
 
     p_alat = prompt_peralatan_deskripsi(data)
     if p_alat and data.get("peralatan"):
-        tasks["peralatan"] = provider.generate(system, p_alat)
+        prompts["peralatan"] = p_alat
 
-    if not tasks:
-        return data
+    if not prompts:
+        return data, False
 
-    # ── Jalankan semua tasks paralel (timeout 40 detik total) ────────────
-    keys = list(tasks.keys())
-    coros = list(tasks.values())
+    # ── Jalankan dengan konkurensi terbatas ───────────────────────────────
+    # Provider lokal (LM Studio/9router) memproses SATU request pada satu waktu,
+    # jadi menembak semua prompt sekaligus membuat mereka saling antre dan mudah
+    # kehabisan timeout. Batasi ke 2 bersamaan dan beri total waktu yang cukup:
+    # tiap panggilan boleh memakai sampai settings.ai_timeout detik.
+    keys = list(prompts.keys())
+    sem = asyncio.Semaphore(2)
+
+    async def _run(prompt_text: str):
+        async with sem:
+            return await provider.generate(system, prompt_text)
+
+    # Total: ceil(n/2) panggilan × timeout per-panggilan + margin.
+    per_call = max(30, int(settings.ai_timeout))
+    total_timeout = ((len(keys) + 1) // 2) * per_call + 20
     try:
         results = await asyncio.wait_for(
-            asyncio.gather(*coros, return_exceptions=True),
-            timeout=60,
+            asyncio.gather(*(_run(p) for p in prompts.values()), return_exceptions=True),
+            timeout=total_timeout,
         )
     except asyncio.TimeoutError:
-        print("[AutoPolish] Timeout - menggunakan data asli")
-        return data
+        print(f"[AutoPolish] Timeout ({total_timeout}s) - menggunakan data asli")
+        return data, False
 
     # ── Proses hasil tiap task ────────────────────────────────────────────
+    failed: list[str] = []
     for key, result in zip(keys, results):
         if isinstance(result, Exception) or not result:
             print(f"[AutoPolish] Skip '{key}': {result}")
+            failed.append(key)
             continue
 
         text = str(result).strip()
@@ -280,31 +308,39 @@ async def _auto_polish_on_generate(data: dict) -> dict:
                     profil["visi"] = parsed["visi"]
                 if parsed["misi"]:
                     profil["misi"] = parsed["misi"]
+                changed = True
 
         elif key == "tata_tertib":
             items = _parse_numbered_list(text)
             if items:
                 # Simpan sebagai generated tata tertib perusahaan (terpisah dari SMKN4 resmi)
                 gen["tata_tertib_perusahaan_polished"] = items
+                changed = True
 
         elif key == "job_descriptions":
             jobs = _parse_job_descriptions(text)
             if jobs:
                 profil = data.setdefault("profil_perusahaan", {})
                 profil["job_descriptions"] = jobs
+                changed = True
 
         elif key == "kegiatan":
             polished = _parse_kegiatan_polished(text, data.get("kegiatan", []))
             if polished:
                 data["kegiatan"] = polished
+                changed = True
 
         elif key == "peralatan":
             polished = _parse_peralatan_polished(text, data.get("peralatan", []))
             if polished:
                 data["peralatan"] = polished
+                changed = True
 
     data["generated_sections"] = gen
-    return data
+    # Catat section yang gagal dipolish agar bisa dilaporkan ke user (dan
+    # tidak ditandai sebagai berhasil dipolish saat disimpan ke draft).
+    data["_polish_failed"] = failed
+    return data, changed
 
 
 
@@ -348,7 +384,33 @@ async def generate_docx(
     # 2.5 Auto-polish dengan AI — rapikan teks mentah user sebelum assemble
     # Dijalankan paralel (asyncio.gather), timeout 60 detik.
     # Jika AI offline/timeout → fallback ke raw user input, generate tetap jalan.
-    data = await _auto_polish_on_generate(data)
+    data, polished = await _auto_polish_on_generate(data)
+
+    # Simpan hasil polish yang BERHASIL ke draft — jadi kalau sebagian section gagal
+    # (provider error) user tidak perlu mengulang dari awal saat download berikutnya;
+    # polish yang sudah jadi dipertahankan dan hanya sisanya yang dicoba lagi.
+    # PENTING: section yang GAGAL dipolish TIDAK menimpa data asli user — kita hanya
+    # menimpa field yang memang berhasil dirapikan AI.
+    polish_failed = data.pop("_polish_failed", [])
+    if polished:
+        try:
+            stored = draft.data_json or {}
+            if "job_descriptions" not in polish_failed and "visi_misi" not in polish_failed:
+                # profil_perusahaan hanya berubah bila visi_misi/job_descriptions sukses
+                if data.get("profil_perusahaan") is not None:
+                    stored["profil_perusahaan"] = data["profil_perusahaan"]
+            if "kegiatan" not in polish_failed and data.get("kegiatan") is not None:
+                stored["kegiatan"] = data["kegiatan"]
+            if "peralatan" not in polish_failed and data.get("peralatan") is not None:
+                stored["peralatan"] = data["peralatan"]
+            gen = data.get("generated_sections") or {}
+            if gen:
+                stored.setdefault("generated_sections", {}).update(gen)
+            draft.data_json = stored
+            db.commit()
+        except Exception as e:
+            print(f"[AutoPolish] Gagal simpan hasil polish ke draft (lanjut generate): {e}")
+            db.rollback()
 
     # 2.6 Daftar pustaka otomatis (config.auto_daftar_pustaka, default aktif):
     # coba AI dulu; kalau provider mati/dummy, penyusun standar yang mengisi.
@@ -391,8 +453,27 @@ async def generate_docx(
         print(f"Warning: Gagal menyimpan salinan ke folder hasil: {e}")
 
     # 5. Return file
-    return FileResponse(
+    response = FileResponse(
         path=output_path,
         filename=download_name,
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     )
+    # Beri tahu user bila ada bagian yang gagal dipolish AI (sistem AI bermasalah).
+    # Dokumen tetap dihasilkan dari data asli; bagian yang sudah berhasil dipolish
+    # sudah tersimpan di draft sehingga download berikutnya tinggal melanjutkan.
+    if polish_failed:
+        labels = ", ".join(_POLISH_LABELS.get(k, k) for k in polish_failed)
+        msg = (
+            "Sistem AI sedang mengalami masalah, sehingga sebagian teks "
+            f"({labels}) belum dirapikan otomatis. Dokumen tetap dibuat dari "
+            "data asli. Bagian yang berhasil dirapikan sudah tersimpan — coba "
+            "download lagi nanti untuk melengkapi sisanya."
+        )
+        from urllib.parse import quote
+        response.headers["X-Polish-Partial"] = ",".join(polish_failed)
+        response.headers["X-Polish-Message"] = quote(msg)
+        # Izinkan frontend membaca header kustom dari respons blob.
+        response.headers["Access-Control-Expose-Headers"] = (
+            "X-Polish-Partial, X-Polish-Message, Content-Disposition"
+        )
+    return response

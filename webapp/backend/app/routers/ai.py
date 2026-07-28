@@ -118,13 +118,27 @@ async def draft_section(
                 continue
 
         except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+            # Provider gagal/error (500, timeout, mati) → jangan tampilkan error
+            # teknis mentah ke user. Beri tahu bahwa SISTEM yang bermasalah dan
+            # hasil yang sudah berhasil tetap tersimpan (user tidak kehilangan
+            # section lain yang sudah jadi — cukup lanjutkan bagian ini nanti).
+            print(f"[AI Provider Error] section={key}: {e}")
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "message": "Sistem AI sedang mengalami masalah. Bagian lain yang sudah berhasil digenerate tetap tersimpan — Anda bisa melanjutkan bagian ini nanti tanpa mengulang dari awal.",
+                    "section_key": key,
+                    "retryable": True,
+                },
+            )
 
-    # Semua attempt gagal
+    # Semua attempt gagal — sistem AI tidak menghasilkan output yang lolos validasi.
     raise HTTPException(
         status_code=422,
         detail={
-            "message": "AI output tidak valid setelah 2 percobaan. Coba generate ulang.",
+            "message": "Sistem AI sedang mengalami masalah sehingga bagian ini belum bisa dibuat. Bagian lain yang sudah berhasil tetap tersimpan — Anda bisa melanjutkan bagian ini nanti.",
+            "section_key": key,
+            "retryable": True,
             "validation_errors": last_error or [],
         }
     )

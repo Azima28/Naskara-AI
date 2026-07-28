@@ -27,6 +27,7 @@ function EditorInner() {
   const [genError, setGenError] = useState('')
   const [genIssues, setGenIssues] = useState<GenerateIssue[]>([])
   const [genQuestions, setGenQuestions] = useState<Requestion[]>([])
+  const [polishNotice, setPolishNotice] = useState('')
 
   // Load draft
   useEffect(() => {
@@ -169,7 +170,8 @@ function EditorInner() {
                 setGenQuestions([])
                 try {
                   await updateDraft(draftId, { data: ctx, status: 'completed' })
-                  await generateDocx(draftId)
+                  const notice = await generateDocx(draftId)
+                  setPolishNotice(notice || '')
                 } catch (err: any) {
                   const detail = err?.response?.data?.detail
                   if (typeof detail === 'string') {
@@ -191,6 +193,15 @@ function EditorInner() {
             ) : (
               <p style={{ color: 'var(--red-600)', marginTop: '0.5rem', fontSize: '0.85rem' }}>{genError}</p>
             ))}
+            {polishNotice && (
+              <p style={{
+                color: 'var(--amber-700, #b45309)', background: 'var(--amber-50, #fffbeb)',
+                border: '1px solid var(--amber-200, #fde68a)', borderRadius: '8px',
+                padding: '0.6rem 0.8rem', marginTop: '0.5rem', fontSize: '0.85rem',
+              }}>
+                ⚠️ {polishNotice}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -276,7 +287,9 @@ function SectionEditor({
         onChange(res.content)
       }
     } catch (err: any) {
-      alert(err?.response?.data?.detail || err?.message || 'Gagal generate draft AI')
+      const d = err?.response?.data?.detail
+      const msg = (d && typeof d === 'object' ? d.message : d) || err?.message || 'Gagal generate draft AI'
+      alert(msg)
     } finally {
       setLoading(false)
     }
