@@ -367,7 +367,7 @@ class PklDocBuilder:
         pedoman = self.preset == "pedoman"
 
         if not is_cover_dalam:
-            # Apply cover page section margins & border frame (Cover Luar / Page 1)
+            # Cover Luar (Page 1): Margin (Left 1.55cm, Right 1.65cm, Top 2.44cm, Bottom 0.50cm) & Bingkai Border Frame
             try:
                 sec0 = self.doc.sections[0]
                 sec0.left_margin = Cm(1.55)
@@ -380,7 +380,7 @@ class PklDocBuilder:
                     if child.tag.endswith('pgBorders'):
                         sectPr.remove(child)
                 borders_xml = parse_xml(
-                    r'<w:pgBorders xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:display="firstPage" w:offsetFrom="page">'
+                    r'<w:pgBorders xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:display="allPages" w:offsetFrom="page">'
                     r'<w:top w:val="thinThickThinSmallGap" w:color="auto" w:sz="24" w:space="24"/>'
                     r'<w:left w:val="thinThickThinSmallGap" w:color="auto" w:sz="24" w:space="24"/>'
                     r'<w:bottom w:val="thinThickThinSmallGap" w:color="auto" w:sz="24" w:space="24"/>'
@@ -391,18 +391,26 @@ class PklDocBuilder:
             except Exception:
                 pass
         else:
-            # Cover Dalam (Page 2): Menggunakan MARGIN STANDAR LAPORAN (Left 4cm, Right 3cm, Top 3cm, Bottom 3cm)
+            # Cover Dalam (Page 2): Persis seperti Cover Luar (ada bingkai border), hanya beda MARGIN KIRI = 4 cm
             sec_curr = self.doc.sections[-1]
-            m = self.margin
-            sec_curr.top_margin = Cm(m.get("atas", 3))
-            sec_curr.bottom_margin = Cm(m.get("bawah", 3))
-            sec_curr.left_margin = Cm(m.get("kiri", 4))
-            sec_curr.right_margin = Cm(m.get("kanan", 3))
+            sec_curr.left_margin = Cm(4.0)
+            sec_curr.right_margin = Cm(1.65)
+            sec_curr.top_margin = Cm(2.44)
+            sec_curr.bottom_margin = Cm(0.50)
             try:
                 sectPr = sec_curr._sectPr
                 for child in list(sectPr):
                     if child.tag.endswith('pgBorders'):
                         sectPr.remove(child)
+                borders_xml = parse_xml(
+                    r'<w:pgBorders xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:display="allPages" w:offsetFrom="page">'
+                    r'<w:top w:val="thinThickThinSmallGap" w:color="auto" w:sz="24" w:space="24"/>'
+                    r'<w:left w:val="thinThickThinSmallGap" w:color="auto" w:sz="24" w:space="24"/>'
+                    r'<w:bottom w:val="thinThickThinSmallGap" w:color="auto" w:sz="24" w:space="24"/>'
+                    r'<w:right w:val="thinThickThinSmallGap" w:color="auto" w:sz="24" w:space="24"/>'
+                    r'</w:pgBorders>'
+                )
+                sectPr.append(borders_xml)
             except Exception:
                 pass
 
@@ -570,8 +578,9 @@ class PklDocBuilder:
 
         cell_left = table.cell(0, 0)
         cell_right = table.cell(0, 1)
+        right_width_cm = 12.16 if is_cover_dalam else 14.61
         cell_left.width = Cm(3.2)
-        cell_right.width = Cm(14.6)
+        cell_right.width = Cm(right_width_cm)
 
         # Hapus border tabel
         for cell in (cell_left, cell_right):
@@ -639,7 +648,8 @@ class PklDocBuilder:
         p_ids.paragraph_format.space_before = Pt(8)
         p_ids.paragraph_format.space_after = Pt(0)
         p_ids.paragraph_format.right_indent = Cm(0)
-        p_ids.paragraph_format.tab_stops.add_tab_stop(Cm(13.2), WD_TAB_ALIGNMENT.RIGHT)
+        tab_pos_cm = 10.75 if is_cover_dalam else 13.2
+        p_ids.paragraph_format.tab_stops.add_tab_stop(Cm(tab_pos_cm), WD_TAB_ALIGNMENT.RIGHT)
 
         r_nss = p_ids.add_run(f"NSS : {nss}")
         r_nss.font.name = "Times New Roman"
