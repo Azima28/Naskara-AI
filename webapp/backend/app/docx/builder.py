@@ -501,13 +501,13 @@ class PklDocBuilder:
         if len(nama) > 30:
             author_lines += 1
 
-        logo_lines = 7.0 if (logo_sekolah_path and os.path.exists(logo_sekolah_path)) else 0
-        total_top_lines = title_lines + subtitle_lines + author_lines + logo_lines + 3.0
+        logo_lines = 6.0 if (logo_sekolah_path and os.path.exists(logo_sekolah_path)) else 0
+        total_top_lines = title_lines + subtitle_lines + author_lines + logo_lines
 
         # Target kapasitas baris Halaman Cover sebelum Kop Footer (mentok sampai bawah, tersisa 1 enter sebelum page break)
-        target_lines_before_kop = 23.0
+        target_lines_before_kop = 20.0
         needed_enters = int(round(target_lines_before_kop - total_top_lines))
-        final_enters = max(0, min(4, needed_enters))
+        final_enters = max(0, min(5, needed_enters))
 
         for _ in range(final_enters):
             p_sp = self.doc.add_paragraph()
