@@ -481,34 +481,33 @@ class PklDocBuilder:
             p_logo = self.doc.add_paragraph()
             p_logo.alignment = WD_ALIGN_PARAGRAPH.CENTER
             run_logo = p_logo.add_run()
-            run_logo.add_picture(logo_sekolah_path, width=Cm(5.5))  # Diperbesar 30% (dari 4.2cm ke 5.5cm)
+            run_logo.add_picture(logo_sekolah_path, width=Cm(6.05))  # Diperbesar 10% lagi (dari 5.5cm ke 6.05cm)
 
         # Perhitungan spasi vertikal dinamis (Dynamic Cover Spacing Fallback)
-        # Menghitung perkiraan tinggi baris yang terpakai di atas logo
-        title_lines = 1  # "LAPORAN"
-        title_lines += (len(judul_pkl) // 25) + 1  # "PRAKTIK KERJA LAPANGAN (PKL)"
-        title_lines += (len(f"DI {nama_prsh.upper()}") // 25) + 1
+        # Menghitung perkiraan tinggi baris paragraf yang terpakai di atas logo
+        title_lines = 3  # "LAPORAN", "PRAKTIK KERJA LAPANGAN (PKL)", "DI [PERUSAHAAN]"
+        if len(judul_pkl) > 35:
+            title_lines += 1
+        if len(nama_prsh) > 30:
+            title_lines += 1
         if pedoman and kota_prsh and kota_prsh.upper() not in nama_prsh.upper():
             title_lines += 1
 
-        subtitle_lines = 3  # "Disusun untuk memenuhi..."
-        if len(nama_sekolah) > 30:
+        subtitle_lines = 3  # "Disusun untuk memenuhi...", "Ujian...", "Tahun..."
+        if len(nama_sekolah) > 35:
             subtitle_lines += 1
 
-        author_lines = 1  # "disusun oleh :"
-        author_lines += (len(nama) // 25) + 1  # Nama Siswa
-        if nomor:
+        author_lines = 3  # "disusun oleh :", "Nama", "NISN / NIS"
+        if len(nama) > 30:
             author_lines += 1
 
-        logo_lines = 11.0 if (logo_sekolah_path and os.path.exists(logo_sekolah_path)) else 0
+        logo_lines = 7.0 if (logo_sekolah_path and os.path.exists(logo_sekolah_path)) else 0
         total_top_lines = title_lines + subtitle_lines + author_lines + logo_lines + 3.0
 
-        # Target kapasitas baris Halaman Cover sebelum Kop Footer (agar mentok ke bawah border cover)
-        target_lines_before_kop = 27.5
+        # Target kapasitas baris Halaman Cover sebelum Kop Footer (mentok sampai bawah, tersisa 1 enter sebelum page break)
+        target_lines_before_kop = 23.0
         needed_enters = int(round(target_lines_before_kop - total_top_lines))
-        # Jika konten sangat panjang hingga mendesak ke bawah, jangan tambahkan spasi ekstra (max 0)
-        # Jika konten standar, tambahkan spasi hingga mentok ke bawah (max 10)
-        final_enters = max(0, min(10, needed_enters))
+        final_enters = max(0, min(4, needed_enters))
 
         for _ in range(final_enters):
             p_sp = self.doc.add_paragraph()
