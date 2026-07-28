@@ -366,19 +366,18 @@ class PklDocBuilder:
         perusahaan = data.get("perusahaan", {})
         pedoman = self.preset == "pedoman"
 
-        if not is_cover_dalam:
-            # Cover Luar (Page 1): Margin (Left 1.55cm, Right 1.65cm, Top 2.44cm, Bottom 0.50cm) & Bingkai Border Frame
-            try:
-                sec0 = self.doc.sections[0]
-                sec0.left_margin = Cm(1.55)
-                sec0.right_margin = Cm(1.65)
-                sec0.top_margin = Cm(2.44)
-                sec0.bottom_margin = Cm(0.50)
+        sec_curr = self.doc.sections[0] if not is_cover_dalam else self.doc.sections[-1]
+        sec_curr.left_margin = Cm(1.55)
+        sec_curr.right_margin = Cm(1.65)
+        sec_curr.top_margin = Cm(2.44)
+        sec_curr.bottom_margin = Cm(0.50)
 
-                sectPr = sec0._sectPr
-                for child in list(sectPr):
-                    if child.tag.endswith('pgBorders'):
-                        sectPr.remove(child)
+        try:
+            sectPr = sec_curr._sectPr
+            for child in list(sectPr):
+                if child.tag.endswith('pgBorders'):
+                    sectPr.remove(child)
+            if not is_cover_dalam:
                 borders_xml = parse_xml(
                     r'<w:pgBorders xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:display="allPages" w:offsetFrom="page">'
                     r'<w:top w:val="thinThickThinSmallGap" w:color="auto" w:sz="24" w:space="24"/>'
@@ -388,31 +387,8 @@ class PklDocBuilder:
                     r'</w:pgBorders>'
                 )
                 sectPr.append(borders_xml)
-            except Exception:
-                pass
-        else:
-            # Cover Dalam (Page 2): Persis seperti Cover Luar (ada bingkai border), hanya beda MARGIN KIRI = 4 cm
-            sec_curr = self.doc.sections[-1]
-            sec_curr.left_margin = Cm(4.0)
-            sec_curr.right_margin = Cm(1.65)
-            sec_curr.top_margin = Cm(2.44)
-            sec_curr.bottom_margin = Cm(0.50)
-            try:
-                sectPr = sec_curr._sectPr
-                for child in list(sectPr):
-                    if child.tag.endswith('pgBorders'):
-                        sectPr.remove(child)
-                borders_xml = parse_xml(
-                    r'<w:pgBorders xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:display="allPages" w:offsetFrom="page">'
-                    r'<w:top w:val="thinThickThinSmallGap" w:color="auto" w:sz="24" w:space="24"/>'
-                    r'<w:left w:val="thinThickThinSmallGap" w:color="auto" w:sz="24" w:space="24"/>'
-                    r'<w:bottom w:val="thinThickThinSmallGap" w:color="auto" w:sz="24" w:space="24"/>'
-                    r'<w:right w:val="thinThickThinSmallGap" w:color="auto" w:sz="24" w:space="24"/>'
-                    r'</w:pgBorders>'
-                )
-                sectPr.append(borders_xml)
-            except Exception:
-                pass
+        except Exception:
+            pass
 
         # Logo Pemprov di bagian atas cover (contoh resmi hal. 33) — opsional.
         if pedoman:
@@ -578,9 +554,8 @@ class PklDocBuilder:
 
         cell_left = table.cell(0, 0)
         cell_right = table.cell(0, 1)
-        right_width_cm = 12.16 if is_cover_dalam else 14.61
         cell_left.width = Cm(3.2)
-        cell_right.width = Cm(right_width_cm)
+        cell_right.width = Cm(14.61)
 
         # Hapus border tabel
         for cell in (cell_left, cell_right):
@@ -648,8 +623,7 @@ class PklDocBuilder:
         p_ids.paragraph_format.space_before = Pt(8)
         p_ids.paragraph_format.space_after = Pt(0)
         p_ids.paragraph_format.right_indent = Cm(0)
-        tab_pos_cm = 10.75 if is_cover_dalam else 13.2
-        p_ids.paragraph_format.tab_stops.add_tab_stop(Cm(tab_pos_cm), WD_TAB_ALIGNMENT.RIGHT)
+        p_ids.paragraph_format.tab_stops.add_tab_stop(Cm(13.2), WD_TAB_ALIGNMENT.RIGHT)
 
         r_nss = p_ids.add_run(f"NSS : {nss}")
         r_nss.font.name = "Times New Roman"
