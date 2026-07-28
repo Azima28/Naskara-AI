@@ -7,6 +7,8 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
+from typing import Any
+
 from ..dependencies import get_current_user
 from ..models import User
 from ..ai.client import get_ai_provider
@@ -23,6 +25,10 @@ class DraftSectionRequest(BaseModel):
     section_key: str
     context_data: dict
 
+class DraftSectionOut(BaseModel):
+    content: str
+    warnings: list[str] = []
+
 class ParseFullStoryRequest(BaseModel):
     cerita: str
     jurusan_key: str
@@ -34,11 +40,11 @@ class RegenerateRequest(BaseModel):
 class EnhanceContextRequest(BaseModel):
     context_data: dict
 
-@router.post("/draft-section")
+@router.post("/draft-section", response_model=DraftSectionOut)
 async def draft_section(
     req: DraftSectionRequest,
     user: User = Depends(get_current_user)
-) -> dict[str, str]:
+) -> DraftSectionOut:
     """Generate draf awal untuk bagian tertentu dari laporan PKL.
     
     Validasi output AI sebelum dikembalikan ke frontend.
@@ -110,7 +116,7 @@ async def draft_section(
                 # Log warnings jika ada (tidak blokir output)
                 if result.warnings:
                     print(f"[AI Warning] section={key}: {'; '.join(result.warnings)}")
-                return {"content": draft, "warnings": result.warnings}
+                return DraftSectionOut(content=draft, warnings=result.warnings)
             else:
                 last_error = result.errors
                 print(f"[AI Validation Failed] section={key} attempt={attempt}: {result.errors}")
