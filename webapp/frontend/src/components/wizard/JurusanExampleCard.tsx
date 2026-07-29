@@ -4,11 +4,9 @@ import JurusanDocxPreviewModal from './JurusanDocxPreviewModal'
 
 interface JurusanExampleCardProps {
   jurusanKey?: string
-  onApplyExample?: () => void
-  onClearForm?: () => void
 }
 
-export default function JurusanExampleCard({ jurusanKey, onApplyExample, onClearForm }: JurusanExampleCardProps) {
+export default function JurusanExampleCard({ jurusanKey }: JurusanExampleCardProps) {
   const [showModal, setShowModal] = useState(false)
   const example: JurusanExample = getJurusanExample(jurusanKey)
   const sk = example.studiKasus
@@ -97,7 +95,7 @@ export default function JurusanExampleCard({ jurusanKey, onApplyExample, onClear
         </div>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
         <button
           type="button"
           className="btn-sm btn-outline"
@@ -106,30 +104,6 @@ export default function JurusanExampleCard({ jurusanKey, onApplyExample, onClear
         >
           🔍 Lihat Pratinjau Lembaran Word Full (.docx)
         </button>
-
-        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-          {onApplyExample && (
-            <button
-              type="button"
-              className="btn-sm btn-primary"
-              onClick={onApplyExample}
-              style={{ fontSize: '0.82rem', padding: '0.35rem 0.75rem' }}
-            >
-              ⚡ Salin Draf Contoh {example.badge} ke Form
-            </button>
-          )}
-          {onClearForm && (
-            <button
-              type="button"
-              className="btn-sm btn-outline btn-danger"
-              onClick={onClearForm}
-              style={{ fontSize: '0.82rem', padding: '0.35rem 0.65rem' }}
-              title="Kosongkan seluruh isian form agar bisa mengetik draf baru dari awal"
-            >
-              🧹 Kosongkan Form
-            </button>
-          )}
-        </div>
       </div>
 
       <JurusanDocxPreviewModal
