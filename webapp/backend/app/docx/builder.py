@@ -784,6 +784,52 @@ class PklDocBuilder:
                 rnip.font.name = "Times New Roman"
                 rnip.font.size = Pt(size)
 
+    def _ttd_block(self, label: str, nama: str, nip: str = "", size: int = 14) -> None:
+        """Satu blok tanda tangan tunggal di sebelah kanan.
+        Dibuat sebagai tabel borderless 2-kolom (kiri kosong, kanan ttd centered).
+        """
+        table = self.doc.add_table(rows=1, cols=2)
+        table.style = "Normal Table"
+        self._remove_all_borders(table)
+
+        trPr = table.rows[0]._tr.get_or_add_trPr()
+        trPr.append(parse_xml(r'<w:cantSplit xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"/>'))
+
+        cell_left = table.rows[0].cells[0]
+        cell_right = table.rows[0].cells[1]
+        cell_left.width = Cm(7.0)
+        cell_right.width = Cm(7.0)
+
+        p0 = cell_right.paragraphs[0]
+        p0.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p0.paragraph_format.line_spacing = 1.5
+        r0 = p0.add_run(label)
+        r0.font.name = "Times New Roman"
+        r0.font.size = Pt(size)
+        r0.bold = True
+
+        for _ in range(3):
+            sp = cell_right.add_paragraph()
+            sp.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            sp.paragraph_format.line_spacing = 1.5
+
+        p1 = cell_right.add_paragraph()
+        p1.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p1.paragraph_format.line_spacing = 1.5
+        r1 = p1.add_run(nama)
+        r1.font.name = "Times New Roman"
+        r1.font.size = Pt(size)
+        r1.bold = True
+        r1.underline = True
+
+        if nip:
+            p2 = cell_right.add_paragraph()
+            p2.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p2.paragraph_format.line_spacing = 1.5
+            r2 = p2.add_run(f"NIP. {nip}")
+            r2.font.name = "Times New Roman"
+            r2.font.size = Pt(size)
+
     # ------------------------------------------------------------------ #
     #  Identitas (tabel borderless)                                       #
     # ------------------------------------------------------------------ #
@@ -884,9 +930,9 @@ class PklDocBuilder:
             except Exception:
                 pass
 
-        # Sel Kanan: Tanda Tangan Siswa (Yang Bersangkutan, - Rata Kanan sejajar margin kanan)
+        # Sel Kanan: Tanda Tangan Siswa (Yang Bersangkutan, - Rata Tengah dalam sel kanan)
         p_t1 = cell_ttd.paragraphs[0]
-        p_t1.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+        p_t1.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p_t1.paragraph_format.line_spacing = 1.15
         p_t1.paragraph_format.keep_with_next = True
         r_t1 = p_t1.add_run("Yang Bersangkutan,")
@@ -896,11 +942,12 @@ class PklDocBuilder:
 
         for _ in range(4):
             sp = cell_ttd.add_paragraph()
+            sp.alignment = WD_ALIGN_PARAGRAPH.CENTER
             sp.paragraph_format.line_spacing = 1.15
             sp.paragraph_format.keep_with_next = True
 
         p_t2 = cell_ttd.add_paragraph()
-        p_t2.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+        p_t2.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p_t2.paragraph_format.line_spacing = 1.15
         p_t2.paragraph_format.keep_with_next = True
         r_t2 = p_t2.add_run(_sig_name(siswa.get("nama")))
@@ -997,26 +1044,61 @@ class PklDocBuilder:
         kota = kp.get("kota") or sekolah.get("kota", "") or ""
         tanggal = (kp.get("tanggal") or "").strip()
         tanda_tempat = ", ".join(x for x in (kota, tanggal) if x)
-        p = self.doc.add_paragraph()
-        p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-        run = p.add_run(tanda_tempat)
-        run.font.size = Pt(12)
-        run.bold = True
-        self.add_spacing(1)
 
+        table_kp = self.doc.add_table(rows=1, cols=2)
+        table_kp.style = "Normal Table"
+        self._remove_all_borders(table_kp)
+
+        trPr_kp = table_kp.rows[0]._tr.get_or_add_trPr()
+        trPr_kp.append(parse_xml(r'<w:cantSplit xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"/>'))
+
+        cell_left = table_kp.rows[0].cells[0]
+        cell_right = table_kp.rows[0].cells[1]
+        cell_left.width = Cm(7.0)
+        cell_right.width = Cm(7.0)
+
+        # 1. Tempat, Tanggal di sel kanan (Centered di kolom kanan)
+        p0 = cell_right.paragraphs[0]
+        p0.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p0.paragraph_format.line_spacing = 1.15
+        p0.paragraph_format.space_before = Pt(0)
+        p0.paragraph_format.space_after = Pt(0)
+        r0 = p0.add_run(tanda_tempat)
+        r0.font.name = "Times New Roman"
+        r0.font.size = Pt(12)
+        r0.bold = True
+
+        # Ruang tanda tangan (3 baris kosong)
+        for _ in range(3):
+            sp = cell_right.add_paragraph()
+            sp.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            sp.paragraph_format.line_spacing = 1.15
+            sp.paragraph_format.space_before = Pt(0)
+            sp.paragraph_format.space_after = Pt(0)
+
+        # 2. Nama Terang Siswa (Underline & Bold)
         nama = siswa.get("nama", "[Nama]") or "[Nama]"
-        p = self.doc.add_paragraph()
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p.paragraph_format.left_indent = Cm(11.43)
-        run = p.add_run(nama)
-        run.font.size = Pt(12)
-        run.underline = True
-        p = self.doc.add_paragraph()
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p.paragraph_format.left_indent = Cm(11.43)
-        run = p.add_run("Penulis")
-        run.font.size = Pt(12)
-        run.bold = True
+        pn = cell_right.add_paragraph()
+        pn.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        pn.paragraph_format.line_spacing = 1.15
+        pn.paragraph_format.space_before = Pt(0)
+        pn.paragraph_format.space_after = Pt(0)
+        rn = pn.add_run(_sig_name(nama))
+        rn.font.name = "Times New Roman"
+        rn.font.size = Pt(12)
+        rn.bold = True
+        rn.underline = True
+
+        # 3. Keterangan Jabatan / "Penulis" (Bold)
+        pp = cell_right.add_paragraph()
+        pp.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        pp.paragraph_format.line_spacing = 1.15
+        pp.paragraph_format.space_before = Pt(0)
+        pp.paragraph_format.space_after = Pt(0)
+        rp = pp.add_run("Penulis")
+        rp.font.name = "Times New Roman"
+        rp.font.size = Pt(12)
+        rp.bold = True
 
     def _default_hierarki(self, data: dict) -> list[str]:
         items = [
