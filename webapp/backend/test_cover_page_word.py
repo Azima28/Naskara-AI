@@ -1,4 +1,4 @@
-"""Test cover page layout & page count across drafts using Word COM Automation."""
+"""Test cover page Kop Footer positioning in MS Word COM Automation."""
 import os
 import sys
 import pythoncom
@@ -11,43 +11,43 @@ from app.models import Draft
 from app.docx.assembly import assemble_report
 
 db = SessionLocal()
-drafts = db.query(Draft).all()
+d_anisa = db.query(Draft).filter(Draft.id == "2275bf5002a34339a89dbab98743d194").first()
+data = d_anisa.data_json or {}
 
-print(f"Testing Cover Page for {len(drafts)} drafts...")
-print("-" * 60)
+pythoncom.CoInitialize()
+import win32com.client
 
-def test_draft(d):
-    pythoncom.CoInitialize()
-    import win32com.client
-    data = d.data_json or {}
-    out_file = os.path.abspath(assemble_report(data))
+word = win32com.client.Dispatch("Word.Application")
+word.Visible = False
+word.DisplayAlerts = 0
 
-    # Strip updateFields flag temporarily so Word doesn't pop up a prompt
-    doc = docx.Document(out_file)
-    settings = doc.settings.element
-    for child in list(settings):
-        if child.tag.endswith("updateFields"):
-            settings.remove(child)
-    doc.save(out_file)
+out_file = os.path.abspath(assemble_report(data))
 
-    word = win32com.client.Dispatch("Word.Application")
-    word.Visible = False
-    word.DisplayAlerts = 0
-    try:
-        wdoc = word.Documents.Open(out_file, ConfirmConversions=False, ReadOnly=True)
-        sec1_end = wdoc.Sections(1).Range.Information(3) # wdActiveEndPageNumber
-        sec2_start = wdoc.Sections(2).Range.Information(3)
-        wdoc.Close(False)
+# Strip updateFields flag
+doc = docx.Document(out_file)
+settings = doc.settings.element
+for child in list(settings):
+    if child.tag.endswith("updateFields"):
+        settings.remove(child)
+doc.save(out_file)
 
-        status = "OK (1 Page)" if sec2_start == 2 else f"OVERFLOW (Sec 1 ends on Page {sec1_end}, Sec 2 starts on Page {sec2_start})"
-        return f"Draft {d.id[:8]} ({d.title[:30]}): {status}"
-    finally:
-        word.Quit()
-        pythoncom.CoUninitialize()
+try:
+    wdoc = word.Documents.Open(out_file, ConfirmConversions=False, ReadOnly=True)
 
-for d in drafts[1:]:
-    try:
-        res = test_draft(d)
-        print(res)
-    except Exception as e:
-        print(f"Draft {d.id[:8]} Error: {e}")
+    # Section 1 end page, Section 2 start page
+    s1_end = wdoc.Sections(1).Range.Information(3) # wdActiveEndPageNumber
+    s2_start = wdoc.Sections(2).Range.Information(3)
+
+    # Inspect tables in Section 1
+    t1 = wdoc.Sections(1).Range.Tables(1)
+    table_page = t1.Range.Information(3)
+
+    print(f"Doc: {out_file}")
+    print(f"Section 1 ends on page: {s1_end}")
+    print(f"Section 2 starts on page: {s2_start}")
+    print(f"Kop Table is on page: {table_page}")
+
+    wdoc.Close(False)
+finally:
+    word.Quit()
+    pythoncom.CoUninitialize()
