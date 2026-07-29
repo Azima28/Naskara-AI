@@ -2817,11 +2817,61 @@ input.field__input {
   .public-nav__toggle { display: block; }
   .auth-split { flex-direction: column; }
   .auth-split__hero { padding: 2rem 1.5rem; }
-  .workflow-steps, .features-grid, .dash-stats, .margin-specs-grid, .pagenum-rules-grid, .about-grid, .checklist-grid { grid-template-columns: 1fr; }
-  .public-footer__grid { grid-template-columns: 1fr; }
+  .workflow-steps, .features-grid, .dash-stats, .margin-specs-grid, .pagenum-rules-grid, .about-grid, .checklist-grid, .bab-list-grid { grid-template-columns: 1fr !important; }
+  .public-footer__grid { grid-template-columns: 1fr !important; }
   .draft-card-item { flex-direction: column; align-items: flex-start; }
   .draft-card-item__actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
   .dash-welcome { flex-direction: column; align-items: flex-start; }
+
+  /* Format guide tab buttons horizontal scroll on mobile */
+  .tab-buttons {
+    display: flex !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    padding-bottom: 0.4rem !important;
+    -webkit-overflow-scrolling: touch !important;
+    width: 100% !important;
+  }
+
+  .tab-btn {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  /* Dashboard filters & search box on mobile */
+  .dash-drafts-panel__filters {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    gap: 0.75rem !important;
+  }
+
+  .search-box, .search-box input {
+    width: 100% !important;
+  }
+
+  .filter-tabs {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+
+  .filter-tab {
+    flex: 1 !important;
+    text-align: center !important;
+  }
+
+  .about-hero, .guide-hero {
+    padding: 2.5rem 1rem 2rem !important;
+  }
+
+  .about-content, .guide-body {
+    padding: 2.25rem 1rem !important;
+  }
+
+  .about-card, .guide-card, .about-standards-box, .about-cta-box, .guide-cta {
+    padding: 1.25rem 1rem !important;
+    border-radius: 10px !important;
+  }
 }
 
 @media (max-width: 640px) {
@@ -2870,6 +2920,27 @@ input.field__input {
     font-size: 0.75rem !important;
     padding: 0.25rem 0.55rem !important;
   }
+
+  .public-footer__bottom {
+    flex-direction: column !important;
+    text-align: center !important;
+    gap: 0.75rem !important;
+  }
+
+  .public-footer__bottom-links {
+    justify-content: center !important;
+  }
+
+  .trust-banner__container {
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+
+  .trust-divider {
+    width: 100% !important;
+    height: 1px !important;
+    margin: 0.25rem 0 !important;
+  }
 }
 
 @media (max-width: 480px) {
@@ -2879,6 +2950,14 @@ input.field__input {
 
   .doc-page-mockup__margin-line {
     display: none !important;
+  }
+
+  .auth-split__form-box {
+    padding: 1.75rem 1.25rem !important;
+  }
+
+  .auth-split__hero {
+    padding: 1.75rem 1.25rem !important;
   }
 }
 
