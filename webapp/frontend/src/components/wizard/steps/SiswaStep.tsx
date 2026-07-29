@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import type { PklContext } from '@/types/pkl'
 import { FieldGroup, ImportanceLegend, TextField, SelectField, ImageUploadField } from '@/components/fields/FormFields'
 import { detectJurusanKey, getJurusanExample, JURUSAN_EXAMPLES } from '@/utils/jurusanExamples'
+import JurusanDocxPreviewModal from '@/components/wizard/JurusanDocxPreviewModal'
 
 const JURUSAN_PRESETS = [
   { name: 'AKL (Akuntansi & Keuangan)', value: 'Akuntansi dan Keuangan Lembaga', key: 'akl' },
@@ -18,6 +20,7 @@ const JURUSAN_PRESETS = [
 export default function SiswaStep({ ctx, set }: { ctx: PklContext; set: (p: Partial<PklContext>) => void }) {
   const s = ctx.siswa
   const upd = (patch: Partial<typeof s>) => set({ siswa: { ...s, ...patch } })
+  const [showPreviewModal, setShowPreviewModal] = useState(false)
 
   const currentJurusanExample = getJurusanExample(s.jurusan_key || detectJurusanKey(s.jurusan))
 
@@ -78,37 +81,52 @@ export default function SiswaStep({ ctx, set }: { ctx: PklContext; set: (p: Part
             </div>
           </div>
 
-          {/* Dynamic Detected Jurusan Badge & Preview */}
+          {/* Dynamic Detected Jurusan Badge & Preview Button */}
           <div
             style={{
               marginTop: '0.85rem',
-              padding: '0.75rem 0.9rem',
+              padding: '0.85rem 1rem',
               background: 'var(--green-50, #f0fdf4)',
               border: '1px solid var(--green-500, #4ade80)',
               borderRadius: '8px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
+              flexWrap: 'wrap',
               gap: '0.75rem',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '1.2rem' }}>{currentJurusanExample.icon}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <span style={{ fontSize: '1.3rem' }}>{currentJurusanExample.icon}</span>
               <div>
                 <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--green-700)', textTransform: 'uppercase' }}>
                   Jurusan Terdeteksi:
                 </span>
-                <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--ink)' }}>
+                <div style={{ fontSize: '0.92rem', fontWeight: 600, color: 'var(--ink)' }}>
                   {currentJurusanExample.label}
                 </div>
               </div>
             </div>
-            <span style={{ fontSize: '0.78rem', color: 'var(--green-700)', fontWeight: 500 }}>
-              ✓ Contoh data & AI disesuaikan untuk jurusan ini
-            </span>
+
+            <button
+              type="button"
+              className="btn-sm btn-primary"
+              onClick={() => setShowPreviewModal(true)}
+              style={{ fontSize: '0.82rem', fontWeight: 600, padding: '0.4rem 0.85rem' }}
+            >
+              🔍 Lihat Contoh Lembaran Laporan (.docx) Per Jurusan
+            </button>
           </div>
         </div>
       </FieldGroup>
+
+      {/* Modal Preview Lembaran Laporan per Jurusan */}
+      <JurusanDocxPreviewModal
+        isOpen={showPreviewModal}
+        onClose={() => setShowPreviewModal(false)}
+        initialJurusanKey={s.jurusan_key || detectJurusanKey(s.jurusan)}
+        onSelectJurusan={(val, key) => handleJurusanChange(val, key)}
+      />
 
       <FieldGroup title="Data Pribadi">
         <TextField label="Tempat Lahir" value={s.tempat_lahir} onChange={(v) => upd({ tempat_lahir: v })} importance="wajib" placeholder="Bandar Lampung" />

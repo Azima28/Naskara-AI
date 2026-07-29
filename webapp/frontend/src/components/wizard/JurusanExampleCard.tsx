@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { getJurusanExample, type JurusanExample } from '@/utils/jurusanExamples'
 import type { StudiKasus } from '@/types/pkl'
+import JurusanDocxPreviewModal from './JurusanDocxPreviewModal'
 
 interface JurusanExampleCardProps {
   jurusanKey?: string
@@ -13,6 +15,7 @@ interface JurusanExampleCardProps {
 }
 
 export default function JurusanExampleCard({ jurusanKey, onApplyExample }: JurusanExampleCardProps) {
+  const [showModal, setShowModal] = useState(false)
   const example: JurusanExample = getJurusanExample(jurusanKey)
   const sk = example.studiKasus
 
@@ -100,18 +103,33 @@ export default function JurusanExampleCard({ jurusanKey, onApplyExample }: Jurus
         </div>
       </div>
 
-      {onApplyExample && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+        <button
+          type="button"
+          className="btn-sm btn-outline"
+          onClick={() => setShowModal(true)}
+          style={{ fontSize: '0.82rem', padding: '0.35rem 0.75rem', background: '#ffffff' }}
+        >
+          🔍 Lihat Pratinjau Lembaran Word Full (.docx)
+        </button>
+
+        {onApplyExample && (
           <button
             type="button"
-            className="btn-sm btn-outline"
+            className="btn-sm btn-primary"
             onClick={() => onApplyExample(sk)}
-            style={{ fontSize: '0.82rem', padding: '0.35rem 0.75rem', background: '#ffffff' }}
+            style={{ fontSize: '0.82rem', padding: '0.35rem 0.75rem' }}
           >
             ⚡ Isikan Contoh Jurusan Ini ke Form Saya
           </button>
-        </div>
-      )}
+        )}
+      </div>
+
+      <JurusanDocxPreviewModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        initialJurusanKey={jurusanKey}
+      />
     </div>
   )
 }
