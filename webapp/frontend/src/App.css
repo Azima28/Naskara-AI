@@ -2817,7 +2817,7 @@ input.field__input {
   .public-nav__toggle { display: block; }
   .auth-split { flex-direction: column; }
   .auth-split__hero { padding: 2rem 1.5rem; }
-  .workflow-steps, .features-grid, .dash-stats, .margin-specs-grid, .pagenum-rules-grid, .about-grid, .checklist-grid, .bab-list-grid { grid-template-columns: 1fr !important; }
+  .workflow-steps, .features-grid, .dash-stats, .margin-specs-grid, .pagenum-rules-grid, .about-grid, .checklist-grid, .bab-list-grid, .comparison-grid { grid-template-columns: 1fr !important; }
   .public-footer__grid { grid-template-columns: 1fr !important; }
   .draft-card-item { flex-direction: column; align-items: flex-start; }
   .draft-card-item__actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
