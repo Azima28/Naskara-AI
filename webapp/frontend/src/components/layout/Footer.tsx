@@ -31,16 +31,20 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Col 3: Standar Jurusan */}
+          {/* Col 3: Standar Jurusan SMKN 4 Bandung */}
           <div className="public-footer__col">
-            <h4 className="public-footer__heading">Jurusan Vokasi</h4>
+            <h4 className="public-footer__heading">Jurusan SMKN 4 Bandung</h4>
             <ul className="public-footer__list">
-              <li><span>Rekayasa Perangkat Lunak (RPL)</span></li>
-              <li><span>Teknik Komputer &amp; Jaringan (TKJ)</span></li>
-              <li><span>Desain Komunikasi Visual (DKV)</span></li>
-              <li><span>Teknik Fabrikasi Logam (TFLM)</span></li>
-              <li><span>Teknik Ketenagalistrikan (TITL)</span></li>
-              <li><span>Teknik Otomotif (TKR/TSM)</span></li>
+              <li><span>PPLG (Perangkat Lunak &amp; Gim)</span></li>
+              <li><span>TKJ (Teknik Komputer &amp; Jaringan)</span></li>
+              <li><span>DKV (Desain Komunikasi Visual)</span></li>
+              <li><span>UPW (Usaha Perjalanan Wisata)</span></li>
+              <li><span>PH (Perhotelan)</span></li>
+              <li><span>TB (Tata Boga / Kuliner)</span></li>
+              <li><span>TS (Tata Busana / Fashion)</span></li>
+              <li><span>OTKP (Tata Kelola Perkantoran)</span></li>
+              <li><span>AKL (Akuntansi &amp; Keuangan)</span></li>
+              <li><span>BDP (Bisnis &amp; Pemasaran)</span></li>
             </ul>
           </div>
 

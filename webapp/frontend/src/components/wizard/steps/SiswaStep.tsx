@@ -6,16 +6,16 @@ import JurusanDocxPreviewModal from '@/components/wizard/JurusanDocxPreviewModal
 import { IconSearch } from '@/components/common/Icons'
 
 const JURUSAN_PRESETS = [
-  { name: 'AKL (Akuntansi & Keuangan)', value: 'Akuntansi dan Keuangan Lembaga', key: 'akl' },
-  { name: 'RPL (Rekayasa Perangkat Lunak)', value: 'Rekayasa Perangkat Lunak', key: 'rpl' },
+  { name: 'PPLG (Perangkat Lunak & Gim)', value: 'Pemrograman Perangkat Lunak dan Gim', key: 'pplg' },
   { name: 'TKJ (Teknik Komputer & Jaringan)', value: 'Teknik Komputer dan Jaringan', key: 'tkj' },
-  { name: 'BDP (Bisnis Daring & Pemasaran)', value: 'Bisnis Daring dan Pemasaran', key: 'bdp' },
-  { name: 'MPLB (Manajemen Perkantoran)', value: 'Manajemen Perkantoran dan Layanan Bisnis', key: 'mplb' },
-  { name: 'TKRO (Teknik Otomotif)', value: 'Teknik Kendaraan Ringan Otomotif', key: 'tkro' },
   { name: 'DKV (Desain Komunikasi Visual)', value: 'Desain Komunikasi Visual', key: 'dkv' },
-  { name: 'PH (Tata Boga & Perhotelan)', value: 'Tata Boga dan Perhotelan', key: 'ph' },
-  { name: 'Farmasi (Klinis & Komunitas)', value: 'Farmasi Klinis dan Komunitas', key: 'farmasi' },
-  { name: 'TEI (Elektronika Industri)', value: 'Teknik Elektronika Industri', key: 'tei' },
+  { name: 'UPW (Usaha Perjalanan Wisata)', value: 'Usaha Perjalanan Wisata', key: 'upw' },
+  { name: 'PH (Perhotelan)', value: 'Perhotelan', key: 'ph' },
+  { name: 'TB (Tata Boga / Kuliner)', value: 'Tata Boga', key: 'tb' },
+  { name: 'TS (Tata Busana / Fashion)', value: 'Tata Busana', key: 'busana' },
+  { name: 'OTKP (Tata Kelola Perkantoran)', value: 'Otomatisasi dan Tata Kelola Perkantoran', key: 'otkp' },
+  { name: 'AKL (Akuntansi & Keuangan)', value: 'Akuntansi dan Keuangan Lembaga', key: 'akl' },
+  { name: 'BDP (Bisnis Daring & Pemasaran)', value: 'Bisnis Daring dan Pemasaran', key: 'bdp' },
 ]
 
 export default function SiswaStep({ ctx, set }: { ctx: PklContext; set: (p: Partial<PklContext>) => void }) {

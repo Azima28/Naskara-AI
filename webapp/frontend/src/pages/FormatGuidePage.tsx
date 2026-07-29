@@ -7,22 +7,32 @@ import {
   IconCode,
   IconGlobe,
   IconPalette,
-  IconGear,
-  IconLightning,
-  IconCar,
   IconRocket,
+  IconCompass,
+  IconBed,
+  IconUtensils,
+  IconScissors,
+  IconFolder,
+  IconChart,
+  IconShoppingBag,
 } from '@/components/common/Icons'
 
-export default function FormatGuidePage() {
-  const [activeTab, setActiveTab] = useState<'rpl' | 'tkj' | 'dkv' | 'tflm' | 'titl' | 'tkr'>('rpl')
+type MajorKey = 'pplg' | 'tkj' | 'dkv' | 'upw' | 'ph' | 'tb' | 'busana' | 'otkp' | 'akl' | 'bdp'
 
-  const majors = [
-    { id: 'rpl', name: 'Rekayasa Perangkat Lunak (RPL)', code: 'RPL' },
+export default function FormatGuidePage() {
+  const [activeTab, setActiveTab] = useState<MajorKey>('pplg')
+
+  const majors: { id: MajorKey; name: string; code: string }[] = [
+    { id: 'pplg', name: 'Pemrograman Perangkat Lunak & Gim (PPLG)', code: 'PPLG' },
     { id: 'tkj', name: 'Teknik Komputer & Jaringan (TKJ)', code: 'TKJ' },
     { id: 'dkv', name: 'Desain Komunikasi Visual (DKV)', code: 'DKV' },
-    { id: 'tflm', name: 'Teknik Fabrikasi Logam (TFLM)', code: 'TFLM' },
-    { id: 'titl', name: 'Teknik Ketenagalistrikan (TITL)', code: 'TITL' },
-    { id: 'tkr', name: 'Teknik Otomotif (TKR/TSM)', code: 'TKR' },
+    { id: 'upw', name: 'Usaha Perjalanan Wisata (UPW)', code: 'UPW' },
+    { id: 'ph', name: 'Perhotelan (PH)', code: 'PH' },
+    { id: 'tb', name: 'Tata Boga / Kuliner (TB)', code: 'TB' },
+    { id: 'busana', name: 'Tata Busana / Fashion (TS)', code: 'TS' },
+    { id: 'otkp', name: 'Otomatisasi & Tata Kelola Perkantoran (OTKP)', code: 'OTKP' },
+    { id: 'akl', name: 'Akuntansi & Keuangan Lembaga (AKL)', code: 'AKL' },
+    { id: 'bdp', name: 'Bisnis Daring & Pemasaran (BDP)', code: 'BDP' },
   ]
 
   return (
@@ -34,7 +44,7 @@ export default function FormatGuidePage() {
           <span className="guide-hero__tag">PEDOMAN RESMI 2026</span>
           <h1>Panduan Format Penulisan Laporan PKL SMKN 4 Bandung</h1>
           <p className="guide-hero__lead">
-            Panduan lengkap spesifikasi tata tulis ilmiah, tata letak margin 4-4-3-3 cm, aturan penomoran halaman bertingkat, serta struktur penulisan sub-list yang berlaku resmi.
+            Panduan lengkap spesifikasi tata tulis ilmiah, tata letak margin 4-4-3-3 cm, aturan penomoran halaman bertingkat, serta struktur penulisan sub-list yang berlaku resmi di SMKN 4 Bandung.
           </p>
         </div>
       </section>
@@ -135,7 +145,7 @@ export default function FormatGuidePage() {
           <div className="guide-card">
             <h2>3. Aturan Penomoran Halaman (Romawi vs Arab)</h2>
             <p className="muted">
-              Sesuai Pedoman Akademik 2026, dokumen PKL wajib memiliki dua kelompok penomoran halaman yang terpisah:
+              Sesuai Pedoman Akademik 2026 SMKN 4 Bandung, dokumen PKL wajib memiliki dua kelompok penomoran halaman yang terpisah:
             </p>
 
             <div className="pagenum-rules-grid">
@@ -161,11 +171,11 @@ export default function FormatGuidePage() {
             </div>
           </div>
 
-          {/* Card 4: Tab Switcher Jurusan Vokasi */}
+          {/* Card 4: Tab Switcher Jurusan SMKN 4 Bandung */}
           <div className="guide-card">
-            <h2>4. Contoh Isian Jurnal Kegiatan per Jurusan Vokasi</h2>
+            <h2>4. Contoh Isian Jurnal Kegiatan per Jurusan SMKN 4 Bandung</h2>
             <p className="muted">
-              Pilih jurusan Anda untuk melihat contoh jurnal kegiatan teknis yang relevan dan diterima sekolah:
+              Pilih konsentrasi keahlian Anda untuk melihat contoh jurnal kegiatan teknis yang relevan dan diterima sekolah:
             </p>
 
             <div className="tab-buttons">
@@ -173,7 +183,7 @@ export default function FormatGuidePage() {
                 <button
                   key={m.id}
                   className={`tab-btn ${activeTab === m.id ? 'is-active' : ''}`}
-                  onClick={() => setActiveTab(m.id as any)}
+                  onClick={() => setActiveTab(m.id)}
                 >
                   {m.code}
                 </button>
@@ -181,52 +191,84 @@ export default function FormatGuidePage() {
             </div>
 
             <div className="jurusan-guide-box">
-              {activeTab === 'rpl' && (
+              {activeTab === 'pplg' && (
                 <div>
-                  <h3><IconCode size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Jurusan Rekayasa Perangkat Lunak (RPL)</h3>
-                  <p><strong>Contoh Divisi:</strong> Software Engineering / Web Development / QA Tester</p>
-                  <p><strong>Peralatan Utama:</strong> Visual Studio Code, Git/GitHub, MySQLWorkbench, Postman API, Node.js.</p>
-                  <p><strong>Contoh Kegiatan:</strong> Slicing UI Figma ke React, Pembuatan API Endpoint Authentication, Fix Bug Query Database SQL, Testing Unit Test.</p>
+                  <h3><IconCode size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Pemrograman Perangkat Lunak &amp; Gim (PPLG)</h3>
+                  <p><strong>Contoh Divisi:</strong> Software Engineering / Web Development / Game Dev / QA Tester</p>
+                  <p><strong>Peralatan Utama:</strong> Visual Studio Code, Git/GitHub, MySQLWorkbench, Postman API, Node.js, Unity/Unreal Engine.</p>
+                  <p><strong>Contoh Kegiatan:</strong> Slicing UI Figma ke React, Pembuatan API Endpoint Authentication, Fix Bug Query Database SQL, Testing Unit Test &amp; Optimasi Speed Query.</p>
                 </div>
               )}
               {activeTab === 'tkj' && (
                 <div>
-                  <h3><IconGlobe size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Jurusan Teknik Komputer &amp; Jaringan (TKJ)</h3>
-                  <p><strong>Contoh Divisi:</strong> Network Administrator / IT Support / Infrastructure</p>
+                  <h3><IconGlobe size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Teknik Komputer &amp; Jaringan (TKJ)</h3>
+                  <p><strong>Contoh Divisi:</strong> Network Administrator / IT Support / Infrastructure &amp; Cloud</p>
                   <p><strong>Peralatan Utama:</strong> Router MikroTik, Tang Crimping, LAN Tester, Switch Cisco, Winbox, Kabel UTP Cat6.</p>
                   <p><strong>Contoh Kegiatan:</strong> Konfigurasi VLAN &amp; Routing OSPF, Crimping Kabel LAN, Setting Bandwidth Management Queues MikroTik, Troubleshooting Koneksi Jaringan.</p>
                 </div>
               )}
               {activeTab === 'dkv' && (
                 <div>
-                  <h3><IconPalette size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Jurusan Desain Komunikasi Visual (DKV)</h3>
-                  <p><strong>Contoh Divisi:</strong> Creative Media / Graphic Designer / Video Editor</p>
+                  <h3><IconPalette size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Desain Komunikasi Visual (DKV)</h3>
+                  <p><strong>Contoh Divisi:</strong> Creative Media / Graphic Designer / Video Editor / Motion Artist</p>
                   <p><strong>Peralatan Utama:</strong> Adobe Photoshop, Illustrator, Premiere Pro, Pen Tablet Wacom, Camera DSLR.</p>
-                  <p><strong>Contoh Kegiatan:</strong> Desain Banner Promosi Digital, Editing Video Profil Perusahaan, Slicing Asset Vector Logo, Layouting Booklet Brosur.</p>
+                  <p><strong>Contoh Kegiatan:</strong> Desain Banner Promosi Digital, Editing Video Profil Perusahaan, Slicing Asset Vector Logo, Layouting Booklet Brosur &amp; Motion Graphics.</p>
                 </div>
               )}
-              {activeTab === 'tflm' && (
+              {activeTab === 'upw' && (
                 <div>
-                  <h3><IconGear size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Jurusan Teknik Fabrikasi Logam (TFLM)</h3>
-                  <p><strong>Contoh Divisi:</strong> Workshop Maintenance / Fabrication / Welding Inspector</p>
-                  <p><strong>Peralatan Utama:</strong> Mesin Las SMAW/GMAW, Mesin Gerinda Tangan, Jangka Sorong, APD Las.</p>
-                  <p><strong>Contoh Kegiatan:</strong> Pengelasan Sambungan T-Joint, Pemotongan Plat Besi dengan Cutting Torch, Finishing Penggerindaan Hasil Las, Inspeksi Visual Defek Pengelasan.</p>
+                  <h3><IconCompass size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Usaha Perjalanan Wisata (UPW)</h3>
+                  <p><strong>Contoh Divisi:</strong> Tour Operator / Travel Consultant / Ticketing Reservation / Guiding</p>
+                  <p><strong>Peralatan Utama:</strong> GDS Sabre/Amadeus Reservation System, Time Table Rute, Costing Sheet Excel, Travel Contract Rate.</p>
+                  <p><strong>Contoh Kegiatan:</strong> Pembuatan Itinerary Tour 3D2N Bandung-Lembang, Calculation Travel Costing &amp; Fixed Cost per Pax, Inbound Tour Guiding, Reservation Flight &amp; Hotel Ticket.</p>
                 </div>
               )}
-              {activeTab === 'titl' && (
+              {activeTab === 'ph' && (
                 <div>
-                  <h3><IconLightning size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Jurusan Teknik Ketenagalistrikan (TITL)</h3>
-                  <p><strong>Contoh Divisi:</strong> Electrical Maintenance / Panel Installer / Automation</p>
-                  <p><strong>Peralatan Utama:</strong> Multimeter Digital, Tang Ampere, Obeng VDE, Tang Kupas, PLC Omron.</p>
-                  <p><strong>Contoh Kegiatan:</strong> Perakitan Panel Kontrol Motor 3-Fasa, Pengukuran Tegangan &amp; Arus Beban, Pemrograman Ladder Diagram PLC, Maintenance Breaker MCB/MCCB.</p>
+                  <h3><IconBed size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Perhotelan (PH)</h3>
+                  <p><strong>Contoh Divisi:</strong> Front Office / Housekeeping / Laundry / Guest Relation Officer</p>
+                  <p><strong>Peralatan Utama:</strong> Opera Property Management System (PMS), Housekeeping Trolley, Linen &amp; Amenities Check-list, Room Key Card Programmer.</p>
+                  <p><strong>Contoh Kegiatan:</strong> Handling Guest Check-In &amp; Check-Out, Room Inspection 21 Poin Housekeeping, Turndown Service Deluxe Room, Guest Complaint Resolution &amp; Luggage Handling.</p>
                 </div>
               )}
-              {activeTab === 'tkr' && (
+              {activeTab === 'tb' && (
                 <div>
-                  <h3><IconCar size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Jurusan Teknik Otomotif (TKR/TSM)</h3>
-                  <p><strong>Contoh Divisi:</strong> Service Advisor / Mekanik General Repair / Service Periodic</p>
-                  <p><strong>Peralatan Utama:</strong> Diagnostic Scanner OBD-II, Kunci Momen, Feeler Gauge, Lift Hydraulic.</p>
-                  <p><strong>Contoh Kegiatan:</strong> Tune-Up Mesin EFI 4-Silinder, Penggantian Oli Engine &amp; Filter, Ganti Kampas Rem Cakram, Scanner Clear Diagnostic Troubleshooting Code (DTC).</p>
+                  <h3><IconUtensils size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Tata Boga / Kuliner (TB)</h3>
+                  <p><strong>Contoh Divisi:</strong> Main Kitchen / Pastry &amp; Bakery / Banquet Service / Cold Kitchen</p>
+                  <p><strong>Peralatan Utama:</strong> Commercial Oven, Portioning Digital Scale, Chef Knives Set, Chiller/Freezer FIFO, Cooking Thermometer.</p>
+                  <p><strong>Contoh Kegiatan:</strong> Standardisasi Mise en Place Bahan Utama, Pembuatan Pastry &amp; Bakery, Audit Hygiene HACCP, Control Food Cost Menu Buffet Banquet dari 38% ke 29.5%.</p>
+                </div>
+              )}
+              {activeTab === 'busana' && (
+                <div>
+                  <h3><IconScissors size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Tata Busana / Fashion (TS)</h3>
+                  <p><strong>Contoh Divisi:</strong> Fashion Designer Assistant / Pattern Maker / Garment Quality Control / Sample Sewing</p>
+                  <p><strong>Peralatan Utama:</strong> Mesin Jahit High-Speed Industri, Mesin Obras 4-Benang, Manekin Draping, Gunting Kain Tailor, Meteran Jahit.</p>
+                  <p><strong>Contoh Kegiatan:</strong> Pembuatan Pola Busana Custom Sistem Meyneke, Draping Sample Kain Blaco, Cutting Material Kain &amp; Toleransi Jahitan 1.5 cm, Quality Control Kerapatan Stik Jahitan.</p>
+                </div>
+              )}
+              {activeTab === 'otkp' && (
+                <div>
+                  <h3><IconFolder size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Otomatisasi &amp; Tata Kelola Perkantoran (OTKP)</h3>
+                  <p><strong>Contoh Divisi:</strong> Sekretaris / Administrasi Perkantoran / Public Relation / Digital Archiving</p>
+                  <p><strong>Peralatan Utama:</strong> Mesin Scanner High-Speed, e-Office Archiving App, Telepon PABX, Filling Cabinet, Paper Shredder.</p>
+                  <p><strong>Contoh Kegiatan:</strong> Digitalisasi Surat Masuk/Keluar, Pengelolaan Agenda Rapat Direksi, Penanganan Telepon PABX &amp; Tamu Perusahaan, Retrieval Document System di bawah 1 Menit.</p>
+                </div>
+              )}
+              {activeTab === 'akl' && (
+                <div>
+                  <h3><IconChart size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Akuntansi &amp; Keuangan Lembaga (AKL)</h3>
+                  <p><strong>Contoh Divisi:</strong> Accounting Staff / Finance / Tax Officer / Payroll / Collection Waive</p>
+                  <p><strong>Peralatan Utama:</strong> MYOB Accounting, Accurate Software, Microsoft Excel Advanced, e-Faktur Pajak, Kalkulator Finansial.</p>
+                  <p><strong>Contoh Kegiatan:</strong> Rekonsiliasi Bank Bulanan, Jurnal Penyesuaian Kas Kecil (Petty Cash), Penghitungan Waive Discount Denda Debitur, Penyusunan Laporan Laba Rugi Perusahaan.</p>
+                </div>
+              )}
+              {activeTab === 'bdp' && (
+                <div>
+                  <h3><IconShoppingBag size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Bisnis Daring &amp; Pemasaran (BDP)</h3>
+                  <p><strong>Contoh Divisi:</strong> Digital Marketing / E-Commerce Specialist / Social Media Admin / Content Creator</p>
+                  <p><strong>Peralatan Utama:</strong> Meta Business Suite, Shopee/Tokopedia Seller Center, TikTok Ads Manager, Google Analytics, Canva Pro.</p>
+                  <p><strong>Contoh Kegiatan:</strong> Setting Ads Meta Campaign Usia Target 18-35 Tahun, Management Product Listing Marketplace, Live Streaming Sales Promotion, Tracking Conversion Rate &amp; ROAS.</p>
                 </div>
               )}
             </div>

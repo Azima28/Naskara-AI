@@ -149,6 +149,10 @@ _ACADEMIC_OK = {
     "rekayasa", "perangkat", "lunak", "bisnis", "daring", "kendaraan", "ringan",
     "teknik", "teknik", "listrik", "industri", "pelayanan", "logistik",
     "jurusan", "kompetensi", "keahlian", "program", "pendidikan",
+    "itinerary", "housekeeping", "pastry", "bakery", "draping", "garmen",
+    "e-office", "disposisi", "waive", "roas", "vlan", "render", "slicing",
+    "haccp", "busana", "wisata", "perhotelan", "kuliner", "gim", "pplg",
+    "otkp", "upw", "akl", "bdp", "dkv", "tkj", "ph", "tb",
 }
 
 

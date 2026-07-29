@@ -9,16 +9,16 @@ interface JurusanDocxPreviewModalProps {
 }
 
 const MAJOR_TABS = [
-  { key: 'tkro', label: 'TKRO / Otomotif' },
-  { key: 'akl', label: 'AKL / Akuntansi' },
-  { key: 'rpl', label: 'RPL / Software' },
+  { key: 'pplg', label: 'PPLG / Software & Gim' },
   { key: 'tkj', label: 'TKJ / Jaringan' },
-  { key: 'bdp', label: 'BDP / Marketing' },
-  { key: 'mplb', label: 'MPLB / Perkantoran' },
   { key: 'dkv', label: 'DKV / Desain' },
-  { key: 'ph', label: 'PH / Tata Boga' },
-  { key: 'farmasi', label: 'Farmasi' },
-  { key: 'tei', label: 'TEI / Elektronika' },
+  { key: 'upw', label: 'UPW / Wisata' },
+  { key: 'ph', label: 'PH / Perhotelan' },
+  { key: 'tb', label: 'TB / Kuliner' },
+  { key: 'busana', label: 'TS / Fashion' },
+  { key: 'otkp', label: 'OTKP / Perkantoran' },
+  { key: 'akl', label: 'AKL / Akuntansi' },
+  { key: 'bdp', label: 'BDP / Marketing' },
 ]
 
 export default function JurusanDocxPreviewModal({

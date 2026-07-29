@@ -9,15 +9,20 @@ import {
   IconCode,
   IconGlobe,
   IconPalette,
-  IconGear,
   IconLightning,
-  IconCar,
   IconPencil,
   IconDocument,
   IconDownload,
   IconTrash,
   IconChecklist,
   IconCheck,
+  IconCompass,
+  IconBed,
+  IconUtensils,
+  IconScissors,
+  IconFolder,
+  IconChart,
+  IconShoppingBag,
 } from '@/components/common/Icons'
 
 export default function DashboardPage() {
@@ -157,25 +162,37 @@ export default function DashboardPage() {
 
             {/* Template Quick Starters */}
             <div className="dash-quick-starter">
-              <h3><IconLightning size={16} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Pilih Templat Jurusan Vokasi:</h3>
+              <h3><IconLightning size={16} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Pilih Templat Jurusan SMKN 4 Bandung:</h3>
               <div className="quick-starter-grid">
-                <button onClick={() => handleCreate('RPL')} className="starter-chip">
-                  <IconCode size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> RPL (Perangkat Lunak)
+                <button onClick={() => handleCreate('PPLG')} className="starter-chip">
+                  <IconCode size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> PPLG (Perangkat Lunak &amp; Gim)
                 </button>
                 <button onClick={() => handleCreate('TKJ')} className="starter-chip">
-                  <IconGlobe size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> TKJ (Jaringan)
+                  <IconGlobe size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> TKJ (Jaringan &amp; Komputer)
                 </button>
                 <button onClick={() => handleCreate('DKV')} className="starter-chip">
-                  <IconPalette size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> DKV (Desain Visual)
+                  <IconPalette size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> DKV (Desain Komunikasi Visual)
                 </button>
-                <button onClick={() => handleCreate('TFLM')} className="starter-chip">
-                  <IconGear size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> TFLM (Fabrikasi Logam)
+                <button onClick={() => handleCreate('UPW')} className="starter-chip">
+                  <IconCompass size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> UPW (Usaha Perjalanan Wisata)
                 </button>
-                <button onClick={() => handleCreate('TITL')} className="starter-chip">
-                  <IconLightning size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> TITL (Listrik)
+                <button onClick={() => handleCreate('PH')} className="starter-chip">
+                  <IconBed size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> PH (Perhotelan)
                 </button>
-                <button onClick={() => handleCreate('TKR')} className="starter-chip">
-                  <IconCar size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> TKR / Otomotif
+                <button onClick={() => handleCreate('TB')} className="starter-chip">
+                  <IconUtensils size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> TB (Tata Boga / Kuliner)
+                </button>
+                <button onClick={() => handleCreate('TS')} className="starter-chip">
+                  <IconScissors size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> TS (Tata Busana / Fashion)
+                </button>
+                <button onClick={() => handleCreate('OTKP')} className="starter-chip">
+                  <IconFolder size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> OTKP (Tata Kelola Perkantoran)
+                </button>
+                <button onClick={() => handleCreate('AKL')} className="starter-chip">
+                  <IconChart size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> AKL (Akuntansi &amp; Keuangan)
+                </button>
+                <button onClick={() => handleCreate('BDP')} className="starter-chip">
+                  <IconShoppingBag size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> BDP (Bisnis &amp; Pemasaran)
                 </button>
               </div>
             </div>

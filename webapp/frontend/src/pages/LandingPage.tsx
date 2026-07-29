@@ -49,8 +49,8 @@ export default function LandingPage() {
       a: 'Sangat presisi. Kami mengatur Page Setup langsung pada XML Microsoft Word: Kiri 4.0 cm (untuk jilid), Atas 4.0 cm, Kanan 3.0 cm, dan Bawah 3.0 cm. Selain itu, seluruh tabel identitas dibatasi lebar maksimum 14.00 cm agar tidak menabrak batas margin kanan.',
     },
     {
-      q: 'Apakah bisa digunakan untuk jurusan SMK selain RPL?',
-      a: 'Sangat bisa! Naskara mendukung lebih dari 15 jurusan vokasi (TKJ, DKV, Teknik Otomotif, Teknik Logam, Ketenagalistrikan, Akuntansi, dll). Kami menyediakan contoh jurnal kegiatan & profil industri khusus untuk setiap jurusan.',
+      q: 'Apakah bisa digunakan untuk jurusan SMK selain PPLG?',
+      a: 'Sangat bisa! Naskara mendukung 10 Konsentrasi Keahlian resmi SMKN 4 Bandung (PPLG, TKJ, DKV, UPW, Perhotelan, Tata Boga, Tata Busana, OTKP, Akuntansi, Bisnis Daring & Pemasaran). Kami menyediakan contoh jurnal kegiatan & profil industri khusus untuk setiap jurusan.',
     },
     {
       q: 'Bagaimana jika Daftar Isi MS Word saya menampilkan "Error! Bookmark not defined"?',
@@ -154,8 +154,8 @@ export default function LandingPage() {
                     <div className="doc-meta-table">
                       <div className="meta-row"><span>Nama Siswa</span><span>: Muhammad Rizky Pratama</span></div>
                       <div className="meta-row"><span>NIS / NISN</span><span>: 212210482 / 0054819283</span></div>
-                      <div className="meta-row"><span>Kelas</span><span>: XII RPL 1</span></div>
-                      <div className="meta-row"><span>Kompetensi</span><span>: Rekayasa Perangkat Lunak</span></div>
+                      <div className="meta-row"><span>Kelas</span><span>: XII PPLG 1</span></div>
+                      <div className="meta-row"><span>Kompetensi</span><span>: Pemrograman Perangkat Lunak dan Gim</span></div>
                     </div>
 
                     <div className="doc-footer-school">
