@@ -486,7 +486,9 @@ def _write_blocks(builder: PklDocBuilder, blocks: list) -> None:
             teks_clean = re.sub(r"^[\uf0a7\uf0b7□▪•\-\s]+", "", teks_raw).strip()
 
             if is_bullet_item:
-                letter = _LETTERS[item_counter % 26] + ")"
+                letter = _LETTERS[item_counter % 26] + "."
+                if teks_clean:
+                    teks_clean = teks_clean[0].upper() + teks_clean[1:]
                 builder.add_lettered(teks_clean, letter, indent_level=1)
                 item_counter += 1
             else:
@@ -1044,7 +1046,7 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
         misi = profil.get("misi", [])
         if visi or misi:
             sub3 += 1
-            builder.add_sub_heading_3(f"{_LETTERS[sub3 - 1]}) Visi dan Misi")
+            builder.add_sub_heading_3(f"{_LETTERS[sub3 - 1]}. Visi dan Misi")
             intro_vm = profil.get("visi_misi_intro")
             if intro_vm:
                 builder.add_body(intro_vm)
@@ -1062,7 +1064,7 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
         if alamat or area_cabang:
             sub3 += 1
             builder.add_sub_heading_3(
-                f"{_LETTERS[sub3 - 1]}) Profil Lokasi Praktik Kerja Lapangan"
+                f"{_LETTERS[sub3 - 1]}. Profil Lokasi Praktik Kerja Lapangan"
             )
             lokasi = profil.get("profil_lokasi")
             if lokasi:
@@ -1115,7 +1117,7 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
     # a) Waktu Kerja dan Istirahat Kerja — dinamis: tabel jam kerja user
     if jam_kerja:
         tt_sub += 1
-        builder.add_sub_heading_3(f"{_LETTERS[tt_sub - 1]}) Waktu Kerja dan Istirahat Kerja")
+        builder.add_sub_heading_3(f"{_LETTERS[tt_sub - 1]}. Waktu Kerja dan Istirahat Kerja")
         builder.add_body(
             profil.get("jam_kerja_intro") or f"Jadwal kerja yang ada di {nama_prsh}:"
         )
@@ -1124,20 +1126,26 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
 
     # b) Tata Tertib SMKN4 Resmi (selalu ada)
     tt_sub += 1
-    builder.add_sub_heading_3(f"{_LETTERS[tt_sub - 1]}) Tata Tertib dan Kewajiban Karyawan")
+    builder.add_sub_heading_3(f"{_LETTERS[tt_sub - 1]}. Tata Tertib dan Kewajiban Karyawan")
     builder.add_body(
         profil.get("tata_tertib_list_intro")
         or f"Berikut adalah tata tertib dan kewajiban karyawan {nama_prsh}:"
     )
     for i, tt in enumerate(OFFICIAL_SMKN4_TATA_TERTIB, 1):
-        builder.add_numbered(tt, i)
+        clean_tt = tt.strip()
+        if clean_tt:
+            clean_tt = clean_tt[0].upper() + clean_tt[1:]
+        builder.add_numbered(clean_tt, i)
 
     # c) Tata Tertib Perusahaan Spesifik (opsional — dari input user)
     if tt_perusahaan:
         tt_sub += 1
-        builder.add_sub_heading_3(f"{_LETTERS[tt_sub - 1]}) Tata Tertib Khusus {nama_prsh}")
+        builder.add_sub_heading_3(f"{_LETTERS[tt_sub - 1]}. Tata Tertib Khusus {nama_prsh}")
         for i, tt in enumerate(tt_perusahaan, 1):
-            builder.add_numbered(tt if isinstance(tt, str) else str(tt), i)
+            clean_tt = (_ensure_str(tt) if not isinstance(tt, str) else tt).strip()
+            if clean_tt:
+                clean_tt = clean_tt[0].upper() + clean_tt[1:]
+            builder.add_numbered(clean_tt, i)
 
     sub += 1
 
@@ -1169,12 +1177,16 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
             if isinstance(jd, dict):
                 posisi = _ensure_str(jd.get("posisi", ""))
                 if posisi:
-                    builder.add_lettered(posisi, _LETTERS[idx % 26] + ")")
+                    marker = _LETTERS[idx % 26] + "."
+                    builder.add_lettered(posisi, marker, indent_level=0, bold=True)
                 tugas_list = jd.get("tugas", [])
                 if isinstance(tugas_list, str):
                     tugas_list = [t.strip() for t in tugas_list.split("\n") if t.strip()]
                 for i, t in enumerate([_ensure_str(x).strip() for x in tugas_list if _ensure_str(x).strip()], 1):
-                    builder.add_numbered(_ensure_str(t).strip(), i, indent_level=1)
+                    clean_t = _ensure_str(t).strip()
+                    if clean_t:
+                        clean_t = clean_t[0].upper() + clean_t[1:]
+                    builder.add_numbered(clean_t, i, indent_level=1)
         sub += 1
 
 
@@ -1224,7 +1236,7 @@ def _write_kegiatan_industri(builder: PklDocBuilder, data: dict, bab_num: int) -
         tugas_list = k.get("tugas", [])
 
         if bidang:
-            builder.add_lettered(bidang, _LETTERS[idx % 26] + ")", bold=True)
+            builder.add_lettered(bidang, _LETTERS[idx % 26] + ".", bold=True)
             builder.add_body(
                 k.get("deskripsi_umum")
                 or f"Adapun tugas yang penulis kerjakan dalam bidang {bidang} adalah:"
@@ -1233,9 +1245,11 @@ def _write_kegiatan_industri(builder: PklDocBuilder, data: dict, bab_num: int) -
         n = 0
         for t in tugas_list:
             nama_tugas = t.get("nama_tugas") or t.get("nama") or ""
-            if nama_tugas.strip():
+            clean_t = nama_tugas.strip()
+            if clean_t:
+                clean_t = clean_t[0].upper() + clean_t[1:]
                 n += 1
-                builder.add_numbered(nama_tugas.strip(), n, indent_level=1)
+                builder.add_numbered(clean_t, n, indent_level=1)
 
 
 # ---------------------------------------------------------------------- #
@@ -1500,8 +1514,10 @@ def _write_kesimpulan_saran(builder: PklDocBuilder, data: dict, bab_num: int) ->
         )
         # Saran ditulis a. b. c. sesuai aturan enumerasi laporan.
         for i, s in enumerate(saran_items):
-            if str(s).strip():
-                builder.add_lettered(str(s).strip(), _LETTERS[i % 26] + ")")
+            clean_s = str(s).strip()
+            if clean_s:
+                clean_s = clean_s[0].upper() + clean_s[1:]
+                builder.add_lettered(clean_s, _LETTERS[i % 26] + ".")
     elif saran_user:
         _write_paragraphs(builder, saran_user)
     else:
