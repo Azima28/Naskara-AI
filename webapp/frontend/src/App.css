@@ -133,6 +133,15 @@ button:disabled {
   background: var(--green-700);
 }
 
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
 /* --- Halaman auth (login/register) -------------------------------------- */
 
 .page-auth {

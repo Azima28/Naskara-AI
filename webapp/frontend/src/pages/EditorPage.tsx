@@ -28,6 +28,7 @@ function EditorInner() {
   const [genIssues, setGenIssues] = useState<GenerateIssue[]>([])
   const [genQuestions, setGenQuestions] = useState<Requestion[]>([])
   const [polishNotice, setPolishNotice] = useState('')
+  const [isDocxReady, setIsDocxReady] = useState(false)
 
   // Load draft
   useEffect(() => {
@@ -131,18 +132,27 @@ function EditorInner() {
               </p>
               <button
                 type="button"
-                className="btn-sm btn-outline"
-                style={{ width: '100%', borderColor: 'var(--green-600)', color: 'var(--green-700)' }}
+                className="btn-primary"
+                style={{
+                  width: '100%',
+                  background: isDocxReady ? 'var(--green-700)' : 'var(--green-600)',
+                  color: '#ffffff',
+                  fontWeight: 600,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '0.65rem 1rem'
+                }}
                 disabled={enhancing || downloading}
                 onClick={async () => {
                   if (!draftId) return
-                  if (!confirm("AI akan menulis ulang data mentah yang kurang rapi menjadi kalimat formal. Lanjutkan?")) return
                   setEnhancing(true)
                   try {
                     const res = await enhanceContext(ctx)
                     setCtx(res.context_data)
                     dirtyRef.current = true
-                    alert("Data mentah berhasil dirapikan! Anda bisa kembali ke halaman wizard sebelumnya jika ingin mengecek/mengubahnya.")
+                    setIsDocxReady(true)
+                    alert("Data mentah berhasil dirapikan! Tombol 'Download .docx' sekarang sudah aktif dan dapat di-klik.")
                   } catch (err: any) {
                     alert(err?.message || 'Gagal merapikan data.')
                   } finally {
@@ -150,7 +160,15 @@ function EditorInner() {
                   }
                 }}
               >
-                {enhancing ? 'Sedang merapikan…' : 'Rapikan Data Mentah'}
+                {enhancing ? (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg className="animate-spin" style={{ width: '16px', height: '16px', marginRight: '8px' }} viewBox="0 0 24 24" fill="none">
+                      <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Merapikan Data...
+                  </span>
+                ) : isDocxReady ? '✓ Data Mentah Sudah Rapi (Klik Ulang jika Perlu)' : '✨ Rapikan Data Mentah'}
               </button>
             </div>
 
@@ -159,11 +177,34 @@ function EditorInner() {
             </p>
             <button
               type="button"
-              className="btn-primary"
-              style={{ width: '100%' }}
-              disabled={downloading}
+              style={{
+                width: '100%',
+                padding: '0.75rem 1rem',
+                fontSize: '1rem',
+                fontWeight: 600,
+                borderRadius: '8px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s ease',
+                ...(isDocxReady
+                  ? {
+                      background: 'var(--green-600)',
+                      color: '#ffffff',
+                      border: '1px solid var(--green-700)',
+                      cursor: downloading ? 'wait' : 'pointer',
+                      boxShadow: '0 2px 6px rgba(22, 101, 52, 0.2)'
+                    }
+                  : {
+                      background: '#e2e8f0',
+                      color: '#94a3b8',
+                      border: '1px solid #cbd5e1',
+                      cursor: 'not-allowed'
+                    })
+              }}
+              disabled={!isDocxReady || downloading}
               onClick={async () => {
-                if (!draftId) return
+                if (!draftId || !isDocxReady) return
                 setDownloading(true)
                 setGenError('')
                 setGenIssues([])
@@ -186,7 +227,15 @@ function EditorInner() {
                 }
               }}
             >
-              {downloading ? 'Menyusun dokumen…' : 'Download .docx'}
+              {downloading ? (
+                <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg className="animate-spin" style={{ width: '18px', height: '18px', marginRight: '8px' }} viewBox="0 0 24 24" fill="none">
+                    <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Menyusun dokumen…
+                </span>
+              ) : 'Download .docx'}
             </button>
             {genError && (genIssues.length > 0 || genQuestions.length > 0 ? (
               <RequestionPanel message={genError} issues={genIssues} requestions={genQuestions} />
