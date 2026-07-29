@@ -26,12 +26,17 @@ async def lifespan(app: FastAPI):
     # Shutdown: tidak ada yang perlu dibersihkan (SQLite file-based).
 
 
+from .rate_limiter import RateLimiterMiddleware
+
 app = FastAPI(
     title=settings.app_name,
     version="0.1.0",
     lifespan=lifespan,
     debug=settings.debug,
 )
+
+# Proteksi DDoS L7 & Brute Force Rate Limiter
+app.add_middleware(RateLimiterMiddleware, default_limit=60, window_seconds=60)
 
 app.add_middleware(
     CORSMiddleware,
