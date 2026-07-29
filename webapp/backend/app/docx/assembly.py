@@ -345,50 +345,59 @@ def _clean_all_markdown_in_obj(obj: Any) -> Any:
     return obj
 
 
-def _sanitize_ai_output(text: str) -> str:
+def _ensure_str(val: Any) -> str:
+    """Konversi val (string, list of strings, dict, atau None) secara aman menjadi string tunggal ber-newline."""
+    if val is None:
+        return ""
+    if isinstance(val, str):
+        return val
+    if isinstance(val, list):
+        return "\n".join(_ensure_str(item) for item in val if item is not None)
+    if isinstance(val, dict):
+        return "\n".join(f"{k}: {_ensure_str(v)}" for k, v in val.items())
+    return str(val)
+
+
+def _sanitize_ai_output(text: Any) -> str:
     """Sanitasi komprehensif output AI sebelum masuk ke dokumen.
-    
+
     Menangani semua pola heading/label yang sering di-output AI:
     - **bold** dan *italic*
     - ## Markdown headers
     - Label baris: "Paragraf 1:", "A. Judul", "Kesimpulan:"
     - Baris pendek yang diakhiri titik dua (heading palsu)
-    
+
     TIDAK menghapus:
     - [KESIMPULAN] dan [SARAN] tags (dibutuhkan oleh assembly parser)
     - Angka bernomor "1. 2. 3." (daftar yang valid)
     - Teks narasi normal
     """
-    if not text:
+    text_str = _ensure_str(text)
+    if not text_str:
         return ""
 
     # 1. Hapus penanda paragraf buatan AI: **Paragraf 1** atau **Paragraf 1:**
-    text = re.sub(r'^\s*\*\*\s*Paragraf\s*\d+\s*:?\s*\*\*\s*', '', text,
+    text_str = re.sub(r'^\s*\*\*\s*Paragraf\s*\d+\s*:?\s*\*\*\s*', '', text_str,
                   flags=re.MULTILINE | re.IGNORECASE)
 
     # 2. Hapus markdown headers ###
-    text = re.sub(r'^\s*#{1,6}\s+', '', text, flags=re.MULTILINE)
+    text_str = re.sub(r'^\s*#{1,6}\s+', '', text_str, flags=re.MULTILINE)
 
     # 3. Ubah **bold** menjadi teks biasa (kecuali [TAG] yang sudah di strip-bold)
-    text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)
+    text_str = re.sub(r'\*\*(.*?)\*\*', r'\1', text_str)
 
     # 4. Ubah *italic* menjadi teks biasa
-    text = re.sub(r'\*(.*?)\*', r'\1', text)
+    text_str = re.sub(r'\*(.*?)\*', r'\1', text_str)
 
     # 5. Hapus label huruf di awal baris: "A. Judul", "B. Judul" (jika hanya label, bukan poin daftar)
-    #    Pola: huruf kapital tunggal diikuti titik dan teks pendek < 8 kata pada baris sendiri
     def _strip_letter_label(m):
         content = m.group(1).strip()
-        # Jika kontennya pendek dan diakhiri titik dua → label, hapus
         if content.endswith(':') and len(content.split()) <= 7:
             return ''
-        # Kalau bukan label, biarkan
         return m.group(0)
-    text = re.sub(r'^([A-Z])\.\s+(.+)$', _strip_letter_label, text, flags=re.MULTILINE)
+    text_str = re.sub(r'^([A-Z])\.\s+(.+)$', _strip_letter_label, text_str, flags=re.MULTILINE)
 
     # 6. Hapus baris yang HANYA berisi label pendek diakhiri titik dua
-    #    mis: "Alasan Memilih Perusahaan:", "Kesimpulan:", "Latar Belakang:"
-    #    (tapi JANGAN hapus [KESIMPULAN] atau [SARAN])
     def _strip_fake_heading(line: str) -> str:
         stripped = line.strip()
         if stripped.startswith('[') and stripped.endswith(']'):
@@ -396,18 +405,18 @@ def _sanitize_ai_output(text: str) -> str:
         if stripped.endswith(':') and 1 <= len(stripped.split()) <= 8:
             return ''  # hapus heading palsu
         return line
-    lines = [_strip_fake_heading(l) for l in text.split('\n')]
-    text = '\n'.join(lines)
+    lines = [_strip_fake_heading(l) for l in text_str.split('\n')]
+    text_str = '\n'.join(lines)
 
     # 7. Collapse multiple blank lines menjadi satu
-    text = re.sub(r'\n{3,}', '\n\n', text)
+    text_str = re.sub(r'\n{3,}', '\n\n', text_str)
 
-    return text.strip()
+    return text_str.strip()
 
 
-def _write_paragraphs(builder: PklDocBuilder, text: str) -> None:
+def _write_paragraphs(builder: PklDocBuilder, text: Any) -> None:
     """Tulis blok teks multi-baris sebagai beberapa paragraf body.
-    
+
     Output AI disanitasi dulu sebelum ditulis ke dokumen.
     Baris [KESIMPULAN] dan [SARAN] dilewati karena ditangani
     oleh parser khusus di _write_kesimpulan_saran().
@@ -1157,11 +1166,15 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
         builder.add_sub_heading(bab_num, sub, f"Job Description {nama_cabang}")
         builder.add_body(f"Berikut tugas dan tanggung jawab karyawan {nama_cabang}:")
         for idx, jd in enumerate(job_descs):
-            posisi = jd.get("posisi", "")
-            if posisi:
-                builder.add_lettered(posisi, _LETTERS[idx % 26] + ")")
-            for i, t in enumerate([x for x in jd.get("tugas", []) if x.strip()], 1):
-                builder.add_numbered(t.strip(), i, indent_level=1)
+            if isinstance(jd, dict):
+                posisi = _ensure_str(jd.get("posisi", ""))
+                if posisi:
+                    builder.add_lettered(posisi, _LETTERS[idx % 26] + ")")
+                tugas_list = jd.get("tugas", [])
+                if isinstance(tugas_list, str):
+                    tugas_list = [t.strip() for t in tugas_list.split("\n") if t.strip()]
+                for i, t in enumerate([_ensure_str(x).strip() for x in tugas_list if _ensure_str(x).strip()], 1):
+                    builder.add_numbered(_ensure_str(t).strip(), i, indent_level=1)
         sub += 1
 
 
@@ -1434,7 +1447,8 @@ def _write_kesimpulan_saran(builder: PklDocBuilder, data: dict, bab_num: int) ->
     # Kesimpulan & Saran from AI (format bertanda [KESIMPULAN] / [SARAN])
     gen_kesimpulan = data.get("generated_sections", {}).get("kesimpulan_saran")
     if gen_kesimpulan:
-        for para in gen_kesimpulan.split("\n"):
+        gen_kesimpulan_str = _ensure_str(gen_kesimpulan)
+        for para in gen_kesimpulan_str.split("\n"):
             para_str = para.strip()
             if not para_str:
                 continue
@@ -1450,7 +1464,7 @@ def _write_kesimpulan_saran(builder: PklDocBuilder, data: dict, bab_num: int) ->
 
     # --- Kesimpulan ---
     builder.add_sub_heading(bab_num, sub, judul.get("kesimpulan", "Kesimpulan"))
-    kesimpulan_user = (data.get("kesimpulan_user") or "").strip()
+    kesimpulan_user = _ensure_str(data.get("kesimpulan_user")).strip()
     if kesimpulan_user:
         _write_paragraphs(builder, kesimpulan_user)
     else:
@@ -1473,7 +1487,7 @@ def _write_kesimpulan_saran(builder: PklDocBuilder, data: dict, bab_num: int) ->
     # --- Saran ---
     builder.add_sub_heading(bab_num, sub, judul.get("saran", "Saran"))
     saran_items = data.get("saran_items") or []
-    saran_user = (data.get("saran_user") or "").strip()
+    saran_user = _ensure_str(data.get("saran_user")).strip()
     if saran_items:
         builder.add_body(
             data.get("saran_intro") or "Adapun saran yang dapat Penulis sampaikan adalah:"

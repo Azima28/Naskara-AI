@@ -16,11 +16,11 @@ export default function LoginPage() {
     try {
       await login(email, password)
       nav('/dashboard')
-    } catch (r: unknown) {
-      const msg =
-        r && typeof r === 'object' && 'detail' in r
-          ? String((r as { detail: string }).detail)
-          : 'Terjadi kesalahan'
+    } catch (r: any) {
+      const detail = r?.response?.data?.detail
+      const msg = typeof detail === 'string'
+        ? detail
+        : detail?.message || r?.message || 'Email atau password salah.'
       setErr(msg)
     }
   }
@@ -42,8 +42,19 @@ export default function LoginPage() {
           Password
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
         </label>
-        <button type="submit" disabled={loading}>
+        <button type="submit" disabled={loading} style={{ width: '100%', marginBottom: '0.5rem' }}>
           {loading ? 'Memproses…' : 'Masuk'}
+        </button>
+        <button
+          type="button"
+          className="btn-outline"
+          style={{ width: '100%', fontSize: '0.85rem', padding: '0.5rem' }}
+          onClick={() => {
+            setEmail('demo@pkl.id')
+            setPassword('password123')
+          }}
+        >
+          💡 Isikan Akun Demo (demo@pkl.id)
         </button>
         <p className="link-text">
           Belum punya akun? <Link to="/register">Daftar</Link>

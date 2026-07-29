@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import CompletenessBar from '@/components/CompletenessBar'
 import { getDraft, updateDraft } from '@/api/client'
@@ -46,6 +46,7 @@ export default function WizardPage() {
 
 function WizardInner() {
   const { draftId } = useParams()
+  const [searchParams] = useSearchParams()
   const nav = useNavigate()
   const [ctx, setCtx] = useState<PklContext>(emptyContext())
   const [title, setTitle] = useState('Laporan PKL')
@@ -54,33 +55,150 @@ function WizardInner() {
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle')
   const dirtyRef = useRef(false)
 
+  const ctxRef = useRef(ctx)
+  ctxRef.current = ctx
+
+  const draftIdRef = useRef(draftId)
+  draftIdRef.current = draftId
+
+  const loadingRef = useRef(loading)
+  loadingRef.current = loading
+
+  const savingPromiseRef = useRef<Promise<any> | null>(null)
+
+  const flushSave = useCallback(async (extraStatus?: string) => {
+    if (savingPromiseRef.current) {
+      try {
+        await savingPromiseRef.current
+      } catch {
+        /* ignore prior save errors */
+      }
+    }
+    if (loadingRef.current || !dirtyRef.current || !draftIdRef.current) return
+
+    setSaveState('saving')
+    const patch: { data: PklContext; status?: string } = { data: ctxRef.current }
+    if (extraStatus) patch.status = extraStatus
+
+    const promise = updateDraft(draftIdRef.current, patch)
+      .then((updated) => {
+        setCtx(updated.data)
+        setSaveState('saved')
+        dirtyRef.current = false
+      })
+      .catch((err) => {
+        setSaveState('idle')
+        throw err
+      })
+      .finally(() => {
+        savingPromiseRef.current = null
+      })
+
+    savingPromiseRef.current = promise
+    await promise
+  }, [])
+
+  // Handle URL query parameter step navigation & field highlight (e.g., ?step=assets&field=lampiran.foto_kegiatan)
+  useEffect(() => {
+    const stepParam = searchParams.get('step')
+    const fieldParam = searchParams.get('field')
+
+    if (stepParam) {
+      const idx = STEPS.findIndex((s) => s.id === stepParam)
+      if (idx !== -1) {
+        setStepIdx(idx)
+      } else if (!isNaN(Number(stepParam))) {
+        const num = Number(stepParam)
+        if (num >= 0 && num < STEPS.length) {
+          setStepIdx(num)
+        }
+      }
+    }
+
+    if (fieldParam || stepParam) {
+      const timer = setTimeout(() => {
+        const fieldKey = fieldParam || ''
+        const target =
+          document.getElementById(`field-${fieldKey}`) ||
+          document.querySelector(`[data-field="${fieldKey}"]`) ||
+          document.querySelector(`[name="${fieldKey}"]`) ||
+          document.querySelector('.field')
+
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          if (fieldKey) {
+            target.classList.add('field--highlight-invalid')
+            const inputEl = target.querySelector('input, select, textarea') as HTMLElement
+            if (inputEl) {
+              inputEl.focus()
+            }
+            const removeHighlight = () => target.classList.remove('field--highlight-invalid')
+            target.addEventListener('input', removeHighlight, { once: true })
+            target.addEventListener('change', removeHighlight, { once: true })
+            setTimeout(removeHighlight, 6000)
+          }
+        }
+      }, 350)
+      return () => clearTimeout(timer)
+    }
+  }, [searchParams])
+
   // Load draft
   useEffect(() => {
     if (!draftId) return
+    setLoading(true)
     getDraft(draftId)
       .then((d) => {
         setCtx(d.data)
         setTitle(d.title)
+        dirtyRef.current = false
       })
       .finally(() => setLoading(false))
   }, [draftId])
 
   // Autosave (debounced 2s after last change)
   useEffect(() => {
-    if (!dirtyRef.current || !draftId) return
+    if (loading || !dirtyRef.current || !draftId) return
     setSaveState('saving')
     const t = setTimeout(() => {
-      updateDraft(draftId, { data: ctx })
-        .then(() => setSaveState('saved'))
-        .catch(() => setSaveState('idle'))
+      flushSave()
     }, 2000)
     return () => clearTimeout(t)
-  }, [ctx, draftId])
+  }, [ctx, draftId, loading, flushSave])
+
+  // Unmount & page leave cleanup
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (dirtyRef.current) {
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      if (dirtyRef.current && draftIdRef.current && !loadingRef.current) {
+        updateDraft(draftIdRef.current, { data: ctxRef.current })
+      }
+    }
+  }, [])
 
   const set = useCallback((patch: Partial<PklContext>) => {
     setCtx((prev) => ({ ...prev, ...patch }))
     dirtyRef.current = true
   }, [])
+
+  const handleManualSave = async () => {
+    if (!draftId || loading) return
+    dirtyRef.current = true
+    await flushSave()
+  }
+
+  const handleStepChange = async (newIdx: number) => {
+    await flushSave()
+    setStepIdx(newIdx)
+    window.scrollTo(0, 0)
+  }
 
   const current = STEPS[stepIdx]
   const isLast = stepIdx === STEPS.length - 1
@@ -110,25 +228,22 @@ function WizardInner() {
       case 'closing':
         return filled(ctx.kata_pengantar.ucapan_syukur) || filled(ctx.kesimpulan_user)
       case 'assets':
-        return ctx.assets.length > 0
+        return (ctx.assets && ctx.assets.length > 0) || (ctx.lampiran?.foto_kegiatan && ctx.lampiran.foto_kegiatan.length > 0)
       default:
         return false
     }
   }
 
-  const next = () => {
+  const next = async () => {
     if (isLast) {
-      // Last step: autosave then go to editor
-      if (draftId) updateDraft(draftId, { data: ctx, status: 'reviewing' })
+      await flushSave('reviewing')
       nav(`/editor/${draftId}`)
     } else {
-      setStepIdx((i) => Math.min(i + 1, STEPS.length - 1))
-      window.scrollTo(0, 0)
+      await handleStepChange(Math.min(stepIdx + 1, STEPS.length - 1))
     }
   }
-  const prev = () => {
-    setStepIdx((i) => Math.max(i - 1, 0))
-    window.scrollTo(0, 0)
+  const prev = async () => {
+    await handleStepChange(Math.max(stepIdx - 1, 0))
   }
 
   if (loading) {
@@ -146,7 +261,16 @@ function WizardInner() {
           <h1>
             <Link to="/dashboard">←</Link> &nbsp; {title}
           </h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <button
+              type="button"
+              className="btn-sm btn-outline"
+              onClick={handleManualSave}
+              disabled={saveState === 'saving'}
+              style={{ fontSize: '0.82rem', padding: '0.35rem 0.7rem' }}
+            >
+              💾 Simpan Draf
+            </button>
             <span className="save-indicator">
               {saveState === 'saving' && 'menyimpan…'}
               {saveState === 'saved' && 'tersimpan ✓'}
@@ -165,7 +289,7 @@ function WizardInner() {
             key={s.id}
             type="button"
             className={`stepper__dot ${i === stepIdx ? 'is-active' : ''} ${isStepDone(i) ? 'is-done' : ''}`}
-            onClick={() => setStepIdx(i)}
+            onClick={() => handleStepChange(i)}
             title={s.title}
           >
             <span className="stepper__num">{isStepDone(i) && i !== stepIdx ? '✓' : i + 1}</span>

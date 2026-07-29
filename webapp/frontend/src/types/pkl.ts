@@ -234,6 +234,23 @@ export interface Kendala {
   solusi: string
 }
 
+export interface Block {
+  tipe: 'paragraf' | 'poin' | 'tabel'
+  teks: string
+  header?: string[]
+  rows?: string[][]
+}
+
+export interface DetailKegiatan {
+  judul: string
+  blocks: Block[]
+}
+
+export interface AsasPkl {
+  teks: string
+  sub?: string[]
+}
+
 // --------------------------------------------------------------------------- //
 //  closing / assets / gaps / lampiran                                         //
 // --------------------------------------------------------------------------- //
@@ -291,7 +308,7 @@ export interface Lampiran {
 // --------------------------------------------------------------------------- //
 //  Root                                                                       //
 // --------------------------------------------------------------------------- //
-export type PklStatus = 'collecting' | 'reviewing' | 'ready' | 'generated'
+export type PklStatus = 'collecting' | 'reviewing' | 'ready' | 'generated' | 'completed'
 
 export interface PklContext {
   version: string
@@ -305,20 +322,26 @@ export interface PklContext {
   pkl: Pkl
   profil_perusahaan: ProfilPerusahaan
   kegiatan: Kegiatan[]
+  detail_kegiatan?: DetailKegiatan[]
   studi_kasus: StudiKasus
   peralatan: Peralatan[]
   kendala: Kendala[]
   pelajaran: string[]
+  tujuan_pkl?: string[]
+  asas_pkl?: AsasPkl[]
   refleksi: string           // cerita mentah user
   refleksi_bab5: string      // input user BAB V opsional
   kesimpulan_user: string    // input user BAB VI opsional
   saran_user: string         // input user BAB VI opsional
+  saran_intro?: string
+  saran_items?: string[]
   kata_pengantar: KataPengantar
-  daftar_pustaka: DaftarPustaka[]
+  daftar_pustaka: (DaftarPustaka | string | any)[]
   assets: Asset[]
   gaps: Gap[]
   lampiran: Lampiran
-  generated_sections?: Record<string, string | string[]>
+  generated_sections?: Record<string, any>
+  judul_override?: Record<string, string>
 }
 
 // --------------------------------------------------------------------------- //
@@ -434,17 +457,24 @@ export const emptyContext = (): PklContext => ({
   pkl: emptyPkl(),
   profil_perusahaan: emptyProfilPerusahaan(),
   kegiatan: [],
+  detail_kegiatan: [],
   studi_kasus: emptyStudiKasus(),
   peralatan: [],
   kendala: [],
   pelajaran: [],
+  tujuan_pkl: [],
+  asas_pkl: [],
   refleksi: '',
   refleksi_bab5: '',
   kesimpulan_user: '',
   saran_user: '',
+  saran_intro: '',
+  saran_items: [],
   kata_pengantar: emptyKataPengantar(),
   daftar_pustaka: [],
   assets: [],
   gaps: [],
   lampiran: emptyLampiran(),
+  generated_sections: {},
+  judul_override: {},
 })

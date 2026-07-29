@@ -58,13 +58,13 @@ export default function SekolahStep({ ctx, set }: { ctx: PklContext; set: (p: Pa
       >
         {(locked) => (
           <>
-            <TextField label="Nama Singkat" value={s.nama} onChange={(v) => upd({ nama: v })} importance="wajib" placeholder="SMKN 4 BDL" hint="Muncul di Cover dan Pengesahan" readOnly={locked} />
-            <TextField label="Nama Lengkap" value={s.nama_lengkap} onChange={(v) => upd({ nama_lengkap: v })} importance="opsional" placeholder="SMK Negeri 4 Bandar Lampung" readOnly={locked} />
-            <TextField label="Alamat Sekolah" value={s.alamat} onChange={(v) => upd({ alamat: v })} importance="opsional" readOnly={locked} />
-            <TextField label="Kota" value={s.kota} onChange={(v) => upd({ kota: v })} importance="wajib" hint="Dipakai untuk tanggal di Kata Pengantar (misal: Bandar Lampung, 25 Juli 2026)" readOnly={locked} />
-            <TextField label="No. Telp" value={s.telp} onChange={(v) => upd({ telp: v })} importance="opsional" readOnly={locked} />
-            <TextField label="Email" value={s.email} onChange={(v) => upd({ email: v })} importance="opsional" readOnly={locked} />
-            <TextField label="Website" value={s.website} onChange={(v) => upd({ website: v })} importance="opsional" readOnly={locked} />
+            <TextField name="sekolah.nama" label="Nama Singkat" value={s.nama} onChange={(v) => upd({ nama: v })} importance="wajib" placeholder="SMKN 4 BDL" hint="Muncul di Cover dan Pengesahan" readOnly={locked} />
+            <TextField name="sekolah.nama_lengkap" label="Nama Lengkap" value={s.nama_lengkap} onChange={(v) => upd({ nama_lengkap: v })} importance="wajib" placeholder="SMK Negeri 4 Bandar Lampung" readOnly={locked} />
+            <TextField name="sekolah.alamat" label="Alamat Sekolah" value={s.alamat} onChange={(v) => upd({ alamat: v })} importance="wajib" readOnly={locked} />
+            <TextField name="sekolah.kota" label="Kota" value={s.kota} onChange={(v) => upd({ kota: v })} importance="wajib" hint="Dipakai untuk tanggal di Kata Pengantar (misal: Bandar Lampung, 25 Juli 2026)" readOnly={locked} />
+            <TextField name="sekolah.telp" label="No. Telp" value={s.telp} onChange={(v) => upd({ telp: v })} importance="wajib" readOnly={locked} />
+            <TextField name="sekolah.email" label="Email" value={s.email} onChange={(v) => upd({ email: v })} importance="wajib" readOnly={locked} />
+            <TextField name="sekolah.website" label="Website" value={s.website} onChange={(v) => upd({ website: v })} importance="wajib" readOnly={locked} />
           </>
         )}
       </PrefilledGroup>
@@ -75,11 +75,11 @@ export default function SekolahStep({ ctx, set }: { ctx: PklContext; set: (p: Pa
       >
         {(locked) => (
           <>
-            <TextField label="Baris 1 (Instansi)" value={s.kop?.baris_1} onChange={(v) => updKop({ baris_1: v })} importance="opsional" hint="Contoh: PEMERINTAH PROVINSI LAMPUNG" readOnly={locked} />
-            <TextField label="Baris 2 (Dinas)" value={s.kop?.baris_2} onChange={(v) => updKop({ baris_2: v })} importance="opsional" hint="Contoh: DINAS PENDIDIKAN DAN KEBUDAYAAN" readOnly={locked} />
-            <TextField label="Baris 3 (Nama)" value={s.kop?.baris_3} onChange={(v) => updKop({ baris_3: v })} importance="opsional" hint="Contoh: SMK NEGERI 4 BANDAR LAMPUNG" readOnly={locked} />
-            <TextField label="NPSN" value={s.kop?.npsn} onChange={(v) => updKop({ npsn: v })} importance="opsional" hint="Nomor Pokok Sekolah Nasional" readOnly={locked} />
-            <TextField label="NSS" value={s.kop?.nss} onChange={(v) => updKop({ nss: v })} importance="opsional" readOnly={locked} />
+            <TextField label="Baris 1 (Instansi)" value={s.kop?.baris_1} onChange={(v) => updKop({ baris_1: v })} importance="wajib" hint="Contoh: PEMERINTAH PROVINSI LAMPUNG" readOnly={locked} />
+            <TextField label="Baris 2 (Dinas)" value={s.kop?.baris_2} onChange={(v) => updKop({ baris_2: v })} importance="wajib" hint="Contoh: DINAS PENDIDIKAN DAN KEBUDAYAAN" readOnly={locked} />
+            <TextField label="Baris 3 (Nama)" value={s.kop?.baris_3} onChange={(v) => updKop({ baris_3: v })} importance="wajib" hint="Contoh: SMK NEGERI 4 BANDAR LAMPUNG" readOnly={locked} />
+            <TextField label="NPSN" value={s.kop?.npsn} onChange={(v) => updKop({ npsn: v })} importance="wajib" hint="Nomor Pokok Sekolah Nasional" readOnly={locked} />
+            <TextField label="NSS" value={s.kop?.nss} onChange={(v) => updKop({ nss: v })} importance="wajib" readOnly={locked} />
           </>
         )}
       </PrefilledGroup>
@@ -90,24 +90,24 @@ export default function SekolahStep({ ctx, set }: { ctx: PklContext; set: (p: Pa
           setelah nama di Halaman Pengesahan (contoh: S.Pd., M.M.)
         </p>
         <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
-          <TextField label="Kepala Sekolah - Nama" value={s.kepala_sekolah.nama} onChange={(v) => updPejabat('kepala_sekolah', { nama: v })} importance="wajib" />
-          <TextField label="Kepala Sekolah - NIP" value={s.kepala_sekolah.nip} onChange={(v) => updPejabat('kepala_sekolah', { nip: v })} importance="opsional" />
-          <TextField label="Kepala Sekolah - Gelar" value={s.kepala_sekolah.gelar} onChange={(v) => updPejabat('kepala_sekolah', { gelar: v })} importance="opsional" />
-        </div>
-        
-        <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
-          <TextField label="Waka Humas - Nama" value={s.waka_humas.nama} onChange={(v) => updPejabat('waka_humas', { nama: v })} importance="wajib" />
-          <TextField label="Waka Humas - NIP" value={s.waka_humas.nip} onChange={(v) => updPejabat('waka_humas', { nip: v })} importance="opsional" />
+          <TextField name="sekolah.kepala_sekolah.nama" label="Kepala Sekolah - Nama" value={s.kepala_sekolah.nama} onChange={(v) => updPejabat('kepala_sekolah', { nama: v })} importance="wajib" />
+          <TextField name="sekolah.kepala_sekolah.nip" label="Kepala Sekolah - NIP" value={s.kepala_sekolah.nip} onChange={(v) => updPejabat('kepala_sekolah', { nip: v })} importance="wajib" />
+          <TextField name="sekolah.kepala_sekolah.gelar" label="Kepala Sekolah - Gelar" value={s.kepala_sekolah.gelar} onChange={(v) => updPejabat('kepala_sekolah', { gelar: v })} importance="wajib" />
         </div>
 
         <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
-          <TextField label="Ketua Jurusan / KK - Nama" value={s.ketua_kk.nama} onChange={(v) => updPejabat('ketua_kk', { nama: v })} importance="wajib" />
-          <TextField label="Ketua Jurusan / KK - NIP" value={s.ketua_kk.nip} onChange={(v) => updPejabat('ketua_kk', { nip: v })} importance="opsional" />
+          <TextField name="sekolah.waka_humas.nama" label="Waka Humas - Nama" value={s.waka_humas.nama} onChange={(v) => updPejabat('waka_humas', { nama: v })} importance="wajib" />
+          <TextField name="sekolah.waka_humas.nip" label="Waka Humas - NIP" value={s.waka_humas.nip} onChange={(v) => updPejabat('waka_humas', { nip: v })} importance="wajib" />
+        </div>
+
+        <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
+          <TextField name="sekolah.ketua_kk.nama" label="Ketua Jurusan / KK - Nama" value={s.ketua_kk.nama} onChange={(v) => updPejabat('ketua_kk', { nama: v })} importance="wajib" />
+          <TextField name="sekolah.ketua_kk.nip" label="Ketua Jurusan / KK - NIP" value={s.ketua_kk.nip} onChange={(v) => updPejabat('ketua_kk', { nip: v })} importance="wajib" />
         </div>
 
         <div>
-          <TextField label="Pembimbing Sekolah - Nama" value={s.pembimbing_sekolah.nama} onChange={(v) => updPejabat('pembimbing_sekolah', { nama: v })} importance="wajib" />
-          <TextField label="Pembimbing Sekolah - NIP" value={s.pembimbing_sekolah.nip} onChange={(v) => updPejabat('pembimbing_sekolah', { nip: v })} importance="opsional" />
+          <TextField name="sekolah.pembimbing_sekolah.nama" label="Pembimbing Sekolah - Nama" value={s.pembimbing_sekolah.nama} onChange={(v) => updPejabat('pembimbing_sekolah', { nama: v })} importance="wajib" />
+          <TextField name="sekolah.pembimbing_sekolah.nip" label="Pembimbing Sekolah - NIP" value={s.pembimbing_sekolah.nip} onChange={(v) => updPejabat('pembimbing_sekolah', { nip: v })} importance="wajib" />
         </div>
       </FieldGroup>
     </>

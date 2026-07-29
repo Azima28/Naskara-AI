@@ -1,0 +1,52 @@
+[
+  {
+    "scenario": "sedang_bdp",
+    "rows": {
+      "latar_belakang": {
+        "passed": true,
+        "attempt": 1,
+        "dt": 21.6,
+        "warnings": [
+          "Output menyebut nama diri yang tidak ada di data (diduga halusinasi): Jurusan"
+        ],
+        "fallback": [],
+        "preview": "Praktik Kerja Lapangan (PKL) merupakan salah satu program wajib yang harus ditempuh oleh siswa SMK sebagai bentuk implem",
+        "grounding_warn": true
+      },
+      "tujuan_pkl": {
+        "passed": true,
+        "attempt": 1,
+        "dt": 41.8,
+        "warnings": [],
+        "fallback": [],
+        "preview": "Praktik Kerja Lapangan (PKL) merupakan bagian integral dari pendidikan SMK yang bertujuan untuk meningkatkan mutu lulusa",
+        "grounding_warn": false
+      },
+      "pembahasan": {
+        "passed": true,
+        "attempt": 1,
+        "dt": 14.7,
+        "warnings": [],
+        "fallback": [],
+        "preview": "Selama melaksanakan Praktik Kerja Lapangan (PKL) di Marketly Digital, Penulis berhasil meningkatkan kompetensi keahlian ",
+        "grounding_warn": false
+      },
+      "kesimpulan_saran": {
+        "passed": true,
+        "attempt": 1,
+        "dt": 20.6,
+        "warnings": [],
+        "fallback": [],
+        "preview": "[KESIMPULAN] Praktik Kerja Lapangan selama tiga bulan di Marketly Digital memberikan pengalaman berharga bagi Penulis da",
+        "grounding_warn": false
+      }
+    },
+    "struktur": {
+      "bab_count": 6,
+      "bab_v_subs": [
+        "5.1 Hal-hal yang Perlu Diperhatikan"
+      ],
+      "hambatan_present": false
+    }
+  }
+]

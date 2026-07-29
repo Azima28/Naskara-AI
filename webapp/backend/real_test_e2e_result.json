@@ -1,0 +1,152 @@
+[
+  {
+    "scenario": "bagus_tkj",
+    "rows": {
+      "latar_belakang": {
+        "passed": true,
+        "attempt": 1,
+        "dt": 28.6,
+        "warnings": [],
+        "fallback": [],
+        "preview": "Praktik Kerja Lapangan (PKL) merupakan salah satu program wajib yang harus ditempuh oleh siswa Sekolah Menengah Kejuruan",
+        "grounding_warn": false
+      },
+      "tujuan_pkl": {
+        "passed": true,
+        "attempt": 1,
+        "dt": 31.3,
+        "warnings": [],
+        "fallback": [],
+        "preview": "Praktik Kerja Lapangan (PKL) merupakan program wajib dalam struktur kurikulum SMK yang bertujuan untuk membekali peserta",
+        "grounding_warn": false
+      },
+      "pembahasan": {
+        "passed": true,
+        "attempt": 1,
+        "dt": 11.2,
+        "warnings": [
+          "Nama jurusan dari data tidak disebut di output — AI mungkin keluar konteks"
+        ],
+        "fallback": [],
+        "preview": "Selama melaksanakan praktik kerja lapangan di PT Jaya Network, Penulis memperoleh peningkatan kompetensi yang signifikan",
+        "grounding_warn": true
+      },
+      "kesimpulan_saran": {
+        "passed": true,
+        "attempt": 1,
+        "dt": 13.0,
+        "warnings": [
+          "Output menyebut nama diri yang tidak ada di data (diduga halusinasi): Bagi, Pelaksanaan"
+        ],
+        "fallback": [],
+        "preview": "[KESIMPULAN] Pelaksanaan Praktik Kerja Lapangan selama 3 bulan di PT Jaya Network memberikan pengalaman langsung bagi Pe",
+        "grounding_warn": true
+      }
+    },
+    "struktur": {
+      "bab_count": 6,
+      "bab_v_subs": [
+        "5.1 Hal-hal yang Perlu Diperhatikan"
+      ],
+      "hambatan_present": false
+    }
+  },
+  {
+    "scenario": "sedang_bdp",
+    "rows": {
+      "latar_belakang": {
+        "passed": false,
+        "error": "AI Provider error: Server error '500 Internal Server Error' for url 'http://localhost:20128/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",
+        "fallback": [
+          "PROVIDER ERROR → DummyProvider/fallback"
+        ]
+      },
+      "tujuan_pkl": {
+        "passed": true,
+        "attempt": 1,
+        "dt": 16.8,
+        "warnings": [],
+        "fallback": [],
+        "preview": "Praktik Kerja Lapangan (PKL) merupakan bagian integral dari kurikulum SMK yang bertujuan untuk meningkatkan mutu pendidi",
+        "grounding_warn": false
+      },
+      "pembahasan": {
+        "passed": false,
+        "error": "AI Provider error: Server error '500 Internal Server Error' for url 'http://localhost:20128/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",
+        "fallback": [
+          "PROVIDER ERROR → DummyProvider/fallback"
+        ]
+      },
+      "kesimpulan_saran": {
+        "passed": true,
+        "attempt": 1,
+        "dt": 11.1,
+        "warnings": [
+          "Output menyebut nama diri yang tidak ada di data (diduga halusinasi): Bagi, Pelaksanaan"
+        ],
+        "fallback": [],
+        "preview": "[KESIMPULAN] Pelaksanaan Praktik Kerja Lapangan selama 3 bulan di Marketly Digital memberikan pengalaman berharga bagi P",
+        "grounding_warn": true
+      }
+    },
+    "struktur": {
+      "bab_count": 6,
+      "bab_v_subs": [
+        "5.1 Hal-hal yang Perlu Diperhatikan"
+      ],
+      "hambatan_present": false
+    }
+  },
+  {
+    "scenario": "kurang_akl",
+    "rows": {
+      "latar_belakang": {
+        "passed": true,
+        "attempt": 1,
+        "dt": 24.6,
+        "warnings": [],
+        "fallback": [],
+        "preview": "Praktik Kerja Lapangan (PKL) merupakan salah satu program wajib bagi siswa Sekolah Menengah Kejuruan (SMK) untuk mengemb",
+        "grounding_warn": false
+      },
+      "tujuan_pkl": {
+        "passed": true,
+        "attempt": 1,
+        "dt": 18.8,
+        "warnings": [
+          "Output menyebut nama diri yang tidak ada di data (diduga halusinasi): Jurusan"
+        ],
+        "fallback": [],
+        "preview": "Praktik Kerja Lapangan (PKL) merupakan bagian integral dari kurikulum SMK yang bertujuan untuk meningkatkan mutu pendidi",
+        "grounding_warn": true
+      },
+      "pembahasan": {
+        "passed": true,
+        "attempt": 1,
+        "dt": 25.9,
+        "warnings": [],
+        "fallback": [],
+        "preview": "Selama melaksanakan praktik kerja lapangan di PT Reksa Finance, Penulis memperoleh kesempatan untuk meningkatkan kompete",
+        "grounding_warn": false
+      },
+      "kesimpulan_saran": {
+        "passed": true,
+        "attempt": 1,
+        "dt": 76.0,
+        "warnings": [
+          "Output menyebut nama diri yang tidak ada di data (diduga halusinasi): Berdasarkan, Pelaksanaan"
+        ],
+        "fallback": [],
+        "preview": "[KESIMPULAN] Pelaksanaan Praktik Kerja Lapangan (PKL) selama 3 bulan di PT Reksa Finance memberikan pengalaman berharga ",
+        "grounding_warn": true
+      }
+    },
+    "struktur": {
+      "bab_count": 6,
+      "bab_v_subs": [
+        "5.1 Hal-hal yang Perlu Diperhatikan"
+      ],
+      "hambatan_present": false
+    }
+  }
+]

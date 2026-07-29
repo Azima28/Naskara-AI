@@ -436,6 +436,37 @@ code {
   gap: 0.35rem;
 }
 
+@keyframes pulse-red-border {
+  0% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.45);
+    border-color: var(--red-600, #dc2626);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(220, 38, 38, 0.2);
+    border-color: #ef4444;
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.45);
+    border-color: var(--red-600, #dc2626);
+  }
+}
+
+.field--highlight-invalid {
+  border-radius: 8px;
+  background-color: #fef2f2 !important;
+  padding: 0.5rem;
+  border: 2px solid var(--red-600, #dc2626) !important;
+  animation: pulse-red-border 1.5s infinite ease-in-out;
+  transition: all 0.3s ease;
+}
+
+.field--highlight-invalid .field__input,
+.field__input.field--highlight-invalid {
+  border-color: var(--red-600, #dc2626) !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.25) !important;
+}
+
 .field--full {
   grid-column: 1 / -1;
 }

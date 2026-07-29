@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import { getDraft, updateDraft, generateDocx, draftSection, regenerateSection, enhanceContext } from '@/api/client'
 import AntiAIHighlighter from '@/components/editor/AntiAIHighlighter'
@@ -29,11 +29,23 @@ export default function EditorPage() {
 
 function EditorInner() {
   const { draftId } = useParams()
+  const nav = useNavigate()
   const [ctx, setCtx] = useState<PklContext>(emptyContext())
   const [title, setTitle] = useState('Laporan PKL')
   const [loading, setLoading] = useState(true)
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle')
   const dirtyRef = useRef(false)
+
+  const ctxRef = useRef(ctx)
+  ctxRef.current = ctx
+
+  const draftIdRef = useRef(draftId)
+  draftIdRef.current = draftId
+
+  const loadingRef = useRef(loading)
+  loadingRef.current = loading
+
+  const savingPromiseRef = useRef<Promise<any> | null>(null)
 
   const [downloading, setDownloading] = useState(false)
   const [enhancing, setEnhancing] = useState(false)
@@ -41,35 +53,94 @@ function EditorInner() {
   const [genIssues, setGenIssues] = useState<GenerateIssue[]>([])
   const [genQuestions, setGenQuestions] = useState<Requestion[]>([])
   const [polishNotice, setPolishNotice] = useState('')
-  const [isDocxReady, setIsDocxReady] = useState(false)
 
   // Diff Modal State
   const [showDiffModal, setShowDiffModal] = useState(false)
   const [pendingEnhancedCtx, setPendingEnhancedCtx] = useState<PklContext | null>(null)
   const [activeSectionKey, setActiveSectionKey] = useState<string | undefined>(undefined)
 
+  const flushSave = useCallback(async (extraStatus: string = 'completed') => {
+    if (savingPromiseRef.current) {
+      try {
+        await savingPromiseRef.current
+      } catch {
+        /* ignore prior save errors */
+      }
+    }
+    if (loadingRef.current || !dirtyRef.current || !draftIdRef.current) return
+
+    setSaveState('saving')
+    const promise = updateDraft(draftIdRef.current, {
+      data: ctxRef.current,
+      status: extraStatus,
+    })
+      .then((updated) => {
+        setCtx(updated.data)
+        setSaveState('saved')
+        dirtyRef.current = false
+      })
+      .catch((err) => {
+        setSaveState('idle')
+        throw err
+      })
+      .finally(() => {
+        savingPromiseRef.current = null
+      })
+
+    savingPromiseRef.current = promise
+    await promise
+  }, [])
+
   // Load draft
   useEffect(() => {
     if (!draftId) return
+    setLoading(true)
     getDraft(draftId)
       .then((d) => {
         setCtx(d.data)
         setTitle(d.title)
+        dirtyRef.current = false
       })
       .finally(() => setLoading(false))
   }, [draftId])
 
   // Autosave
   useEffect(() => {
-    if (!dirtyRef.current || !draftId) return
+    if (loading || !dirtyRef.current || !draftId) return
     setSaveState('saving')
     const t = setTimeout(() => {
-      updateDraft(draftId, { data: ctx, status: 'completed' })
-        .then(() => setSaveState('saved'))
-        .catch(() => setSaveState('idle'))
+      flushSave('completed')
     }, 2000)
     return () => clearTimeout(t)
-  }, [ctx, draftId])
+  }, [ctx, draftId, loading, flushSave])
+
+  // Unmount & page leave cleanup
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (dirtyRef.current) {
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      if (dirtyRef.current && draftIdRef.current && !loadingRef.current) {
+        updateDraft(draftIdRef.current, { data: ctxRef.current, status: 'completed' })
+      }
+    }
+  }, [])
+
+  const handleManualSave = async () => {
+    if (!draftId || loading) return
+    dirtyRef.current = true
+    await flushSave('completed')
+  }
+
+  const handleBackToWizard = async () => {
+    await flushSave('completed')
+    nav(`/wizard/${draftId}`)
+  }
 
   const updateSection = useCallback((key: string, content: string | string[]) => {
     setCtx((prev) => {
@@ -77,6 +148,9 @@ function EditorInner() {
       return { ...prev, generated_sections: { ...gen, [key]: content } }
     })
     dirtyRef.current = true
+    setGenError('')
+    setGenIssues([])
+    setGenQuestions([])
   }, [])
 
   const handleSelectSection = (key: string) => {
@@ -103,12 +177,38 @@ function EditorInner() {
       <header className="shell__header">
         <div className="shell__row">
           <h1>
-            <Link to={`/wizard/${draftId}`}>← Kembali ke Form Data</Link> &nbsp;|&nbsp; Review &amp; Edit: {title}
+            <button
+              type="button"
+              onClick={handleBackToWizard}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'inherit',
+                font: 'inherit',
+                cursor: 'pointer',
+                textDecoration: 'underline',
+                padding: 0,
+              }}
+            >
+              ← Kembali ke Form Data
+            </button>{' '}
+            &nbsp;|&nbsp; Review &amp; Edit: {title}
           </h1>
-          <span className="save-indicator">
-            {saveState === 'saving' && 'menyimpan draf…'}
-            {saveState === 'saved' && 'tersimpan otomatis ✓'}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <button
+              type="button"
+              className="btn-sm btn-outline"
+              onClick={handleManualSave}
+              disabled={saveState === 'saving'}
+              style={{ fontSize: '0.82rem', padding: '0.35rem 0.7rem' }}
+            >
+              💾 Simpan Draf
+            </button>
+            <span className="save-indicator">
+              {saveState === 'saving' && 'menyimpan draf…'}
+              {saveState === 'saved' && 'tersimpan ✓'}
+            </span>
+          </div>
         </div>
         <p className="muted" style={{ marginTop: '0.5rem' }}>
           Gunakan AI untuk menyusun draf naratif tiap bagian laporan secara akademis (KBBI). Kamu bisa menyunting hasilnya secara langsung.
@@ -155,61 +255,12 @@ function EditorInner() {
               </div>
             </div>
 
-            <div style={{ marginBottom: '1.25rem', padding: '0.85rem 1rem', background: 'var(--paper-2, #ece8de)', borderRadius: '8px', border: '1px solid var(--line, #ddd6c8)' }}>
-              <h4 style={{ margin: '0 0 0.35rem', fontSize: '0.92rem' }}>📝 Bahasa Data Kurang Formal?</h4>
-              <p className="muted" style={{ fontSize: '0.82rem', marginBottom: '0.85rem', lineHeight: 1.45 }}>
-                Gunakan AI untuk memformalkan data mentah menjadi kalimat akademis resmi. Kamu dapat melihat perbandingannya terlebih dahulu.
-              </p>
-              <button
-                type="button"
-                className="btn-primary"
-                style={{
-                  width: '100%',
-                  background: isDocxReady ? 'var(--green-700)' : 'var(--green-600)',
-                  color: '#ffffff',
-                  fontWeight: 600,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '0.65rem 0.85rem',
-                  fontSize: '0.88rem',
-                }}
-                disabled={enhancing || downloading}
-                onClick={async () => {
-                  if (!draftId) return
-                  setEnhancing(true)
-                  try {
-                    const res = await enhanceContext(ctx)
-                    setPendingEnhancedCtx(res.context_data)
-                    setShowDiffModal(true)
-                  } catch (err: any) {
-                    alert(err?.message || 'Gagal merapikan data.')
-                  } finally {
-                    setEnhancing(false)
-                  }
-                }}
-              >
-                {enhancing ? (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <svg className="animate-spin" style={{ width: '16px', height: '16px', marginRight: '8px' }} viewBox="0 0 24 24" fill="none">
-                      <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Memformalkan Bahasa…
-                  </span>
-                ) : isDocxReady ? '✓ Data Sudah Akademis (Tinjau Ulang)' : '📝 Formalkan Teks ke Bahasa Akademis (KBBI)'}
-              </button>
-            </div>
-
-            <p className="muted" style={{ fontSize: '0.85rem', marginBottom: '0.85rem' }}>
-              Pastikan seluruh bagian laporan telah ditinjau dengan rapi sebelum mengunduh file `.docx`.
-            </p>
-
             <button
               type="button"
+              className="btn-primary"
               style={{
                 width: '100%',
-                padding: '0.75rem 1rem',
+                padding: '0.8rem 1rem',
                 fontSize: '0.98rem',
                 fontWeight: 600,
                 borderRadius: '8px',
@@ -217,40 +268,37 @@ function EditorInner() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 transition: 'all 0.2s ease',
-                ...(isDocxReady
-                  ? {
-                      background: 'var(--green-600)',
-                      color: '#ffffff',
-                      border: '1px solid var(--green-700)',
-                      cursor: downloading ? 'wait' : 'pointer',
-                      boxShadow: '0 2px 6px rgba(22, 101, 52, 0.2)',
-                    }
-                  : {
-                      background: '#e2e8f0',
-                      color: '#94a3b8',
-                      border: '1px solid #cbd5e1',
-                      cursor: 'not-allowed',
-                    }),
+                background: 'var(--green-600, #187257)',
+                color: '#ffffff',
+                border: '1px solid var(--green-700, #14614a)',
+                cursor: downloading ? 'wait' : 'pointer',
+                boxShadow: '0 2px 6px rgba(24, 114, 87, 0.25)',
+                marginBottom: '1rem',
               }}
-              disabled={!isDocxReady || downloading}
+              disabled={downloading}
               onClick={async () => {
-                if (!draftId || !isDocxReady) return
+                if (!draftId) return
                 setDownloading(true)
                 setGenError('')
                 setGenIssues([])
                 setGenQuestions([])
                 try {
-                  await updateDraft(draftId, { data: ctx, status: 'completed' })
+                  await flushSave('completed')
                   const notice = await generateDocx(draftId)
                   setPolishNotice(notice || '')
                 } catch (err: any) {
-                  const detail = err?.response?.data?.detail
-                  if (typeof detail === 'string') {
-                    setGenError(detail)
+                  const detail = err?.detail || err?.response?.data?.detail
+                  if (detail && typeof detail === 'object' && ((detail.issues && detail.issues.length > 0) || (detail.requestions && detail.requestions.length > 0))) {
+                    setGenError(detail.message || 'Data belum lengkap. Isi field WAJIB terlebih dahulu.')
+                    setGenIssues(detail.issues || [])
+                    setGenQuestions(detail.requestions || [])
                   } else {
-                    setGenError(detail?.message || err?.message || 'Gagal generate dokumen')
-                    setGenIssues(detail?.issues || [])
-                    setGenQuestions(detail?.requestions || [])
+                    const msg = typeof detail === 'string'
+                      ? detail
+                      : detail?.message || err?.message || 'Terjadi kendala saat menyusun dokumen.'
+                    setGenError(msg)
+                    setGenIssues([])
+                    setGenQuestions([])
                   }
                 } finally {
                   setDownloading(false)
@@ -268,11 +316,101 @@ function EditorInner() {
               ) : '📥 Download .docx (Siap Cetak)'}
             </button>
 
-            {genError && (genIssues.length > 0 || genQuestions.length > 0 ? (
-              <RequestionPanel message={genError} issues={genIssues} requestions={genQuestions} />
-            ) : (
-              <p style={{ color: 'var(--red-600)', marginTop: '0.5rem', fontSize: '0.85rem' }}>{genError}</p>
-            ))}
+            <div style={{ padding: '0.75rem 0.85rem', background: 'var(--paper-2, #ece8de)', borderRadius: '8px', border: '1px solid var(--line, #ddd6c8)' }}>
+              <button
+                type="button"
+                className="btn-outline"
+                style={{
+                  width: '100%',
+                  fontSize: '0.82rem',
+                  fontWeight: 600,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '0.5rem 0.75rem',
+                }}
+                disabled={enhancing || downloading}
+                onClick={async () => {
+                  if (!draftId) return
+                  setEnhancing(true)
+                  try {
+                    const res = await enhanceContext(ctx)
+                    setPendingEnhancedCtx(res.context_data)
+                    setShowDiffModal(true)
+                  } catch (err: any) {
+                    const detail = err?.response?.data?.detail
+                    const msg = typeof detail === 'string'
+                      ? detail
+                      : detail?.message || err?.message || 'Gagal merapikan data via AI.'
+                    alert(msg)
+                  } finally {
+                    setEnhancing(false)
+                  }
+                }}
+              >
+                {enhancing ? (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg className="animate-spin" style={{ width: '14px', height: '14px', marginRight: '6px' }} viewBox="0 0 24 24" fill="none">
+                      <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Merapikan Bahasa…
+                  </span>
+                ) : '✨ Rapikan Bahasa Teks via AI (Opsional)'}
+              </button>
+            </div>
+
+            {genError && (
+              genIssues.length > 0 || genQuestions.length > 0 ? (
+                <RequestionPanel
+                  message={genError}
+                  issues={genIssues}
+                  requestions={genQuestions}
+                  draftId={draftId}
+                />
+              ) : (
+                <div
+                  style={{
+                    marginTop: '0.85rem',
+                    padding: '0.85rem 1rem',
+                    background: 'var(--red-50, #fef2f2)',
+                    border: '1px solid var(--red-200, #fecaca)',
+                    borderRadius: '8px',
+                  }}
+                >
+                  <strong style={{ color: 'var(--red-700, #b91c1c)', display: 'block', marginBottom: '0.4rem', fontSize: '0.9rem' }}>
+                    ⚠️ {genError}
+                  </strong>
+                  {genError.toLowerCase().includes('data belum lengkap') || genError.toLowerCase().includes('wajib') ? (
+                    <>
+                      <p className="muted" style={{ fontSize: '0.82rem', marginBottom: '0.75rem', lineHeight: 1.4 }}>
+                        Beberapa field wajib pada form data belum terisi lengkap. Klik tombol di bawah untuk melengkapinya.
+                      </p>
+                      <button
+                        type="button"
+                        className="btn-primary"
+                        style={{
+                          width: '100%',
+                          fontSize: '0.85rem',
+                          padding: '0.5rem 0.85rem',
+                          background: 'var(--red-600, #dc2626)',
+                          borderColor: 'var(--red-700, #b91c1c)',
+                          color: '#ffffff',
+                          fontWeight: 600,
+                        }}
+                        onClick={() => nav(`/wizard/${draftId}`)}
+                      >
+                        📍 Buka Form Data untuk Melengkapi →
+                      </button>
+                    </>
+                  ) : (
+                    <p className="muted" style={{ fontSize: '0.82rem', margin: 0, lineHeight: 1.4 }}>
+                      Terjadi kendala saat menyusun dokumen. Silakan periksa koneksi atau coba klik tombol Download sekali lagi.
+                    </p>
+                  )}
+                </div>
+              )
+            )}
 
             {polishNotice && (
               <p
@@ -305,11 +443,19 @@ function EditorInner() {
         <EnhancementDiffModal
           oldCtx={ctx}
           newCtx={pendingEnhancedCtx}
-          onApply={(finalCtx) => {
+          onApply={async (finalCtx) => {
             setCtx(finalCtx)
-            dirtyRef.current = true
-            setIsDocxReady(true)
             setShowDiffModal(false)
+            if (draftId) {
+              setSaveState('saving')
+              try {
+                await updateDraft(draftId, { data: finalCtx, status: 'completed' })
+                setSaveState('saved')
+                dirtyRef.current = false
+              } catch {
+                setSaveState('idle')
+              }
+            }
           }}
           onCancel={() => {
             setShowDiffModal(false)

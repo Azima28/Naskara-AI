@@ -189,20 +189,21 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
       {/* Refleksi Pembahasan BAB V */}
       <FieldGroup title="Pembahasan & Refleksi (BAB V)" full>
         <p className="muted" style={{ margin: '-0.5rem 0 0.75rem', fontSize: '0.85rem' }}>
-          Pelajaran yang kamu dapatkan. Jika dikosongkan, AI akan otomatis mengembangkan narasi refleksi dari ceritamu sebelumnya.
+          Pelajaran yang kamu dapatkan dan cerita pengalaman selama PKL.
         </p>
         <StringArrayField
           label="Pelajaran Utama"
           items={pelajaran}
           onChange={(items) => upd({ pelajaran: items })}
+          importance="wajib"
           placeholder="Meningkatkan kedisiplinan..."
         />
         <div style={{ marginTop: '1rem' }}>
           <TextareaField
-            label="Cerita Refleksi (Opsional - AI akan menyempurnakan)"
+            label="Cerita Refleksi"
             value={ctx.refleksi_bab5 || ''}
             onChange={(v) => upd({ refleksi_bab5: v })}
-            importance="opsional"
+            importance="wajib"
             placeholder="Menurut saya, lingkungan kerja sangat membantu..."
             hint="Tulis bebas. AI akan merangkumnya menjadi paragraf profesional untuk sub-bab 'Hal-hal yang perlu diperhatikan'."
           />
@@ -212,20 +213,20 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
       {/* Kesimpulan dan Saran BAB VI */}
       <FieldGroup title="Kesimpulan dan Saran (BAB VI)" full>
         <p className="muted" style={{ margin: '-0.5rem 0 0.75rem', fontSize: '0.85rem' }}>
-          Tulis kesimpulan & saranmu secara singkat. AI akan mengembangkannya dengan gaya bahasa yang profesional. Jika dikosongkan, AI akan meng-generate otomatis dari keseluruhan data.
+          Tulis kesimpulan & saranmu secara singkat. AI akan mengembangkannya dengan gaya bahasa yang profesional.
         </p>
         <TextareaField
-          label="Ide Kesimpulan (Opsional)"
+          label="Ide Kesimpulan"
           value={ctx.kesimpulan_user || ''}
           onChange={(v) => upd({ kesimpulan_user: v })}
-          importance="opsional"
+          importance="wajib"
           placeholder="Kesimpulannya, saya banyak belajar tentang kerja tim..."
         />
         <TextareaField
-          label="Ide Saran (Opsional)"
+          label="Ide Saran"
           value={ctx.saran_user || ''}
           onChange={(v) => upd({ saran_user: v })}
-          importance="opsional"
+          importance="wajib"
           placeholder="Untuk sekolah, perbanyak praktik. Untuk perusahaan, perbaiki AC..."
         />
       </FieldGroup>

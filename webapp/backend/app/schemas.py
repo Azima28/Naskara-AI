@@ -7,7 +7,7 @@ struktur/bentuk.
 """
 from __future__ import annotations
 
-from typing import Literal, Optional
+from typing import Any, Literal, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -383,7 +383,7 @@ class Asset(BaseModel):
     id: str = ""
     filename: str = ""
     original_name: str = ""
-    type: AssetType = "foto"
+    type: Union[AssetType, str] = "foto"
     caption: str = ""
     used_in_bab: Optional[int] = None
     path: str = ""
@@ -429,7 +429,7 @@ class Lampiran(BaseModel):
 # --------------------------------------------------------------------------- #
 #  Root: PklContext                                                           #
 # --------------------------------------------------------------------------- #
-Status = Literal["collecting", "reviewing", "ready", "generated"]
+Status = Literal["collecting", "reviewing", "ready", "generated", "completed"]
 
 
 class PklContext(BaseModel):
@@ -462,15 +462,14 @@ class PklContext(BaseModel):
     saran_intro: str = ""                                       # kalimat pembuka sub-bab Saran
     saran_items: list[str] = Field(default_factory=list)         # saran ber-enumerasi a. b. c.
     kata_pengantar: KataPengantar = Field(default_factory=KataPengantar)
-    # Entri boleh berupa objek terstruktur atau string sitasi yang sudah jadi.
-    daftar_pustaka: list[DaftarPustaka | str] = Field(default_factory=list)
+    # Entri boleh berupa objek terstruktur, string sitasi, atau dict arbitrari.
+    daftar_pustaka: list[Union[DaftarPustaka, str, dict[str, Any]]] = Field(default_factory=list)
     assets: list[Asset] = Field(default_factory=list)
     gaps: list[Gap] = Field(default_factory=list)
     lampiran: Lampiran = Field(default_factory=Lampiran)
 
-    # Teks hasil generate AI per section (latar_belakang, landasan_teori, dst).
-    # Sebelumnya tidak dideklarasikan, sehingga hilang tiap draft disimpan.
-    generated_sections: dict[str, str] = Field(default_factory=dict)
+    # Teks / data hasil generate AI per section (latar_belakang, landasan_teori, list of strings, dst).
+    generated_sections: dict[str, Any] = Field(default_factory=dict)
     # Override judul sub-bab agar cocok dengan pedoman masing-masing sekolah.
     judul_override: dict[str, str] = Field(default_factory=dict)
 

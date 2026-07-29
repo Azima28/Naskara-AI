@@ -19,15 +19,16 @@ export default function PerusahaanStep({ ctx, set }: { ctx: PklContext; set: (p:
       <ImportanceLegend />
 
       <FieldGroup title="Identitas Perusahaan">
-        <TextField label="Nama Perusahaan" value={p.nama} onChange={(v) => upd({ nama: v })} importance="wajib" placeholder="PT Bank Lampung" hint="Nama panggilan/singkat yang akan sering disebut di laporan" />
-        <TextField label="Nama Lengkap" value={p.nama_lengkap} onChange={(v) => upd({ nama_lengkap: v })} importance="opsional" placeholder="PT Bank Pembangunan Daerah Lampung" />
-        <TextField label="Alamat" value={p.alamat} onChange={(v) => upd({ alamat: v })} importance="wajib" />
-        <TextField label="Bidang Usaha" value={p.bidang_usaha} onChange={(v) => upd({ bidang_usaha: v })} importance="wajib" hint="Contoh: Jasa Keuangan, Otomotif, dll" />
-        <SelectField 
-          label="Status" 
-          value={p.status} 
-          onChange={(v) => upd({ status: v })} 
-          importance="opsional" 
+        <TextField name="perusahaan.nama" label="Nama Perusahaan" value={p.nama} onChange={(v) => upd({ nama: v })} importance="wajib" placeholder="PT Bank Lampung" hint="Nama panggilan/singkat yang akan sering disebut di laporan" />
+        <TextField name="perusahaan.nama_lengkap" label="Nama Lengkap" value={p.nama_lengkap} onChange={(v) => upd({ nama_lengkap: v })} importance="wajib" placeholder="PT Bank Pembangunan Daerah Lampung" />
+        <TextField name="perusahaan.alamat" label="Alamat" value={p.alamat} onChange={(v) => upd({ alamat: v })} importance="wajib" />
+        <TextField name="perusahaan.bidang_usaha" label="Bidang Usaha" value={p.bidang_usaha} onChange={(v) => upd({ bidang_usaha: v })} importance="wajib" hint="Contoh: Jasa Keuangan, Otomotif, dll" />
+        <SelectField
+          name="perusahaan.status"
+          label="Status"
+          value={p.status}
+          onChange={(v) => upd({ status: v })}
+          importance="wajib"
           hint="Misal: PMDN, PMA, BUMN, Swasta"
           options={[
             { label: 'Swasta', value: 'Swasta' },
@@ -39,28 +40,28 @@ export default function PerusahaanStep({ ctx, set }: { ctx: PklContext; set: (p:
             { label: 'Lainnya', value: 'Lainnya' },
           ]}
         />
-        <TextField label="No. Telp" value={p.no_telp} onChange={(v) => upd({ no_telp: v })} importance="opsional" />
-        <TextField label="Fax" value={p.fax} onChange={(v) => upd({ fax: v })} importance="opsional" hint="Kosongkan jika tidak ada" />
-        <TextField label="Email" value={p.email} onChange={(v) => upd({ email: v })} importance="opsional" type="email" />
-        <TextField label="Website" value={p.website} onChange={(v) => upd({ website: v })} importance="opsional" />
+        <TextField name="perusahaan.no_telp" label="No. Telp" value={p.no_telp} onChange={(v) => upd({ no_telp: v })} importance="wajib" />
+        <TextField name="perusahaan.fax" label="Fax" value={p.fax} onChange={(v) => upd({ fax: v })} importance="opsional" hint="Kosongkan jika tidak ada" />
+        <TextField name="perusahaan.email" label="Email" value={p.email} onChange={(v) => upd({ email: v })} importance="wajib" type="email" />
+        <TextField name="perusahaan.website" label="Website" value={p.website} onChange={(v) => upd({ website: v })} importance="wajib" />
       </FieldGroup>
 
       <FieldGroup title="Pimpinan / Kepala Cabang">
         <p className="muted" style={{ margin: '-0.5rem 0 1rem', fontSize: '0.85rem' }}>
           Pejabat tertinggi di tempat PKL yang akan menandatangani laporan.
         </p>
-        <TextField label="Nama Pimpinan" value={p.pimpinan.nama} onChange={(v) => updPejabat('pimpinan', { nama: v })} importance="wajib" />
-        <TextField label="Jabatan" value={p.pimpinan.jabatan} onChange={(v) => updPejabat('pimpinan', { jabatan: v })} importance="wajib" placeholder="Kepala Cabang / Direktur" />
+        <TextField name="perusahaan.pimpinan.nama" label="Nama Pimpinan" value={p.pimpinan.nama} onChange={(v) => updPejabat('pimpinan', { nama: v })} importance="wajib" />
+        <TextField name="perusahaan.pimpinan.jabatan" label="Jabatan" value={p.pimpinan.jabatan} onChange={(v) => updPejabat('pimpinan', { jabatan: v })} importance="wajib" placeholder="Kepala Cabang / Direktur" />
       </FieldGroup>
 
       <FieldGroup title="Pembimbing Industri">
         <p className="muted" style={{ margin: '-0.5rem 0 1rem', fontSize: '0.85rem' }}>
           Orang yang membimbing kamu sehari-hari selama PKL.
         </p>
-        <TextField label="Nama Pembimbing" value={p.pembimbing_industri.nama} onChange={(v) => updPejabat('pembimbing_industri', { nama: v })} importance="wajib" />
-        <TextField label="Jabatan" value={p.pembimbing_industri.jabatan} onChange={(v) => updPejabat('pembimbing_industri', { jabatan: v })} importance="opsional" />
-        <TextField label="No. Telp" value={p.pembimbing_industri.telp} onChange={(v) => updPejabat('pembimbing_industri', { telp: v })} importance="opsional" />
-        <TextField label="Email" value={p.pembimbing_industri.email} onChange={(v) => updPejabat('pembimbing_industri', { email: v })} importance="opsional" type="email" />
+        <TextField name="perusahaan.pembimbing_industri.nama" label="Nama Pembimbing" value={p.pembimbing_industri.nama} onChange={(v) => updPejabat('pembimbing_industri', { nama: v })} importance="wajib" />
+        <TextField label="Jabatan" value={p.pembimbing_industri.jabatan} onChange={(v) => updPejabat('pembimbing_industri', { jabatan: v })} importance="wajib" />
+        <TextField label="No. Telp" value={p.pembimbing_industri.telp} onChange={(v) => updPejabat('pembimbing_industri', { telp: v })} importance="wajib" />
+        <TextField label="Email" value={p.pembimbing_industri.email} onChange={(v) => updPejabat('pembimbing_industri', { email: v })} importance="wajib" type="email" />
       </FieldGroup>
 
       <FieldGroup title="Pembimbing Industri II (Opsional)">

@@ -67,6 +67,9 @@ export function TextField({
   type = 'text',
   hint,
   readOnly,
+  name,
+  fieldKey,
+  id,
 }: {
   label: string
   value: string
@@ -76,15 +79,20 @@ export function TextField({
   importance?: Importance
   type?: 'text' | 'email' | 'tel' | 'number' | 'date'
   hint?: string
-  /**
-   * Field diisi otomatis oleh sistem. Memakai `readOnly` (bukan
-   * `pointer-events: none`) supaya statusnya ikut dibacakan screen reader dan
-   * tidak bisa difokus lalu diedit lewat keyboard.
-   */
   readOnly?: boolean
+  name?: string
+  fieldKey?: string
+  id?: string
 }) {
+  const fk = name || fieldKey
+  const elemId = id || (fk ? `field-${fk}` : undefined)
+
   return (
-    <label className={`field${readOnly ? ' field--auto' : ''}`}>
+    <label
+      id={elemId}
+      data-field={fk}
+      className={`field${readOnly ? ' field--auto' : ''}`}
+    >
       <span className="field__label">
         {label} {renderImportance(required, importance)}
         {readOnly && <span className="field__badge field__badge--auto">Terisi otomatis</span>}
@@ -92,6 +100,7 @@ export function TextField({
       <input
         className="field__input"
         type={type}
+        name={fk}
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
@@ -113,6 +122,9 @@ export function NumberField({
   required,
   hint,
   readOnly,
+  name,
+  fieldKey,
+  id,
 }: {
   label: string
   value: number | null
@@ -122,9 +134,19 @@ export function NumberField({
   required?: boolean
   hint?: string
   readOnly?: boolean
+  name?: string
+  fieldKey?: string
+  id?: string
 }) {
+  const fk = name || fieldKey
+  const elemId = id || (fk ? `field-${fk}` : undefined)
+
   return (
-    <label className={`field${readOnly ? ' field--auto' : ''}`}>
+    <label
+      id={elemId}
+      data-field={fk}
+      className={`field${readOnly ? ' field--auto' : ''}`}
+    >
       <span className="field__label">
         {label} {renderImportance(required, importance)}
         {readOnly && <span className="field__badge field__badge--auto">Terisi otomatis</span>}
@@ -132,6 +154,7 @@ export function NumberField({
       <input
         className="field__input"
         type="number"
+        name={fk}
         value={value ?? ''}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value === '' ? null : Number(e.target.value))}
@@ -152,6 +175,9 @@ export function SelectField({
   required,
   importance,
   hint,
+  name,
+  fieldKey,
+  id,
 }: {
   label: string
   value: string
@@ -160,14 +186,21 @@ export function SelectField({
   required?: boolean
   importance?: Importance
   hint?: string
+  name?: string
+  fieldKey?: string
+  id?: string
 }) {
+  const fk = name || fieldKey
+  const elemId = id || (fk ? `field-${fk}` : undefined)
+
   return (
-    <label className="field">
+    <label id={elemId} data-field={fk} className="field">
       <span className="field__label">
         {label} {renderImportance(required, importance)}
       </span>
       <select
         className="field__input"
+        name={fk}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         required={required || importance === 'wajib'}
@@ -193,6 +226,9 @@ export function TextareaField({
   importance,
   required,
   hint,
+  name,
+  fieldKey,
+  id,
 }: {
   label: string
   value: string
@@ -202,14 +238,21 @@ export function TextareaField({
   importance?: Importance
   required?: boolean
   hint?: string
+  name?: string
+  fieldKey?: string
+  id?: string
 }) {
+  const fk = name || fieldKey
+  const elemId = id || (fk ? `field-${fk}` : undefined)
+
   return (
-    <label className="field">
+    <label id={elemId} data-field={fk} className="field">
       <span className="field__label">
         {label} {renderImportance(required, importance)}
       </span>
       <textarea
         className="field__input"
+        name={fk}
         value={value}
         placeholder={placeholder}
         rows={rows}
@@ -246,6 +289,9 @@ export function ImageUploadField({
   importance,
   required,
   hint,
+  name,
+  fieldKey,
+  id,
 }: {
   label: string
   value: string
@@ -253,7 +299,12 @@ export function ImageUploadField({
   importance?: Importance
   required?: boolean
   hint?: string
+  name?: string
+  fieldKey?: string
+  id?: string
 }) {
+  const fk = name || fieldKey
+  const elemId = id || (fk ? `field-${fk}` : undefined)
   const [loading, setLoading] = useState(false)
   const [err, setErr] = useState('')
 
@@ -275,7 +326,7 @@ export function ImageUploadField({
   }
 
   return (
-    <label className="field">
+    <label id={elemId} data-field={fk} className="field">
       <span className="field__label">
         {label} {renderImportance(required, importance)}
       </span>
@@ -283,6 +334,7 @@ export function ImageUploadField({
         <input
           type="file"
           accept="image/*"
+          name={fk}
           onChange={handleFile}
           disabled={loading}
           className="field__input"
@@ -327,6 +379,9 @@ export function StringArrayField({
   importance,
   hint,
   itemNoun = 'baris',
+  name,
+  fieldKey,
+  id,
 }: {
   label: string
   items: string[]
@@ -338,7 +393,13 @@ export function StringArrayField({
   hint?: string
   /** Kata benda untuk baris, dipakai di label tombol & konfirmasi hapus. */
   itemNoun?: string
+  name?: string
+  fieldKey?: string
+  id?: string
 }) {
+  const fk = name || fieldKey
+  const elemId = id || (fk ? `field-${fk}` : undefined)
+
   const update = (i: number, v: string) => {
     const next = [...items]
     next[i] = v
@@ -357,7 +418,7 @@ export function StringArrayField({
   }
 
   return (
-    <div className="field field--full">
+    <div id={elemId} data-field={fk} className="field field--full">
       <span className="field__label">
         {label} {renderImportance(required, importance)}
       </span>

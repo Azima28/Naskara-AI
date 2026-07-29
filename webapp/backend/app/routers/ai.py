@@ -16,10 +16,61 @@ from ..prompts.base import SYSTEM_PROMPT_TEMPLATE
 from ..prompts.jurusan_knowledge import get_jurusan_context
 from ..prompts.validator import validate_ai_output, truncate_to_limit, AIOutputError
 import json
+import re
 from ..prompts import sections
 from ..prompts import ai_sections
 
 router = APIRouter(prefix="/ai", tags=["ai"])
+
+def extract_json_from_llm(text: str) -> dict:
+    """Ekstrak JSON dari output LLM yang mungkin berisi markdown atau teks pembuka."""
+    text = text.strip()
+    # 1. Coba cari di dalam code block ```json ... ```
+    code_block_match = re.search(r'```(?:json)?\s*(\{[\s\S]*?\})\s*```', text, re.IGNORECASE)
+    if code_block_match:
+        try:
+            return json.loads(code_block_match.group(1))
+        except Exception:
+            pass
+
+    # 2. Coba cari kurung kurawal pertama '{' hingga kurung kurawal terakhir '}'
+    first_brace = text.find('{')
+    last_brace = text.rfind('}')
+    if first_brace != -1 and last_brace != -1 and last_brace > first_brace:
+        json_candidate = text[first_brace:last_brace + 1]
+        try:
+            return json.loads(json_candidate)
+        except Exception:
+            pass
+
+    # 3. Direct load sebagai fallback
+    return json.loads(text)
+
+
+def repair_truncated_json(text: str) -> dict:
+    """Ekstrak dan perbaiki JSON dari output AI jika terpotong atau berisi markdown."""
+    text = text.strip()
+    try:
+        return extract_json_from_llm(text)
+    except Exception:
+        pass
+
+    # Coba perbaiki string JSON yang terpotong di akhir karena token limit
+    first_brace = text.find('{')
+    if first_brace != -1:
+        candidate = text[first_brace:]
+        if candidate.count('"') % 2 != 0:
+            candidate += '"'
+        open_curly = candidate.count('{') - candidate.count('}')
+        open_square = candidate.count('[') - candidate.count(']')
+        candidate += ']' * max(0, open_square)
+        candidate += '}' * max(0, open_curly)
+        try:
+            return json.loads(candidate)
+        except Exception:
+            pass
+
+    raise ValueError(f"Output AI tidak valid JSON: {text[:100]}...")
 
 class DraftSectionRequest(BaseModel):
     section_key: str
@@ -219,20 +270,19 @@ Aturan:
     
     try:
         text = await provider.generate(system_prompt, user_prompt)
-        text = text.strip()
-        if text.startswith("```json"):
-            text = text[7:]
-        if text.startswith("```"):
-            text = text[3:]
-        if text.endswith("```"):
-            text = text[:-3]
-        text = text.strip()
-        
-        parsed = json.loads(text)
+        parsed = extract_json_from_llm(text)
         return parsed
     except Exception as e:
-        print("Parse error:", str(e), "Raw output:", text if 'text' in locals() else "N/A")
-        raise HTTPException(status_code=500, detail="Gagal mengurai cerita kegiatan. Coba ceritakan lebih detail.")
+        print("[Parse Full Story Error]:", str(e), "Raw output:", text if 'text' in locals() else "N/A")
+        if "AI Provider error" in str(e) or "Connect" in str(e) or "Timeout" in str(e):
+            raise HTTPException(
+                status_code=503,
+                detail="Sistem AI (LLM Provider) sedang offline atau tidak dapat dihubungi. Pastikan server AI Anda aktif."
+            )
+        raise HTTPException(
+            status_code=500,
+            detail="Gagal mengurai cerita kegiatan menggunakan AI. Silakan coba lagi nanti."
+        )
 
 
 @router.post("/enhance-context")
@@ -242,36 +292,48 @@ async def enhance_context(
 ) -> dict:
     """Merapikan data mentah PKL menggunakan AI secara global (ubah 'gatau' -> kalimat formal)."""
     provider = get_ai_provider()
-    
+
+    ctx = req.context_data
+    # Filter payload so we don't send huge non-text fields (images, kop, assets, config)
+    text_payload = {
+        "profil_perusahaan": {
+            "sejarah": ctx.get("profil_perusahaan", {}).get("sejarah", ""),
+            "visi": ctx.get("profil_perusahaan", {}).get("visi", ""),
+            "misi": ctx.get("profil_perusahaan", {}).get("misi", []),
+            "tata_tertib_perusahaan": ctx.get("profil_perusahaan", {}).get("tata_tertib_perusahaan", []),
+            "job_descriptions": ctx.get("profil_perusahaan", {}).get("job_descriptions", []),
+        },
+        "kegiatan": ctx.get("kegiatan", []),
+        "studi_kasus": {
+            "judul": ctx.get("studi_kasus", {}).get("judul", ""),
+            "latar_belakang": ctx.get("studi_kasus", {}).get("latar_belakang", ""),
+            "proses_atau_formula": ctx.get("studi_kasus", {}).get("proses_atau_formula", ""),
+            "hasil": ctx.get("studi_kasus", {}).get("hasil", ""),
+        },
+        "kendala": ctx.get("kendala", []),
+        "pelajaran": ctx.get("pelajaran", []),
+        "refleksi_bab5": ctx.get("refleksi_bab5", ""),
+        "kesimpulan_user": ctx.get("kesimpulan_user", ""),
+        "saran_user": ctx.get("saran_user", ""),
+    }
+
     system_prompt = """Kamu adalah editor profesional untuk laporan akademik siswa SMK.
-Tugasmu adalah memeriksa seluruh data JSON mentah yang diisi siswa dan memperbaikinya.
-Banyak siswa mengisi form dengan kata tidak baku, terlalu singkat, atau asal (misal: "gatau", "apa aja", "bongkar mesin").
+Tugasmu adalah merapikan teks mentah berikut menjadi bahasa formal, akademis (KBBI), dan profesional.
+Banyak siswa menggunakan bahasa tidak baku, terlalu singkat, atau kata tidak pasti (misal: "gatau", "apa aja", "bongkar mesin").
 
 ATURAN:
-1. Ubah bahasa yang tidak baku/singkat/asal menjadi kalimat formal, profesional, dan relevan dengan laporan PKL.
-2. Jika ada yang menjawab "gatau" atau sejenisnya di bagian solusi/hambatan, kembangkan menjadi alasan yang masuk akal secara akademik (misal: "Penulis masih membutuhkan adaptasi lebih lanjut di lapangan").
-3. PERTAHANKAN semua struktur JSON (keys, tipe data, boolean, array, ID asset). JANGAN merusak struktur!
-4. JANGAN mengubah `siswa`, `sekolah`, `config` kecuali sangat perlu dirapikan penulisannya (huruf kapital).
-5. Fokus pada: `kegiatan` (nama tugas, detail), `studi_kasus` (latar_belakang, proses, hasil), `perusahaan` (sejarah, visi, misi, tata_tertib, job_descriptions).
-6. OUTPUT HARUS BERUPA JSON MURNI TANPA MARKDOWN (tanpa ```json ... ```). Hanya bracket JSON."""
+1. Perbaiki tata bahasa, ejaan, dan gunakan sudut pandang formal (Penulis).
+2. Jika ada kata "gatau" / "apa saja", kembangkan menjadi deskripsi akademis yang masuk akal.
+3. PERTAHANKAN struktur keys JSON persis sama seperti input. JANGAN menghapus field.
+4. HANYA kembalikan JSON murni tanpa markdown (tanpa ```json)."""
 
-    user_prompt = f"Data Mentah JSON:\n{json.dumps(req.context_data)}"
-    
+    user_prompt = f"Teks Laporan Mentah (JSON):\n{json.dumps(text_payload, ensure_ascii=False)}"
+
     try:
         text = await provider.generate(system_prompt, user_prompt)
-        text = text.strip()
-        if text.startswith("```json"):
-            text = text[7:]
-        if text.startswith("```"):
-            text = text[3:]
-        if text.endswith("```"):
-            text = text[:-3]
-        text = text.strip()
-        
-        enhanced_ctx = json.loads(text)
-        
-        # Deep merge AI output into original context to prevent data loss 
-        # if AI omits unmodified fields to save tokens.
+        enhanced_ctx = repair_truncated_json(text)
+
+        # Deep merge AI output into original context to prevent data loss
         def deep_merge(orig, new):
             if isinstance(orig, dict) and isinstance(new, dict):
                 merged = orig.copy()
@@ -279,14 +341,21 @@ ATURAN:
                     merged[k] = deep_merge(orig.get(k), v)
                 return merged
             elif isinstance(orig, list) and isinstance(new, list):
-                # Trust the AI's list if it's not empty, otherwise keep original
                 return new if new else orig
             else:
                 return new if new not in [None, ""] else orig
-                
+
         final_ctx = deep_merge(req.context_data, enhanced_ctx)
-        
+
         return {"context_data": final_ctx}
     except Exception as e:
-        print("Enhance error:", str(e), "Raw output:", text if 'text' in locals() else "N/A")
-        raise HTTPException(status_code=500, detail="Gagal merapikan data menggunakan AI. Silakan coba lagi nanti.")
+        print("[Enhance Context Error]:", str(e), "Raw output:", text if 'text' in locals() else "N/A")
+        if "AI Provider error" in str(e) or "Connect" in str(e) or "Timeout" in str(e):
+            raise HTTPException(
+                status_code=503,
+                detail="Sistem AI (LLM Provider) sedang offline atau tidak dapat dihubungi. Pastikan server AI Anda aktif (port 1234/Ollama/9router)."
+            )
+        raise HTTPException(
+            status_code=500,
+            detail=f"Gagal merapikan data menggunakan AI ({str(e)}). Silakan periksa koneksi AI atau coba lagi."
+        )

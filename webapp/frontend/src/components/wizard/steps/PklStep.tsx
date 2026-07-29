@@ -33,14 +33,14 @@ export default function PklStep({ ctx, set }: { ctx: PklContext; set: (p: Partia
       <p className="muted">Tanggal mulai &amp; selesai wajib diisi (untuk BAB I).</p>
 
       <FieldGroup title="Waktu Pelaksanaan">
-        <TextField label="Tanggal Mulai" value={p.tanggal_mulai} onChange={(v) => upd({ tanggal_mulai: v, ...calcDates(v, p.tanggal_selesai) })} importance="wajib" type="date" />
-        <TextField label="Tanggal Selesai" value={p.tanggal_selesai} onChange={(v) => upd({ tanggal_selesai: v, ...calcDates(p.tanggal_mulai, v) })} importance="wajib" type="date" />
-        <NumberField label="Durasi (bulan)" value={p.durasi_bulan} onChange={(v) => upd({ durasi_bulan: v })} importance="opsional" hint="Dihitung sendiri setelah kamu mengisi kedua tanggal di atas." readOnly />
-        <NumberField label="Jam Pelajaran" value={p.jam_pelajaran} onChange={(v) => upd({ jam_pelajaran: v })} importance="opsional" hint="Kosongkan kalau sekolahmu tidak meminta angka ini." />
+        <TextField name="pkl.tanggal_mulai" label="Tanggal Mulai" value={p.tanggal_mulai} onChange={(v) => upd({ tanggal_mulai: v, ...calcDates(v, p.tanggal_selesai) })} importance="wajib" type="date" />
+        <TextField name="pkl.tanggal_selesai" label="Tanggal Selesai" value={p.tanggal_selesai} onChange={(v) => upd({ tanggal_selesai: v, ...calcDates(p.tanggal_mulai, v) })} importance="wajib" type="date" />
+        <NumberField name="pkl.durasi_bulan" label="Durasi (bulan)" value={p.durasi_bulan} onChange={(v) => upd({ durasi_bulan: v })} importance="opsional" hint="Dihitung sendiri setelah kamu mengisi kedua tanggal di atas." readOnly />
+        <NumberField name="pkl.jam_pelajaran" label="Jam Pelajaran" value={p.jam_pelajaran} onChange={(v) => upd({ jam_pelajaran: v })} importance="wajib" />
       </FieldGroup>
 
       <FieldGroup title="Penempatan">
-        <TextField label="Bagian / Divisi" value={p.bagian_ditempatkan} onChange={(v) => upd({ bagian_ditempatkan: v })} importance="opsional" hint="Misal: Divisi IT, Bagian Keuangan. Kosongkan jika pindah-pindah divisi." />
+        <TextField label="Bagian / Divisi" value={p.bagian_ditempatkan} onChange={(v) => upd({ bagian_ditempatkan: v })} importance="wajib" hint="Misal: Divisi IT, Bagian Keuangan. Kosongkan jika pindah-pindah divisi." />
         <TextField label="Tahun Ajaran" value={p.tahun_ajaran} onChange={(v) => upd({ tahun_ajaran: v })} importance="opsional" hint="Dihitung sendiri dari tanggal mulai." readOnly />
       </FieldGroup>
     </>

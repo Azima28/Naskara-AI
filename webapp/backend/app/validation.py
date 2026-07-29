@@ -149,9 +149,7 @@ def run_validation(data: dict[str, Any]) -> ValidationResult:
                     f"dipakai, mohon dijawab ulang"
                 )
 
-    # --- Lampiran: WAJIB minimal 1 foto dokumentasi ------------------------ #
-    # Halaman LAMPIRAN pada laporan referensi selalu berisi foto + keterangan;
-    # tanpa foto sama sekali, laporan tidak layak dikumpulkan.
+    # --- Lampiran: foto dokumentasi (disarankan, tidak memblokir download) -- #
     lampiran = data.get("lampiran", {}) or {}
     fotos = [
         f for f in lampiran.get("foto_kegiatan", [])
@@ -162,9 +160,9 @@ def run_validation(data: dict[str, Any]) -> ValidationResult:
         if isinstance(a, dict) and a.get("type") == "foto" and a.get("filename")
     ]
     if not fotos and not fotos_assets:
-        issues.append(
-            "❌ WAJIB: lampiran.foto_kegiatan kosong — minimal 1 foto dokumentasi "
-            "beserta keterangannya untuk halaman LAMPIRAN"
+        warnings.append(
+            "⚠️ PENTING: lampiran.foto_kegiatan belum diisi foto — halaman LAMPIRAN "
+            "akan berisi teks dokumentasi terlampir standar"
         )
         requestions.append(Requestion(
             field="lampiran.foto_kegiatan",
@@ -172,7 +170,7 @@ def run_validation(data: dict[str, Any]) -> ValidationResult:
             question="Unggah minimal satu foto dokumentasi kegiatan PKL beserta "
                      "keterangannya (mis. \"Foto bersama karyawan\", \"Melakukan "
                      "kunjungan debitur\") — foto ini tampil di halaman LAMPIRAN.",
-            wajib=True,
+            wajib=False,
         ))
     else:
         tanpa_ket = sum(

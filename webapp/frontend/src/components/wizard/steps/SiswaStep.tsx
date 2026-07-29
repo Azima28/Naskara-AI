@@ -37,20 +37,22 @@ export default function SiswaStep({ ctx, set }: { ctx: PklContext; set: (p: Part
       <ImportanceLegend />
 
       <FieldGroup title="Data Akademik">
-        <TextField label="Nama Lengkap" value={s.nama} onChange={(v) => upd({ nama: v })} importance="wajib" hint="Muncul di Cover dan Pengesahan" />
+        <TextField name="siswa.nama" label="Nama Lengkap" value={s.nama} onChange={(v) => upd({ nama: v })} importance="wajib" hint="Muncul di Cover dan Pengesahan" />
         <ImageUploadField
+          name="siswa.foto"
           label="Pas Foto 3x4"
           value={s.foto || ''}
           onChange={(v) => upd({ foto: v })}
           importance="wajib"
           hint="Digunakan untuk halaman Identitas Siswa"
         />
-        <TextField label="NIS" value={s.nis} onChange={(v) => upd({ nis: v })} importance="wajib" hint="Nomor Induk Siswa (biasanya 4-5 digit)" />
-        <TextField label="NISN" value={s.nisn} onChange={(v) => upd({ nisn: v })} importance="wajib" hint="Nomor Induk Siswa Nasional (10 digit)" />
-        <TextField label="Kelas" value={s.kelas} onChange={(v) => upd({ kelas: v })} importance="wajib" placeholder="XII AKL 1" />
+        <TextField name="siswa.nis" label="NIS" value={s.nis} onChange={(v) => upd({ nis: v })} importance="wajib" hint="Nomor Induk Siswa (biasanya 4-5 digit)" />
+        <TextField name="siswa.nisn" label="NISN" value={s.nisn} onChange={(v) => upd({ nisn: v })} importance="wajib" hint="Nomor Induk Siswa Nasional (10 digit)" />
+        <TextField name="siswa.kelas" label="Kelas" value={s.kelas} onChange={(v) => upd({ kelas: v })} importance="wajib" placeholder="XII AKL 1" />
 
         <div className="field field--full">
           <TextField
+            name="siswa.jurusan"
             label="Jurusan / Program Keahlian"
             value={s.jurusan}
             onChange={(v) => handleJurusanChange(v)}

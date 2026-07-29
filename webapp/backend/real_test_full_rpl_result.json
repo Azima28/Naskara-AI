@@ -1,0 +1,55 @@
+{
+  "sections": {
+    "latar_belakang": {
+      "passed": false,
+      "dt": 2.3,
+      "provider_error": "AI Provider error: All connection attempts failed"
+    },
+    "tujuan_pkl": {
+      "passed": false,
+      "dt": 2.3,
+      "provider_error": "AI Provider error: All connection attempts failed"
+    },
+    "narasi_struktur": {
+      "passed": false,
+      "dt": 2.3,
+      "provider_error": "AI Provider error: All connection attempts failed"
+    },
+    "landasan_teori": {
+      "passed": false,
+      "dt": 2.3,
+      "provider_error": "AI Provider error: All connection attempts failed"
+    },
+    "pembahasan": {
+      "passed": false,
+      "dt": 2.3,
+      "provider_error": "AI Provider error: All connection attempts failed"
+    },
+    "kesimpulan_saran": {
+      "passed": false,
+      "dt": 2.3,
+      "provider_error": "AI Provider error: All connection attempts failed"
+    }
+  },
+  "polish": {
+    "changed": false,
+    "failed": [
+      "visi_misi",
+      "tata_tertib",
+      "job_descriptions",
+      "kegiatan",
+      "peralatan"
+    ],
+    "dt": 6.8
+  },
+  "warnings": [],
+  "output_path": "C:\\Work\\Project Ai\\docx_skill_package\\webapp\\output\\Laporan-PKL-Rizky Pratama-d1a771.docx",
+  "struktur": {
+    "bab_count": 6,
+    "bab_v_subs": [
+      "5.1 Hal-hal yang Perlu Diperhatikan"
+    ],
+    "hambatan": false,
+    "pemecahan": false
+  }
+}

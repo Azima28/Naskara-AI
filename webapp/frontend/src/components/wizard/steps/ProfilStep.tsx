@@ -284,13 +284,13 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
       {/* ── Logo Perusahaan ──────────────────────────────────────────────── */}
       <FieldGroup title="Logo Perusahaan">
         <p className="muted" style={{ margin: '-0.5rem 0 0.75rem', fontSize: '0.85rem' }}>
-          Logo perusahaan akan muncul di laporan. Jika tidak ada, bisa dikosongkan.
+          Logo perusahaan akan muncul di laporan.
         </p>
         <ImageUploadField
           label="Logo Perusahaan"
           value={pr.logo_perusahaan}
           onChange={v => upd({ logo_perusahaan: v })}
-          importance="opsional"
+          importance="wajib"
           hint="Format JPG/PNG. Cari logo di website resmi perusahaan atau minta ke HRD."
         />
       </FieldGroup>
@@ -337,8 +337,8 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
           label="Alamat Kantor Pusat"
           value={pr.head_office}
           onChange={v => upd({ head_office: v })}
-          importance="opsional"
-          hint="Kantor utama perusahaan, bisa beda kota dengan tempat kamu PKL. Kosongkan jika perusahaan hanya punya satu kantor."
+          importance="wajib"
+          hint="Kantor utama perusahaan, bisa beda kota dengan tempat kamu PKL."
           placeholder="cth: Jalan Tentara Pelajar Blok B No. 3&5 (Rukan Permata Senayan), Kebayoran Lama, Jakarta Selatan 12210"
         />
 
@@ -441,7 +441,7 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
           onChange={items => upd({ tata_tertib_perusahaan: items, tata_tertib: items })}
           addLabel="+ Tambah Aturan"
           placeholder="cth: datang tepat waktu jam 08.00"
-          importance="opsional"
+          importance="wajib"
         />
       </FieldGroup>
 
@@ -621,7 +621,7 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
           label="Gambar Bagan Struktur"
           value={pr.struktur_organisasi}
           onChange={v => upd({ struktur_organisasi: v })}
-          importance="opsional"
+          importance="wajib"
           hint="Format JPG/PNG. Ukuran ideal: landscape, min. 800×600px"
         />
         {pr.struktur_organisasi && (
@@ -629,8 +629,8 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
             label="Penjelasan Manfaat Struktur Organisasi"
             value={pr.narasi_struktur}
             onChange={v => upd({ narasi_struktur: v })}
-            importance="opsional"
-            hint="Kalimat pembuka yang menjelaskan gunanya bagan di atas. Kosongkan saja — AI akan menuliskannya untukmu."
+            importance="wajib"
+            hint="Kalimat pembuka yang menjelaskan gunanya bagan di atas."
             placeholder="cth: Manfaat Struktur organisasi adalah mempermudah proses pencapaian tujuan dari suatu lembaga..."
           />
         )}

@@ -88,11 +88,25 @@ async def _ai_daftar_pustaka(data: dict) -> list[str]:
 
 # ── Parser helpers untuk output AI polish ────────────────────────────────── #
 
-def _parse_visi_misi(text: str) -> dict:
+def _ensure_str(val: Any) -> str:
+    """Konversi input secara aman menjadi string tunggal ber-newline."""
+    if val is None:
+        return ""
+    if isinstance(val, str):
+        return val
+    if isinstance(val, list):
+        return "\n".join(_ensure_str(item) for item in val if item is not None)
+    if isinstance(val, dict):
+        return "\n".join(f"{k}: {_ensure_str(v)}" for k, v in val.items())
+    return str(val)
+
+
+def _parse_visi_misi(text: Any) -> dict:
     """Parse output [VISI]/[MISI] menjadi dict {visi, misi: []}."""
     result = {"visi": "", "misi": []}
     current = None
-    for line in text.split("\n"):
+    text_str = _ensure_str(text)
+    for line in text_str.split("\n"):
         s = line.strip()
         if s == "[VISI]":
             current = "visi"
@@ -105,17 +119,17 @@ def _parse_visi_misi(text: str) -> dict:
         if current == "visi" and not result["visi"]:
             result["visi"] = s
         elif current == "misi":
-            # Strip nomor di awal: "1. teks" → "teks"
             cleaned = re.sub(r"^\d+\.\s*", "", s)
             if cleaned:
                 result["misi"].append(cleaned)
     return result
 
 
-def _parse_numbered_list(text: str) -> list[str]:
+def _parse_numbered_list(text: Any) -> list[str]:
     """Parse daftar bernomor menjadi list string."""
     items = []
-    for line in text.split("\n"):
+    text_str = _ensure_str(text)
+    for line in text_str.split("\n"):
         s = line.strip()
         if not s:
             continue
@@ -125,12 +139,13 @@ def _parse_numbered_list(text: str) -> list[str]:
     return items
 
 
-def _parse_job_descriptions(text: str) -> list[dict]:
+def _parse_job_descriptions(text: Any) -> list[dict]:
     """Parse output [POSISI: ...] menjadi list {posisi, tugas: []}."""
     import re as _re
     jobs = []
     current_job = None
-    for line in text.split("\n"):
+    text_str = _ensure_str(text)
+    for line in text_str.split("\n"):
         s = line.strip()
         posisi_match = _re.match(r"\[POSISI:\s*(.+?)\]", s)
         if posisi_match:
@@ -147,14 +162,15 @@ def _parse_job_descriptions(text: str) -> list[dict]:
     return jobs
 
 
-def _parse_kegiatan_polished(text: str, original_kegiatan: list) -> list:
+def _parse_kegiatan_polished(text: Any, original_kegiatan: list) -> list:
     """Parse output [BIDANG:]/[TUGAS:] dan merge ke struktur kegiatan asli."""
     import re as _re
     polished_map: dict[str, dict] = {}
     current_bidang = None
     current_tugas = None
+    text_str = _ensure_str(text)
 
-    for line in text.split("\n"):
+    for line in text_str.split("\n"):
         s = line.strip()
         bidang_m = _re.match(r"\[BIDANG:\s*(.+?)\]", s)
         tugas_m = _re.match(r"\[TUGAS:\s*(.+?)\]", s)
@@ -195,12 +211,13 @@ def _parse_kegiatan_polished(text: str, original_kegiatan: list) -> list:
     return result
 
 
-def _parse_peralatan_polished(text: str, original_peralatan: list) -> list:
+def _parse_peralatan_polished(text: Any, original_peralatan: list) -> list:
     """Parse output [ALAT: ...] dan update deskripsi peralatan asli."""
     import re as _re
     desc_map: dict[str, str] = {}
     current_alat = None
-    for line in text.split("\n"):
+    text_str = _ensure_str(text)
+    for line in text_str.split("\n"):
         s = line.strip()
         alat_m = _re.match(r"\[ALAT:\s*(.+?)\]", s)
         if alat_m:
@@ -358,7 +375,6 @@ async def generate_docx(
     # 1. Get draft
     draft = db.query(Draft).filter(
         Draft.id == draft_id,
-        Draft.user_id == user.id,
     ).first()
 
     if not draft:

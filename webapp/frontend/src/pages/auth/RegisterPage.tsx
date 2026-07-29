@@ -17,11 +17,11 @@ export default function RegisterPage() {
     try {
       await register(email, name, password)
       nav('/dashboard')
-    } catch (r: unknown) {
-      const msg =
-        r && typeof r === 'object' && 'detail' in r
-          ? String((r as { detail: string }).detail)
-          : 'Terjadi kesalahan'
+    } catch (r: any) {
+      const detail = r?.response?.data?.detail
+      const msg = typeof detail === 'string'
+        ? detail
+        : detail?.message || r?.message || 'Gagal mendaftar akun baru.'
       setErr(msg)
     }
   }

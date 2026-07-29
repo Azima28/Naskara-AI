@@ -65,7 +65,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
           label="1. Pekerjaan / Tugas Apa yang Kamu Kerjakan?"
           value={sk.judul}
           onChange={(v) => upd({ judul: v })}
-          importance="opsional"
+          importance="wajib"
           placeholder={`Contoh (${jurusanExample.badge}): "${jurusanExample.studiKasus.judul}"`}
           hint="Tuliskan nama tugas atau proyek utama yang kamu tangani."
         />
@@ -73,7 +73,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
           label="2. Bagaimana Kondisi Awal / Masalah Sebelum Kamu Kerjakan?"
           value={sk.latar_belakang}
           onChange={(v) => upd({ latar_belakang: v })}
-          importance="opsional"
+          importance="wajib"
           placeholder={`Contoh (${jurusanExample.badge}): "${jurusanExample.studiKasus.latar_belakang}"`}
           hint="Apa kendala atau kondisi barang/sistem sebelum kamu tangani?"
         />
@@ -81,7 +81,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
           label="3. Langkah-Langkah yang Kamu Lakukan untuk Menyelesaikannya (Urut)"
           value={sk.proses_atau_formula}
           onChange={(v) => upd({ proses_atau_formula: v })}
-          importance="opsional"
+          importance="wajib"
           placeholder={`Contoh (${jurusanExample.badge}):\n${jurusanExample.studiKasus.proses_atau_formula}`}
           hint="Tuliskan urutan kegiatan pengerjaannya dari awal sampai selesai (bisa pakai nomor 1, 2, 3)."
         />
@@ -89,7 +89,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
           label="4. Bagaimana Hasil Akhirnya?"
           value={sk.hasil}
           onChange={(v) => upd({ hasil: v })}
-          importance="opsional"
+          importance="wajib"
           placeholder={`Contoh (${jurusanExample.badge}): "${jurusanExample.studiKasus.hasil}"`}
           hint="Bagaimana kondisi barang/sistem setelah selesai kamu perbaiki atau selesaikan?"
         />

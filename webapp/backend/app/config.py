@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     frontend_origin: str = "http://localhost:5173"
 
     # Database
-    database_url: str = "sqlite:///./pkl_reports.db"
+    database_url: str = f"sqlite:///{(BACKEND_DIR / 'pkl_reports.db').as_posix()}"
 
     # Security
     secret_key: str = "ganti-saya-jadi-string-acak-panjang"

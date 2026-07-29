@@ -92,6 +92,8 @@ export default function AssetsStep({ ctx, set }: { ctx: PklContext; set: (p: Par
 
         {/* Drop Zone */}
         <div
+          id="field-lampiran.foto_kegiatan"
+          data-field="lampiran.foto_kegiatan"
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
