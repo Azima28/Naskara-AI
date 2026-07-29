@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/store/auth'
-import { listDrafts, createDraft, deleteDraft } from '@/api/client'
+import { listDrafts, createDraft, deleteDraft, generateDocx } from '@/api/client'
 import type { DraftSummary } from '@/types/api'
 import ProtectedRoute from '@/components/ProtectedRoute'
 
@@ -9,8 +9,12 @@ export default function DashboardPage() {
   const user = useAuth((s) => s.user)
   const logout = useAuth((s) => s.logout)
   const nav = useNavigate()
+
   const [drafts, setDrafts] = useState<DraftSummary[]>([])
   const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [downloadingId, setDownloadingId] = useState<string | null>(null)
 
   const load = async () => {
     try {
@@ -24,68 +28,262 @@ export default function DashboardPage() {
     load()
   }, [])
 
-  const handleCreate = async () => {
+  const handleCreate = async (jurusanLabel?: string) => {
     const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
-    const d = await createDraft(`Laporan PKL - ${today}`)
+    const prefix = jurusanLabel ? `Laporan PKL ${jurusanLabel}` : 'Laporan PKL'
+    const d = await createDraft(`${prefix} - ${today}`)
     nav(`/wizard/${d.id}`)
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Hapus draft ini?')) return
+    if (!confirm('Hapus draft laporan ini secara permanen?')) return
     await deleteDraft(id)
     load()
   }
 
+  const handleDownload = async (id: string) => {
+    setDownloadingId(id)
+    try {
+      await generateDocx(id)
+    } catch (err: any) {
+      alert(err.message || 'Gagal mengunduh dokumen .docx')
+    } finally {
+      setDownloadingId(null)
+    }
+  }
+
+  // Filter drafts based on search query and status filter
+  const filteredDrafts = drafts.filter((d) => {
+    const matchSearch = d.title.toLowerCase().includes(searchQuery.toLowerCase())
+    if (!matchSearch) return false
+    if (statusFilter === 'all') return true
+    if (statusFilter === 'ready') return d.status === 'ready'
+    if (statusFilter === 'draft') return d.status !== 'ready'
+    return true
+  })
+
   return (
     <ProtectedRoute>
-      <div className="shell">
-        <header className="shell__header">
-          <div className="shell__row">
-            <h1>PKL Report Generator</h1>
-            <div className="shell__user">
-              <span>{user?.name || user?.email}</span>
-              <button className="btn-sm btn-outline" onClick={() => { logout(); nav('/login') }}>
+      <div className="dash-layout">
+        {/* Top Header Navigation */}
+        <header className="dash-header">
+          <div className="dash-header__container">
+            <Link to="/" className="dash-header__brand">
+              <div className="dash-header__logo">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                </svg>
+              </div>
+              <div className="dash-header__brand-info">
+                <strong>SiPKL Academic Studio</strong>
+                <span>Standar Panduan SMKN 4 Bandung</span>
+              </div>
+            </Link>
+
+            <div className="dash-header__user">
+              <div className="user-profile-badge">
+                <div className="user-avatar">{user?.name ? user.name.charAt(0).toUpperCase() : 'S'}</div>
+                <div className="user-info">
+                  <span className="user-name">{user?.name || user?.email}</span>
+                  <span className="user-role">Siswa Vokasi</span>
+                </div>
+              </div>
+              <button
+                className="btn-sm btn-outline"
+                onClick={() => { logout(); nav('/login') }}
+                title="Keluar dari akun"
+              >
                 Keluar
               </button>
             </div>
           </div>
         </header>
 
-        <section className="card">
-          <div className="card__row">
-            <h2>Draft Laporan</h2>
-            <button onClick={handleCreate}>+ Buat Baru</button>
-          </div>
-
-          {loading && <p className="muted">Memuat…</p>}
-
-          {!loading && drafts.length === 0 && (
-            <div className="empty-state" style={{ marginTop: '1rem' }}>
-              <h3>Selamat Datang di PKL Report Generator! 👋</h3>
-              <p className="muted" style={{ maxWidth: '400px', margin: '0.5rem auto 1rem' }}>
-                Ini adalah tempat di mana kamu bisa menyusun laporan PKL dengan mudah. Klik tombol di bawah untuk memulai draft pertamamu.
-              </p>
-              <button onClick={handleCreate} className="btn-primary">+ Buat Draft Laporan Pertama</button>
+        {/* Dashboard Main Content Shell */}
+        <main className="dash-main">
+          <div className="dash-main__container">
+            {/* User Welcome & Overview Banner */}
+            <div className="dash-welcome">
+              <div className="dash-welcome__text">
+                <h1>Selamat Datang, {user?.name || 'Siswa PKL'}! 👋</h1>
+                <p>Kelola draf laporan PKL Anda dengan presisi standar akademik resmi. Dokumen siap diunduh dalam format <code>.docx</code> asli.</p>
+              </div>
+              <div className="dash-welcome__action">
+                <button onClick={() => handleCreate()} className="btn-primary hero-btn-lg">
+                  + Buat Draft Laporan Baru
+                </button>
+              </div>
             </div>
-          )}
 
-          <ul className="draft-list">
-            {drafts.map((d) => (
-              <li key={d.id} className="draft-item">
-                <div className="draft-item__info">
-                  <strong>{d.title}</strong>
-                  <span className="muted">
-                    &nbsp;· {d.status} · {d.updated_at ? new Date(d.updated_at).toLocaleDateString('id-ID') : '-'}
-                  </span>
+            {/* KPI Stats Bar */}
+            <div className="dash-stats">
+              <div className="stat-card">
+                <span className="stat-card__label">Total Draft Laporan</span>
+                <span className="stat-card__val">{drafts.length}</span>
+                <span className="stat-card__sub">Dokumen Tersimpan</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-card__label">Standar Margin</span>
+                <span className="stat-card__val">4-4-3-3</span>
+                <span className="stat-card__sub">Kiri-Atas-Kanan-Bawah cm</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-card__label">Penomoran Halaman</span>
+                <span className="stat-card__val">Romawi / Arab</span>
+                <span className="stat-card__sub">Otomatis Terpisah Section</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-card__label">Format Dokumen</span>
+                <span className="stat-card__val">.docx Native</span>
+                <span className="stat-card__sub">Compat MS Word 2016-365</span>
+              </div>
+            </div>
+
+            {/* Template Quick Starters */}
+            <div className="dash-quick-starter">
+              <h3>⚡ Pilih Templat Jurusan Vokasi:</h3>
+              <div className="quick-starter-grid">
+                <button onClick={() => handleCreate('RPL')} className="starter-chip">
+                  💻 RPL (Perangkat Lunak)
+                </button>
+                <button onClick={() => handleCreate('TKJ')} className="starter-chip">
+                  🌐 TKJ (Jaringan)
+                </button>
+                <button onClick={() => handleCreate('DKV')} className="starter-chip">
+                  🎨 DKV (Desain Visual)
+                </button>
+                <button onClick={() => handleCreate('TFLM')} className="starter-chip">
+                  ⚙️ TFLM (Fabrikasi Logam)
+                </button>
+                <button onClick={() => handleCreate('TITL')} className="starter-chip">
+                  ⚡ TITL (Listrik)
+                </button>
+                <button onClick={() => handleCreate('TKR')} className="starter-chip">
+                  🚗 TKR / Otomotif
+                </button>
+              </div>
+            </div>
+
+            {/* Draft Management Section */}
+            <div className="dash-drafts-panel">
+              <div className="dash-drafts-panel__head">
+                <h2>Daftar Draft Laporan Saya</h2>
+
+                {/* Filter and Search Bar */}
+                <div className="dash-drafts-panel__filters">
+                  <div className="search-box">
+                    <input
+                      type="text"
+                      placeholder="Cari judul draf..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                  <div className="filter-tabs">
+                    <button
+                      className={`filter-tab ${statusFilter === 'all' ? 'is-active' : ''}`}
+                      onClick={() => setStatusFilter('all')}
+                    >
+                      Semua ({drafts.length})
+                    </button>
+                    <button
+                      className={`filter-tab ${statusFilter === 'draft' ? 'is-active' : ''}`}
+                      onClick={() => setStatusFilter('draft')}
+                    >
+                      Sedang Diisi
+                    </button>
+                    <button
+                      className={`filter-tab ${statusFilter === 'ready' ? 'is-active' : ''}`}
+                      onClick={() => setStatusFilter('ready')}
+                    >
+                      Siap Generate
+                    </button>
+                  </div>
                 </div>
-                <div className="draft-item__actions">
-                  <Link to={`/wizard/${d.id}`} className="btn-sm">Edit</Link>
-                  <button className="btn-sm btn-danger" onClick={() => handleDelete(d.id)}>Hapus</button>
+              </div>
+
+              {loading && <p className="muted" style={{ padding: '2rem', textAlign: 'center' }}>Memuat daftar draft laporan...</p>}
+
+              {!loading && filteredDrafts.length === 0 && (
+                <div className="empty-state-dash">
+                  <div className="empty-icon">📝</div>
+                  <h3>Belum Ada Draft Laporan</h3>
+                  <p className="muted">
+                    {searchQuery
+                      ? 'Tidak ada draft yang cocok dengan pencarian Anda.'
+                      : 'Klik tombol di bawah ini untuk memulai draf laporan PKL pertama Anda.'}
+                  </p>
+                  <button onClick={() => handleCreate()} className="btn-primary" style={{ marginTop: '1rem' }}>
+                    + Buat Draft Laporan Baru
+                  </button>
                 </div>
-              </li>
-            ))}
-          </ul>
-        </section>
+              )}
+
+              {/* Draft List Items */}
+              <div className="draft-grid">
+                {filteredDrafts.map((d) => (
+                  <div key={d.id} className="draft-card-item">
+                    <div className="draft-card-item__header">
+                      <div className="draft-card-item__title-group">
+                        <h4>{d.title}</h4>
+                        <span className="draft-card-item__date">
+                          Diperbarui: {d.updated_at ? new Date(d.updated_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
+                        </span>
+                      </div>
+                      <span className={`status-badge ${d.status === 'ready' ? 'status-badge--ready' : 'status-badge--draft'}`}>
+                        {d.status === 'ready' ? '✅ Siap Generate' : '✏️ Draf Diisi'}
+                      </span>
+                    </div>
+
+                    <div className="draft-card-item__actions">
+                      <Link to={`/wizard/${d.id}`} className="btn-sm btn-primary">
+                        ✏️ Edit di Wizard
+                      </Link>
+                      <Link to={`/editor/${d.id}`} className="btn-sm btn-outline">
+                        📄 Live Editor &amp; AI
+                      </Link>
+                      <button
+                        onClick={() => handleDownload(d.id)}
+                        disabled={downloadingId === d.id}
+                        className="btn-sm btn-outline"
+                        style={{ color: 'var(--green-700)', borderColor: 'var(--green-600)' }}
+                      >
+                        {downloadingId === d.id ? 'Mengunduh...' : '📥 Unduh .docx'}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(d.id)}
+                        className="btn-sm btn-danger"
+                        title="Hapus Draft"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Checklist Standar Kelengkapan Laporan */}
+            <div className="academic-checklist-card">
+              <h3>📋 Checklist Kelengkapan Laporan (Standar 20-Poin SMKN 4)</h3>
+              <p className="muted" style={{ fontSize: '0.9rem', marginBottom: '1rem' }}>
+                Pastikan draf Anda melengkapi field berikut agar dokumen .docx terisi 100% sempurna:
+              </p>
+              <div className="checklist-grid">
+                <div className="checklist-item"><span>✅</span> <strong>Identitas Siswa</strong> (Nama, NIS, NISN, Kelas, Jurusan)</div>
+                <div className="checklist-item"><span>✅</span> <strong>Identitas Perusahaan</strong> (Nama PT, Alamat, Pembimbing Industri)</div>
+                <div className="checklist-item"><span>✅</span> <strong>Identitas Sekolah</strong> (Nama Kepala Sekolah, NIP, Guru Pembimbing)</div>
+                <div className="checklist-item"><span>✅</span> <strong>Profil Perusahaan</strong> (Sejarah, Visi Misi, Bidang Usaha)</div>
+                <div className="checklist-item"><span>✅</span> <strong>Jurnal Kegiatan Harian</strong> (Minimal 3-5 kegiatan teknis)</div>
+                <div className="checklist-item"><span>✅</span> <strong>Peralatan &amp; Kendala</strong> (Perangkat kerja &amp; solusi kendala)</div>
+                <div className="checklist-item"><span>✅</span> <strong>Kesimpulan &amp; Saran</strong> (Draf AI anti-halusinasi)</div>
+                <div className="checklist-item"><span>✅</span> <strong>Lampiran Dokumentasi</strong> (Foto kegiatan &amp; ID Bookmark valid)</div>
+              </div>
+            </div>
+
+          </div>
+        </main>
       </div>
     </ProtectedRoute>
   )

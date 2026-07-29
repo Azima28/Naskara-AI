@@ -1,6 +1,7 @@
 import { type FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/store/auth'
+import AuthLayout from '@/components/layout/AuthLayout'
 
 export default function LoginPage() {
   const login = useAuth((s) => s.login)
@@ -8,6 +9,7 @@ export default function LoginPage() {
   const nav = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [err, setErr] = useState('')
 
   const onSubmit = async (e: FormEvent) => {
@@ -25,41 +27,82 @@ export default function LoginPage() {
     }
   }
 
+  const fillDemo = () => {
+    setEmail('demo@pkl.id')
+    setPassword('password123')
+  }
+
   return (
-    <div className="page-auth">
-      <form className="card" onSubmit={onSubmit}>
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <h1>PKL Report Generator</h1>
-          <p className="muted" style={{ margin: 0, fontSize: '0.95rem' }}>Buat Laporan PKL dalam Hitungan Menit</p>
+    <AuthLayout
+      title="Selamat Datang Kembali 👋"
+      subtitle="Masuk ke akun SiPKL untuk melanjutkan penyusunan laporan Anda."
+    >
+      <form onSubmit={onSubmit} className="auth-form">
+        {err && (
+          <div className="auth-alert auth-alert--danger">
+            <span className="auth-alert__icon">⚠️</span>
+            <span>{err}</span>
+          </div>
+        )}
+
+        <div className="auth-field">
+          <label htmlFor="email">Alamat Email</label>
+          <input
+            id="email"
+            type="email"
+            placeholder="nama@siswa.smk.sch.id"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+          />
         </div>
-        <h2 style={{ textAlign: 'center', marginBottom: '1.5rem', fontWeight: '700' }}>Masuk ke Akun Anda</h2>
-        {err && <p className="error">{err}</p>}
-        <label>
-          Email
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        </label>
-        <label>
-          Password
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
-        </label>
-        <button type="submit" disabled={loading} style={{ width: '100%', marginBottom: '0.5rem' }}>
-          {loading ? 'Memproses…' : 'Masuk'}
+
+        <div className="auth-field">
+          <label htmlFor="password">Kata Sandi</label>
+          <div className="auth-input-wrapper">
+            <input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Masukkan password anda"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+              autoComplete="current-password"
+            />
+            <button
+              type="button"
+              className="auth-eye-toggle"
+              onClick={() => setShowPassword(!showPassword)}
+              tabIndex={-1}
+              aria-label="Toggle password visibility"
+            >
+              {showPassword ? '👁️‍🗨️' : '👁️'}
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" className="btn-primary auth-submit" disabled={loading}>
+          {loading ? 'Sedang Memproses...' : 'Masuk ke Dashboard →'}
         </button>
+
+        <div className="auth-divider">
+          <span>atau pakai akun percobaan</span>
+        </div>
+
         <button
           type="button"
-          className="btn-outline"
-          style={{ width: '100%', fontSize: '0.85rem', padding: '0.5rem' }}
-          onClick={() => {
-            setEmail('demo@pkl.id')
-            setPassword('password123')
-          }}
+          className="btn-outline auth-demo-btn"
+          onClick={fillDemo}
         >
-          💡 Isikan Akun Demo (demo@pkl.id)
+          ⚡ Gunakan Akun Demo (demo@pkl.id)
         </button>
+
         <p className="link-text">
-          Belum punya akun? <Link to="/register">Daftar</Link>
+          Belum memiliki akun? <Link to="/register">Daftar Akun Baru (Gratis)</Link>
         </p>
       </form>
-    </div>
+    </AuthLayout>
   )
 }

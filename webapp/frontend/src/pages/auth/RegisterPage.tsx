@@ -1,6 +1,7 @@
 import { type FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/store/auth'
+import AuthLayout from '@/components/layout/AuthLayout'
 
 export default function RegisterPage() {
   const register = useAuth((s) => s.register)
@@ -9,6 +10,7 @@ export default function RegisterPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [err, setErr] = useState('')
 
   const onSubmit = async (e: FormEvent) => {
@@ -27,39 +29,77 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="page-auth">
-      <form className="card" onSubmit={onSubmit}>
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <h1>PKL Report Generator</h1>
-          <p className="muted" style={{ margin: 0, fontSize: '0.95rem' }}>Buat Laporan PKL dalam Hitungan Menit</p>
-        </div>
-        <h2 style={{ textAlign: 'center', marginBottom: '1.5rem', fontWeight: '700' }}>Daftar Akun Baru</h2>
-        {err && <p className="error">{err}</p>}
-        <label>
-          Nama <span className="field__req">*</span>
-          <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nama kamu" required />
-        </label>
-        <label>
-          Email
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        </label>
-        <label>
-          Password
+    <AuthLayout
+      title="Daftar Akun Baru ✨"
+      subtitle="Buat akun gratis untuk menyusun dan mengunduh laporan PKL standar resmi."
+    >
+      <form onSubmit={onSubmit} className="auth-form">
+        {err && (
+          <div className="auth-alert auth-alert--danger">
+            <span className="auth-alert__icon">⚠️</span>
+            <span>{err}</span>
+          </div>
+        )}
+
+        <div className="auth-field">
+          <label htmlFor="name">Nama Lengkap Siswa</label>
           <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            id="name"
+            type="text"
+            placeholder="Contoh: Muhammad Rizky Pratama"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             required
-            minLength={6}
+            autoComplete="name"
           />
-        </label>
-        <button type="submit" disabled={loading}>
-          {loading ? 'Memproses…' : 'Daftar'}
+        </div>
+
+        <div className="auth-field">
+          <label htmlFor="email">Alamat Email Active</label>
+          <input
+            id="email"
+            type="email"
+            placeholder="nama@siswa.smk.sch.id atau gmail"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+          />
+        </div>
+
+        <div className="auth-field">
+          <label htmlFor="password">Kata Sandi (Minimal 6 Karakter)</label>
+          <div className="auth-input-wrapper">
+            <input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Buat kata sandi aman"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+              autoComplete="new-password"
+            />
+            <button
+              type="button"
+              className="auth-eye-toggle"
+              onClick={() => setShowPassword(!showPassword)}
+              tabIndex={-1}
+              aria-label="Toggle password visibility"
+            >
+              {showPassword ? '👁️‍🗨️' : '👁️'}
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" className="btn-primary auth-submit" disabled={loading}>
+          {loading ? 'Mendaftarkan Akun...' : 'Daftar Sekarang (Gratis) →'}
         </button>
+
         <p className="link-text">
-          Sudah punya akun? <Link to="/login">Masuk</Link>
+          Sudah memiliki akun? <Link to="/login">Masuk di Sini</Link>
         </p>
       </form>
-    </div>
+    </AuthLayout>
   )
 }
