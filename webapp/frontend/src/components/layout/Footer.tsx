@@ -8,7 +8,7 @@ export default function Footer() {
           {/* Col 1: Brand info */}
           <div className="public-footer__col public-footer__col--brand">
             <div className="public-footer__brand">
-              <span className="public-footer__title">SiPKL Academic</span>
+              <span className="public-footer__title">Naskara Academic</span>
               <span className="public-footer__badge">SMKN 4 Bandung Standard</span>
             </div>
             <p className="public-footer__desc">
@@ -57,7 +57,7 @@ export default function Footer() {
         </div>
 
         <div className="public-footer__bottom">
-          <p>© {new Date().getFullYear()} SiPKL Academic Generator. Dibuat khusus untuk Pendidikan Vokasi Indonesia.</p>
+          <p>© {new Date().getFullYear()} Naskara Academic Generator. Dibuat khusus untuk Pendidikan Vokasi Indonesia.</p>
           <div className="public-footer__bottom-links">
             <Link to="/format-guide">Pedoman Penulisan</Link>
             <span className="dot-sep">•</span>

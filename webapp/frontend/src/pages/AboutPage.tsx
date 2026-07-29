@@ -10,10 +10,10 @@ export default function AboutPage() {
 
       <section className="about-hero">
         <div className="about-hero__container">
-          <span className="about-hero__tag">TENTANG SIPKL ACADEMIC</span>
+          <span className="about-hero__tag">TENTANG NASKARA ACADEMIC</span>
           <h1>Misi Membantu Pendidikan Vokasi Indonesia</h1>
           <p className="about-hero__lead">
-            SiPKL Academic hadir untuk menyelesaikan masalah klasik penyusunan laporan PKL bagi siswa SMK dan mahasiswa vokasi di Indonesia: format Microsoft Word yang sering berantakan, terpotong saat penjilidan, dan ditolak pembimbing sekolah.
+            Naskara Academic hadir untuk menyelesaikan masalah klasik penyusunan laporan PKL bagi siswa SMK dan mahasiswa vokasi di Indonesia: format Microsoft Word yang sering berantakan, terpotong saat penjilidan, dan ditolak pembimbing sekolah.
           </p>
         </div>
       </section>
@@ -23,12 +23,12 @@ export default function AboutPage() {
           <div className="about-grid">
             <div className="about-card">
               <div className="about-card__icon"><IconLightbulb size={28} color="var(--green-700)" /></div>
-              <h2>Latar Belakang Dibuatnya SiPKL</h2>
+              <h2>Latar Belakang Dibuatnya Naskara</h2>
               <p>
                 Setiap tahunnya, jutaan siswa SMK melangsungkan Praktek Kerja Lapangan (PKL). Namun, sebagian besar waktu mereka habis untuk membetulkan batas margin 4-4-3-3 cm, membetulkan penomoran Halaman Romawi/Arab, menyetel garis pengesahan, dan memperbaiki error "Bookmark not defined" pada Daftar Isi Word.
               </p>
               <p>
-                SiPKL dibangun menggunakan engine perakit dokumen <code>python-docx</code> yang bekerja langsung pada manipulasi XML asli dokumen MS Word, menjamin 100% kepatuhan aturan format tanpa perlu pengeditan manual yang melelahkan.
+                Naskara dibangun menggunakan engine perakit dokumen <code>python-docx</code> yang bekerja langsung pada manipulasi XML asli dokumen MS Word, menjamin 100% kepatuhan aturan format tanpa perlu pengeditan manual yang melelahkan.
               </p>
             </div>
 
@@ -39,7 +39,7 @@ export default function AboutPage() {
                 Banyak siswa menggunakan AI generik seperti ChatGPT yang menghasilkan kalimat sangat formal, kaku, dan penuh dengan istilah asing yang tidak nyata (halusinasi).
               </p>
               <p>
-                SiPKL mengusung <strong>3-Layer Anti-Hallucination Architecture</strong>: AI dikunci oleh data faktual yang diisikan siswa (peralatan, kegiatan harian, divisi, dan nama perusahaan), sehingga AI hanya memperhalus struktur kalimat tanpa pernah mengarang cerita palsu.
+                Naskara mengusung <strong>3-Layer Anti-Hallucination Architecture</strong>: AI dikunci oleh data faktual yang diisikan siswa (peralatan, kegiatan harian, divisi, dan nama perusahaan), sehingga AI hanya memperhalus struktur kalimat tanpa pernah mengarang cerita palsu.
               </p>
             </div>
           </div>
@@ -47,7 +47,7 @@ export default function AboutPage() {
           <div className="about-standards-box">
             <h2>Struktur Laporan Standar 6-BAB SMKN 4 Bandung</h2>
             <p className="muted" style={{ marginBottom: '1.5rem' }}>
-              Dokumen yang dihasilkan SiPKL telah disesuaikan dengan Pedoman Akademik 2026:
+              Dokumen yang dihasilkan Naskara telah disesuaikan dengan Pedoman Akademik 2026:
             </p>
 
             <div className="bab-list-grid">
@@ -86,7 +86,7 @@ export default function AboutPage() {
 
           <div className="about-cta-box">
             <h3>Siap Menyusun Laporan PKL Sesuai Standar Akademik?</h3>
-            <p>Gunakan SiPKL gratis dan nikmati kemudahan pembuatan laporan siap cetak.</p>
+            <p>Gunakan Naskara gratis dan nikmati kemudahan pembuatan laporan siap cetak.</p>
             <Link to="/register" className="btn-primary hero-btn-lg">
               Buat Laporan Gratis Sekarang →
             </Link>

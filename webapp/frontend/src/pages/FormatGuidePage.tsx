@@ -72,7 +72,7 @@ export default function FormatGuidePage() {
             </div>
 
             <div className="guide-tip">
-              <IconLightbulb size={18} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> <strong>Otomatisasi di SiPKL:</strong> Seluruh margin ini diset langsung di XML dokumen. Seluruh tabel identitas dibatasi maksimal <code>14.00 cm</code> (21.01cm - 4cm - 3cm = 14.01cm) agar tidak pernah menabrak margin kanan.
+              <IconLightbulb size={18} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> <strong>Otomatisasi di Naskara:</strong> Seluruh margin ini diset langsung di XML dokumen. Seluruh tabel identitas dibatasi maksimal <code>14.00 cm</code> (21.01cm - 4cm - 3cm = 14.01cm) agar tidak pernah menabrak margin kanan.
             </div>
           </div>
 

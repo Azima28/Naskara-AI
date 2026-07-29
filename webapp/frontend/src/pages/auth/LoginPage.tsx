@@ -36,7 +36,7 @@ export default function LoginPage() {
   return (
     <AuthLayout
       title="Selamat Datang Kembali"
-      subtitle="Masuk ke akun SiPKL untuk melanjutkan penyusunan laporan Anda."
+      subtitle="Masuk ke akun Naskara untuk melanjutkan penyusunan laporan Anda."
     >
       <form onSubmit={onSubmit} className="auth-form">
         {err && (
