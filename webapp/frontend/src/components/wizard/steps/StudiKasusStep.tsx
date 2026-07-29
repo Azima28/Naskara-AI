@@ -13,22 +13,6 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
     upd({ data_angka: next })
   }
 
-  const handleApplyExample = (sample: {
-    judul: string
-    latar_belakang: string
-    proses_atau_formula: string
-    hasil: string
-    data_angka: DataAngka[]
-  }) => {
-    upd({
-      judul: sample.judul,
-      latar_belakang: sample.latar_belakang,
-      proses_atau_formula: sample.proses_atau_formula,
-      hasil: sample.hasil,
-      data_angka: sample.data_angka,
-    })
-  }
-
   return (
     <>
       <h2>Topik Utama & Pengalaman Kerja Paling Berkesan (BAB IV & V)</h2>
@@ -39,7 +23,6 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
       {/* Dynamic Major-Specific Example Card */}
       <JurusanExampleCard
         jurusanKey={ctx.siswa?.jurusan_key || ctx.siswa?.jurusan}
-        onApplyExample={handleApplyExample}
       />
 
       <FieldGroup title="Detail Pekerjaan Utama">

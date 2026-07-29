@@ -1,20 +1,12 @@
 import { useState } from 'react'
 import { getJurusanExample, type JurusanExample } from '@/utils/jurusanExamples'
-import type { StudiKasus } from '@/types/pkl'
 import JurusanDocxPreviewModal from './JurusanDocxPreviewModal'
 
 interface JurusanExampleCardProps {
   jurusanKey?: string
-  onApplyExample?: (sample: StudiKasus['data_angka'] extends Array<infer T> ? {
-    judul: string
-    latar_belakang: string
-    proses_atau_formula: string
-    hasil: string
-    data_angka: T[]
-  } : never) => void
 }
 
-export default function JurusanExampleCard({ jurusanKey, onApplyExample }: JurusanExampleCardProps) {
+export default function JurusanExampleCard({ jurusanKey }: JurusanExampleCardProps) {
   const [showModal, setShowModal] = useState(false)
   const example: JurusanExample = getJurusanExample(jurusanKey)
   const sk = example.studiKasus
@@ -39,7 +31,7 @@ export default function JurusanExampleCard({ jurusanKey, onApplyExample }: Jurus
               Contoh Pembahasan & Tabel Data ({example.label})
             </h4>
             <p className="muted" style={{ margin: 0, fontSize: '0.8rem' }}>
-              Contoh nyata data laporan yang paling relevan dengan jurusan kamu
+              Contoh nyata data laporan sebagai gambaran/referensi penulisan untuk jurusan kamu
             </p>
           </div>
         </div>
@@ -103,7 +95,7 @@ export default function JurusanExampleCard({ jurusanKey, onApplyExample }: Jurus
         </div>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
         <button
           type="button"
           className="btn-sm btn-outline"
@@ -112,17 +104,6 @@ export default function JurusanExampleCard({ jurusanKey, onApplyExample }: Jurus
         >
           🔍 Lihat Pratinjau Lembaran Word Full (.docx)
         </button>
-
-        {onApplyExample && (
-          <button
-            type="button"
-            className="btn-sm btn-primary"
-            onClick={() => onApplyExample(sk)}
-            style={{ fontSize: '0.82rem', padding: '0.35rem 0.75rem' }}
-          >
-            ⚡ Isikan Contoh Jurusan Ini ke Form Saya
-          </button>
-        )}
       </div>
 
       <JurusanDocxPreviewModal

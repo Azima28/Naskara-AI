@@ -282,14 +282,16 @@ export default function JurusanDocxPreviewModal({
             <button type="button" className="btn-outline" onClick={onClose}>
               Tutup Pratinjau
             </button>
-            <button
-              type="button"
-              className="btn-primary"
-              onClick={handleApply}
-              style={{ fontWeight: 600 }}
-            >
-              ✓ Gunakan Jurusan Ini ({example.badge})
-            </button>
+            {onSelectJurusan && (
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={handleApply}
+                style={{ fontWeight: 600 }}
+              >
+                ✓ Pilih Jurusan Ini ({example.badge})
+              </button>
+            )}
           </div>
         </div>
       </div>
