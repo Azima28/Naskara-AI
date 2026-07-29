@@ -42,9 +42,9 @@ export default function FormatGuidePage() {
       <section className="guide-hero">
         <div className="guide-hero__container">
           <span className="guide-hero__tag">PEDOMAN RESMI 2026</span>
-          <h1>Panduan Format Penulisan Laporan PKL SMKN 4 Bandung</h1>
+          <h1>Panduan Format Penulisan Laporan PKL SMKN 4 Bandar Lampung</h1>
           <p className="guide-hero__lead">
-            Panduan lengkap spesifikasi tata tulis ilmiah, tata letak margin 4-4-3-3 cm, aturan penomoran halaman bertingkat, serta struktur penulisan sub-list yang berlaku resmi di SMKN 4 Bandung.
+            Panduan lengkap spesifikasi tata tulis ilmiah, tata letak margin 4-4-3-3 cm, aturan penomoran halaman bertingkat, serta struktur penulisan sub-list yang berlaku resmi di SMKN 4 Bandar Lampung.
           </p>
         </div>
       </section>
@@ -145,7 +145,7 @@ export default function FormatGuidePage() {
           <div className="guide-card">
             <h2>3. Aturan Penomoran Halaman (Romawi vs Arab)</h2>
             <p className="muted">
-              Sesuai Pedoman Akademik 2026 SMKN 4 Bandung, dokumen PKL wajib memiliki dua kelompok penomoran halaman yang terpisah:
+              Sesuai Pedoman Akademik 2026 SMKN 4 Bandar Lampung, dokumen PKL wajib memiliki dua kelompok penomoran halaman yang terpisah:
             </p>
 
             <div className="pagenum-rules-grid">
@@ -171,9 +171,9 @@ export default function FormatGuidePage() {
             </div>
           </div>
 
-          {/* Card 4: Tab Switcher Jurusan SMKN 4 Bandung */}
+          {/* Card 4: Tab Switcher Jurusan SMKN 4 Bandar Lampung */}
           <div className="guide-card">
-            <h2>4. Contoh Isian Jurnal Kegiatan per Jurusan SMKN 4 Bandung</h2>
+            <h2>4. Contoh Isian Jurnal Kegiatan per Jurusan SMKN 4 Bandar Lampung</h2>
             <p className="muted">
               Pilih konsentrasi keahlian Anda untuk melihat contoh jurnal kegiatan teknis yang relevan dan diterima sekolah:
             </p>

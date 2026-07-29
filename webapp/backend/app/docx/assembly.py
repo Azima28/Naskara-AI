@@ -1,10 +1,10 @@
-"""Assembler laporan PKL — mengikuti Panduan Resmi SMKN 4 Bandung TP 2026-2027.
+"""Assembler laporan PKL — mengikuti Panduan Resmi SMKN 4 Bandar Lampung TP 2026-2027.
 
 Fungsi utama: `assemble_report(data)` menerima PklContext dict dan menghasilkan
 file .docx utuh dengan urutan:
   Cover → Cover dalam → Pengesahan → Identitas → Kata Pengantar → BAB (arabic)
 
-Struktur BAB mengikuti Panduan Resmi SMKN 4 Bandung TP 2026-2027 (6 BAB):
+Struktur BAB mengikuti Panduan Resmi SMKN 4 Bandar Lampung TP 2026-2027 (6 BAB):
   BAB I   PENDAHULUAN      (Latar Belakang, Tujuan, Sejarah Perusahaan, Visi-Misi,
                              Profil Lokasi, Tata Tertib, Struktur Organisasi, Job Desc)
   BAB II  KEGIATAN INDUSTRI (ringkasan proses kegiatan per seksi/divisi)
@@ -288,7 +288,7 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
     melainkan diisi field PAGEREF oleh ``populate_native_toc`` sehingga selalu
     akurat mengikuti letak heading sebenarnya.
     """
-    sek_nama = (data.get("sekolah", {}).get("nama") or "SMK NEGERI 4 BANDUNG")
+    sek_nama = (data.get("sekolah", {}).get("nama") or "SMK NEGERI 4 BANDAR LAMPUNG")
     perus_nama = (
         data.get("perusahaan", {}).get("nama_lengkap")
         or data.get("perusahaan", {}).get("nama")

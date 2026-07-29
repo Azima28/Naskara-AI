@@ -66,7 +66,7 @@ export default function LandingPage() {
       <section className="hero-section">
         <div className="hero-section__container">
           <div className="hero-section__badge">
-            <IconSparkles size={15} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> Standar Resmi SMKN 4 Bandung &amp; Vokasi 2026
+            <IconSparkles size={15} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> Standar Resmi SMKN 4 Bandar Lampung &amp; Vokasi 2026
           </div>
 
           <h1 className="hero-section__title">
@@ -86,7 +86,7 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          {/* Real SMKN 4 Bandung Interactive Document Preview Mockup */}
+          {/* Real SMKN 4 Bandar Lampung Interactive Document Preview Mockup */}
           <div className="hero-mockup hero-mockup--animated">
             <div className="hero-mockup__header">
               <div className="hero-mockup__dots">
@@ -95,7 +95,7 @@ export default function LandingPage() {
                 <span className="dot green"></span>
               </div>
               <div className="hero-mockup__title-bar">
-                Laporan_PKL_SMKN4_Bandung_Official.docx (Real Live Preview)
+                Laporan_PKL_SMKN4_Bandar_Lampung_Official.docx (Real Live Preview)
               </div>
               <div className="hero-mockup__status-badge">
                 Native MS Word XML
@@ -132,7 +132,7 @@ export default function LandingPage() {
                 <div className="doc-page-mockup__margin-line top-left">Margin Kiri 4.0 cm (Jilid)</div>
                 <div className="doc-page-mockup__margin-line top-right">Margin Kanan 3.0 cm</div>
 
-                {/* TAB 1: COVER REAL SMKN 4 BANDUNG */}
+                {/* TAB 1: COVER REAL SMKN 4 BANDAR LAMPUNG */}
                 {previewTab === 'cover' && (
                   <div className="doc-page-mockup__content preview-fade-in">
                     <div className="doc-heading">LAPORAN PRAKTEK KERJA LAPANGAN</div>
@@ -142,7 +142,7 @@ export default function LandingPage() {
                     <div className="doc-logo-box">
                       <img
                         src="/logo_smkn4.jpeg"
-                        alt="Logo SMKN 4 Bandung"
+                        alt="Logo SMKN 4 Bandar Lampung"
                         className="smkn4-logo-preview"
                         onError={(e) => {
                           // Fallback if image fails to load
@@ -159,11 +159,10 @@ export default function LandingPage() {
                     </div>
 
                     <div className="doc-footer-school">
-                      PEMERINTAH DAERAH PROVINSI JAWA BARAT<br />
-                      DINAS PENDIDIKAN<br />
-                      CABANG DINAS PENDIDIKAN WILAYAH VII<br />
-                      SMKN 4 BANDUNG<br />
-                      JL. KAREES KULON NO. 9 BANDUNG<br />
+                      PEMERINTAH PROVINSI LAMPUNG<br />
+                      DINAS PENDIDIKAN DAN KEBUDAYAAN<br />
+                      SMKN 4 BANDAR LAMPUNG<br />
+                      JL. HOST COKROAMINOTO NO. 102 BANDAR LAMPUNG<br />
                       2026
                     </div>
 

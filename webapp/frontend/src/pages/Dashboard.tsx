@@ -97,7 +97,7 @@ export default function DashboardPage() {
               </div>
               <div className="dash-header__brand-info">
                 <strong>Naskara Academic Studio</strong>
-                <span>Standar Panduan SMKN 4 Bandung</span>
+                <span>Standar Panduan SMKN 4 Bandar Lampung</span>
               </div>
             </Link>
 
@@ -162,7 +162,7 @@ export default function DashboardPage() {
 
             {/* Template Quick Starters */}
             <div className="dash-quick-starter">
-              <h3><IconLightning size={16} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Pilih Templat Jurusan SMKN 4 Bandung:</h3>
+              <h3><IconLightning size={16} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Pilih Templat Jurusan SMKN 4 Bandar Lampung:</h3>
               <div className="quick-starter-grid">
                 <button onClick={() => handleCreate('PPLG')} className="starter-chip">
                   <IconCode size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> PPLG (Perangkat Lunak &amp; Gim)

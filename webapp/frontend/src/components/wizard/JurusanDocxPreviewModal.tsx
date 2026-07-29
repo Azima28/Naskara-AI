@@ -182,7 +182,7 @@ export default function JurusanDocxPreviewModal({
                 BAB IV DATA PENGAMATAN & PEMBAHASAN
               </div>
               <div style={{ fontSize: '9.5pt', color: '#555', fontStyle: 'italic', marginTop: '2px' }}>
-                (Pratinjau Format Resmi Word SMKN 4 — {example.label})
+                (Pratinjau Format Resmi Word SMKN 4 Bandar Lampung — {example.label})
               </div>
             </div>
 

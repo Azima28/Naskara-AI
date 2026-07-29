@@ -9,7 +9,7 @@ export default function Footer() {
           <div className="public-footer__col public-footer__col--brand">
             <div className="public-footer__brand">
               <span className="public-footer__title">Naskara Academic</span>
-              <span className="public-footer__badge">SMKN 4 Bandung Standard</span>
+              <span className="public-footer__badge">SMKN 4 Bandar Lampung Standard</span>
             </div>
             <p className="public-footer__desc">
               Platform otomatisasi penyusunan laporan Praktek Kerja Lapangan (PKL) resmi vokasi Indonesia. Menghasilkan dokumen Microsoft Word (.docx) native dengan presisi margin 4-4-3-3 cm, penomoran Romawi/Arab, dan bebas dari halusinasi AI.
@@ -31,9 +31,9 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Col 3: Standar Jurusan SMKN 4 Bandung */}
+          {/* Col 3: Standar Jurusan SMKN 4 Bandar Lampung */}
           <div className="public-footer__col">
-            <h4 className="public-footer__heading">Jurusan SMKN 4 Bandung</h4>
+            <h4 className="public-footer__heading">Jurusan SMKN 4 Bandar Lampung</h4>
             <ul className="public-footer__list">
               <li><span>PPLG (Perangkat Lunak &amp; Gim)</span></li>
               <li><span>TKJ (Teknik Komputer &amp; Jaringan)</span></li>

@@ -45,7 +45,7 @@ export default function AboutPage() {
           </div>
 
           <div className="about-standards-box">
-            <h2>Struktur Laporan Standar 6-BAB SMKN 4 Bandung</h2>
+            <h2>Struktur Laporan Standar 6-BAB SMKN 4 Bandar Lampung</h2>
             <p className="muted" style={{ marginBottom: '1.5rem' }}>
               Dokumen yang dihasilkan Naskara telah disesuaikan dengan Pedoman Akademik 2026:
             </p>
