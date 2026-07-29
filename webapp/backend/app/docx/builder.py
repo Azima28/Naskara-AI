@@ -483,22 +483,21 @@ class PklDocBuilder:
             run_logo = p_logo.add_run()
             run_logo.add_picture(logo_sekolah_path, width=Cm(6.05))  # Diperbesar 10% lagi (dari 5.5cm ke 6.05cm)
 
-        # Perhitungan spasi vertikal presisi tinggi (Dynamic Cover Spacing)
+        # Perhitungan spasi vertikal presisi tinggi (Empirically Verified MS Word Dynamic Cover Spacing)
         # Menghitung spasi enter presisi agar Kop Footer terdorong mentok hingga
         # menyisakan 1 enter di bagian paling bawah Halaman 1 tanpa meluap ke Halaman 2.
         import math as _math
 
-        sub_lines = 3
-        if len(nama_sekolah) > 35:
-            sub_lines += 1
-        if len(jurusan) > 30:
-            sub_lines += 1
+        base_enters = 6
+        extra_lines = 0
+        if kota_prsh and kota_prsh.upper() not in nama_prsh.upper():
+            extra_lines += 1
+        if len(nama_prsh) > 28:
+            extra_lines += _math.ceil(len(nama_prsh) / 28.0) - 1
+        if len(nama_sekolah) > 35 or len(jurusan) > 30:
+            extra_lines += 1
 
-        # Berdasarkan pengujian presisi MS Word Layout Engine:
-        # Enters = 6 mendorong Kop Footer mentok ke dasar halaman 1 (menyisakan 1 enter sebelum border).
-        # Jika nama perusahaan / sekolah panjang (>2 baris), kurangi enter secara presisi.
-        extra_lines = max(0, _math.ceil(len(nama_prsh) / 25.0) - 1) + max(0, sub_lines - 3)
-        final_enters = max(1, 6 - extra_lines)
+        final_enters = max(2, base_enters - (extra_lines * 2))
 
         for _ in range(final_enters):
             p_sp = self.doc.add_paragraph()
