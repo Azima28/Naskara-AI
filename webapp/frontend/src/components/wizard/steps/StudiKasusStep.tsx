@@ -38,20 +38,21 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
           border: '1px solid var(--green-500, #4ade80)',
           borderRadius: '8px',
           overflowX: 'auto',
+          WebkitOverflowScrolling: 'touch',
           fontSize: '0.82rem',
           fontWeight: 600,
           color: 'var(--green-700, #14614a)',
           whiteSpace: 'nowrap',
         }}
       >
-        <span>📌 Alur Cerita Pekerjaan:</span>
-        <span style={{ opacity: 0.8 }}>1. Tugas Diterima</span>
-        <span style={{ color: 'var(--green-600)' }}>➔</span>
-        <span style={{ opacity: 0.8 }}>2. Kondisi / Masalah Awal</span>
-        <span style={{ color: 'var(--green-600)' }}>➔</span>
-        <span style={{ opacity: 0.8 }}>3. Langkah Pengerjaan</span>
-        <span style={{ color: 'var(--green-600)' }}>➔</span>
-        <span style={{ opacity: 0.8 }}>4. Hasil Akhir & Ukuran Data</span>
+        <span style={{ flexShrink: 0 }}>📌 Alur Cerita Pekerjaan:</span>
+        <span style={{ opacity: 0.8, flexShrink: 0 }}>1. Tugas Diterima</span>
+        <span style={{ color: 'var(--green-600)', flexShrink: 0 }}>➔</span>
+        <span style={{ opacity: 0.8, flexShrink: 0 }}>2. Masalah Awal</span>
+        <span style={{ color: 'var(--green-600)', flexShrink: 0 }}>➔</span>
+        <span style={{ opacity: 0.8, flexShrink: 0 }}>3. Langkah Kerja</span>
+        <span style={{ color: 'var(--green-600)', flexShrink: 0 }}>➔</span>
+        <span style={{ opacity: 0.8, flexShrink: 0 }}>4. Hasil & Angka</span>
       </div>
 
       {/* Dynamic Major-Specific Example Card */}
@@ -107,7 +108,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
             {sk.data_angka.map((d, i) => {
               const sampleRow = sampleData[i % sampleData.length] || sample1
               return (
-                <div key={i} className="array__row" style={{ alignItems: 'flex-start' }}>
+                <div key={i} className="array__row">
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <TextField
                       label={i === 0 ? 'Nama Ukuran / Parameter' : ''}
@@ -127,12 +128,11 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
                   <button
                     type="button"
                     className="btn-sm btn-danger array__remove"
-                    style={{ marginTop: i === 0 ? '1.65rem' : '0' }}
                     onClick={() => upd({ data_angka: sk.data_angka.filter((_, idx) => idx !== i) })}
                     aria-label="Hapus baris data angka"
                     title="Hapus baris ini"
                   >
-                    ✕
+                    ✕ Hapus
                   </button>
                 </div>
               )

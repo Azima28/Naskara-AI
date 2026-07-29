@@ -43,6 +43,7 @@ export default function JurusanDocxPreviewModal({
 
   return (
     <div
+      className="docx-modal-overlay"
       style={{
         position: 'fixed',
         top: 0,
@@ -54,17 +55,18 @@ export default function JurusanDocxPreviewModal({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '1.25rem',
+        padding: 'clamp(0.5rem, 2.5vw, 1.25rem)',
       }}
     >
       <div
+        className="docx-modal-container"
         style={{
           width: '100%',
           maxWidth: '920px',
-          maxHeight: '92vh',
+          maxHeight: '94vh',
           backgroundColor: 'var(--surface, #fffdf8)',
           border: '1px solid var(--line-strong, #b9b09c)',
-          borderRadius: '12px',
+          borderRadius: 'clamp(8px, 2vw, 12px)',
           boxShadow: '0 12px 40px rgba(0, 0, 0, 0.3)',
           display: 'flex',
           flexDirection: 'column',
@@ -73,20 +75,22 @@ export default function JurusanDocxPreviewModal({
       >
         {/* Header */}
         <div
+          className="docx-modal-header"
           style={{
-            padding: '1rem 1.25rem',
+            padding: '0.85rem 1.1rem',
             borderBottom: '1px solid var(--line, #ddd6c8)',
             background: 'var(--paper-2, #ece8de)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
+            gap: '0.75rem',
           }}
         >
-          <div>
-            <h3 style={{ margin: 0, fontSize: '1.15rem', fontFamily: 'var(--font-serif)', color: 'var(--ink)' }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h3 style={{ margin: 0, fontSize: 'clamp(0.95rem, 3.5vw, 1.15rem)', fontFamily: 'var(--font-serif)', color: 'var(--ink)' }}>
               📄 Contoh Hasil Cetak Laporan Word (.docx) Setiap Jurusan
             </h3>
-            <p className="muted" style={{ margin: '0.2rem 0 0', fontSize: '0.82rem' }}>
+            <p className="muted" style={{ margin: '0.2rem 0 0', fontSize: '0.78rem', lineHeight: 1.35 }}>
               Klik tab jurusan di bawah untuk melihat contoh nyata lembar laporan & tabel data hasil akhir (.docx) per jurusan.
             </p>
           </div>
@@ -94,7 +98,7 @@ export default function JurusanDocxPreviewModal({
             type="button"
             className="btn-sm btn-outline"
             onClick={onClose}
-            style={{ fontSize: '1.1rem', padding: '0.2rem 0.6rem' }}
+            style={{ fontSize: '1.1rem', padding: '0.2rem 0.6rem', flexShrink: 0 }}
           >
             ✕
           </button>
@@ -105,7 +109,7 @@ export default function JurusanDocxPreviewModal({
           style={{
             display: 'flex',
             gap: '0.4rem',
-            padding: '0.65rem 1rem',
+            padding: '0.55rem 0.85rem',
             background: 'var(--surface, #fffdf8)',
             borderBottom: '1px solid var(--line, #ddd6c8)',
             overflowX: 'auto',
@@ -123,12 +127,13 @@ export default function JurusanDocxPreviewModal({
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.35rem',
-                  padding: '0.35rem 0.75rem',
+                  padding: '0.3rem 0.65rem',
                   borderRadius: '999px',
-                  fontSize: '0.82rem',
+                  fontSize: '0.8rem',
                   fontWeight: 600,
                   whiteSpace: 'nowrap',
                   cursor: 'pointer',
+                  flexShrink: 0,
                   border: isActive ? '1px solid var(--green-700, #14614a)' : '1px solid var(--line, #ddd6c8)',
                   backgroundColor: isActive ? 'var(--green-600, #187257)' : 'var(--paper-2, #ece8de)',
                   color: isActive ? '#ffffff' : 'var(--ink-soft, #555)',
@@ -146,7 +151,7 @@ export default function JurusanDocxPreviewModal({
           style={{
             flex: 1,
             overflowY: 'auto',
-            padding: '1.25rem',
+            padding: 'clamp(0.6rem, 2vw, 1.25rem)',
             background: 'var(--paper, #f4f1ea)',
             display: 'flex',
             justifyContent: 'center',
@@ -159,12 +164,12 @@ export default function JurusanDocxPreviewModal({
               boxSizing: 'border-box',
               width: '100%',
               maxWidth: '720px',
-              minHeight: '620px',
+              minHeight: '520px',
               backgroundColor: '#ffffff',
               border: '1px solid #dcd7cc',
               borderRadius: '4px',
               boxShadow: '0 4px 15px rgba(0,0,0,0.08)',
-              padding: 'clamp(1.25rem, 4vw, 2.5rem) clamp(1rem, 3.5vw, 2rem)',
+              padding: 'clamp(0.85rem, 3.5vw, 2.25rem) clamp(0.75rem, 3vw, 1.75rem)',
               fontFamily: '"Times New Roman", Times, serif',
               color: '#000000',
               lineHeight: 1.5,
@@ -172,11 +177,11 @@ export default function JurusanDocxPreviewModal({
             }}
           >
             {/* Document Header */}
-            <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-              <div style={{ fontWeight: 'bold', fontSize: '13pt', textTransform: 'uppercase' }}>
+            <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+              <div style={{ fontWeight: 'bold', fontSize: 'clamp(11pt, 3.5vw, 13pt)', textTransform: 'uppercase' }}>
                 BAB IV DATA PENGAMATAN & PEMBAHASAN
               </div>
-              <div style={{ fontSize: '10pt', color: '#555', fontStyle: 'italic', marginTop: '2px' }}>
+              <div style={{ fontSize: '9.5pt', color: '#555', fontStyle: 'italic', marginTop: '2px' }}>
                 (Pratinjau Format Resmi Word SMKN 4 — {example.label})
               </div>
             </div>
@@ -187,16 +192,16 @@ export default function JurusanDocxPreviewModal({
             </div>
 
             {/* Paragraph 1 */}
-            <p style={{ textIndent: '1cm', textAlign: 'justify', margin: '0 0 1rem 0' }}>
+            <p style={{ textIndent: 'clamp(0.4cm, 3vw, 1cm)', textAlign: 'justify', margin: '0 0 1rem 0' }}>
               {sk.latar_belakang}
             </p>
 
             {/* Paragraph 2 - Process */}
-            <p style={{ textIndent: '1cm', textAlign: 'justify', margin: '0 0 1rem 0' }}>
+            <p style={{ textIndent: 'clamp(0.4cm, 3vw, 1cm)', textAlign: 'justify', margin: '0 0 1rem 0' }}>
               Prosedur pelaksanaan kegiatan ini meliputi langkah-langkah sistematis sebagai berikut:
             </p>
 
-            <div style={{ paddingLeft: '1.2cm', marginBottom: '1rem', fontSize: '10.5pt' }}>
+            <div style={{ paddingLeft: 'clamp(0.4cm, 3.5vw, 1.2cm)', marginBottom: '1rem', fontSize: '10.5pt' }}>
               {sk.proses_atau_formula.split('\n').map((line, lIdx) => (
                 <div key={lIdx} style={{ marginBottom: '0.2rem' }}>
                   {line}
@@ -221,17 +226,17 @@ export default function JurusanDocxPreviewModal({
               >
                 <thead>
                   <tr style={{ background: '#f2f2f2' }}>
-                    <th style={{ border: '1px solid #000000', padding: '6px 8px', textAlign: 'center', width: '40px' }}>No</th>
-                    <th style={{ border: '1px solid #000000', padding: '6px 10px', textAlign: 'left' }}>Parameter / Nama Data</th>
-                    <th style={{ border: '1px solid #000000', padding: '6px 10px', textAlign: 'left' }}>Nilai Hasil Pengukuran</th>
+                    <th style={{ border: '1px solid #000000', padding: '5px 6px', textAlign: 'center', width: '35px' }}>No</th>
+                    <th style={{ border: '1px solid #000000', padding: '5px 8px', textAlign: 'left' }}>Parameter / Nama Data</th>
+                    <th style={{ border: '1px solid #000000', padding: '5px 8px', textAlign: 'left' }}>Nilai Hasil Pengukuran</th>
                   </tr>
                 </thead>
                 <tbody>
                   {sk.data_angka.map((d, dIdx) => (
                     <tr key={dIdx}>
-                      <td style={{ border: '1px solid #000000', padding: '6px 8px', textAlign: 'center' }}>{dIdx + 1}</td>
-                      <td style={{ border: '1px solid #000000', padding: '6px 10px' }}>{d.label}</td>
-                      <td style={{ border: '1px solid #000000', padding: '6px 10px', fontWeight: 'bold' }}>{d.nilai}</td>
+                      <td style={{ border: '1px solid #000000', padding: '5px 6px', textAlign: 'center' }}>{dIdx + 1}</td>
+                      <td style={{ border: '1px solid #000000', padding: '5px 8px' }}>{d.label}</td>
+                      <td style={{ border: '1px solid #000000', padding: '5px 8px', fontWeight: 'bold' }}>{d.nilai}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -239,7 +244,7 @@ export default function JurusanDocxPreviewModal({
             </div>
 
             {/* Paragraph 3 - Conclusion */}
-            <p style={{ textIndent: '1cm', textAlign: 'justify', margin: '0 0 1rem 0' }}>
+            <p style={{ textIndent: 'clamp(0.4cm, 3vw, 1cm)', textAlign: 'justify', margin: '0 0 1rem 0' }}>
               {sk.hasil}
             </p>
 
@@ -247,8 +252,10 @@ export default function JurusanDocxPreviewModal({
             <div style={{ textAlign: 'center', marginTop: '1.5rem', fontStyle: 'italic', fontSize: '9.5pt' }}>
               <div
                 style={{
-                  width: '60%',
-                  height: '110px',
+                  width: '100%',
+                  maxWidth: '320px',
+                  minHeight: '85px',
+                  padding: '0.5rem',
                   margin: '0 auto 0.4rem',
                   border: '1px dashed #999',
                   background: '#fafafa',
@@ -256,6 +263,7 @@ export default function JurusanDocxPreviewModal({
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: '#666',
+                  boxSizing: 'border-box',
                 }}
               >
                 🖼️ [Gambar Dokumentasi Foto / Diagram Alat - {example.label}]
@@ -267,8 +275,9 @@ export default function JurusanDocxPreviewModal({
 
         {/* Footer Bar */}
         <div
+          className="docx-modal-footer"
           style={{
-            padding: '1rem 1.25rem',
+            padding: '0.85rem 1.1rem',
             borderTop: '1px solid var(--line, #ddd6c8)',
             background: 'var(--surface, #fffdf8)',
             display: 'flex',
@@ -280,7 +289,7 @@ export default function JurusanDocxPreviewModal({
           <div style={{ fontSize: '0.85rem', color: 'var(--ink-soft)' }}>
             Jurusan Aktif: <strong>{example.label}</strong>
           </div>
-          <div style={{ display: 'flex', gap: '0.6rem' }}>
+          <div className="docx-modal-footer-btns" style={{ display: 'flex', gap: '0.6rem' }}>
             <button type="button" className="btn-outline" onClick={onClose}>
               Tutup Pratinjau
             </button>

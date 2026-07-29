@@ -98,9 +98,9 @@ export default function JurusanExampleCard({ jurusanKey }: JurusanExampleCardPro
       <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
         <button
           type="button"
-          className="btn-sm btn-outline"
+          className="btn-sm btn-outline btn-mobile-full"
           onClick={() => setShowModal(true)}
-          style={{ fontSize: '0.82rem', padding: '0.35rem 0.75rem', background: '#ffffff' }}
+          style={{ fontSize: '0.82rem', padding: '0.4rem 0.85rem', background: '#ffffff', fontWeight: 600 }}
         >
           🔍 Lihat Pratinjau Lembaran Word Full (.docx)
         </button>

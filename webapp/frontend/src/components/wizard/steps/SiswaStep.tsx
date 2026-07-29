@@ -110,9 +110,9 @@ export default function SiswaStep({ ctx, set }: { ctx: PklContext; set: (p: Part
 
             <button
               type="button"
-              className="btn-sm btn-primary"
+              className="btn-sm btn-primary btn-mobile-full"
               onClick={() => setShowPreviewModal(true)}
-              style={{ fontSize: '0.82rem', fontWeight: 600, padding: '0.4rem 0.85rem' }}
+              style={{ fontSize: '0.82rem', fontWeight: 600, padding: '0.45rem 0.85rem' }}
             >
               🔍 Lihat Contoh Lembaran Laporan (.docx) Per Jurusan
             </button>

@@ -902,13 +902,23 @@ input.field__input {
     align-items: flex-start;
   }
 
-  /* Di layar kecil, label langkah disembunyikan — sisakan nomornya */
-  .stepper__dot .stepper__text {
-    display: none;
+  /* Di layar kecil, stepper scroll secara horizontal tanpa merusak layout */
+  .stepper {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.5rem;
+    max-width: 100%;
   }
 
   .stepper__dot {
-    padding: 0.32rem 0.4rem;
+    flex-shrink: 0;
+    padding: 0.35rem 0.5rem;
+  }
+
+  /* Di layar kecil, label langkah disembunyikan — sisakan nomornya */
+  .stepper__dot .stepper__text {
+    display: none;
   }
 
   .array__row {
@@ -916,8 +926,60 @@ input.field__input {
     align-items: stretch;
   }
 
-  .array__remove {
+  .array__row .array__remove {
+    margin-top: 0.25rem !important;
     align-self: flex-end;
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .btn-mobile-full {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .simple-table {
+    min-width: 100% !important;
+  }
+
+  .simple-table th,
+  .simple-table td {
+    padding: 0.35rem 0.45rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  .docx-modal-overlay {
+    padding: 0.5rem !important;
+  }
+
+  .docx-modal-container {
+    max-height: 96vh !important;
+    border-radius: 8px !important;
+  }
+
+  .docx-modal-header {
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    padding: 0.75rem 0.85rem !important;
+  }
+
+  .docx-modal-footer {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.65rem !important;
+    padding: 0.85rem !important;
+  }
+
+  .docx-modal-footer-btns {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+
+  .docx-modal-footer-btns button {
+    width: 100% !important;
+    justify-content: center !important;
   }
 }
 
