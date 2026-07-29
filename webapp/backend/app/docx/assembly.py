@@ -1346,17 +1346,20 @@ def _write_data_pengamatan(builder: PklDocBuilder, data: dict, bab_num: int) -> 
             tugas = k.get("tugas", [])
             if tugas:
                 for j, t in enumerate(tugas):
-                    nama = t.get("nama_tugas") or t.get("nama") or f"Tugas {j+1}"
-                    detail = t.get("detail", "")
-                    # Tugas ditulis sebagai sub-sub heading atau bold nama lalu narasi
-                    if detail and len(detail) > 20:
-                        builder.add_body(nama, bold=True)
-                        builder.add_body(detail)
-                    else:
-                        line = f"{nama}"
-                        if detail:
-                            line += f": {detail}"
-                        builder.add_lettered(line, _LETTERS[j % 26])
+                    nama_raw = t.get("nama_tugas") or t.get("nama") or f"Tugas {j+1}"
+                    clean_nama = re.sub(r"^[□▪•\-\d+\.\)\s]+", "", str(nama_raw)).strip()
+                    nama = clean_nama or str(nama_raw).strip()
+                    detail = (t.get("detail") or "").strip()
+                    letter = _LETTERS[j % 26]
+
+                    # Sub-poin a., b., c. (Bold)
+                    builder.add_lettered(nama, letter, indent_level=0, bold=True)
+                    if detail:
+                        # Detail narasi sejajar di bawah huruf awal judul sub-poin (Indent 1.27 cm)
+                        for para in detail.split("\n"):
+                            p_clean = para.strip()
+                            if p_clean:
+                                builder.add_sub_item(p_clean, indent_level=0)
             sub += 1
 
     # Sub-bab Peralatan & Perlengkapan Kantor
@@ -1378,7 +1381,10 @@ def _write_data_pengamatan(builder: PklDocBuilder, data: dict, bab_num: int) -> 
                 # Bookmark = target PAGEREF di Daftar Gambar (preset pedoman).
                 builder.add_caption(f"Gambar {bab_num}. {idx}", bookmark=f"gambar_{idx}")
             if deskripsi_p:
-                builder.add_body(deskripsi_p)
+                for para in deskripsi_p.split("\n"):
+                    p_clean = para.strip()
+                    if p_clean:
+                        builder.add_sub_item(p_clean, indent_level=0)
         sub += 1
 
 
