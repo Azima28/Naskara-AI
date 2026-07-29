@@ -25,7 +25,10 @@ class OpenAICompatibleProvider(AIProvider):
         self.timeout = timeout
 
         headers = {"Authorization": f"Bearer {self.api_key}"} if self.api_key != "not-needed" else {}
-        self.client = httpx.AsyncClient(timeout=self.timeout, headers=headers)
+        self.client = httpx.AsyncClient(
+            timeout=httpx.Timeout(self.timeout, connect=0.8),
+            headers=headers
+        )
 
     async def generate(self, system: str, user: str) -> str:
         """Call the /chat/completions endpoint with exponential backoff retries on network/server errors."""
@@ -60,6 +63,12 @@ class OpenAICompatibleProvider(AIProvider):
                     data = json.loads(text)
                     return data["choices"][0]["message"]["content"]
 
+            except (httpx.ConnectError, httpx.ConnectTimeout) as e:
+                # Target host/port is offline or connection refused/timed out.
+                # Do not waste time retrying 3x on a non-responsive local port.
+                print(f"[AI Provider Offline] Local AI server is unreachable ({type(e).__name__}): {e}")
+                raise RuntimeError(f"AI Provider offline: {e}")
+
             except httpx.HTTPStatusError as e:
                 # Client errors (4xx) should not be retried, but Server errors (5xx) should be retried
                 if e.response.status_code < 500:
@@ -67,9 +76,9 @@ class OpenAICompatibleProvider(AIProvider):
                 last_error = e
                 print(f"[AI Provider Retry] Attempt {attempt}/{max_retries} server error ({e.response.status_code}): {e}")
 
-            except (httpx.ConnectError, httpx.TimeoutException, httpx.RequestError) as e:
+            except httpx.TimeoutException as e:
                 last_error = e
-                print(f"[AI Provider Retry] Attempt {attempt}/{max_retries} connection error: {e}")
+                print(f"[AI Provider Retry] Attempt {attempt}/{max_retries} timeout error: {e}")
 
             except Exception as e:
                 last_error = e

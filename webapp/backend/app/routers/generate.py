@@ -74,7 +74,7 @@ async def _ai_daftar_pustaka(data: dict) -> list[str]:
         f"Susun 4-7 sitasi."
     )
     try:
-        text = await asyncio.wait_for(get_ai_provider().generate(system, user), timeout=25)
+        text = await asyncio.wait_for(get_ai_provider().generate(system, user), timeout=3.0)
     except Exception:
         return []
     if not text or "[DUMMY" in text.upper():
@@ -281,6 +281,15 @@ async def _auto_polish_on_generate(data: dict) -> tuple[dict, bool]:
         prompts["peralatan"] = p_alat
 
     if not prompts:
+        return data, False
+
+    # ── Cek konektivitas AI Provider terlebih dahulu ─────────────────────────
+    # Jika server AI lokal offline/unreachable, langsung skip auto-polish dalam 1.5 detik
+    # agar proses download tidak menggantung atau menyebabkan Network Error di frontend.
+    try:
+        await asyncio.wait_for(provider.generate(system, "test connectivity"), timeout=1.5)
+    except Exception as e:
+        print(f"[AutoPolish] AI provider offline ({e}) — menggunakan data asli")
         return data, False
 
     # ── Jalankan dengan konkurensi terbatas ───────────────────────────────
