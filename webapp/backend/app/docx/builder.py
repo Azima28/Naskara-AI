@@ -508,20 +508,21 @@ class PklDocBuilder:
             r_sp.font.name = "Times New Roman"
             r_sp.font.size = Pt(12)
 
-        # Footer Kop sekolah + Logo Lampung di sebelah kiri
+        # Footer Kop sekolah + Logo Jawa Barat di sebelah kiri
         logo_prov_path = sekolah.get("logo_provinsi_path")
-        lampung_logo_def = os.path.join(os.path.dirname(__file__), "smkn4_assets", "logo_lampung.png")
+        jabar_logo_def = os.path.join(os.path.dirname(__file__), "smkn4_assets", "logo_jabar.png")
         if not logo_prov_path or not os.path.exists(logo_prov_path):
-            if os.path.exists(lampung_logo_def):
-                logo_prov_path = lampung_logo_def
+            if os.path.exists(jabar_logo_def):
+                logo_prov_path = jabar_logo_def
 
         kop = sekolah.get("kop", {})
         kop_lines = [
-            (kop.get("baris_1", "PEMERINTAH PROVINSI LAMPUNG"), 14, False),
-            (kop.get("baris_2", "DINAS PENDIDIKAN DAN KEBUDAYAAN"), 14, False),
+            (kop.get("baris_1", "PEMERINTAH DAERAH PROVINSI JAWA BARAT"), 14, False),
+            (kop.get("baris_2", "DINAS PENDIDIKAN"), 14, False),
+            (kop.get("baris_3", "CABANG DINAS PENDIDIKAN WILAYAH VII"), 14, False),
             (sekolah.get("nama_lengkap") or nama_sekolah.upper(), 14, True),
         ]
-        alamat_sekolah = (sekolah.get("alamat") or "").strip()
+        alamat_sekolah = (sekolah.get("alamat") or "JL. KAREES KULON NO. 9 BANDUNG").strip()
         if alamat_sekolah:
             kop_lines.append((alamat_sekolah, 12, False))
         alamat_2 = kop.get("baris_alamat_2", "")
