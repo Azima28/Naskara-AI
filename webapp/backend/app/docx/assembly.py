@@ -769,9 +769,9 @@ def _sanitize_data(data: dict) -> None:
         kp["tanggal"] = _format_indonesian_date(kp["tanggal"])
 
     # Buang item list yang isinya sudah kosong akibat scrub.
-    data["pelajaran"] = [p for p in data.get("pelajaran", []) if p and len(p) > 3]
+    data["pelajaran"] = [p for p in (data.get("pelajaran") or []) if p and len(p) > 3]
     data["kendala"] = [
-        k for k in data.get("kendala", [])
+        k for k in (data.get("kendala") or [])
         if isinstance(k, dict) and len(k.get("masalah", "")) > 3
     ]
     if isinstance(data.get("profil_perusahaan"), dict):
@@ -791,11 +791,11 @@ def _sanitize_data(data: dict) -> None:
     # tidak punya deskripsi (bidang disebut tapi tidak ada isinya → jangan
     # jadi sub-bab kosong).
     valid_kegiatan = []
-    for k in data.get("kegiatan", []):
+    for k in (data.get("kegiatan") or []):
         if not isinstance(k, dict):
             continue
         k["tugas"] = [
-            t for t in k.get("tugas", [])
+            t for t in (k.get("tugas") or [])
             if isinstance(t, dict) and (t.get("nama_tugas") or t.get("nama"))
         ]
         if k.get("tugas") or (k.get("deskripsi_umum") and k.get("bidang")):
