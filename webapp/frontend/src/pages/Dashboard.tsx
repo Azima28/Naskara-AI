@@ -4,6 +4,21 @@ import { useAuth } from '@/store/auth'
 import { listDrafts, createDraft, deleteDraft, generateDocx } from '@/api/client'
 import type { DraftSummary } from '@/types/api'
 import ProtectedRoute from '@/components/ProtectedRoute'
+import {
+  IconPlus,
+  IconCode,
+  IconGlobe,
+  IconPalette,
+  IconGear,
+  IconLightning,
+  IconCar,
+  IconPencil,
+  IconDocument,
+  IconDownload,
+  IconTrash,
+  IconChecklist,
+  IconCheck,
+} from '@/components/common/Icons'
 
 export default function DashboardPage() {
   const user = useAuth((s) => s.user)
@@ -106,12 +121,12 @@ export default function DashboardPage() {
             {/* User Welcome & Overview Banner */}
             <div className="dash-welcome">
               <div className="dash-welcome__text">
-                <h1>Selamat Datang, {user?.name || 'Siswa PKL'}! 👋</h1>
+                <h1>Selamat Datang, {user?.name || 'Siswa PKL'}!</h1>
                 <p>Kelola draf laporan PKL Anda dengan presisi standar akademik resmi. Dokumen siap diunduh dalam format <code>.docx</code> asli.</p>
               </div>
               <div className="dash-welcome__action">
                 <button onClick={() => handleCreate()} className="btn-primary hero-btn-lg">
-                  + Buat Draft Laporan Baru
+                  <IconPlus size={18} style={{ marginRight: '0.4rem' }} /> Buat Draft Laporan Baru
                 </button>
               </div>
             </div>
@@ -142,25 +157,25 @@ export default function DashboardPage() {
 
             {/* Template Quick Starters */}
             <div className="dash-quick-starter">
-              <h3>⚡ Pilih Templat Jurusan Vokasi:</h3>
+              <h3><IconLightning size={16} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Pilih Templat Jurusan Vokasi:</h3>
               <div className="quick-starter-grid">
                 <button onClick={() => handleCreate('RPL')} className="starter-chip">
-                  💻 RPL (Perangkat Lunak)
+                  <IconCode size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> RPL (Perangkat Lunak)
                 </button>
                 <button onClick={() => handleCreate('TKJ')} className="starter-chip">
-                  🌐 TKJ (Jaringan)
+                  <IconGlobe size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> TKJ (Jaringan)
                 </button>
                 <button onClick={() => handleCreate('DKV')} className="starter-chip">
-                  🎨 DKV (Desain Visual)
+                  <IconPalette size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> DKV (Desain Visual)
                 </button>
                 <button onClick={() => handleCreate('TFLM')} className="starter-chip">
-                  ⚙️ TFLM (Fabrikasi Logam)
+                  <IconGear size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> TFLM (Fabrikasi Logam)
                 </button>
                 <button onClick={() => handleCreate('TITL')} className="starter-chip">
-                  ⚡ TITL (Listrik)
+                  <IconLightning size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> TITL (Listrik)
                 </button>
                 <button onClick={() => handleCreate('TKR')} className="starter-chip">
-                  🚗 TKR / Otomotif
+                  <IconCar size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> TKR / Otomotif
                 </button>
               </div>
             </div>
@@ -207,7 +222,7 @@ export default function DashboardPage() {
 
               {!loading && filteredDrafts.length === 0 && (
                 <div className="empty-state-dash">
-                  <div className="empty-icon">📝</div>
+                  <div className="empty-icon"><IconDocument size={36} color="var(--green-700)" /></div>
                   <h3>Belum Ada Draft Laporan</h3>
                   <p className="muted">
                     {searchQuery
@@ -215,7 +230,7 @@ export default function DashboardPage() {
                       : 'Klik tombol di bawah ini untuk memulai draf laporan PKL pertama Anda.'}
                   </p>
                   <button onClick={() => handleCreate()} className="btn-primary" style={{ marginTop: '1rem' }}>
-                    + Buat Draft Laporan Baru
+                    <IconPlus size={16} style={{ marginRight: '0.4rem' }} /> Buat Draft Laporan Baru
                   </button>
                 </div>
               )}
@@ -232,16 +247,16 @@ export default function DashboardPage() {
                         </span>
                       </div>
                       <span className={`status-badge ${d.status === 'ready' ? 'status-badge--ready' : 'status-badge--draft'}`}>
-                        {d.status === 'ready' ? '✅ Siap Generate' : '✏️ Draf Diisi'}
+                        {d.status === 'ready' ? 'Siap Generate' : 'Draf Diisi'}
                       </span>
                     </div>
 
                     <div className="draft-card-item__actions">
                       <Link to={`/wizard/${d.id}`} className="btn-sm btn-primary">
-                        ✏️ Edit di Wizard
+                        <IconPencil size={14} style={{ marginRight: '0.3rem' }} /> Edit di Wizard
                       </Link>
                       <Link to={`/editor/${d.id}`} className="btn-sm btn-outline">
-                        📄 Live Editor &amp; AI
+                        <IconDocument size={14} style={{ marginRight: '0.3rem' }} /> Live Editor &amp; AI
                       </Link>
                       <button
                         onClick={() => handleDownload(d.id)}
@@ -249,14 +264,14 @@ export default function DashboardPage() {
                         className="btn-sm btn-outline"
                         style={{ color: 'var(--green-700)', borderColor: 'var(--green-600)' }}
                       >
-                        {downloadingId === d.id ? 'Mengunduh...' : '📥 Unduh .docx'}
+                        <IconDownload size={14} style={{ marginRight: '0.3rem' }} /> {downloadingId === d.id ? 'Mengunduh...' : 'Unduh .docx'}
                       </button>
                       <button
                         onClick={() => handleDelete(d.id)}
                         className="btn-sm btn-danger"
                         title="Hapus Draft"
                       >
-                        🗑️
+                        <IconTrash size={14} />
                       </button>
                     </div>
                   </div>
@@ -266,19 +281,19 @@ export default function DashboardPage() {
 
             {/* Checklist Standar Kelengkapan Laporan */}
             <div className="academic-checklist-card">
-              <h3>📋 Checklist Kelengkapan Laporan (Standar 20-Poin SMKN 4)</h3>
+              <h3><IconChecklist size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Checklist Kelengkapan Laporan (Standar 20-Poin SMKN 4)</h3>
               <p className="muted" style={{ fontSize: '0.9rem', marginBottom: '1rem' }}>
                 Pastikan draf Anda melengkapi field berikut agar dokumen .docx terisi 100% sempurna:
               </p>
               <div className="checklist-grid">
-                <div className="checklist-item"><span>✅</span> <strong>Identitas Siswa</strong> (Nama, NIS, NISN, Kelas, Jurusan)</div>
-                <div className="checklist-item"><span>✅</span> <strong>Identitas Perusahaan</strong> (Nama PT, Alamat, Pembimbing Industri)</div>
-                <div className="checklist-item"><span>✅</span> <strong>Identitas Sekolah</strong> (Nama Kepala Sekolah, NIP, Guru Pembimbing)</div>
-                <div className="checklist-item"><span>✅</span> <strong>Profil Perusahaan</strong> (Sejarah, Visi Misi, Bidang Usaha)</div>
-                <div className="checklist-item"><span>✅</span> <strong>Jurnal Kegiatan Harian</strong> (Minimal 3-5 kegiatan teknis)</div>
-                <div className="checklist-item"><span>✅</span> <strong>Peralatan &amp; Kendala</strong> (Perangkat kerja &amp; solusi kendala)</div>
-                <div className="checklist-item"><span>✅</span> <strong>Kesimpulan &amp; Saran</strong> (Draf AI anti-halusinasi)</div>
-                <div className="checklist-item"><span>✅</span> <strong>Lampiran Dokumentasi</strong> (Foto kegiatan &amp; ID Bookmark valid)</div>
+                <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Identitas Siswa</strong> (Nama, NIS, NISN, Kelas, Jurusan)</div>
+                <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Identitas Perusahaan</strong> (Nama PT, Alamat, Pembimbing Industri)</div>
+                <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Identitas Sekolah</strong> (Nama Kepala Sekolah, NIP, Guru Pembimbing)</div>
+                <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Profil Perusahaan</strong> (Sejarah, Visi Misi, Bidang Usaha)</div>
+                <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Jurnal Kegiatan Harian</strong> (Minimal 3-5 kegiatan teknis)</div>
+                <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Peralatan &amp; Kendala</strong> (Perangkat kerja &amp; solusi kendala)</div>
+                <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Kesimpulan &amp; Saran</strong> (Draf AI anti-halusinasi)</div>
+                <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Lampiran Dokumentasi</strong> (Foto kegiatan &amp; ID Bookmark valid)</div>
               </div>
             </div>
 

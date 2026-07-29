@@ -139,7 +139,7 @@ export default function DocumentOutline({ ctx, activeSectionKey, onSelectSection
       }}
     >
       <h3 style={{ margin: '0 0 0.25rem', fontSize: '1.05rem', fontFamily: 'var(--font-serif)' }}>
-        📑 Struktur Fisik Laporan Word
+        Struktur Fisik Laporan Word
       </h3>
       <p className="muted" style={{ fontSize: '0.8rem', margin: '0 0 1rem', lineHeight: 1.4 }}>
         Urutan bagian laporan sesuai template resmi Word SMKN 4 Bandar Lampung:

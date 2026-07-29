@@ -5,6 +5,7 @@ import CompletenessBar from '@/components/CompletenessBar'
 import { getDraft, updateDraft } from '@/api/client'
 import type { PklContext } from '@/types/pkl'
 import { emptyContext } from '@/types/pkl'
+import { IconDocument } from '@/components/common/Icons'
 
 import SiswaStep from '@/components/wizard/steps/SiswaStep'
 import SekolahStep from '@/components/wizard/steps/SekolahStep'
@@ -269,7 +270,7 @@ function WizardInner() {
               disabled={saveState === 'saving'}
               style={{ fontSize: '0.82rem', padding: '0.35rem 0.7rem' }}
             >
-              💾 Simpan Draf
+              <IconDocument size={14} style={{ marginRight: '0.3rem' }} /> Simpan Draf
             </button>
             <span className="save-indicator">
               {saveState === 'saving' && 'menyimpan…'}

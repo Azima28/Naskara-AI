@@ -406,7 +406,7 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
 
         {/* Info: 8 poin SMKN4 otomatis */}
         <div style={{ background: '#eff6ff', border: '1px solid #93c5fd', borderRadius: 8, padding: '0.75rem', marginBottom: '0.75rem', fontSize: '0.83rem', color: '#1e40af' }}>
-          <strong>ℹ️ Sudah termasuk otomatis:</strong> 8 aturan resmi SMKN 4 Bandar Lampung selalu muncul di laporan
+          <strong>Sudah termasuk otomatis:</strong> 8 aturan resmi SMKN 4 Bandar Lampung selalu muncul di laporan
           (mematuhi aturan industri, menggunakan seragam, tidak mengaktifkan HP, dst).
           Yang kamu isi di sini adalah <em>tambahan khusus</em> dari perusahaanmu.
         </div>
@@ -431,7 +431,7 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
               <li>Menjaga kerahasiaan data dan informasi perusahaan</li>
             </ul>
             <p style={{ marginTop: '0.5rem', marginBottom: 0, fontStyle: 'italic' }}>
-              💡 Boleh singkat — AI akan otomatis memformalkan ke kalimat yang lebih profesional
+              Boleh singkat — AI akan otomatis memformalkan ke kalimat yang lebih profesional
             </p>
           </div>
         )}

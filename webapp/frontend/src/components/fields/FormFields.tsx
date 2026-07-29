@@ -498,7 +498,7 @@ export function ImageArrayUploadField({
         {items.map((item, i) => (
           <div key={i} className="array__row">
             <span style={{ flex: 1, fontSize: '0.9rem', color: 'var(--text)', background: 'var(--bg-secondary)', padding: '0.4rem 0.75rem', borderRadius: '8px', border: '1px solid var(--border)', wordBreak: 'break-all' }}>
-              🖼️ {item}
+              {item}
             </span>
             <button
               type="button"

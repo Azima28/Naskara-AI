@@ -3,6 +3,7 @@ import { emptyDataAngka } from '@/types/pkl'
 import { FieldGroup, TextareaField, TextField, ImageArrayUploadField } from '@/components/fields/FormFields'
 import JurusanExampleCard from '@/components/wizard/JurusanExampleCard'
 import { getJurusanExample } from '@/utils/jurusanExamples'
+import { IconDocument } from '@/components/common/Icons'
 
 export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p: Partial<PklContext>) => void }) {
   const sk = ctx.studi_kasus
@@ -45,7 +46,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
           whiteSpace: 'nowrap',
         }}
       >
-        <span style={{ flexShrink: 0 }}>📌 Alur Cerita Pekerjaan:</span>
+        <span style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center' }}><IconDocument size={14} style={{ marginRight: '0.3rem' }} /> Alur Cerita Pekerjaan:</span>
         <span style={{ opacity: 0.8, flexShrink: 0 }}>1. Tugas Diterima</span>
         <span style={{ color: 'var(--green-600)', flexShrink: 0 }}>➔</span>
         <span style={{ opacity: 0.8, flexShrink: 0 }}>2. Masalah Awal</span>

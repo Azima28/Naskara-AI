@@ -4,6 +4,16 @@ import PublicNavbar from '@/components/layout/PublicNavbar'
 import Footer from '@/components/layout/Footer'
 import { useAuth } from '@/store/auth'
 import { createDraft } from '@/api/client'
+import {
+  IconSparkles,
+  IconRocket,
+  IconDocument,
+  IconCross,
+  IconCheck,
+  IconShield,
+  IconLightning,
+  IconPencil,
+} from '@/components/common/Icons'
 
 export default function LandingPage() {
   const { token, user } = useAuth()
@@ -55,7 +65,7 @@ export default function LandingPage() {
       <section className="hero-section">
         <div className="hero-section__container">
           <div className="hero-section__badge">
-            <span className="sparkle">✦</span> Standar Resmi SMKN 4 Bandung &amp; Vokasi 2026
+            <IconSparkles size={15} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> Standar Resmi SMKN 4 Bandung &amp; Vokasi 2026
           </div>
 
           <h1 className="hero-section__title">
@@ -68,10 +78,10 @@ export default function LandingPage() {
 
           <div className="hero-section__cta-group">
             <button onClick={handleStartReport} className="btn-primary hero-btn-lg">
-              🚀 Buat Laporan Gratis Sekarang
+              <IconRocket size={18} style={{ marginRight: '0.5rem' }} /> Buat Laporan Gratis Sekarang
             </button>
             <Link to="/format-guide" className="btn-outline hero-btn-lg">
-              📄 Pelajari Standar Format
+              <IconDocument size={18} style={{ marginRight: '0.5rem' }} /> Pelajari Standar Format
             </Link>
           </div>
 
@@ -166,32 +176,32 @@ export default function LandingPage() {
           <div className="comparison-grid">
             {/* Card Manual */}
             <div className="comparison-card comparison-card--bad">
-              <div className="comparison-card__badge">❌ CARA MANUAL DI MS WORD</div>
+              <div className="comparison-card__badge"><IconCross size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> CARA MANUAL DI MS WORD</div>
               <h3>Sering Rusak &amp; Ditolak Pembimbing</h3>
               <ul className="comparison-list">
                 <li>
-                  <span className="icon">❌</span>
+                  <span className="icon"><IconCross size={18} color="var(--red-600)" /></span>
                   <div>
                     <strong>Margin Tidak Sesuai (2.5 cm Default)</strong>
                     <p>Halaman terpotong saat dijilid karena margin kiri tidak 4 cm.</p>
                   </div>
                 </li>
                 <li>
-                  <span className="icon">❌</span>
+                  <span className="icon"><IconCross size={18} color="var(--red-600)" /></span>
                   <div>
                     <strong>"Error! Bookmark not defined" di Daftar Isi</strong>
                     <p>Gambar lampiran tidak diikat bookmark sehingga TOC rusak saat di-update.</p>
                   </div>
                 </li>
                 <li>
-                  <span className="icon">❌</span>
+                  <span className="icon"><IconCross size={18} color="var(--red-600)" /></span>
                   <div>
                     <strong>Halaman Sampul Melimpah ke Halaman 2</strong>
                     <p>Jarak enter manual tidak konsisten jika dibuka di versi Word berbeda.</p>
                   </div>
                 </li>
                 <li>
-                  <span className="icon">❌</span>
+                  <span className="icon"><IconCross size={18} color="var(--red-600)" /></span>
                   <div>
                     <strong>Sub-list Menggunakan <code>a)</code> bukan <code>a.</code> Bold</strong>
                     <p>Tidak memenuhi standar tata tulis ilmiah Indonesia baku.</p>
@@ -202,32 +212,32 @@ export default function LandingPage() {
 
             {/* Card SiPKL */}
             <div className="comparison-card comparison-card--good">
-              <div className="comparison-card__badge">✅ SOLUSI SIPKL ACADEMIC</div>
+              <div className="comparison-card__badge"><IconCheck size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> SOLUSI SIPKL ACADEMIC</div>
               <h3>100% Rapi &amp; Siap Langsung Cetak</h3>
               <ul className="comparison-list">
                 <li>
-                  <span className="icon">✅</span>
+                  <span className="icon"><IconCheck size={18} color="var(--green-700)" /></span>
                   <div>
                     <strong>Margin Presisi 4-4-3-3 cm Terkunci</strong>
                     <p>Otomatis diset pada XML dokumen: 4cm Kiri, 4cm Atas, 3cm Kanan, 3cm Bawah.</p>
                   </div>
                 </li>
                 <li>
-                  <span className="icon">✅</span>
+                  <span className="icon"><IconCheck size={18} color="var(--green-700)" /></span>
                   <div>
                     <strong>TOC Safe dengan Bookmark Terenkapsulasi</strong>
                     <p>Lampiran diisi ID bookmark valid sehingga Daftar Isi MS Word 100% aman.</p>
                   </div>
                 </li>
                 <li>
-                  <span className="icon">✅</span>
+                  <span className="icon"><IconCheck size={18} color="var(--green-700)" /></span>
                   <div>
                     <strong>Enter Spacing Terhitung Presisi Point</strong>
                     <p>Kop pengesahan &amp; footer cover dijamin dorong tepat ke batas bawah halaman.</p>
                   </div>
                 </li>
                 <li>
-                  <span className="icon">✅</span>
+                  <span className="icon"><IconCheck size={18} color="var(--green-700)" /></span>
                   <div>
                     <strong>Sub-list Standar <code>a.</code> <code>b.</code> <code>c.</code> Bold &amp; Kapital</strong>
                     <p>Format otomatis: Huruf kapital awal kalimat &amp; penanda titik tebal.</p>
@@ -283,37 +293,37 @@ export default function LandingPage() {
 
           <div className="features-grid">
             <div className="feature-box">
-              <div className="feature-box__icon">📐</div>
+              <div className="feature-box__icon"><IconDocument size={28} color="var(--green-700)" /></div>
               <h3>Margin 4-4-3-3 cm Presisi XML</h3>
               <p>Batas tepi halaman diatur otomatis pada level XML dokumen Word agar hasil cetak tidak terpotong saat penjilidan.</p>
             </div>
 
             <div className="feature-box">
-              <div className="feature-box__icon">🔢</div>
+              <div className="feature-box__icon"><IconDocument size={28} color="var(--green-700)" /></div>
               <h3>Penomoran Halaman Bertingkat</h3>
               <p>Nomor Romawi kecil (i, ii...) untuk Halaman Depan dan Angka Arab (1, 2...) mulai dari BAB I Pendahuluan.</p>
             </div>
 
             <div className="feature-box">
-              <div className="feature-box__icon">📊</div>
+              <div className="feature-box__icon"><IconDocument size={28} color="var(--green-700)" /></div>
               <h3>Tabel Identitas Lebar 14.00 cm</h3>
               <p>Seluruh tabel identitas siswa &amp; industri dibatasi persis 14.00 cm agar muat sempurna di area cetak A4.</p>
             </div>
 
             <div className="feature-box">
-              <div className="feature-box__icon">✍️</div>
+              <div className="feature-box__icon"><IconPencil size={28} color="var(--green-700)" /></div>
               <h3>Sub-list Standar <code>a.</code> <code>b.</code> <code>c.</code></h3>
               <p>Penomoran rincian menggunakan abjad titik tebal dengan huruf kapital di awal kalimat sesuai EYD/EYD V.</p>
             </div>
 
             <div className="feature-box">
-              <div className="feature-box__icon">🛡️</div>
+              <div className="feature-box__icon"><IconShield size={28} color="var(--green-700)" /></div>
               <h3>3-Layer Anti-Halusinasi AI</h3>
               <p>AI mengunci konteks fakta teknis Anda sehingga hasil tulisan alami, profesional, dan bebas dari kalimat mengarang.</p>
             </div>
 
             <div className="feature-box">
-              <div className="feature-box__icon">🖼️</div>
+              <div className="feature-box__icon"><IconDocument size={28} color="var(--green-700)" /></div>
               <h3>Bookmark Lampiran MS Word Safe</h3>
               <p>Setiap gambar dokumentasi diberi penanda bookmark otomatis sehingga tidak menimbulkan error pada Daftar Isi.</p>
             </div>
@@ -357,7 +367,7 @@ export default function LandingPage() {
           <h2>Siap Menyusun Laporan PKL Sesuai Standar Sekolah?</h2>
           <p>Mulai gratis sekarang dan selesaikan draf laporan Anda tanpa khawatir revisi format Word.</p>
           <button onClick={handleStartReport} className="btn-primary hero-btn-lg">
-            ⚡ Buat Draf Laporan Sekarang (Gratis)
+            <IconLightning size={18} style={{ marginRight: '0.4rem' }} /> Buat Draf Laporan Sekarang (Gratis)
           </button>
         </div>
       </section>

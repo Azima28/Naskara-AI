@@ -51,7 +51,7 @@ export default function ConfigStep({ ctx, set }: { ctx: PklContext; set: (p: Par
             }}
           >
             <h4 style={{ margin: '0 0 0.5rem', color: !isCustom ? '#1d4ed8' : '#111827' }}>
-              🎯 Format Resmi SMKN 4 2026/2027 (Rekomendasi)
+              Format Resmi SMKN 4 2026/2027 (Rekomendasi)
             </h4>
             <p style={{ margin: 0, fontSize: '0.85rem', color: '#4b5563' }}>
               • Cover: <b>Tanpa Nomor</b><br />
@@ -72,7 +72,7 @@ export default function ConfigStep({ ctx, set }: { ctx: PklContext; set: (p: Par
             }}
           >
             <h4 style={{ margin: '0 0 0.5rem', color: isCustom ? '#1d4ed8' : '#111827' }}>
-              🎛️ Format Kustom / Bebas
+              Format Kustom / Bebas
             </h4>
             <p style={{ margin: 0, fontSize: '0.85rem', color: '#4b5563' }}>
               Bebas mengatur format nomor halaman Cover, Halaman Depan, dan BAB I mengikut kebutuhan sekolah/kampus lain.

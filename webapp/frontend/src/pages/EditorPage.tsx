@@ -8,6 +8,7 @@ import DocumentOutline from '@/components/editor/DocumentOutline'
 import RequestionPanel, { type GenerateIssue, type Requestion } from '@/components/RequestionPanel'
 import type { PklContext } from '@/types/pkl'
 import { emptyContext } from '@/types/pkl'
+import { IconDocument, IconDownload, IconSparkles, IconAlert, IconPencil } from '@/components/common/Icons'
 
 const ARRAY_SECTION_KEYS = [
   'tujuan',
@@ -202,7 +203,7 @@ function EditorInner() {
               disabled={saveState === 'saving'}
               style={{ fontSize: '0.82rem', padding: '0.35rem 0.7rem' }}
             >
-              💾 Simpan Draf
+              <IconDocument size={14} style={{ marginRight: '0.3rem' }} /> Simpan Draf
             </button>
             <span className="save-indicator">
               {saveState === 'saving' && 'menyimpan draf…'}
@@ -313,7 +314,11 @@ function EditorInner() {
                   </svg>
                   Menyusun dokumen Word…
                 </span>
-              ) : '📥 Download .docx (Siap Cetak)'}
+              ) : (
+                <>
+                  <IconDownload size={18} style={{ marginRight: '0.4rem' }} /> Download .docx (Siap Cetak)
+                </>
+              )}
             </button>
 
             <div style={{ padding: '0.75rem 0.85rem', background: 'var(--paper-2, #ece8de)', borderRadius: '8px', border: '1px solid var(--line, #ddd6c8)' }}>
@@ -356,7 +361,11 @@ function EditorInner() {
                     </svg>
                     Merapikan Bahasa…
                   </span>
-                ) : '✨ Rapikan Bahasa Teks via AI (Opsional)'}
+                ) : (
+                  <>
+                    <IconSparkles size={16} style={{ marginRight: '0.4rem' }} /> Rapikan Bahasa Teks via AI (Opsional)
+                  </>
+                )}
               </button>
             </div>
 
@@ -379,7 +388,7 @@ function EditorInner() {
                   }}
                 >
                   <strong style={{ color: 'var(--red-700, #b91c1c)', display: 'block', marginBottom: '0.4rem', fontSize: '0.9rem' }}>
-                    ⚠️ {genError}
+                    <IconAlert size={16} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> {genError}
                   </strong>
                   {genError.toLowerCase().includes('data belum lengkap') || genError.toLowerCase().includes('wajib') ? (
                     <>
@@ -400,7 +409,7 @@ function EditorInner() {
                         }}
                         onClick={() => nav(`/wizard/${draftId}`)}
                       >
-                        📍 Buka Form Data untuk Melengkapi →
+                        Buka Form Data untuk Melengkapi →
                       </button>
                     </>
                   ) : (
@@ -424,7 +433,7 @@ function EditorInner() {
                   fontSize: '0.85rem',
                 }}
               >
-                ⚠️ {polishNotice}
+                <IconAlert size={16} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> {polishNotice}
               </p>
             )}
           </div>
@@ -585,7 +594,7 @@ function SectionEditor({
         <h3 style={{ margin: 0 }}>{title}</h3>
         {!textValue && !loading && (
           <button type="button" className="btn-sm btn-primary" onClick={handleGenerate}>
-            ✨ Tulis Draf dengan AI
+            <IconSparkles size={14} style={{ marginRight: '0.3rem' }} /> Tulis Draf dengan AI
           </button>
         )}
       </div>
@@ -612,7 +621,7 @@ function SectionEditor({
           <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', alignItems: 'center' }}>
             {!regen ? (
               <button type="button" className="btn-sm btn-outline" onClick={() => setRegen(true)}>
-                🔄 Perbaiki &amp; Tulis Ulang
+                <IconPencil size={14} style={{ marginRight: '0.3rem' }} /> Perbaiki &amp; Tulis Ulang
               </button>
             ) : (
               <>
@@ -653,7 +662,7 @@ function SectionEditor({
         <div style={{ padding: '2rem', textAlign: 'center', background: 'var(--paper-2, #ece8de)', borderRadius: '8px' }}>
           <p className="muted" style={{ marginBottom: '1rem' }}>Belum ada draf tulisan untuk bagian ini.</p>
           <button type="button" className="btn-primary" onClick={handleGenerate}>
-            ✨ Buat Draf Naratif Sekarang
+            <IconSparkles size={16} style={{ marginRight: '0.4rem' }} /> Buat Draf Naratif Sekarang
           </button>
         </div>
       )}

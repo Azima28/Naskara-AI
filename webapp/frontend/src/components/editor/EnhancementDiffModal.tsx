@@ -121,7 +121,7 @@ export default function EnhancementDiffModal({
         >
           <div>
             <h3 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'var(--font-serif)' }}>
-              📝 Hasil Penyempurnaan Teks Akademis (KBBI)
+              Hasil Penyempurnaan Teks Akademis (KBBI)
             </h3>
             <p className="muted" style={{ margin: '0.25rem 0 0', fontSize: '0.85rem' }}>
               Tinjau perbandingan teks sebelum dan sesudah dirapikan oleh AI sebelum menerapkannya ke dokumen.
@@ -168,7 +168,7 @@ export default function EnhancementDiffModal({
                       color: 'var(--ink, #262521)',
                     }}
                   >
-                    📌 {d.label}
+                    {d.label}
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: 'var(--line, #ddd6c8)' }}>
                     {/* Data Mentah (Before) */}

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { getJurusanExample, type JurusanExample } from '@/utils/jurusanExamples'
 import JurusanDocxPreviewModal from './JurusanDocxPreviewModal'
+import { IconDocument, IconSearch } from '@/components/common/Icons'
 
 interface JurusanExampleCardProps {
   jurusanKey?: string
@@ -61,8 +62,8 @@ export default function JurusanExampleCard({ jurusanKey }: JurusanExampleCardPro
           marginBottom: '0.85rem',
         }}
       >
-        <div style={{ fontSize: '0.84rem', fontWeight: 600, color: 'var(--green-700, #14614a)', marginBottom: '0.4rem' }}>
-          📌 Sample Judul: "{sk.judul}"
+        <div style={{ fontSize: '0.84rem', fontWeight: 600, color: 'var(--green-700, #14614a)', marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+          <IconDocument size={16} /> Sample Judul: "{sk.judul}"
         </div>
 
         <p style={{ fontSize: '0.82rem', color: 'var(--ink-soft, #555)', margin: '0 0 0.6rem 0', lineHeight: 1.45 }}>
@@ -70,7 +71,7 @@ export default function JurusanExampleCard({ jurusanKey }: JurusanExampleCardPro
         </p>
 
         <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--ink, #262521)', textTransform: 'uppercase', letterSpacing: '0.03em', marginBottom: '0.35rem' }}>
-          📊 Contoh Tabel Data Angka / Perbandingan di Dokumen (.docx):
+          Contoh Tabel Data Angka / Perbandingan di Dokumen (.docx):
         </div>
 
         <div className="table-scroll" style={{ marginTop: '0.25rem' }}>
@@ -100,9 +101,9 @@ export default function JurusanExampleCard({ jurusanKey }: JurusanExampleCardPro
           type="button"
           className="btn-sm btn-outline btn-mobile-full"
           onClick={() => setShowModal(true)}
-          style={{ fontSize: '0.82rem', padding: '0.4rem 0.85rem', background: '#ffffff', fontWeight: 600 }}
+          style={{ fontSize: '0.82rem', padding: '0.4rem 0.85rem', background: '#ffffff', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
         >
-          🔍 Lihat Pratinjau Lembaran Word Full (.docx)
+          <IconSearch size={14} /> Lihat Pratinjau Lembaran Word Full (.docx)
         </button>
       </div>
 

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/store/auth'
+import { IconDashboard } from '@/components/common/Icons'
 
 export default function PublicNavbar() {
   const { user, token, logout } = useAuth()
@@ -59,7 +60,7 @@ export default function PublicNavbar() {
           {token && user ? (
             <div className="public-nav__user-group">
               <Link to="/dashboard" className="btn-sm btn-primary">
-                📊 Buka Dashboard
+                <IconDashboard size={16} style={{ marginRight: '0.4rem' }} /> Buka Dashboard
               </Link>
               <button
                 onClick={() => { logout(); nav('/login') }}

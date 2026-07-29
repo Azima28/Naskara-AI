@@ -21,7 +21,7 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
   akl: {
     jurusan_key: 'akl',
     label: 'Akuntansi & Keuangan Lembaga (AKL)',
-    icon: '📊',
+    icon: 'chart',
     badge: 'Akuntansi & Keuangan',
     studiKasus: {
       judul: 'Pendataan & Penghitungan Waive Discount Debitur Macet',
@@ -43,7 +43,7 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
   rpl: {
     jurusan_key: 'rpl',
     label: 'Rekayasa Perangkat Lunak (RPL / PPLG)',
-    icon: '💻',
+    icon: 'code',
     badge: 'Perangkat Lunak & IT',
     studiKasus: {
       judul: 'Optimasi Speed & Performance Query Database pada Rekapitulasi Laporan',
@@ -65,7 +65,7 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
   tkj: {
     jurusan_key: 'tkj',
     label: 'Teknik Komputer & Jaringan (TKJ / SIJA)',
-    icon: '🌐',
+    icon: 'globe',
     badge: 'Jaringan & Server',
     studiKasus: {
       judul: 'Konfigurasi Manajemen Bandwidth Router MikroTik & Segmentation VLAN',
@@ -87,7 +87,7 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
   bdp: {
     jurusan_key: 'bdp',
     label: 'Bisnis Daring & Pemasaran (BDP / Bisnis Digital)',
-    icon: '📈',
+    icon: 'chart-line',
     badge: 'Pemasaran & Bisnis',
     studiKasus: {
       judul: 'Analisis Efektivitas Kampanye Social Media Ads & Conversion Rate',
@@ -109,7 +109,7 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
   mplb: {
     jurusan_key: 'mplb',
     label: 'Manajemen Perkantoran & Layanan Bisnis (MPLB / OTKP)',
-    icon: '📁',
+    icon: 'folder',
     badge: 'Administrasi Perkantoran',
     studiKasus: {
       judul: 'Digitalisasi & Digital Archiving System Surat Masuk/Keluar',
@@ -131,7 +131,7 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
   tkro: {
     jurusan_key: 'tkro',
     label: 'Teknik Kendaraan Ringan Otomotif (TKRO / TBSM)',
-    icon: '🚗',
+    icon: 'car',
     badge: 'Otomotif & Mesin',
     studiKasus: {
       judul: 'Diagnosa Kode Kerusakan DTC & Tune-Up Sistem EFI Mesin Mobil',
@@ -153,7 +153,7 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
   dkv: {
     jurusan_key: 'dkv',
     label: 'Desain Komunikasi Visual (DKV / Animasi)',
-    icon: '🎨',
+    icon: 'palette',
     badge: 'Desain & Media',
     studiKasus: {
       judul: 'Perancangan Branding Visual & Optimasi Asset Rendering Motion Graphic',
@@ -175,7 +175,7 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
   ph: {
     jurusan_key: 'ph',
     label: 'Tata Boga & Perhotelan (PH / Kuliner)',
-    icon: '🍽️',
+    icon: 'utensils',
     badge: 'Boga & Perhotelan',
     studiKasus: {
       judul: 'Standardisasi Mise en Place & Efisiensi Food Cost Menu Utama',
@@ -197,7 +197,7 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
   farmasi: {
     jurusan_key: 'farmasi',
     label: 'Farmasi Klinis & Komunitas',
-    icon: '💊',
+    icon: 'activity',
     badge: 'Kesehatan & Farmasi',
     studiKasus: {
       judul: 'Manajemen Stok Obat LASA (Look Alike Sound Alike) & Skrining Resep',
@@ -219,7 +219,7 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
   tei: {
     jurusan_key: 'tei',
     label: 'Teknik Elektronika Industri (TEI)',
-    icon: '⚡',
+    icon: 'lightning',
     badge: 'Elektronika & PLC',
     studiKasus: {
       judul: 'Kalibrasi Sensor Suhu PT100 & Programming Ladder Diagram PLC',

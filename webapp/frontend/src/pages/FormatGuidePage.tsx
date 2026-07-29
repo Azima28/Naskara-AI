@@ -2,6 +2,16 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import PublicNavbar from '@/components/layout/PublicNavbar'
 import Footer from '@/components/layout/Footer'
+import {
+  IconLightbulb,
+  IconCode,
+  IconGlobe,
+  IconPalette,
+  IconGear,
+  IconLightning,
+  IconCar,
+  IconRocket,
+} from '@/components/common/Icons'
 
 export default function FormatGuidePage() {
   const [activeTab, setActiveTab] = useState<'rpl' | 'tkj' | 'dkv' | 'tflm' | 'titl' | 'tkr'>('rpl')
@@ -62,7 +72,7 @@ export default function FormatGuidePage() {
             </div>
 
             <div className="guide-tip">
-              💡 <strong>Otomatisasi di SiPKL:</strong> Seluruh margin ini diset langsung di XML dokumen. Seluruh tabel identitas dibatasi maksimal <code>14.00 cm</code> (21.01cm - 4cm - 3cm = 14.01cm) agar tidak pernah menabrak margin kanan.
+              <IconLightbulb size={18} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> <strong>Otomatisasi di SiPKL:</strong> Seluruh margin ini diset langsung di XML dokumen. Seluruh tabel identitas dibatasi maksimal <code>14.00 cm</code> (21.01cm - 4cm - 3cm = 14.01cm) agar tidak pernah menabrak margin kanan.
             </div>
           </div>
 
@@ -173,7 +183,7 @@ export default function FormatGuidePage() {
             <div className="jurusan-guide-box">
               {activeTab === 'rpl' && (
                 <div>
-                  <h3>💻 Jurusan Rekayasa Perangkat Lunak (RPL)</h3>
+                  <h3><IconCode size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Jurusan Rekayasa Perangkat Lunak (RPL)</h3>
                   <p><strong>Contoh Divisi:</strong> Software Engineering / Web Development / QA Tester</p>
                   <p><strong>Peralatan Utama:</strong> Visual Studio Code, Git/GitHub, MySQLWorkbench, Postman API, Node.js.</p>
                   <p><strong>Contoh Kegiatan:</strong> Slicing UI Figma ke React, Pembuatan API Endpoint Authentication, Fix Bug Query Database SQL, Testing Unit Test.</p>
@@ -181,7 +191,7 @@ export default function FormatGuidePage() {
               )}
               {activeTab === 'tkj' && (
                 <div>
-                  <h3>🌐 Jurusan Teknik Komputer &amp; Jaringan (TKJ)</h3>
+                  <h3><IconGlobe size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Jurusan Teknik Komputer &amp; Jaringan (TKJ)</h3>
                   <p><strong>Contoh Divisi:</strong> Network Administrator / IT Support / Infrastructure</p>
                   <p><strong>Peralatan Utama:</strong> Router MikroTik, Tang Crimping, LAN Tester, Switch Cisco, Winbox, Kabel UTP Cat6.</p>
                   <p><strong>Contoh Kegiatan:</strong> Konfigurasi VLAN &amp; Routing OSPF, Crimping Kabel LAN, Setting Bandwidth Management Queues MikroTik, Troubleshooting Koneksi Jaringan.</p>
@@ -189,7 +199,7 @@ export default function FormatGuidePage() {
               )}
               {activeTab === 'dkv' && (
                 <div>
-                  <h3>🎨 Jurusan Desain Komunikasi Visual (DKV)</h3>
+                  <h3><IconPalette size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Jurusan Desain Komunikasi Visual (DKV)</h3>
                   <p><strong>Contoh Divisi:</strong> Creative Media / Graphic Designer / Video Editor</p>
                   <p><strong>Peralatan Utama:</strong> Adobe Photoshop, Illustrator, Premiere Pro, Pen Tablet Wacom, Camera DSLR.</p>
                   <p><strong>Contoh Kegiatan:</strong> Desain Banner Promosi Digital, Editing Video Profil Perusahaan, Slicing Asset Vector Logo, Layouting Booklet Brosur.</p>
@@ -197,7 +207,7 @@ export default function FormatGuidePage() {
               )}
               {activeTab === 'tflm' && (
                 <div>
-                  <h3>⚙️ Jurusan Teknik Fabrikasi Logam (TFLM)</h3>
+                  <h3><IconGear size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Jurusan Teknik Fabrikasi Logam (TFLM)</h3>
                   <p><strong>Contoh Divisi:</strong> Workshop Maintenance / Fabrication / Welding Inspector</p>
                   <p><strong>Peralatan Utama:</strong> Mesin Las SMAW/GMAW, Mesin Gerinda Tangan, Jangka Sorong, APD Las.</p>
                   <p><strong>Contoh Kegiatan:</strong> Pengelasan Sambungan T-Joint, Pemotongan Plat Besi dengan Cutting Torch, Finishing Penggerindaan Hasil Las, Inspeksi Visual Defek Pengelasan.</p>
@@ -205,7 +215,7 @@ export default function FormatGuidePage() {
               )}
               {activeTab === 'titl' && (
                 <div>
-                  <h3>⚡ Jurusan Teknik Ketenagalistrikan (TITL)</h3>
+                  <h3><IconLightning size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Jurusan Teknik Ketenagalistrikan (TITL)</h3>
                   <p><strong>Contoh Divisi:</strong> Electrical Maintenance / Panel Installer / Automation</p>
                   <p><strong>Peralatan Utama:</strong> Multimeter Digital, Tang Ampere, Obeng VDE, Tang Kupas, PLC Omron.</p>
                   <p><strong>Contoh Kegiatan:</strong> Perakitan Panel Kontrol Motor 3-Fasa, Pengukuran Tegangan &amp; Arus Beban, Pemrograman Ladder Diagram PLC, Maintenance Breaker MCB/MCCB.</p>
@@ -213,7 +223,7 @@ export default function FormatGuidePage() {
               )}
               {activeTab === 'tkr' && (
                 <div>
-                  <h3>🚗 Jurusan Teknik Otomotif (TKR/TSM)</h3>
+                  <h3><IconCar size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Jurusan Teknik Otomotif (TKR/TSM)</h3>
                   <p><strong>Contoh Divisi:</strong> Service Advisor / Mekanik General Repair / Service Periodic</p>
                   <p><strong>Peralatan Utama:</strong> Diagnostic Scanner OBD-II, Kunci Momen, Feeler Gauge, Lift Hydraulic.</p>
                   <p><strong>Contoh Kegiatan:</strong> Tune-Up Mesin EFI 4-Silinder, Penggantian Oli Engine &amp; Filter, Ganti Kampas Rem Cakram, Scanner Clear Diagnostic Troubleshooting Code (DTC).</p>
@@ -227,7 +237,7 @@ export default function FormatGuidePage() {
             <h2>Siap Membuat Laporan PKL Presisi Tanpa Edit Format Manual?</h2>
             <p>Sistem kami akan menerapkan seluruh standar aturan di atas secara otomatis ke file Word Anda.</p>
             <Link to="/register" className="btn-primary hero-btn-lg">
-              🚀 Mulai Buat Laporan Sekarang (Gratis)
+              <IconRocket size={18} style={{ marginRight: '0.4rem' }} /> Mulai Buat Laporan Sekarang (Gratis)
             </Link>
           </div>
         </div>

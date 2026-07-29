@@ -2,6 +2,7 @@ import { type FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/store/auth'
 import AuthLayout from '@/components/layout/AuthLayout'
+import { IconAlert, IconEye, IconEyeOff, IconLightning } from '@/components/common/Icons'
 
 export default function LoginPage() {
   const login = useAuth((s) => s.login)
@@ -34,13 +35,13 @@ export default function LoginPage() {
 
   return (
     <AuthLayout
-      title="Selamat Datang Kembali 👋"
+      title="Selamat Datang Kembali"
       subtitle="Masuk ke akun SiPKL untuk melanjutkan penyusunan laporan Anda."
     >
       <form onSubmit={onSubmit} className="auth-form">
         {err && (
           <div className="auth-alert auth-alert--danger">
-            <span className="auth-alert__icon">⚠️</span>
+            <IconAlert size={18} className="auth-alert__icon" />
             <span>{err}</span>
           </div>
         )}
@@ -78,7 +79,7 @@ export default function LoginPage() {
               tabIndex={-1}
               aria-label="Toggle password visibility"
             >
-              {showPassword ? '👁️‍🗨️' : '👁️'}
+              {showPassword ? <IconEyeOff size={18} /> : <IconEye size={18} />}
             </button>
           </div>
         </div>
@@ -96,7 +97,7 @@ export default function LoginPage() {
           className="btn-outline auth-demo-btn"
           onClick={fillDemo}
         >
-          ⚡ Gunakan Akun Demo (demo@pkl.id)
+          <IconLightning size={16} style={{ marginRight: '0.4rem' }} /> Gunakan Akun Demo (demo@pkl.id)
         </button>
 
         <p className="link-text">

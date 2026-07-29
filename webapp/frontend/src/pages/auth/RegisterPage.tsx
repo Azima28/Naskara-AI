@@ -2,6 +2,7 @@ import { type FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/store/auth'
 import AuthLayout from '@/components/layout/AuthLayout'
+import { IconAlert, IconEye, IconEyeOff } from '@/components/common/Icons'
 
 export default function RegisterPage() {
   const register = useAuth((s) => s.register)
@@ -30,13 +31,13 @@ export default function RegisterPage() {
 
   return (
     <AuthLayout
-      title="Daftar Akun Baru ✨"
+      title="Daftar Akun Baru"
       subtitle="Buat akun gratis untuk menyusun dan mengunduh laporan PKL standar resmi."
     >
       <form onSubmit={onSubmit} className="auth-form">
         {err && (
           <div className="auth-alert auth-alert--danger">
-            <span className="auth-alert__icon">⚠️</span>
+            <IconAlert size={18} className="auth-alert__icon" />
             <span>{err}</span>
           </div>
         )}
@@ -87,7 +88,7 @@ export default function RegisterPage() {
               tabIndex={-1}
               aria-label="Toggle password visibility"
             >
-              {showPassword ? '👁️‍🗨️' : '👁️'}
+              {showPassword ? <IconEyeOff size={18} /> : <IconEye size={18} />}
             </button>
           </div>
         </div>

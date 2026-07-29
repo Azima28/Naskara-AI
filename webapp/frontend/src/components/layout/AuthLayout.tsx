@@ -1,5 +1,5 @@
-import React from 'react'
 import { Link } from 'react-router-dom'
+import { IconDocument, IconShield, IconSparkles } from '@/components/common/Icons'
 
 interface AuthLayoutProps {
   children: React.ReactNode
@@ -26,7 +26,7 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
 
           <div className="auth-split__manifesto">
             <span className="auth-split__badge">
-              ✦ Standar Resmi SMKN 4 Bandung &amp; Vokasi 2026
+              <IconSparkles size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> Standar Resmi SMKN 4 Bandung &amp; Vokasi 2026
             </span>
             <h2 className="auth-split__headline">
               Susun Laporan PKL Siap Cetak Tanpa Pusing Format Word.
@@ -38,14 +38,14 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
 
           <div className="auth-split__trust-cards">
             <div className="trust-card">
-              <div className="trust-card__icon">📄</div>
+              <div className="trust-card__icon"><IconDocument size={22} color="#ffffff" /></div>
               <div>
                 <strong>Format .docx Native MS Word</strong>
                 <p>Tidak corrupt, TOC otomatis, &amp; bookmark lampiran valid</p>
               </div>
             </div>
             <div className="trust-card">
-              <div className="trust-card__icon">🛡️</div>
+              <div className="trust-card__icon"><IconShield size={22} color="#ffffff" /></div>
               <div>
                 <strong>Bebas Halusinasi AI</strong>
                 <p>Bahasa baku akademik Indonesia yang natural dan tidak kaku</p>

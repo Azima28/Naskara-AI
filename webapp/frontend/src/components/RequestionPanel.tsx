@@ -5,6 +5,7 @@
  * Menyediakan tombol navigasi langsung ke langkah form wizard yang belum lengkap.
  */
 import { useNavigate } from 'react-router-dom'
+import { IconAlert } from '@/components/common/Icons'
 
 export interface GenerateIssue {
   field: string
@@ -83,7 +84,7 @@ export default function RequestionPanel({
   const normalizedIssues: GenerateIssue[] = (issues || []).map((iss) => {
     if (typeof iss === 'string') {
       let body = iss
-      for (const prefix of ['❌ WAJIB:', '❌ WAJIB ', 'WAJIB:']) {
+      for (const prefix of ['WAJIB:', 'WAJIB ']) {
         if (body.startsWith(prefix)) {
           body = body.slice(prefix.length).trim()
           break
@@ -136,8 +137,8 @@ export default function RequestionPanel({
         }}
       >
         <div>
-          <strong style={{ color: 'var(--red-700, #b91c1c)', fontSize: '0.92rem', display: 'block' }}>
-            ⚠️ {message}
+          <strong style={{ color: 'var(--red-700, #b91c1c)', fontSize: '0.92rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+            <IconAlert size={16} /> {message}
           </strong>
           <span style={{ fontSize: '0.82rem', color: 'var(--red-900, #7f1d1d)' }}>
             Klik tombol di bawah untuk langsung menuju form yang belum lengkap.
@@ -158,7 +159,7 @@ export default function RequestionPanel({
           }}
           onClick={() => goToStep(firstStep.stepId, firstIssueField)}
         >
-          👉 Langsung ke {firstStep.stepTitle} →
+          Langsung ke {firstStep.stepTitle} →
         </button>
       </div>
 
@@ -192,7 +193,7 @@ export default function RequestionPanel({
                       }}
                       onClick={() => goToStep(step.stepId, iss.field)}
                     >
-                      📍 Buka {step.stepTitle}
+                      Buka {step.stepTitle}
                     </button>
                   )}
                 </div>
@@ -230,7 +231,7 @@ export default function RequestionPanel({
                         }}
                         onClick={() => goToStep(step.stepId, r.field)}
                       >
-                        📍 {step.stepTitle}
+                        {step.stepTitle}
                       </button>
                     )}
                   </div>

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import PublicNavbar from '@/components/layout/PublicNavbar'
 import Footer from '@/components/layout/Footer'
+import { IconLightbulb, IconShield } from '@/components/common/Icons'
 
 export default function AboutPage() {
   return (
@@ -21,7 +22,7 @@ export default function AboutPage() {
         <div className="about-content__container">
           <div className="about-grid">
             <div className="about-card">
-              <div className="about-card__icon">💡</div>
+              <div className="about-card__icon"><IconLightbulb size={28} color="var(--green-700)" /></div>
               <h2>Latar Belakang Dibuatnya SiPKL</h2>
               <p>
                 Setiap tahunnya, jutaan siswa SMK melangsungkan Praktek Kerja Lapangan (PKL). Namun, sebagian besar waktu mereka habis untuk membetulkan batas margin 4-4-3-3 cm, membetulkan penomoran Halaman Romawi/Arab, menyetel garis pengesahan, dan memperbaiki error "Bookmark not defined" pada Daftar Isi Word.
@@ -32,7 +33,7 @@ export default function AboutPage() {
             </div>
 
             <div className="about-card">
-              <div className="about-card__icon">🛡️</div>
+              <div className="about-card__icon"><IconShield size={28} color="var(--green-700)" /></div>
               <h2>Prinsip AI Bebas Halusinasi</h2>
               <p>
                 Banyak siswa menggunakan AI generik seperti ChatGPT yang menghasilkan kalimat sangat formal, kaku, dan penuh dengan istilah asing yang tidak nyata (halusinasi).

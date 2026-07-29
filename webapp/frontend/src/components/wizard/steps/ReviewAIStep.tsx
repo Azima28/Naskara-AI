@@ -53,7 +53,7 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
       {/* Recommended BAB Info */}
       {config?.bab_modules && config.bab_modules.length > 0 && (
         <div style={{ padding: '1rem', background: 'var(--green-50)', borderLeft: '4px solid var(--green-600)', marginBottom: '1.5rem', borderRadius: '4px' }}>
-          <strong>📑 Rekomendasi Struktur BAB dari AI:</strong>
+          <strong>Rekomendasi Struktur BAB dari AI:</strong>
           <p style={{ margin: '0.5rem 0 0', fontSize: '0.9rem' }}>
             {config.bab_modules.join(' ➔ ')}
           </p>

@@ -1,3 +1,5 @@
+import { IconLightbulb, IconSparkles } from '@/components/common/Icons'
+
 interface AntiAIHighlighterProps {
   text: string
   onReplace?: (newText: string) => void
@@ -71,7 +73,7 @@ export default function AntiAIHighlighter({ text, onReplace }: AntiAIHighlighter
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
         <strong style={{ fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
-          💡 Saran Penulisan Natural (Bebas Gaya Bahasa AI)
+          <IconLightbulb size={16} /> Saran Penulisan Natural (Bebas Gaya Bahasa AI)
         </strong>
         {onReplace && (
           <button
@@ -84,9 +86,12 @@ export default function AntiAIHighlighter({ text, onReplace }: AntiAIHighlighter
               background: 'var(--amber-700, #92610c)',
               borderColor: 'var(--amber-800, #784e09)',
               color: '#ffffff',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.3rem',
             }}
           >
-            ✨ Ganti Semua Kata AI
+            <IconSparkles size={14} /> Ganti Semua Kata AI
           </button>
         )}
       </div>

@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import type { PklContext } from '@/types/pkl'
 import { FieldGroup, ImportanceLegend, TextField, SelectField, ImageUploadField } from '@/components/fields/FormFields'
-import { detectJurusanKey, getJurusanExample, JURUSAN_EXAMPLES } from '@/utils/jurusanExamples'
+import { detectJurusanKey, getJurusanExample } from '@/utils/jurusanExamples'
 import JurusanDocxPreviewModal from '@/components/wizard/JurusanDocxPreviewModal'
+import { IconSearch } from '@/components/common/Icons'
 
 const JURUSAN_PRESETS = [
   { name: 'AKL (Akuntansi & Keuangan)', value: 'Akuntansi dan Keuangan Lembaga', key: 'akl' },
@@ -63,7 +64,7 @@ export default function SiswaStep({ ctx, set }: { ctx: PklContext; set: (p: Part
 
           <div style={{ marginTop: '0.6rem' }}>
             <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--ink-soft)', display: 'block', marginBottom: '0.4rem' }}>
-              ⚡ Pilih Cepat Jurusan SMK:
+              Pilih Cepat Jurusan SMK:
             </span>
             <div className="checkbox-grid">
               {JURUSAN_PRESETS.map((jp) => {
@@ -76,7 +77,7 @@ export default function SiswaStep({ ctx, set }: { ctx: PklContext; set: (p: Part
                     onClick={() => handleJurusanChange(jp.value, jp.key)}
                     style={{ fontSize: '0.8rem', padding: '0.3rem 0.65rem' }}
                   >
-                    {JURUSAN_EXAMPLES[jp.key]?.icon} {jp.name}
+                    {jp.name}
                   </button>
                 )
               })}
@@ -99,7 +100,6 @@ export default function SiswaStep({ ctx, set }: { ctx: PklContext; set: (p: Part
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <span style={{ fontSize: '1.3rem' }}>{currentJurusanExample.icon}</span>
               <div>
                 <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--green-700)', textTransform: 'uppercase' }}>
                   Jurusan Terdeteksi:
@@ -114,9 +114,9 @@ export default function SiswaStep({ ctx, set }: { ctx: PklContext; set: (p: Part
               type="button"
               className="btn-sm btn-primary btn-mobile-full"
               onClick={() => setShowPreviewModal(true)}
-              style={{ fontSize: '0.82rem', fontWeight: 600, padding: '0.45rem 0.85rem' }}
+              style={{ fontSize: '0.82rem', fontWeight: 600, padding: '0.45rem 0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
             >
-              🔍 Lihat Contoh Lembaran Laporan (.docx) Per Jurusan
+              <IconSearch size={14} /> Lihat Contoh Lembaran Laporan (.docx) Per Jurusan
             </button>
           </div>
         </div>

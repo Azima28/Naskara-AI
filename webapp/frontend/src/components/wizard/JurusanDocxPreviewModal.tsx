@@ -9,16 +9,16 @@ interface JurusanDocxPreviewModalProps {
 }
 
 const MAJOR_TABS = [
-  { key: 'tkro', label: 'TKRO / Otomotif', icon: '🚗' },
-  { key: 'akl', label: 'AKL / Akuntansi', icon: '📊' },
-  { key: 'rpl', label: 'RPL / Software', icon: '💻' },
-  { key: 'tkj', label: 'TKJ / Jaringan', icon: '🌐' },
-  { key: 'bdp', label: 'BDP / Marketing', icon: '📈' },
-  { key: 'mplb', label: 'MPLB / Perkantoran', icon: '📁' },
-  { key: 'dkv', label: 'DKV / Desain', icon: '🎨' },
-  { key: 'ph', label: 'PH / Tata Boga', icon: '🍽️' },
-  { key: 'farmasi', label: 'Farmasi', icon: '💊' },
-  { key: 'tei', label: 'TEI / Elektronika', icon: '⚡' },
+  { key: 'tkro', label: 'TKRO / Otomotif' },
+  { key: 'akl', label: 'AKL / Akuntansi' },
+  { key: 'rpl', label: 'RPL / Software' },
+  { key: 'tkj', label: 'TKJ / Jaringan' },
+  { key: 'bdp', label: 'BDP / Marketing' },
+  { key: 'mplb', label: 'MPLB / Perkantoran' },
+  { key: 'dkv', label: 'DKV / Desain' },
+  { key: 'ph', label: 'PH / Tata Boga' },
+  { key: 'farmasi', label: 'Farmasi' },
+  { key: 'tei', label: 'TEI / Elektronika' },
 ]
 
 export default function JurusanDocxPreviewModal({
@@ -88,7 +88,7 @@ export default function JurusanDocxPreviewModal({
         >
           <div style={{ flex: 1, minWidth: 0 }}>
             <h3 style={{ margin: 0, fontSize: 'clamp(0.95rem, 3.5vw, 1.15rem)', fontFamily: 'var(--font-serif)', color: 'var(--ink)' }}>
-              📄 Contoh Hasil Cetak Laporan Word (.docx) Setiap Jurusan
+              Contoh Hasil Cetak Laporan Word (.docx) Setiap Jurusan
             </h3>
             <p className="muted" style={{ margin: '0.2rem 0 0', fontSize: '0.78rem', lineHeight: 1.35 }}>
               Klik tab jurusan di bawah untuk melihat contoh nyata lembar laporan & tabel data hasil akhir (.docx) per jurusan.
@@ -140,7 +140,7 @@ export default function JurusanDocxPreviewModal({
                   transition: 'all 0.15s ease',
                 }}
               >
-                <span>{tab.icon}</span> {tab.label}
+                {tab.label}
               </button>
             )
           })}
@@ -266,7 +266,7 @@ export default function JurusanDocxPreviewModal({
                   boxSizing: 'border-box',
                 }}
               >
-                🖼️ [Gambar Dokumentasi Foto / Diagram Alat - {example.label}]
+                [Gambar Dokumentasi Foto / Diagram Alat - {example.label}]
               </div>
               Gambar 4.1 Foto Pelaksanaan Kegiatan & Bukti Fisik
             </div>
