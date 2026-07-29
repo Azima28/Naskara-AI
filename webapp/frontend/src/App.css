@@ -622,6 +622,7 @@ code {
 
 .array__row .field {
   flex: 1;
+  min-width: 0;
 }
 
 .array__remove {

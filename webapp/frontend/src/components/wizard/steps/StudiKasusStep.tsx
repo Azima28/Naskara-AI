@@ -26,15 +26,54 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
         <TextareaField label="Hasil / Kesimpulan" value={sk.hasil} onChange={(v) => upd({ hasil: v })} importance="opsional" hint="Bagaimana hasil akhirnya?" />
       </FieldGroup>
 
-      <FieldGroup title="Data Angka">
-        {sk.data_angka.map((d, i) => (
-          <div key={i} className="array__row">
-            <TextField label="" value={d.label} onChange={(v) => updAngka(i, { label: v })} placeholder="Total Angsuran" />
-            <TextField label="" value={d.nilai} onChange={(v) => updAngka(i, { nilai: v })} placeholder="Rp 3.478.000" />
-            <button type="button" className="btn-sm btn-danger array__remove" onClick={() => upd({ data_angka: sk.data_angka.filter((_, idx) => idx !== i) })}>✕</button>
+      <FieldGroup title="Data Angka" full>
+        <div className="field field--full">
+          <span className="field__label">
+            Data Angka / Perbandingan <span className="field__badge field__badge--opsional">Opsional</span>
+          </span>
+          <span className="field__hint" style={{ marginBottom: '0.6rem' }}>
+            Tambahkan angka perbandingan atau statistik hasil pekerjaan (contoh: "Waktu Query Sebelum Opti" → "3.8 Detik").
+          </span>
+          <div className="array">
+            {sk.data_angka.map((d, i) => (
+              <div key={i} className="array__row" style={{ alignItems: 'flex-start' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <TextField
+                    label={i === 0 ? 'Nama / Label Data' : ''}
+                    value={d.label}
+                    onChange={(v) => updAngka(i, { label: v })}
+                    placeholder="Contoh: Waktu Query Sebelum Opti"
+                  />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <TextField
+                    label={i === 0 ? 'Nilai / Hasil' : ''}
+                    value={d.nilai}
+                    onChange={(v) => updAngka(i, { nilai: v })}
+                    placeholder="Contoh: 3.8 Detik"
+                  />
+                </div>
+                <button
+                  type="button"
+                  className="btn-sm btn-danger array__remove"
+                  style={{ marginTop: i === 0 ? '1.65rem' : '0' }}
+                  onClick={() => upd({ data_angka: sk.data_angka.filter((_, idx) => idx !== i) })}
+                  aria-label="Hapus baris data angka"
+                  title="Hapus baris ini"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              className="btn-sm btn-outline array__add"
+              onClick={() => upd({ data_angka: [...sk.data_angka, emptyDataAngka()] })}
+            >
+              + Tambah Data Angka
+            </button>
           </div>
-        ))}
-        <button type="button" className="btn-sm btn-outline array__add" onClick={() => upd({ data_angka: [...sk.data_angka, emptyDataAngka()] })}>+ Tambah Data Angka</button>
+        </div>
       </FieldGroup>
 
       <FieldGroup title="Assets terkait (Opsional)">
