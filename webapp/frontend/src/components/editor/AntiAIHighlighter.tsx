@@ -1,51 +1,140 @@
+interface AntiAIHighlighterProps {
+  text: string
+  onReplace?: (newText: string) => void
+}
 
-const AI_WORDS = [
-  'signifikan', 'implementasi', 'optimal', 'kompleks', 'kolaborasi',
-  'transformasi', 'inovasi', 'eksplorasi', 'esensial', 'robust',
-  'scalable', 'seamless', 'leverage', 'facilitate', 'enhance',
-  'era globalisasi', 'perkembangan teknologi', 'revolusioner',
-  'oleh karena itu', 'di samping itu', 'selain itu', 'dengan demikian',
-  'hal tersebut', 'sangat penting', 'diharapkan dapat', 'berperan penting',
-  'memberikan kontribusi'
-]
+const AI_WORD_MAP: Record<string, string> = {
+  'signifikan': 'penting',
+  'implementasi': 'penerapan',
+  'optimal': 'maksimal',
+  'kompleks': 'rumit',
+  'kolaborasi': 'kerja sama',
+  'transformasi': 'perubahan',
+  'inovasi': 'pembaharuan',
+  'eksplorasi': 'pencarian',
+  'esensial': 'penting',
+  'robust': 'handal',
+  'scalable': 'mudah dikembangkan',
+  'seamless': 'lancar',
+  'leverage': 'memanfaatkan',
+  'facilitate': 'membantu',
+  'enhance': 'meningkatkan',
+  'era globalisasi': 'saat ini',
+  'perkembangan teknologi': 'kemajuan teknologi',
+  'revolusioner': 'baru',
+  'oleh karena itu': 'sebab itu',
+  'di samping itu': 'selain itu',
+  'dengan demikian': 'jadi',
+  'hal tersebut': 'hal ini',
+  'sangat penting': 'penting',
+  'diharapkan dapat': 'diharapkan',
+  'berperan penting': 'berperan',
+  'memberikan kontribusi': 'membantu',
+}
 
-export default function AntiAIHighlighter({ text }: { text: string }) {
+export default function AntiAIHighlighter({ text, onReplace }: AntiAIHighlighterProps) {
   if (!text) return null
 
   const lowerText = text.toLowerCase()
-  const foundWords = AI_WORDS.filter(word => lowerText.includes(word))
+  const foundEntries = Object.entries(AI_WORD_MAP).filter(([word]) => lowerText.includes(word))
 
-  if (foundWords.length === 0) return null
+  if (foundEntries.length === 0) return null
+
+  const handleReplaceSingle = (word: string, replacement: string) => {
+    if (!onReplace) return
+    const regex = new RegExp(word, 'gi')
+    const updated = text.replace(regex, replacement)
+    onReplace(updated)
+  }
+
+  const handleReplaceAll = () => {
+    if (!onReplace) return
+    let updated = text
+    foundEntries.forEach(([word, replacement]) => {
+      const regex = new RegExp(word, 'gi')
+      updated = updated.replace(regex, replacement)
+    })
+    onReplace(updated)
+  }
 
   return (
-    <div style={{
-      marginTop: '0.5rem',
-      padding: '0.75rem',
-      backgroundColor: '#fff3cd',
-      border: '1px solid #ffe69c',
-      borderRadius: '4px',
-      fontSize: '0.875rem',
-      color: '#664d03'
-    }}>
-      <strong>Peringatan Gaya Bahasa AI</strong>
-      <p style={{ margin: '0.25rem 0 0 0' }}>
-        Terdapat kata/frasa yang sering digunakan oleh AI: 
-        {foundWords.map((w, i) => (
-          <span key={i} style={{ 
-            display: 'inline-block',
-            backgroundColor: '#ffc107', 
-            padding: '0.1rem 0.3rem', 
-            borderRadius: '3px',
-            margin: '0 0.2rem',
-            fontWeight: 'bold'
-          }}>
-            {w}
+    <div
+      style={{
+        marginTop: '0.75rem',
+        padding: '0.85rem 1rem',
+        backgroundColor: 'var(--amber-100, #f6ead0)',
+        border: '1px solid var(--amber-200, #e6d3a8)',
+        borderRadius: '8px',
+        fontSize: '0.86rem',
+        color: 'var(--amber-700, #92610c)',
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+        <strong style={{ fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+          💡 Saran Penulisan Natural (Bebas Gaya Bahasa AI)
+        </strong>
+        {onReplace && (
+          <button
+            type="button"
+            className="btn-sm"
+            onClick={handleReplaceAll}
+            style={{
+              padding: '0.25rem 0.6rem',
+              fontSize: '0.78rem',
+              background: 'var(--amber-700, #92610c)',
+              borderColor: 'var(--amber-800, #784e09)',
+              color: '#ffffff',
+            }}
+          >
+            ✨ Ganti Semua Kata AI
+          </button>
+        )}
+      </div>
+
+      <p style={{ margin: '0 0 0.5rem 0', lineHeight: 1.5 }}>
+        Terdapat beberapa kata/frasa khas buatan AI. Klik tombol saran untuk menggantinya menjadi kata yang lebih alami:
+      </p>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+        {foundEntries.map(([word, replacement], i) => (
+          <span
+            key={i}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.3rem',
+              backgroundColor: 'var(--surface, #fffdf8)',
+              border: '1px solid var(--line, #ddd6c8)',
+              padding: '0.2rem 0.5rem',
+              borderRadius: '6px',
+              fontSize: '0.82rem',
+              color: 'var(--ink, #262521)',
+            }}
+          >
+            <span style={{ textDecoration: 'line-through', opacity: 0.7 }}>{word}</span>
+            <span style={{ color: 'var(--green-700, #14614a)', fontWeight: 600 }}>→ {replacement}</span>
+            {onReplace && (
+              <button
+                type="button"
+                onClick={() => handleReplaceSingle(word, replacement)}
+                title={`Ganti "${word}" dengan "${replacement}"`}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: '0 2px',
+                  cursor: 'pointer',
+                  color: 'var(--green-700, #14614a)',
+                  fontWeight: 'bold',
+                  fontSize: '0.85rem',
+                  marginLeft: '2px',
+                }}
+              >
+                ✓
+              </button>
+            )}
           </span>
         ))}
-      </p>
-      <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8rem' }}>
-        Disarankan untuk mengubah frasa tersebut agar tulisan terdengar lebih natural dan "humanis".
-      </p>
+      </div>
     </div>
   )
 }

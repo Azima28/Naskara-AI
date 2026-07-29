@@ -37,6 +37,11 @@ const FIELD_LABELS: Record<string, string> = {
   'lampiran.foto_kegiatan': 'Foto dokumentasi (LAMPIRAN)',
   'profil_perusahaan.sejarah': 'Sejarah perusahaan',
   'profil_perusahaan.visi': 'Visi perusahaan',
+  'profil_perusahaan.tata_tertib_perusahaan': 'Tata tertib khusus perusahaan',
+  'profil_perusahaan.tata_tertib': 'Tata tertib perusahaan',
+  'studi_kasus.judul': 'Judul studi kasus teknis',
+  'studi_kasus.proses_atau_formula': 'Proses / langkah teknis studi kasus',
+  'kata_pengantar.ucapan_syukur': 'Kata Pengantar (Ucapan Syukur)',
 }
 
 const label = (field: string) => FIELD_LABELS[field] || field

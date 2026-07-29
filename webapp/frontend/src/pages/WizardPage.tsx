@@ -2,8 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import CompletenessBar from '@/components/CompletenessBar'
-import RequestionPanel, { type GenerateIssue, type Requestion } from '@/components/RequestionPanel'
-import { getDraft, updateDraft, generateDocx } from '@/api/client'
+import { getDraft, updateDraft } from '@/api/client'
 import type { PklContext } from '@/types/pkl'
 import { emptyContext } from '@/types/pkl'
 
@@ -14,6 +13,7 @@ import PklStep from '@/components/wizard/steps/PklStep'
 import ProfilStep from '@/components/wizard/steps/ProfilStep'
 import CeritaStep from '@/components/wizard/steps/CeritaStep'
 import ReviewAIStep from '@/components/wizard/steps/ReviewAIStep'
+import StudiKasusStep from '@/components/wizard/steps/StudiKasusStep'
 import ClosingStep from '@/components/wizard/steps/ClosingStep'
 import AssetsStep from '@/components/wizard/steps/AssetsStep'
 
@@ -25,14 +25,15 @@ interface StepDef {
 
 const STEPS: StepDef[] = [
   { id: 'siswa', title: 'Data Siswa', render: (c, s) => <SiswaStep ctx={c} set={s} /> },
-  { id: 'sekolah', title: 'Sekolah', render: (c, s) => <SekolahStep ctx={c} set={s} /> },
-  { id: 'perusahaan', title: 'Perusahaan', render: (c, s) => <PerusahaanStep ctx={c} set={s} /> },
+  { id: 'sekolah', title: 'Data Sekolah', render: (c, s) => <SekolahStep ctx={c} set={s} /> },
+  { id: 'perusahaan', title: 'Data Perusahaan', render: (c, s) => <PerusahaanStep ctx={c} set={s} /> },
   { id: 'pkl', title: 'Periode PKL', render: (c, s) => <PklStep ctx={c} set={s} /> },
   { id: 'profil', title: 'Profil Perusahaan (BAB II)', render: (c, s) => <ProfilStep ctx={c} set={s} /> },
   { id: 'cerita', title: 'Cerita Pengalaman', render: (c, s) => <CeritaStep ctx={c} set={s} /> },
   { id: 'review-ai', title: 'Kegiatan & Peralatan', render: (c, s) => <ReviewAIStep ctx={c} set={s} /> },
-  { id: 'closing', title: 'Penutup', render: (c, s) => <ClosingStep ctx={c} set={s} /> },
-  { id: 'assets', title: 'Lampiran & Gambar', render: (c, s) => <AssetsStep ctx={c} set={s} /> },
+  { id: 'studi-kasus', title: 'Studi Kasus Teknis', render: (c, s) => <StudiKasusStep ctx={c} set={s} /> },
+  { id: 'closing', title: 'Penutup & Kesimpulan', render: (c, s) => <ClosingStep ctx={c} set={s} /> },
+  { id: 'assets', title: 'Lampiran & Foto', render: (c, s) => <AssetsStep ctx={c} set={s} /> },
 ]
 
 export default function WizardPage() {
@@ -51,10 +52,6 @@ function WizardInner() {
   const [stepIdx, setStepIdx] = useState(0)
   const [loading, setLoading] = useState(true)
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle')
-  const [downloading, setDownloading] = useState(false)
-  const [downloadError, setDownloadError] = useState('')
-  const [downloadIssues, setDownloadIssues] = useState<GenerateIssue[]>([])
-  const [downloadQuestions, setDownloadQuestions] = useState<Requestion[]>([])
   const dirtyRef = useRef(false)
 
   // Load draft
@@ -90,12 +87,6 @@ function WizardInner() {
 
   /**
    * Apakah sebuah langkah benar-benar sudah terisi?
-   *
-   * Sengaja TIDAK memakai `i < stepIdx`: itu hanya menandai langkah yang
-   * sudah dilewati, sehingga user bisa klik "Selanjutnya" 9x tanpa mengisi
-   * apa pun dan semuanya tampak hijau. Di sini tiap langkah diperiksa
-   * berdasarkan isi datanya, dikunci lewat `id` (bukan index) supaya urutan
-   * STEPS bisa diubah tanpa salah petakan.
    */
   const isStepDone = (i: number) => {
     const filled = (v?: string) => !!v && v.trim().length > 0
@@ -114,6 +105,8 @@ function WizardInner() {
         return filled(ctx.refleksi)
       case 'review-ai':
         return ctx.kegiatan.length > 0
+      case 'studi-kasus':
+        return filled(ctx.studi_kasus?.judul) || filled(ctx.studi_kasus?.latar_belakang)
       case 'closing':
         return filled(ctx.kata_pengantar.ucapan_syukur) || filled(ctx.kesimpulan_user)
       case 'assets':
@@ -158,38 +151,6 @@ function WizardInner() {
               {saveState === 'saving' && 'menyimpan…'}
               {saveState === 'saved' && 'tersimpan ✓'}
             </span>
-            {draftId && (
-              <button
-                type="button"
-                className="btn-sm btn-primary"
-                disabled={downloading}
-                onClick={async () => {
-                  setDownloading(true)
-                  setDownloadError('')
-                  setDownloadIssues([])
-                  setDownloadQuestions([])
-                  try {
-                    await updateDraft(draftId, { data: ctx })
-                    await generateDocx(draftId)
-                  } catch (err: any) {
-                    const detail = err?.response?.data?.detail
-                    if (typeof detail === 'string') {
-                      setDownloadError(detail)
-                    } else {
-                      // 422 dari backend membawa daftar field bermasalah +
-                      // pertanyaan ulang yang siap ditampilkan ke user.
-                      setDownloadError(detail?.message || 'Gagal generate dokumen')
-                      setDownloadIssues(detail?.issues || [])
-                      setDownloadQuestions(detail?.requestions || [])
-                    }
-                  } finally {
-                    setDownloading(false)
-                  }
-                }}
-              >
-                {downloading ? 'Menyusun dokumen…' : 'Download .docx'}
-              </button>
-            )}
           </div>
         </div>
         <div style={{ marginTop: '0.75rem' }}>
@@ -225,20 +186,9 @@ function WizardInner() {
           ← Sebelumnya
         </button>
         <button type="button" className="btn-primary" onClick={next}>
-          {isLast ? 'Selesai → Editor' : 'Selanjutnya →'}
+          {isLast ? 'Review & Edit Laporan →' : 'Selanjutnya →'}
         </button>
       </div>
-      {downloadError && (downloadIssues.length > 0 || downloadQuestions.length > 0 ? (
-        <RequestionPanel
-          message={downloadError}
-          issues={downloadIssues}
-          requestions={downloadQuestions}
-        />
-      ) : (
-        <p style={{ color: 'var(--red-600)', marginTop: '0.5rem', fontSize: '0.875rem' }}>
-          {downloadError}
-        </p>
-      ))}
     </div>
   )
 }

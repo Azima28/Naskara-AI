@@ -436,7 +436,7 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
         <StringArrayField
           label="Aturan / Tata Tertib Khusus Perusahaan"
           items={pr.tata_tertib_perusahaan ?? []}
-          onChange={tata_tertib_perusahaan => upd({ tata_tertib_perusahaan })}
+          onChange={items => upd({ tata_tertib_perusahaan: items, tata_tertib: items })}
           addLabel="+ Tambah Aturan"
           placeholder="cth: datang tepat waktu jam 08.00"
           importance="opsional"

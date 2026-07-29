@@ -334,13 +334,13 @@ export const emptyConfig = (): PklConfig => ({
   front_matter_start: 2,
   body_matter_format: 'arabic',
   body_matter_start: 1,
-  jumlah_bab: null,
-  bab_modules: [],
+  jumlah_bab: 6,
+  bab_modules: ['PENDAHULUAN', 'PELAKSANAAN', 'LANDASAN_TEORI', 'DATA_PENGAMATAN', 'PEMBAHASAN', 'PENUTUP'],
   margin: emptyMargin(),
   font: 'Times New Roman',
   font_size: 12,
   spasi: 1.5,
-  pedoman_sekolah: null,
+  pedoman_sekolah: 'SMKN4',
   auto_daftar_pustaka: true,
 })
 

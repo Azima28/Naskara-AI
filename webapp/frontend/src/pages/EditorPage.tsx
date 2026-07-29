@@ -3,9 +3,21 @@ import { useParams, Link } from 'react-router-dom'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import { getDraft, updateDraft, generateDocx, draftSection, regenerateSection, enhanceContext } from '@/api/client'
 import AntiAIHighlighter from '@/components/editor/AntiAIHighlighter'
+import EnhancementDiffModal from '@/components/editor/EnhancementDiffModal'
+import DocumentOutline from '@/components/editor/DocumentOutline'
 import RequestionPanel, { type GenerateIssue, type Requestion } from '@/components/RequestionPanel'
 import type { PklContext } from '@/types/pkl'
 import { emptyContext } from '@/types/pkl'
+
+const ARRAY_SECTION_KEYS = [
+  'tujuan',
+  'tujuan_pkl',
+  'manfaat',
+  'kesimpulan',
+  'saran',
+  'rumusan_masalah',
+  'kesimpulan_saran',
+]
 
 export default function EditorPage() {
   return (
@@ -22,6 +34,7 @@ function EditorInner() {
   const [loading, setLoading] = useState(true)
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle')
   const dirtyRef = useRef(false)
+
   const [downloading, setDownloading] = useState(false)
   const [enhancing, setEnhancing] = useState(false)
   const [genError, setGenError] = useState('')
@@ -29,6 +42,11 @@ function EditorInner() {
   const [genQuestions, setGenQuestions] = useState<Requestion[]>([])
   const [polishNotice, setPolishNotice] = useState('')
   const [isDocxReady, setIsDocxReady] = useState(false)
+
+  // Diff Modal State
+  const [showDiffModal, setShowDiffModal] = useState(false)
+  const [pendingEnhancedCtx, setPendingEnhancedCtx] = useState<PklContext | null>(null)
+  const [activeSectionKey, setActiveSectionKey] = useState<string | undefined>(undefined)
 
   // Load draft
   useEffect(() => {
@@ -53,7 +71,7 @@ function EditorInner() {
     return () => clearTimeout(t)
   }, [ctx, draftId])
 
-  const updateSection = useCallback((key: string, content: string) => {
+  const updateSection = useCallback((key: string, content: string | string[]) => {
     setCtx((prev) => {
       const gen = prev.generated_sections || {}
       return { ...prev, generated_sections: { ...gen, [key]: content } }
@@ -61,10 +79,18 @@ function EditorInner() {
     dirtyRef.current = true
   }, [])
 
+  const handleSelectSection = (key: string) => {
+    setActiveSectionKey(key)
+    const el = document.getElementById(`section-${key}`)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
   if (loading) {
     return (
       <div className="shell">
-        <p className="muted">Memuat editor…</p>
+        <p className="muted">Memuat editor laporan…</p>
       </div>
     )
   }
@@ -77,29 +103,31 @@ function EditorInner() {
       <header className="shell__header">
         <div className="shell__row">
           <h1>
-            <Link to={`/wizard/${draftId}`}>←</Link> &nbsp; Review &amp; Edit: {title}
+            <Link to={`/wizard/${draftId}`}>← Kembali ke Form Data</Link> &nbsp;|&nbsp; Review &amp; Edit: {title}
           </h1>
           <span className="save-indicator">
-            {saveState === 'saving' && 'menyimpan…'}
-            {saveState === 'saved' && 'tersimpan ✓'}
+            {saveState === 'saving' && 'menyimpan draf…'}
+            {saveState === 'saved' && 'tersimpan otomatis ✓'}
           </span>
         </div>
         <p className="muted" style={{ marginTop: '0.5rem' }}>
-          Gunakan AI untuk membuat draf naratif setiap bagian laporan. Kamu bisa mengedit hasilnya langsung.
+          Gunakan AI untuk menyusun draf naratif tiap bagian laporan secara akademis (KBBI). Kamu bisa menyunting hasilnya secara langsung.
         </p>
       </header>
 
       <div className="editor-grid">
+        {/* Editor Main Content */}
         <div className="editor-sections">
           {sections.map((sec) => (
-            <SectionEditor
-              key={sec.key}
-              sectionKey={sec.key}
-              title={sec.title}
-              ctx={ctx}
-              value={(ctx.generated_sections || {})[sec.key] || ''}
-              onChange={(val) => updateSection(sec.key, val)}
-            />
+            <div id={`section-${sec.key}`} key={sec.key}>
+              <SectionEditor
+                sectionKey={sec.key}
+                title={sec.title}
+                ctx={ctx}
+                value={(ctx.generated_sections || {})[sec.key] || ''}
+                onChange={(val) => updateSection(sec.key, val)}
+              />
+            </div>
           ))}
           {sections.length === 0 && (
             <div className="card">
@@ -108,27 +136,29 @@ function EditorInner() {
           )}
         </div>
 
-        <div className="editor-sidebar">
-          <div className="card" style={{ position: 'sticky', top: '2rem' }}>
-            <h3>Finalisasi</h3>
-            
+        {/* Sidebar: Finalisasi & Structure Outline */}
+        <div className="editor-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          {/* Panel Finalisasi */}
+          <div className="card" style={{ margin: 0 }}>
+            <h3 style={{ margin: '0 0 0.5rem' }}>Finalisasi Laporan</h3>
+
             <div style={{ marginBottom: '1rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.25rem' }}>
-                <span>Progress Draft</span>
+                <span>Kemajuan Draf Sub-bab</span>
                 <strong>{Object.keys(ctx.generated_sections || {}).length} / {sections.length}</strong>
               </div>
               <div className="completeness__bar">
-                <div 
-                  className="completeness__fill is-ready" 
+                <div
+                  className="completeness__fill is-ready"
                   style={{ width: `${sections.length > 0 ? (Object.keys(ctx.generated_sections || {}).length / sections.length) * 100 : 0}%` }}
                 />
               </div>
             </div>
 
-            <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'var(--surface-sunken)', borderRadius: '8px' }}>
-              <h4 style={{ margin: '0 0 0.5rem', fontSize: '0.95rem' }}>Data Mentah Kurang Rapi?</h4>
-              <p className="muted" style={{ fontSize: '0.85rem', marginBottom: '1rem', lineHeight: 1.4 }}>
-                Jika jawaban di langkah sebelumnya terlalu singkat atau tidak formal (misal: "gatau", "apa aja"), gunakan AI untuk merapikan semuanya menjadi kalimat akademis.
+            <div style={{ marginBottom: '1.25rem', padding: '0.85rem 1rem', background: 'var(--paper-2, #ece8de)', borderRadius: '8px', border: '1px solid var(--line, #ddd6c8)' }}>
+              <h4 style={{ margin: '0 0 0.35rem', fontSize: '0.92rem' }}>📝 Bahasa Data Kurang Formal?</h4>
+              <p className="muted" style={{ fontSize: '0.82rem', marginBottom: '0.85rem', lineHeight: 1.45 }}>
+                Gunakan AI untuk memformalkan data mentah menjadi kalimat akademis resmi. Kamu dapat melihat perbandingannya terlebih dahulu.
               </p>
               <button
                 type="button"
@@ -141,7 +171,8 @@ function EditorInner() {
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  padding: '0.65rem 1rem'
+                  padding: '0.65rem 0.85rem',
+                  fontSize: '0.88rem',
                 }}
                 disabled={enhancing || downloading}
                 onClick={async () => {
@@ -149,10 +180,8 @@ function EditorInner() {
                   setEnhancing(true)
                   try {
                     const res = await enhanceContext(ctx)
-                    setCtx(res.context_data)
-                    dirtyRef.current = true
-                    setIsDocxReady(true)
-                    alert("Data mentah berhasil dirapikan! Tombol 'Download .docx' sekarang sudah aktif dan dapat di-klik.")
+                    setPendingEnhancedCtx(res.context_data)
+                    setShowDiffModal(true)
                   } catch (err: any) {
                     alert(err?.message || 'Gagal merapikan data.')
                   } finally {
@@ -166,21 +195,22 @@ function EditorInner() {
                       <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Merapikan Data...
+                    Memformalkan Bahasa…
                   </span>
-                ) : isDocxReady ? '✓ Data Mentah Sudah Rapi (Klik Ulang jika Perlu)' : '✨ Rapikan Data Mentah'}
+                ) : isDocxReady ? '✓ Data Sudah Akademis (Tinjau Ulang)' : '📝 Formalkan Teks ke Bahasa Akademis (KBBI)'}
               </button>
             </div>
 
-            <p className="muted" style={{ fontSize: '0.9rem', marginBottom: '1rem' }}>
-              Pastikan semua bagian sudah terisi dan di-review sebelum men-download.
+            <p className="muted" style={{ fontSize: '0.85rem', marginBottom: '0.85rem' }}>
+              Pastikan seluruh bagian laporan telah ditinjau dengan rapi sebelum mengunduh file `.docx`.
             </p>
+
             <button
               type="button"
               style={{
                 width: '100%',
                 padding: '0.75rem 1rem',
-                fontSize: '1rem',
+                fontSize: '0.98rem',
                 fontWeight: 600,
                 borderRadius: '8px',
                 display: 'inline-flex',
@@ -193,14 +223,14 @@ function EditorInner() {
                       color: '#ffffff',
                       border: '1px solid var(--green-700)',
                       cursor: downloading ? 'wait' : 'pointer',
-                      boxShadow: '0 2px 6px rgba(22, 101, 52, 0.2)'
+                      boxShadow: '0 2px 6px rgba(22, 101, 52, 0.2)',
                     }
                   : {
                       background: '#e2e8f0',
                       color: '#94a3b8',
                       border: '1px solid #cbd5e1',
-                      cursor: 'not-allowed'
-                    })
+                      cursor: 'not-allowed',
+                    }),
               }}
               disabled={!isDocxReady || downloading}
               onClick={async () => {
@@ -233,27 +263,59 @@ function EditorInner() {
                     <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Menyusun dokumen…
+                  Menyusun dokumen Word…
                 </span>
-              ) : 'Download .docx'}
+              ) : '📥 Download .docx (Siap Cetak)'}
             </button>
+
             {genError && (genIssues.length > 0 || genQuestions.length > 0 ? (
               <RequestionPanel message={genError} issues={genIssues} requestions={genQuestions} />
             ) : (
               <p style={{ color: 'var(--red-600)', marginTop: '0.5rem', fontSize: '0.85rem' }}>{genError}</p>
             ))}
+
             {polishNotice && (
-              <p style={{
-                color: 'var(--amber-700, #b45309)', background: 'var(--amber-50, #fffbeb)',
-                border: '1px solid var(--amber-200, #fde68a)', borderRadius: '8px',
-                padding: '0.6rem 0.8rem', marginTop: '0.5rem', fontSize: '0.85rem',
-              }}>
+              <p
+                style={{
+                  color: 'var(--amber-700, #b45309)',
+                  background: 'var(--amber-50, #fffbeb)',
+                  border: '1px solid var(--amber-200, #fde68a)',
+                  borderRadius: '8px',
+                  padding: '0.6rem 0.8rem',
+                  marginTop: '0.5rem',
+                  fontSize: '0.85rem',
+                }}
+              >
                 ⚠️ {polishNotice}
               </p>
             )}
           </div>
+
+          {/* Document Outline Sidebar */}
+          <DocumentOutline
+            ctx={ctx}
+            activeSectionKey={activeSectionKey}
+            onSelectSection={handleSelectSection}
+          />
         </div>
       </div>
+
+      {/* Diff Review Modal */}
+      {showDiffModal && pendingEnhancedCtx && (
+        <EnhancementDiffModal
+          oldCtx={ctx}
+          newCtx={pendingEnhancedCtx}
+          onApply={(finalCtx) => {
+            setCtx(finalCtx)
+            dirtyRef.current = true
+            setIsDocxReady(true)
+            setShowDiffModal(false)
+          }}
+          onCancel={() => {
+            setShowDiffModal(false)
+          }}
+        />
+      )}
     </div>
   )
 }
@@ -263,11 +325,9 @@ function buildSectionList(ctx: PklContext) {
   const list: { key: string; title: string }[] = []
 
   // BAB I PENDAHULUAN — termasuk profil perusahaan (sub-bab 1.3-1.6)
-  // sesuai Panduan Resmi SMKN4 TP 2026-2027
   if (bab.includes('PENDAHULUAN')) {
     list.push({ key: 'latar_belakang', title: 'Latar Belakang (1.1)' })
     list.push({ key: 'tujuan_pkl', title: 'Tujuan PKL (1.2)' })
-    // Profil perusahaan kini sub-bab 1.3-1.6 di BAB I
     list.push({ key: 'profil_sejarah', title: 'Sejarah Singkat Perusahaan (1.3)' })
     list.push({ key: 'narasi_struktur', title: 'Narasi Struktur Organisasi (1.5)' })
   }
@@ -318,15 +378,18 @@ function SectionEditor({
   const [regen, setRegen] = useState(false)
   const [instruction, setInstruction] = useState('')
 
-  // Handle value that might be an array (like kesimpulan/saran)
-  const textValue = Array.isArray(value) ? value.map((v) => `- ${v}`).join('\\n') : (value as string)
+  const isArrayType = ARRAY_SECTION_KEYS.includes(sectionKey)
+
+  // Format value into text
+  const textValue = Array.isArray(value)
+    ? value.map((v) => `- ${v}`).join('\n')
+    : (value as string)
 
   const handleGenerate = async () => {
     setLoading(true)
     try {
       const res = await draftSection(sectionKey, ctx)
-      // If it expects array (like tujuan, kesimpulan), split by lines roughly
-      if (['tujuan', 'manfaat', 'kesimpulan', 'saran', 'rumusan_masalah'].includes(sectionKey)) {
+      if (isArrayType) {
         const arr = res.content
           .split('\n')
           .map((s) => s.replace(/^[0-9]+\.\s*/, '').replace(/^-\s*/, '').replace(/^[a-z]\.\s*/, '').trim())
@@ -337,7 +400,7 @@ function SectionEditor({
       }
     } catch (err: any) {
       const d = err?.response?.data?.detail
-      const msg = (d && typeof d === 'object' ? d.message : d) || err?.message || 'Gagal generate draft AI'
+      const msg = (d && typeof d === 'object' ? d.message : d) || err?.message || 'Gagal membuat draf AI'
       alert(msg)
     } finally {
       setLoading(false)
@@ -352,7 +415,7 @@ function SectionEditor({
     setLoading(true)
     try {
       const res = await regenerateSection(textValue, instruction)
-      if (['tujuan', 'manfaat', 'kesimpulan', 'saran', 'rumusan_masalah'].includes(sectionKey)) {
+      if (isArrayType) {
         const arr = res.content
           .split('\n')
           .map((s) => s.replace(/^[0-9]+\.\s*/, '').replace(/^-\s*/, '').replace(/^[a-z]\.\s*/, '').trim())
@@ -364,7 +427,7 @@ function SectionEditor({
       setInstruction('')
       setRegen(false)
     } catch (err: any) {
-      alert(err?.response?.data?.detail || err?.message || 'Gagal generate ulang')
+      alert(err?.response?.data?.detail || err?.message || 'Gagal memperbarui draf')
     } finally {
       setLoading(false)
     }
@@ -375,41 +438,43 @@ function SectionEditor({
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h3 style={{ margin: 0 }}>{title}</h3>
         {!textValue && !loading && (
-          <button type="button" className="btn-sm" onClick={handleGenerate}>
-            Generate AI
+          <button type="button" className="btn-sm btn-primary" onClick={handleGenerate}>
+            ✨ Tulis Draf dengan AI
           </button>
         )}
       </div>
 
-      {loading && <p className="muted">AI sedang menulis…</p>}
+      {loading && <p className="muted">Penyusun AI sedang menulis draf naratif…</p>}
 
       {!loading && textValue && (
         <>
           <textarea
             className="input"
-            rows={Math.max(5, textValue.split('\\n').length + 1)}
+            rows={Math.max(5, textValue.split('\n').length + 1)}
             value={textValue}
             onChange={(e) => {
-              if (['tujuan', 'manfaat', 'kesimpulan', 'saran', 'rumusan_masalah'].includes(sectionKey)) {
-                onChange(e.target.value.split('\\n').filter(Boolean))
+              if (isArrayType) {
+                const lines = e.target.value.split('\n').map((l) => l.replace(/^-\s*/, '').trim()).filter(Boolean)
+                onChange(lines)
               } else {
                 onChange(e.target.value)
               }
             }}
-            style={{ width: '100%', resize: 'vertical' }}
+            style={{ width: '100%', resize: 'vertical', lineHeight: 1.6 }}
           />
+
           <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', alignItems: 'center' }}>
             {!regen ? (
               <button type="button" className="btn-sm btn-outline" onClick={() => setRegen(true)}>
-                🔄 Regenerate
+                🔄 Perbaiki &amp; Tulis Ulang
               </button>
             ) : (
               <>
                 <input
                   type="text"
                   className="input"
-                  style={{ flex: 1, padding: '0.25rem 0.5rem' }}
-                  placeholder="Instruksi: e.g. 'Lebih singkat' atau 'Jangan pakai kata ini'"
+                  style={{ flex: 1, padding: '0.35rem 0.6rem' }}
+                  placeholder="Instruksi: contoh 'Lebih padat', 'Gunakan istilah TKJ yang baku'"
                   value={instruction}
                   onChange={(e) => setInstruction(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleRegenerate()}
@@ -423,15 +488,26 @@ function SectionEditor({
               </>
             )}
           </div>
-          <AntiAIHighlighter text={textValue} />
+
+          <AntiAIHighlighter
+            text={textValue}
+            onReplace={(newText) => {
+              if (isArrayType) {
+                const lines = newText.split('\n').map((l) => l.replace(/^-\s*/, '').trim()).filter(Boolean)
+                onChange(lines)
+              } else {
+                onChange(newText)
+              }
+            }}
+          />
         </>
       )}
 
       {!loading && !textValue && (
-        <div style={{ padding: '2rem', textAlign: 'center', background: 'var(--surface-sunken)', borderRadius: '6px' }}>
-          <p className="muted" style={{ marginBottom: '1rem' }}>Belum ada draf untuk bagian ini.</p>
-          <button type="button" onClick={handleGenerate}>
-            Buat Draf Sekarang
+        <div style={{ padding: '2rem', textAlign: 'center', background: 'var(--paper-2, #ece8de)', borderRadius: '8px' }}>
+          <p className="muted" style={{ marginBottom: '1rem' }}>Belum ada draf tulisan untuk bagian ini.</p>
+          <button type="button" className="btn-primary" onClick={handleGenerate}>
+            ✨ Buat Draf Naratif Sekarang
           </button>
         </div>
       )}
