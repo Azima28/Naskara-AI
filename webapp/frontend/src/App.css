@@ -594,6 +594,13 @@ code {
   color: var(--ink);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
   font-family: inherit;
+  box-sizing: border-box;
+}
+
+input.field__input {
+  height: 2.6rem;
+  line-height: 1.35;
+  white-space: nowrap;
 }
 
 .field__input:hover {

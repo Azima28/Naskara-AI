@@ -31,9 +31,9 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
 
   return (
     <>
-      <h2>Studi Kasus / Analisis Teknis</h2>
+      <h2>Topik Utama & Pengalaman Kerja Paling Berkesan (BAB IV & V)</h2>
       <p className="muted">
-        Opsional. Ceritakan satu pekerjaan yang paling menarik/menantang selama PKL. Ini akan jadi bab pembahasan (analisis) di laporan kamu.
+        Opsional. Ceritakan 1 pekerjaan utama yang paling sering atau berkesan selama kamu PKL. AI akan membantu merapikan tulisan kamu menjadi narasi laporan resmi yang bagus.
       </p>
 
       {/* Dynamic Major-Specific Example Card */}
@@ -42,27 +42,55 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
         onApplyExample={handleApplyExample}
       />
 
-      <FieldGroup title="Studi Kasus">
-        <TextField label="Judul Studi Kasus" value={sk.judul} onChange={(v) => upd({ judul: v })} importance="opsional" hint="Contoh: Proses Instalasi Jaringan, atau Cara Perhitungan Diskon" />
-        <TextareaField label="Latar Belakang / Masalah" value={sk.latar_belakang} onChange={(v) => upd({ latar_belakang: v })} importance="opsional" hint="Kenapa pekerjaan ini penting atau menarik?" />
-        <TextareaField label="Proses / Cara Kerja" value={sk.proses_atau_formula} onChange={(v) => upd({ proses_atau_formula: v })} importance="opsional" hint="Langkah-langkah pengerjaannya secara urut" />
-        <TextareaField label="Hasil / Kesimpulan" value={sk.hasil} onChange={(v) => upd({ hasil: v })} importance="opsional" hint="Bagaimana hasil akhirnya?" />
+      <FieldGroup title="Detail Pekerjaan Utama">
+        <TextField
+          label="1. Nama Pekerjaan Utama"
+          value={sk.judul}
+          onChange={(v) => upd({ judul: v })}
+          importance="opsional"
+          placeholder="Contoh: Service Tune-Up Mesin EFI / Input Rekap Keuangan / Setting WiFi Office"
+          hint="Apa nama tugas/pekerjaan yang paling berkesan bagi kamu?"
+        />
+        <TextareaField
+          label="2. Mengapa Pekerjaan Ini Perlu Dikerjakan? (Alasan / Masalah)"
+          value={sk.latar_belakang}
+          onChange={(v) => upd({ latar_belakang: v })}
+          importance="opsional"
+          placeholder="Contoh: Karena mesin mobil pelanggan tarikannya berat dan lampu indikator check engine menyala, sehingga perlu diperbaiki."
+          hint="Jelaskan alasan singkat mengapa pekerjaan ini penting."
+        />
+        <TextareaField
+          label="3. Langkah-Langkah Kamu Mengerjakannya (Urut)"
+          value={sk.proses_atau_formula}
+          onChange={(v) => upd({ proses_atau_formula: v })}
+          importance="opsional"
+          placeholder="1. Memasang OBD-II Scanner untuk cek kerusakan.&#10;2. Membersihkan busi dan injektor.&#10;3. Uji coba tes mesin kembali."
+          hint="Tuliskan urutan cara kamu mengerjakannya (bisa pakai angka 1, 2, 3)."
+        />
+        <TextareaField
+          label="4. Bagaimana Hasil Akhirnya?"
+          value={sk.hasil}
+          onChange={(v) => upd({ hasil: v })}
+          importance="opsional"
+          placeholder="Contoh: Mesin mobil kembali halus di 750 RPM dan siap diserahkan ke pelanggan."
+          hint="Bagaimana kondisi akhir setelah pekerjaan kamu selesai?"
+        />
       </FieldGroup>
 
-      <FieldGroup title="Data Angka" full>
+      <FieldGroup title="Catatan Angka Hasil Pekerjaan (Opsional)" full>
         <div className="field field--full">
           <span className="field__label">
-            Data Angka / Perbandingan <span className="field__badge field__badge--opsional">Opsional</span>
+            Angka / Statistik Hasil <span className="field__badge field__badge--opsional">Opsional</span>
           </span>
           <span className="field__hint" style={{ marginBottom: '0.6rem' }}>
-            Tambahkan angka perbandingan atau statistik hasil pekerjaan (contoh: "Waktu Query Sebelum Opti" → "3.8 Detik").
+            Isikan jika pekerjaan kamu memiliki catatan angka (contoh: "Waktu Idle Sebelum Service" → "550 RPM", "Total Berkas" → "50 Surat").
           </span>
           <div className="array">
             {sk.data_angka.map((d, i) => (
               <div key={i} className="array__row" style={{ alignItems: 'flex-start' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <TextField
-                    label={i === 0 ? 'Nama / Label Data' : ''}
+                    label={i === 0 ? 'Nama / Catatan Data' : ''}
                     value={d.label}
                     onChange={(v) => updAngka(i, { label: v })}
                     placeholder="Contoh: Waktu Query Sebelum Opti"
@@ -70,7 +98,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <TextField
-                    label={i === 0 ? 'Nilai / Hasil' : ''}
+                    label={i === 0 ? 'Nilai / Angka' : ''}
                     value={d.nilai}
                     onChange={(v) => updAngka(i, { nilai: v })}
                     placeholder="Contoh: 3.8 Detik"
