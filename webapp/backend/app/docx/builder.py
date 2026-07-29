@@ -1666,11 +1666,11 @@ def compute_toc_page_numbers(docx_path: str) -> dict[str, str]:
                 sec_start = sec_starts.get(sec_idx, 1)
 
                 rel_page = max(1, phys_page - sec_start + 1)
-                if sec_idx <= 2:
-                    # Section 1 (Cover) & Section 2 (Front Matter): Romawi kecil relatif per section (i, ii, iii, dst)
+                if sec_idx <= 3:
+                    # Section 1..3 (Cover Luar, Cover Dalam, Front Matter - Pengesahan dst): Romawi kecil (i, ii, iii, dst)
                     pages[name] = _to_roman(rel_page).lower()
                 else:
-                    # Section 3+ (Body Matter): Arab relatif per section, reset mulai 1
+                    # Section 4+ (Body Matter - BAB I PENDAHULUAN dst): Arab relatif per section, reset mulai 1
                     pages[name] = str(rel_page)
             except Exception:
                 continue
