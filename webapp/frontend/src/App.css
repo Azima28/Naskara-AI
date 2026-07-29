@@ -1175,6 +1175,16 @@ input.field__input {
   gap: 0.75rem;
 }
 
+.public-nav__desktop-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.public-nav__mobile-actions {
+  display: none;
+}
+
 .public-nav__user-group, .public-nav__auth-group {
   display: flex;
   align-items: center;
@@ -2764,53 +2774,31 @@ input.field__input {
 }
 
 /* --- Mobile Responsiveness Audit ------------------------------------------ */
-@media (max-width: 640px) {
-  .hero-mockup__body {
-    padding: 1rem 0.75rem !important;
-  }
-
-  .doc-page-mockup {
-    padding: 1.25rem 0.75rem !important;
-  }
-
-  .doc-heading {
-    font-size: 0.95rem !important;
-  }
-
-  .doc-subheading {
-    font-size: 0.85rem !important;
-  }
-
-  .doc-footer-school {
-    font-size: 0.75rem !important;
-  }
-
-  .meta-row {
-    font-size: 0.78rem !important;
-  }
-
-  .smkn4-logo-preview {
-    max-width: 70px !important;
-    max-height: 70px !important;
-  }
-
-  .preview-tab-btn {
-    font-size: 0.75rem !important;
-    padding: 0.25rem 0.55rem !important;
-  }
-}
-
-@media (max-width: 1024px) {
-  .public-footer__grid { grid-template-columns: 1fr 1fr; }
-  .comparison-grid { grid-template-columns: 1fr; }
-  .workflow-steps { grid-template-columns: 1fr 1fr; }
-  .features-grid { grid-template-columns: 1fr 1fr; }
-  .dash-stats { grid-template-columns: 1fr 1fr; }
-  .margin-specs-grid { grid-template-columns: 1fr 1fr; }
-  .bab-list-grid { grid-template-columns: 1fr 1fr; }
-}
-
 @media (max-width: 768px) {
+  .public-nav__container {
+    padding: 0.75rem 1rem;
+  }
+
+  .public-nav__desktop-actions {
+    display: none !important;
+  }
+
+  .public-nav__mobile-actions {
+    display: flex !important;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .mobile-user-group, .mobile-auth-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
   .public-nav__links {
     display: none;
     position: absolute;
@@ -2820,8 +2808,10 @@ input.field__input {
     background: var(--paper-2);
     border-bottom: 1px solid var(--line);
     flex-direction: column;
-    padding: 1rem 1.5rem;
-    gap: 1rem;
+    padding: 1rem 1.25rem;
+    gap: 0.85rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    z-index: 101;
   }
   .public-nav__links.is-open { display: flex; }
   .public-nav__toggle { display: block; }
@@ -2832,5 +2822,63 @@ input.field__input {
   .draft-card-item { flex-direction: column; align-items: flex-start; }
   .draft-card-item__actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
   .dash-welcome { flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 640px) {
+  .hero-section {
+    padding: 2.25rem 0.85rem 1.75rem !important;
+  }
+
+  .hero-mockup__title-bar {
+    max-width: 190px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.72rem !important;
+  }
+
+  .hero-mockup__body {
+    padding: 0.85rem 0.6rem !important;
+  }
+
+  .doc-page-mockup {
+    padding: 1rem 0.6rem !important;
+  }
+
+  .doc-heading {
+    font-size: 0.9rem !important;
+  }
+
+  .doc-subheading {
+    font-size: 0.82rem !important;
+  }
+
+  .doc-footer-school {
+    font-size: 0.72rem !important;
+  }
+
+  .meta-row {
+    font-size: 0.75rem !important;
+  }
+
+  .smkn4-logo-preview {
+    max-width: 65px !important;
+    max-height: 65px !important;
+  }
+
+  .preview-tab-btn {
+    font-size: 0.75rem !important;
+    padding: 0.25rem 0.55rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .public-nav__subtitle {
+    display: none;
+  }
+
+  .doc-page-mockup__margin-line {
+    display: none !important;
+  }
 }
 

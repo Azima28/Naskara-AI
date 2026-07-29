@@ -30,7 +30,7 @@ export default function PublicNavbar() {
           </div>
         </Link>
 
-        {/* Navigation Links */}
+        {/* Navigation Links (includes mobile drawer actions) */}
         <nav className={`public-nav__links ${mobileMenuOpen ? 'is-open' : ''}`}>
           <Link
             to="/"
@@ -53,33 +53,77 @@ export default function PublicNavbar() {
           >
             Tentang Kami
           </Link>
+
+          {/* Action links inside Mobile Drawer */}
+          <div className="public-nav__mobile-actions">
+            {token && user ? (
+              <div className="mobile-user-group">
+                <Link
+                  to="/dashboard"
+                  className="btn-sm btn-primary btn-mobile-full"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <IconDashboard size={16} style={{ marginRight: '0.4rem' }} /> Buka Dashboard
+                </Link>
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    logout()
+                    nav('/login')
+                  }}
+                  className="btn-sm btn-outline btn-mobile-full"
+                >
+                  Keluar Akun
+                </button>
+              </div>
+            ) : (
+              <div className="mobile-auth-group">
+                <Link
+                  to="/login"
+                  className="btn-sm btn-outline btn-mobile-full"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Masuk
+                </Link>
+                <Link
+                  to="/register"
+                  className="btn-sm btn-primary btn-mobile-full"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Buat Laporan Gratis
+                </Link>
+              </div>
+            )}
+          </div>
         </nav>
 
-        {/* Action Buttons */}
+        {/* Action Buttons (Desktop Inline) */}
         <div className="public-nav__actions">
-          {token && user ? (
-            <div className="public-nav__user-group">
-              <Link to="/dashboard" className="btn-sm btn-primary">
-                <IconDashboard size={16} style={{ marginRight: '0.4rem' }} /> Buka Dashboard
-              </Link>
-              <button
-                onClick={() => { logout(); nav('/login') }}
-                className="btn-sm btn-outline"
-                title="Keluar akun"
-              >
-                Keluar
-              </button>
-            </div>
-          ) : (
-            <div className="public-nav__auth-group">
-              <Link to="/login" className="public-nav__link-login">
-                Masuk
-              </Link>
-              <Link to="/register" className="btn-sm btn-primary">
-                Buat Laporan Gratis
-              </Link>
-            </div>
-          )}
+          <div className="public-nav__desktop-actions">
+            {token && user ? (
+              <div className="public-nav__user-group">
+                <Link to="/dashboard" className="btn-sm btn-primary">
+                  <IconDashboard size={16} style={{ marginRight: '0.4rem' }} /> Buka Dashboard
+                </Link>
+                <button
+                  onClick={() => { logout(); nav('/login') }}
+                  className="btn-sm btn-outline"
+                  title="Keluar akun"
+                >
+                  Keluar
+                </button>
+              </div>
+            ) : (
+              <div className="public-nav__auth-group">
+                <Link to="/login" className="public-nav__link-login">
+                  Masuk
+                </Link>
+                <Link to="/register" className="btn-sm btn-primary">
+                  Buat Laporan Gratis
+                </Link>
+              </div>
+            )}
+          </div>
 
           {/* Mobile Hamburger Toggle */}
           <button
