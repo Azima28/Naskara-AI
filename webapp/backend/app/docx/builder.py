@@ -529,10 +529,11 @@ class PklDocBuilder:
         remaining_h = printable_h - fixed_h
 
         # Tiap 1 enter (12pt font, 1.15 line spacing) = 13.8 pt
-        # Mengatur enter sehingga tersisa 1 enter sebelum page break
+        # Mengatur enter sehingga tersisa 1 enter sebelum page break (maksimal 4-5 enter aman)
         enter_height = 13.8
         target_enters = _math.floor(remaining_h / enter_height) - 1
-        final_enters = max(0, min(15, target_enters))
+        # Batasi maksimal 4 enter agar Kop terdorong ke bawah namun DIJAMIN tidak meledak ke halaman 2
+        final_enters = max(1, min(4, target_enters))
 
         for _ in range(final_enters):
             p_sp = self.doc.add_paragraph()
@@ -1548,6 +1549,8 @@ class PklDocBuilder:
     ) -> None:
         p = self.doc.add_paragraph()
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.paragraph_format.space_before = Pt(0)
+        p.paragraph_format.space_after = Pt(0)
         if line_spacing is not None:
             p.paragraph_format.line_spacing = line_spacing
         run = p.add_run(text)
