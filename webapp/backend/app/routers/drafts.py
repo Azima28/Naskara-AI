@@ -107,7 +107,7 @@ def get_draft(draft_id: str, current: User = Depends(get_current_user),
               db: Session = Depends(get_db)):
     """Ambil satu draft (termasuk data_json utuh)."""
     draft = db.get(Draft, draft_id)
-    if not draft:
+    if not draft or draft.user_id != current.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Draft tidak ditemukan.")
     return _to_full(draft)
 
@@ -117,7 +117,7 @@ def update_draft(draft_id: str, payload: DraftUpdate, current: User = Depends(ge
                 db: Session = Depends(get_db)):
     """Update draft (partial — autosave hanya kirim field yang berubah)."""
     draft = db.get(Draft, draft_id)
-    if not draft:
+    if not draft or draft.user_id != current.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Draft tidak ditemukan.")
 
     if payload.title is not None:
@@ -147,7 +147,7 @@ def delete_draft(draft_id: str, current: User = Depends(get_current_user),
                 db: Session = Depends(get_db)):
     """Hapus draft."""
     draft = db.get(Draft, draft_id)
-    if not draft:
+    if not draft or draft.user_id != current.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Draft tidak ditemukan.")
     db.delete(draft)
     db.commit()

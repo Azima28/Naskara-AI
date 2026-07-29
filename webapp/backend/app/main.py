@@ -20,6 +20,8 @@ async def lifespan(app: FastAPI):
     # Startup
     ensure_runtime_dirs()
     init_db()
+    if settings.secret_key == "ganti-saya-jadi-string-acak-panjang":
+        print("⚠️ WARNING [SECURITY]: secret_key menggunakan nilai default! Ubah SECRET_KEY di .env untuk lingkungan produksi.")
     yield
     # Shutdown: tidak ada yang perlu dibersihkan (SQLite file-based).
 

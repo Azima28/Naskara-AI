@@ -102,9 +102,17 @@ async def delete_asset(
     if not ASSETS_DIR.exists():
         raise HTTPException(status_code=404, detail="Asset tidak ditemukan.")
 
+    # Sanitize asset_id to prevent Path Traversal
+    safe_asset_id = os.path.basename(asset_id).strip()
+    if not safe_asset_id or ".." in safe_asset_id or "/" in safe_asset_id or "\\" in safe_asset_id:
+        raise HTTPException(status_code=400, detail="Asset ID tidak valid.")
+
     for fname in os.listdir(ASSETS_DIR):
-        if fname.startswith(asset_id):
-            (ASSETS_DIR / fname).unlink()
-            return {"status": "deleted", "id": asset_id}
+        if fname.startswith(safe_asset_id):
+            target_path = (ASSETS_DIR / fname).resolve()
+            # Double check path stays inside ASSETS_DIR
+            if ASSETS_DIR.resolve() in target_path.parents:
+                target_path.unlink()
+                return {"status": "deleted", "id": safe_asset_id}
 
     raise HTTPException(status_code=404, detail="Asset tidak ditemukan.")
