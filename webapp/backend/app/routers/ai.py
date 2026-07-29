@@ -120,8 +120,8 @@ async def draft_section(
     elif key == "pembahasan":
         user_prompt = ai_sections.prompt_hal_diperhatikan(ctx)
     elif key == "kesimpulan_saran":
-        # BAB VII = index 7 dalam struktur 7-BAB SMKN4
-        user_prompt = ai_sections.prompt_kesimpulan_saran(ctx, bab_num=7)
+        # BAB VI = index 6 dalam struktur 6-BAB SMKN4
+        user_prompt = ai_sections.prompt_kesimpulan_saran(ctx, bab_num=6)
     elif key in ["tujuan", "manfaat"]:
         user_prompt = sections.prompt_tujuan_manfaat(ctx)
     elif key == "profil_sejarah":

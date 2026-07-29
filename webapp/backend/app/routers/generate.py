@@ -381,13 +381,14 @@ async def generate_docx(
 
     Returns: FileResponse (application/vnd.openxmlformats-officedocument.wordprocessingml.document)
     """
-    # 1. Get draft
+    # 1. Get draft (with user authorization check to prevent IDOR)
     draft = db.query(Draft).filter(
         Draft.id == draft_id,
+        Draft.user_id == user.id,
     ).first()
 
     if not draft:
-        raise HTTPException(status_code=404, detail="Draft tidak ditemukan")
+        raise HTTPException(status_code=404, detail="Draft tidak ditemukan atau Anda tidak memiliki akses ke draft ini.")
 
     data: dict = draft.data_json or {}
 
@@ -443,6 +444,14 @@ async def generate_docx(
             (data.get("config", {}) or {}).get("auto_daftar_pustaka", True):
         refs = await _ai_daftar_pustaka(data)
         data["daftar_pustaka"] = refs or default_daftar_pustaka(data)
+        try:
+            stored = draft.data_json or {}
+            stored["daftar_pustaka"] = data["daftar_pustaka"]
+            draft.data_json = stored
+            flag_modified(draft, "data_json")
+            db.commit()
+        except Exception:
+            db.rollback()
 
     # 3. Assemble
     try:

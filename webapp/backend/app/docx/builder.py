@@ -899,14 +899,12 @@ class PklDocBuilder:
         cell_foto.width = Cm(6.89)
         cell_ttd.width = Cm(8.90)
 
-        # Sel Kiri: Pas Foto 3x4 (posisi pas di kiri bawah, offset 1.5cm persis Niken)
+        # Sel Kiri: Pas Foto 3x4
         foto = (siswa.get("foto") or "").strip()
         if not foto or not os.path.exists(foto):
-            # Fallback ke pas foto siswa jika tidak ada foto (untuk testing)
+            # Fallback ke pas foto siswa jika ada file image10.jpeg (tanpa fallback logo sekolah)
             alt_foto = os.path.join(os.path.dirname(__file__), "smkn4_assets", "image10.jpeg")
-            if not os.path.exists(alt_foto):
-                alt_foto = os.path.join(os.path.dirname(__file__), "smkn4_assets", "logo_smkn4.jpeg")
-            foto = alt_foto
+            foto = alt_foto if os.path.exists(alt_foto) else ""
 
         p_f = cell_foto.paragraphs[0]
         p_f.paragraph_format.left_indent = Cm(0)  # Mentok sejajar di kiri dengan teks Nama Sekolah / Nama Orang Tua
@@ -978,7 +976,7 @@ class PklDocBuilder:
             ("E-mail", pembimbing.get("email", "")),
         ]
 
-        self._add_borderless_table(rows, col_widths=(5.83, 1.33, 9.63))
+        self._add_borderless_table(rows, col_widths=(5.0, 0.5, 8.5))
 
     # ------------------------------------------------------------------ #
     #  Kata Pengantar                                                     #
@@ -1534,7 +1532,7 @@ class PklDocBuilder:
 
     def _add_borderless_table(
         self, rows_data: list[tuple[str, str | None]],
-        col_widths: tuple[float, float, float] = (6.89, 0.84, 8.06),
+        col_widths: tuple[float, float, float] = (5.5, 0.5, 8.0),
         font_size: int = 14,
         group_space_before: int = 10,
     ) -> None:

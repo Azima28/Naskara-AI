@@ -235,8 +235,7 @@ def assemble_report(data: dict) -> str:
 
     if foto_kegiatan:
         for idx, foto in enumerate(foto_kegiatan, 1):
-            if not _try_image(builder, foto["gambar"], width_cm=14):
-                continue
+            _try_image(builder, foto["gambar"], width_cm=14)
             keterangan = (foto.get("keterangan") or "").strip()
             p = builder.add_body(keterangan or f"Dokumentasi kegiatan {idx}.")
             # Target PAGEREF untuk Daftar Lampiran (preset pedoman).
@@ -777,15 +776,15 @@ def _sanitize_data(data: dict) -> None:
     ]
     if isinstance(data.get("profil_perusahaan"), dict):
         profil = data["profil_perusahaan"]
-        profil["misi"] = [m for m in profil.get("misi", []) if m]
-        profil["tata_tertib"] = [t for t in profil.get("tata_tertib", []) if t]
+        profil["misi"] = [m for m in (profil.get("misi") or []) if m]
+        profil["tata_tertib"] = [t for t in (profil.get("tata_tertib") or []) if t]
         # Migrasi field legacy: draft lama menyimpan tata tertib perusahaan di
         # `tata_tertib`; kode baru membacanya dari `tata_tertib_perusahaan`.
         # Tanpa ini, tata tertib khusus perusahaan hilang diam-diam dari dokumen.
         if not profil.get("tata_tertib_perusahaan") and profil["tata_tertib"]:
             profil["tata_tertib_perusahaan"] = list(profil["tata_tertib"])
         profil["tata_tertib_perusahaan"] = [
-            t for t in profil.get("tata_tertib_perusahaan", []) if t
+            t for t in (profil.get("tata_tertib_perusahaan") or []) if t
         ]
 
     # Kegiatan: buang tugas kosong; buang bidang yang tidak punya tugas DAN
@@ -899,7 +898,7 @@ def _build_daftar_gambar_lampiran(builder: PklDocBuilder, data: dict) -> None:
         builder.add_spacing(1)
         for i, p in enumerate(peralatan, 1):
             nama_p = p.get("nama", f"Peralatan {i}")
-            builder.add_toc_entry(f"Gambar {bab_dp}. {i} {nama_p}", f"gambar_{i}", 1)
+            builder.add_toc_entry(f"Gambar {bab_dp}.{i} {nama_p}", f"gambar_{i}", 1)
 
     # Daftar Lampiran — merujuk keterangan foto dokumentasi.
     if foto_lampiran:
