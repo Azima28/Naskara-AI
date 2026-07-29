@@ -39,7 +39,7 @@ export default function ConfigStep({ ctx, set }: { ctx: PklContext; set: (p: Par
       </p>
 
       <FieldGroup title="Mode Format Dokumen">
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+        <div className="grid-2-col" style={{ marginBottom: '1rem' }}>
           <div
             onClick={() => updCfg({ preset: 'pedoman', cover_page_number: 'none', front_matter_format: 'lowerRoman', front_matter_start: 2, body_matter_format: 'arabic', body_matter_start: 1 })}
             style={{
@@ -83,7 +83,7 @@ export default function ConfigStep({ ctx, set }: { ctx: PklContext; set: (p: Par
 
       {isCustom && (
         <FieldGroup title="Pengaturan Penomoran Halaman Kustom">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div className="grid-2-col">
             <div>
               <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.3rem' }}>
                 Nomor Halaman Cover
@@ -166,9 +166,9 @@ export default function ConfigStep({ ctx, set }: { ctx: PklContext; set: (p: Par
       </FieldGroup>
 
       <FieldGroup title="Margin (cm)">
-        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-          <button 
-            type="button" 
+        <div className="btn-group-responsive" style={{ marginBottom: '1rem' }}>
+          <button
+            type="button"
             className="btn-sm btn-outline"
             onClick={() => set({ config: { ...c, margin: { atas: 4, bawah: 3, kiri: 4, kanan: 3 } } })}
           >

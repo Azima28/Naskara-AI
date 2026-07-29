@@ -75,40 +75,45 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
             <div style={{ marginTop: '1rem' }}>
               <strong>Tugas-tugas:</strong>
               {k.tugas.map((t, j) => (
-                <div key={j} style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                  <input
-                    type="text"
-                    className="field__input"
-                    placeholder="Nama Tugas (misal: Menginput Data)"
-                    value={t.nama}
-                    onChange={(e) => {
-                      const nextTugas = [...k.tugas]
-                      nextTugas[j] = { ...t, nama: e.target.value }
-                      updKegiatan(i, { tugas: nextTugas })
-                    }}
-                    style={{ flex: 1 }}
-                  />
-                  <input
-                    type="text"
-                    className="field__input"
-                    placeholder="Detail (misal: Menggunakan MS Excel)"
-                    value={t.detail}
-                    onChange={(e) => {
-                      const nextTugas = [...k.tugas]
-                      nextTugas[j] = { ...t, detail: e.target.value }
-                      updKegiatan(i, { tugas: nextTugas })
-                    }}
-                    style={{ flex: 2 }}
-                  />
+                <div key={j} className="array__row" style={{ marginTop: '0.5rem' }}>
+                  <div style={{ flex: 1, minWidth: 0, width: '100%' }}>
+                    <input
+                      type="text"
+                      className="field__input"
+                      placeholder="Nama Tugas (misal: Menginput Data)"
+                      value={t.nama}
+                      onChange={(e) => {
+                        const nextTugas = [...k.tugas]
+                        nextTugas[j] = { ...t, nama: e.target.value }
+                        updKegiatan(i, { tugas: nextTugas })
+                      }}
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+                  <div style={{ flex: 2, minWidth: 0, width: '100%' }}>
+                    <input
+                      type="text"
+                      className="field__input"
+                      placeholder="Detail (misal: Menggunakan MS Excel)"
+                      value={t.detail}
+                      onChange={(e) => {
+                        const nextTugas = [...k.tugas]
+                        nextTugas[j] = { ...t, detail: e.target.value }
+                        updKegiatan(i, { tugas: nextTugas })
+                      }}
+                      style={{ width: '100%' }}
+                    />
+                  </div>
                   <button
                     type="button"
-                    className="btn-sm btn-danger"
+                    className="btn-sm btn-danger array__remove"
                     onClick={() => {
                       const nextTugas = k.tugas.filter((_, idx) => idx !== j)
                       updKegiatan(i, { tugas: nextTugas })
                     }}
+                    title="Hapus tugas ini"
                   >
-                    ✕
+                    ✕ Hapus
                   </button>
                 </div>
               ))}

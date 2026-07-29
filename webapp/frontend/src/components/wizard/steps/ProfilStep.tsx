@@ -105,7 +105,7 @@ function AreaCabangCard({
   return (
     <div className="nested-card" style={{ marginBottom: '1rem' }}>
       <div className="nested-card__head">
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flex: 1 }}>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flex: 1, flexWrap: 'wrap', width: '100%' }}>
           <strong style={{ minWidth: 60 }}>Area {idx + 1}</strong>
           <input
             type="text"
@@ -113,7 +113,7 @@ function AreaCabangCard({
             value={area.nama_area}
             placeholder="Nama area (opsional, cth: Area I, Area Sumatera)"
             onChange={e => onChange({ nama_area: e.target.value })}
-            style={{ flex: 1 }}
+            style={{ flex: 1, minWidth: '180px' }}
           />
         </div>
         {totalAreas > 1 && (
@@ -129,18 +129,20 @@ function AreaCabangCard({
           </span>
         </label>
         {area.cabang.map((cb, ci) => (
-          <div key={ci} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.4rem', alignItems: 'center' }}>
-            <span style={{ minWidth: 18, color: '#6b7280', fontSize: '0.85rem' }}>{ci + 1}.</span>
-            <input
-              type="text"
-              className="field__input"
-              value={cb.nama}
-              placeholder="cth: PT Reksa Finance Cabang Lampung"
-              onChange={e => updateCabang(ci, { nama: e.target.value })}
-              style={{ flex: 1 }}
-            />
+          <div key={ci} className="array__row" style={{ marginBottom: '0.4rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flex: 1, minWidth: 0, width: '100%' }}>
+              <span style={{ minWidth: 18, color: '#6b7280', fontSize: '0.85rem', flexShrink: 0 }}>{ci + 1}.</span>
+              <input
+                type="text"
+                className="field__input"
+                value={cb.nama}
+                placeholder="cth: PT Reksa Finance Cabang Lampung"
+                onChange={e => updateCabang(ci, { nama: e.target.value })}
+                style={{ flex: 1, minWidth: 0 }}
+              />
+            </div>
             {area.cabang.length > 1 && (
-              <button type="button" className="btn-sm btn-danger" onClick={() => removeCabang(ci)}>✕</button>
+              <button type="button" className="btn-sm btn-danger array__remove" onClick={() => removeCabang(ci)}>✕ Hapus</button>
             )}
           </div>
         ))}

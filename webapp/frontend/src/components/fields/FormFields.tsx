@@ -279,14 +279,14 @@ export function ImageUploadField({
       <span className="field__label">
         {label} {renderImportance(required, importance)}
       </span>
-      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
         <input
           type="file"
           accept="image/*"
           onChange={handleFile}
           disabled={loading}
           className="field__input"
-          style={{ padding: '0.4rem', flex: 1 }}
+          style={{ padding: '0.4rem', flex: 1, minWidth: '180px' }}
         />
         {loading && <span className="muted" style={{ fontSize: '0.85rem' }}>Mengunggah...</span>}
       </div>
@@ -298,7 +298,7 @@ export function ImageUploadField({
             src={`/api/uploads/assets/${value}`}
             alt={label}
             style={{
-              maxWidth: 220, maxHeight: 140, display: 'block',
+              maxWidth: '100%', maxHeight: 140, display: 'block',
               borderRadius: 6, border: '1px solid var(--line)',
               background: 'var(--paper-2)',
             }}
@@ -365,14 +365,17 @@ export function StringArrayField({
       <div className="array">
         {items.map((item, i) => (
           <div key={i} className="array__row">
-            <span className="array__num" aria-hidden="true">{i + 1}.</span>
-            <input
-              className="field__input"
-              value={item}
-              placeholder={placeholder}
-              aria-label={`${label} ${itemNoun} ${i + 1}`}
-              onChange={(e) => update(i, e.target.value)}
-            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flex: 1, minWidth: 0, width: '100%' }}>
+              <span className="array__num" aria-hidden="true" style={{ flexShrink: 0 }}>{i + 1}.</span>
+              <input
+                className="field__input"
+                value={item}
+                placeholder={placeholder}
+                aria-label={`${label} ${itemNoun} ${i + 1}`}
+                onChange={(e) => update(i, e.target.value)}
+                style={{ flex: 1, minWidth: 0 }}
+              />
+            </div>
             <button
               type="button"
               className="btn-sm btn-danger array__remove"
@@ -380,7 +383,7 @@ export function StringArrayField({
               aria-label={`Hapus ${itemNoun} ${i + 1}`}
               title={`Hapus ${itemNoun} ${i + 1}`}
             >
-              ✕
+              ✕ Hapus
             </button>
           </div>
         ))}
@@ -432,8 +435,8 @@ export function ImageArrayUploadField({
       {hint && <span className="field__hint" style={{ marginBottom: '0.5rem' }}>{hint}</span>}
       <div className="array">
         {items.map((item, i) => (
-          <div key={i} className="array__row" style={{ alignItems: 'center' }}>
-            <span style={{ flex: 1, fontSize: '0.9rem', color: 'var(--text)', background: 'var(--bg-secondary)', padding: '0.4rem 0.75rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
+          <div key={i} className="array__row">
+            <span style={{ flex: 1, fontSize: '0.9rem', color: 'var(--text)', background: 'var(--bg-secondary)', padding: '0.4rem 0.75rem', borderRadius: '8px', border: '1px solid var(--border)', wordBreak: 'break-all' }}>
               🖼️ {item}
             </span>
             <button
@@ -443,18 +446,18 @@ export function ImageArrayUploadField({
               aria-label={`Hapus gambar ${item}`}
               title="Hapus gambar ini"
             >
-              ✕
+              ✕ Hapus
             </button>
           </div>
         ))}
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginTop: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap', marginTop: '0.5rem' }}>
           <input
             type="file"
             accept="image/*"
             onChange={handleFile}
             disabled={loading}
             className="field__input"
-            style={{ padding: '0.4rem', maxWidth: '300px' }}
+            style={{ padding: '0.4rem', flex: 1, minWidth: '180px' }}
           />
           {loading && <span className="muted" style={{ fontSize: '0.85rem' }}>Mengunggah...</span>}
         </div>

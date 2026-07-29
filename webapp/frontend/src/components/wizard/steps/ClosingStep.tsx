@@ -11,34 +11,34 @@ function DaftarPustakaTable({ items, onChange }: { items: DaftarPustaka[], onCha
   const remove = (idx: number) => onChange(items.filter((_, i) => i !== idx))
 
   return (
-    <div className="table-container">
-      <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+    <div className="table-scroll" style={{ marginTop: '0.5rem' }}>
+      <table className="simple-table" style={{ width: '100%', minWidth: '560px', borderCollapse: 'collapse' }}>
         <thead>
-          <tr style={{ borderBottom: '2px solid var(--border)' }}>
+          <tr style={{ borderBottom: '2px solid var(--line-strong, #b9b09c)' }}>
             <th style={{ textAlign: 'left', padding: '0.5rem' }}>Penulis</th>
-            <th style={{ textAlign: 'left', padding: '0.5rem' }}>Tahun</th>
+            <th style={{ textAlign: 'left', padding: '0.5rem', width: '80px' }}>Tahun</th>
             <th style={{ textAlign: 'left', padding: '0.5rem' }}>Judul</th>
             <th style={{ textAlign: 'left', padding: '0.5rem' }}>Penerbit/Sumber</th>
-            <th style={{ width: '50px' }}></th>
+            <th style={{ width: '40px' }}></th>
           </tr>
         </thead>
         <tbody>
           {items.map((item, i) => (
-            <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
-              <td style={{ padding: '0.5rem' }}>
+            <tr key={i} style={{ borderBottom: '1px solid var(--line, #ddd6c8)' }}>
+              <td style={{ padding: '0.4rem' }}>
                 <input className="field__input" value={item.penulis} onChange={e => update(i, { penulis: e.target.value })} placeholder="Nama" />
               </td>
-              <td style={{ padding: '0.5rem' }}>
+              <td style={{ padding: '0.4rem' }}>
                 <input className="field__input" value={item.tahun} onChange={e => update(i, { tahun: e.target.value })} placeholder="2024" />
               </td>
-              <td style={{ padding: '0.5rem' }}>
+              <td style={{ padding: '0.4rem' }}>
                 <input className="field__input" value={item.judul} onChange={e => update(i, { judul: e.target.value })} placeholder="Judul Buku/Artikel" />
               </td>
-              <td style={{ padding: '0.5rem' }}>
+              <td style={{ padding: '0.4rem' }}>
                 <input className="field__input" value={item.sumber} onChange={e => update(i, { sumber: e.target.value })} placeholder="Penerbit/Web" />
               </td>
-              <td style={{ padding: '0.5rem', textAlign: 'center' }}>
-                <button type="button" className="btn-sm btn-danger" onClick={() => remove(i)}>✕</button>
+              <td style={{ padding: '0.4rem', textAlign: 'center' }}>
+                <button type="button" className="btn-sm btn-danger" onClick={() => remove(i)} title="Hapus referensi">✕</button>
               </td>
             </tr>
           ))}
