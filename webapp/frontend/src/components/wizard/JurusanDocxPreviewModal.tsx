@@ -146,15 +146,17 @@ export default function JurusanDocxPreviewModal({
           style={{
             flex: 1,
             overflowY: 'auto',
-            padding: '1.5rem',
+            padding: '1.25rem',
             background: 'var(--paper, #f4f1ea)',
             display: 'flex',
             justifyContent: 'center',
+            alignItems: 'flex-start',
           }}
         >
           {/* Simulated A4 Word Document Page */}
           <div
             style={{
+              boxSizing: 'border-box',
               width: '100%',
               maxWidth: '720px',
               minHeight: '620px',
@@ -162,7 +164,7 @@ export default function JurusanDocxPreviewModal({
               border: '1px solid #dcd7cc',
               borderRadius: '4px',
               boxShadow: '0 4px 15px rgba(0,0,0,0.08)',
-              padding: '2.5cm 2cm 2cm 2.5cm', // Visual 4-3-3-3cm margin feel
+              padding: 'clamp(1.25rem, 4vw, 2.5rem) clamp(1rem, 3.5vw, 2rem)',
               fontFamily: '"Times New Roman", Times, serif',
               color: '#000000',
               lineHeight: 1.5,
@@ -203,7 +205,7 @@ export default function JurusanDocxPreviewModal({
             </div>
 
             {/* Simulated Word Table */}
-            <div style={{ margin: '1.2rem 0 1.5rem 0' }}>
+            <div style={{ margin: '1.2rem 0 1.5rem 0', overflowX: 'auto' }}>
               <div style={{ fontWeight: 'bold', fontSize: '10pt', marginBottom: '0.35rem', textAlign: 'center' }}>
                 Tabel 4.1 Hasil Pengamatan & Data Pengukuran ({example.badge})
               </div>
