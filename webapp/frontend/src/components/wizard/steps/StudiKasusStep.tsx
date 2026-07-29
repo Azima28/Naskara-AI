@@ -13,6 +13,28 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
   const sample1 = sampleData[0] || { label: 'RPM Mesin', nilai: '750 RPM' }
   const sample2 = sampleData[1] || { label: 'Kecepatan Internet', nilai: '50 Mbps' }
 
+  const handleApplyExample = () => {
+    upd({
+      judul: jurusanExample.studiKasus.judul,
+      latar_belakang: jurusanExample.studiKasus.latar_belakang,
+      proses_atau_formula: jurusanExample.studiKasus.proses_atau_formula,
+      hasil: jurusanExample.studiKasus.hasil,
+      data_angka: [...jurusanExample.studiKasus.data_angka],
+    })
+  }
+
+  const handleClearForm = () => {
+    upd({
+      judul: '',
+      latar_belakang: '',
+      proses_atau_formula: '',
+      hasil: '',
+      data_angka: [],
+    })
+  }
+
+  const hasData = !!(sk.judul || sk.latar_belakang || sk.proses_atau_formula || sk.hasil || sk.data_angka.length > 0)
+
   const updAngka = (i: number, patch: Partial<DataAngka>) => {
     const next = [...sk.data_angka]
     next[i] = { ...next[i], ...patch }
@@ -57,7 +79,51 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
       {/* Dynamic Major-Specific Example Card */}
       <JurusanExampleCard
         jurusanKey={ctx.siswa?.jurusan_key || ctx.siswa?.jurusan}
+        onApplyExample={handleApplyExample}
+        onClearForm={handleClearForm}
       />
+
+      {/* Alert Notice Banner for Switching Major Data */}
+      {hasData && (
+        <div
+          style={{
+            margin: '0.5rem 0 1.25rem',
+            padding: '0.75rem 1rem',
+            background: 'var(--amber-100, #fffbe6)',
+            border: '1px solid var(--amber-700, #ffe58f)',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '0.6rem',
+            fontSize: '0.83rem',
+            color: 'var(--ink, #262521)',
+          }}
+        >
+          <div>
+            💡 <strong>Kelola Isian Form Saat Ini:</strong> Jika kamu baru saja mengganti jurusan ke <strong>{jurusanExample.badge}</strong>, kamu bisa menyalin draf contoh jurusan ini atau mengosongkan form untuk mengetik draf baru.
+          </div>
+          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              className="btn-sm btn-primary"
+              onClick={handleApplyExample}
+              style={{ fontSize: '0.78rem', padding: '0.28rem 0.65rem' }}
+            >
+              ⚡ Salin Draf {jurusanExample.badge}
+            </button>
+            <button
+              type="button"
+              className="btn-sm btn-outline btn-danger"
+              onClick={handleClearForm}
+              style={{ fontSize: '0.78rem', padding: '0.28rem 0.65rem' }}
+            >
+              🧹 Kosongkan Form
+            </button>
+          </div>
+        </div>
+      )}
 
       <FieldGroup title={`Alur Pengalaman & Pelaksanaan Pekerjaan (${jurusanExample.badge})`}>
         <TextField
