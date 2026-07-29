@@ -1,9 +1,30 @@
 import type { PklContext } from '@/types/pkl'
 import { FieldGroup, ImportanceLegend, TextField, SelectField, ImageUploadField } from '@/components/fields/FormFields'
+import { detectJurusanKey, getJurusanExample, JURUSAN_EXAMPLES } from '@/utils/jurusanExamples'
+
+const JURUSAN_PRESETS = [
+  { name: 'AKL (Akuntansi & Keuangan)', value: 'Akuntansi dan Keuangan Lembaga', key: 'akl' },
+  { name: 'RPL (Rekayasa Perangkat Lunak)', value: 'Rekayasa Perangkat Lunak', key: 'rpl' },
+  { name: 'TKJ (Teknik Komputer & Jaringan)', value: 'Teknik Komputer dan Jaringan', key: 'tkj' },
+  { name: 'BDP (Bisnis Daring & Pemasaran)', value: 'Bisnis Daring dan Pemasaran', key: 'bdp' },
+  { name: 'MPLB (Manajemen Perkantoran)', value: 'Manajemen Perkantoran dan Layanan Bisnis', key: 'mplb' },
+  { name: 'TKRO (Teknik Otomotif)', value: 'Teknik Kendaraan Ringan Otomotif', key: 'tkro' },
+  { name: 'DKV (Desain Komunikasi Visual)', value: 'Desain Komunikasi Visual', key: 'dkv' },
+  { name: 'PH (Tata Boga & Perhotelan)', value: 'Tata Boga dan Perhotelan', key: 'ph' },
+  { name: 'Farmasi (Klinis & Komunitas)', value: 'Farmasi Klinis dan Komunitas', key: 'farmasi' },
+  { name: 'TEI (Elektronika Industri)', value: 'Teknik Elektronika Industri', key: 'tei' },
+]
 
 export default function SiswaStep({ ctx, set }: { ctx: PklContext; set: (p: Partial<PklContext>) => void }) {
   const s = ctx.siswa
   const upd = (patch: Partial<typeof s>) => set({ siswa: { ...s, ...patch } })
+
+  const currentJurusanExample = getJurusanExample(s.jurusan_key || detectJurusanKey(s.jurusan))
+
+  const handleJurusanChange = (val: string, forcedKey?: string) => {
+    const key = forcedKey || detectJurusanKey(val)
+    upd({ jurusan: val, jurusan_key: key })
+  }
 
   return (
     <>
@@ -14,53 +35,98 @@ export default function SiswaStep({ ctx, set }: { ctx: PklContext; set: (p: Part
 
       <FieldGroup title="Data Akademik">
         <TextField label="Nama Lengkap" value={s.nama} onChange={(v) => upd({ nama: v })} importance="wajib" hint="Muncul di Cover dan Pengesahan" />
-        <ImageUploadField 
-          label="Pas Foto 3x4" 
-          value={s.foto || ''} 
-          onChange={(v) => upd({ foto: v })} 
-          importance="wajib" 
-          hint="Digunakan untuk halaman Identitas Siswa" 
+        <ImageUploadField
+          label="Pas Foto 3x4"
+          value={s.foto || ''}
+          onChange={(v) => upd({ foto: v })}
+          importance="wajib"
+          hint="Digunakan untuk halaman Identitas Siswa"
         />
         <TextField label="NIS" value={s.nis} onChange={(v) => upd({ nis: v })} importance="wajib" hint="Nomor Induk Siswa (biasanya 4-5 digit)" />
         <TextField label="NISN" value={s.nisn} onChange={(v) => upd({ nisn: v })} importance="wajib" hint="Nomor Induk Siswa Nasional (10 digit)" />
         <TextField label="Kelas" value={s.kelas} onChange={(v) => upd({ kelas: v })} importance="wajib" placeholder="XII AKL 1" />
-        <TextField 
-          label="Jurusan" 
-          value={s.jurusan} 
-          onChange={(v) => {
-            let key = 'lainnya'
-            const lower = v.toLowerCase()
-            if (lower.includes('akuntansi') || lower.includes('akl')) key = 'akl'
-            else if (lower.includes('komputer jaringan') || lower.includes('tkj')) key = 'tkj'
-            else if (lower.includes('perangkat lunak') || lower.includes('rpl')) key = 'rpl'
-            else if (lower.includes('pemasaran') || lower.includes('bdp')) key = 'bdp'
-            else if (lower.includes('perkantoran') || lower.includes('mplb')) key = 'mplb'
-            
-            upd({ jurusan: v, jurusan_key: key })
-          }} 
-          importance="wajib" 
-          placeholder="contoh: Rekayasa Perangkat Lunak" 
-          hint="Sistem akan otomatis mengenali program keahlian dari teks ini" 
-        />
+
+        <div className="field field--full">
+          <TextField
+            label="Jurusan / Program Keahlian"
+            value={s.jurusan}
+            onChange={(v) => handleJurusanChange(v)}
+            importance="wajib"
+            placeholder="contoh: Rekayasa Perangkat Lunak"
+            hint="Ketik nama jurusan kamu, atau pilih cepat dari tombol di bawah"
+          />
+
+          <div style={{ marginTop: '0.6rem' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--ink-soft)', display: 'block', marginBottom: '0.4rem' }}>
+              ⚡ Pilih Cepat Jurusan SMK:
+            </span>
+            <div className="checkbox-grid">
+              {JURUSAN_PRESETS.map((jp) => {
+                const isSelected = (s.jurusan_key || detectJurusanKey(s.jurusan)) === jp.key
+                return (
+                  <button
+                    key={jp.key}
+                    type="button"
+                    className={`chip ${isSelected ? 'chip--on' : ''}`}
+                    onClick={() => handleJurusanChange(jp.value, jp.key)}
+                    style={{ fontSize: '0.8rem', padding: '0.3rem 0.65rem' }}
+                  >
+                    {JURUSAN_EXAMPLES[jp.key]?.icon} {jp.name}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Dynamic Detected Jurusan Badge & Preview */}
+          <div
+            style={{
+              marginTop: '0.85rem',
+              padding: '0.75rem 0.9rem',
+              background: 'var(--green-50, #f0fdf4)',
+              border: '1px solid var(--green-500, #4ade80)',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '0.75rem',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontSize: '1.2rem' }}>{currentJurusanExample.icon}</span>
+              <div>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--green-700)', textTransform: 'uppercase' }}>
+                  Jurusan Terdeteksi:
+                </span>
+                <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--ink)' }}>
+                  {currentJurusanExample.label}
+                </div>
+              </div>
+            </div>
+            <span style={{ fontSize: '0.78rem', color: 'var(--green-700)', fontWeight: 500 }}>
+              ✓ Contoh data & AI disesuaikan untuk jurusan ini
+            </span>
+          </div>
+        </div>
       </FieldGroup>
 
       <FieldGroup title="Data Pribadi">
         <TextField label="Tempat Lahir" value={s.tempat_lahir} onChange={(v) => upd({ tempat_lahir: v })} importance="wajib" placeholder="Bandar Lampung" />
         <TextField label="Tanggal Lahir" value={s.tanggal_lahir} onChange={(v) => upd({ tanggal_lahir: v })} type="date" importance="wajib" />
-        <SelectField 
-          label="Jenis Kelamin" 
-          value={s.jenis_kelamin} 
-          onChange={(v) => upd({ jenis_kelamin: v })} 
+        <SelectField
+          label="Jenis Kelamin"
+          value={s.jenis_kelamin}
+          onChange={(v) => upd({ jenis_kelamin: v })}
           importance="wajib"
           options={[
             { label: 'Laki-laki', value: 'Laki-laki' },
             { label: 'Perempuan', value: 'Perempuan' },
           ]}
         />
-        <SelectField 
-          label="Golongan Darah" 
-          value={s.golongan_darah} 
-          onChange={(v) => upd({ golongan_darah: v })} 
+        <SelectField
+          label="Golongan Darah"
+          value={s.golongan_darah}
+          onChange={(v) => upd({ golongan_darah: v })}
           options={[
             { label: 'A', value: 'A' },
             { label: 'B', value: 'B' },

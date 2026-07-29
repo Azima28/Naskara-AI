@@ -1,6 +1,7 @@
 import type { DataAngka, PklContext, StudiKasus } from '@/types/pkl'
 import { emptyDataAngka } from '@/types/pkl'
 import { FieldGroup, TextareaField, TextField, ImageArrayUploadField } from '@/components/fields/FormFields'
+import JurusanExampleCard from '@/components/wizard/JurusanExampleCard'
 
 export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p: Partial<PklContext>) => void }) {
   const sk = ctx.studi_kasus
@@ -12,12 +13,34 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
     upd({ data_angka: next })
   }
 
+  const handleApplyExample = (sample: {
+    judul: string
+    latar_belakang: string
+    proses_atau_formula: string
+    hasil: string
+    data_angka: DataAngka[]
+  }) => {
+    upd({
+      judul: sample.judul,
+      latar_belakang: sample.latar_belakang,
+      proses_atau_formula: sample.proses_atau_formula,
+      hasil: sample.hasil,
+      data_angka: sample.data_angka,
+    })
+  }
+
   return (
     <>
       <h2>Studi Kasus / Analisis Teknis</h2>
       <p className="muted">
         Opsional. Ceritakan satu pekerjaan yang paling menarik/menantang selama PKL. Ini akan jadi bab pembahasan (analisis) di laporan kamu.
       </p>
+
+      {/* Dynamic Major-Specific Example Card */}
+      <JurusanExampleCard
+        jurusanKey={ctx.siswa?.jurusan_key || ctx.siswa?.jurusan}
+        onApplyExample={handleApplyExample}
+      />
 
       <FieldGroup title="Studi Kasus">
         <TextField label="Judul Studi Kasus" value={sk.judul} onChange={(v) => upd({ judul: v })} importance="opsional" hint="Contoh: Proses Instalasi Jaringan, atau Cara Perhitungan Diskon" />
