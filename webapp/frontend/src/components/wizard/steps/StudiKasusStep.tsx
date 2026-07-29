@@ -2,10 +2,16 @@ import type { DataAngka, PklContext, StudiKasus } from '@/types/pkl'
 import { emptyDataAngka } from '@/types/pkl'
 import { FieldGroup, TextareaField, TextField, ImageArrayUploadField } from '@/components/fields/FormFields'
 import JurusanExampleCard from '@/components/wizard/JurusanExampleCard'
+import { getJurusanExample } from '@/utils/jurusanExamples'
 
 export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p: Partial<PklContext>) => void }) {
   const sk = ctx.studi_kasus
   const upd = (patch: Partial<StudiKasus>) => set({ studi_kasus: { ...sk, ...patch } })
+
+  const jurusanExample = getJurusanExample(ctx.siswa?.jurusan_key || ctx.siswa?.jurusan)
+  const sampleData = jurusanExample.studiKasus.data_angka
+  const sample1 = sampleData[0] || { label: 'RPM Mesin', nilai: '750 RPM' }
+  const sample2 = sampleData[1] || { label: 'Kecepatan Internet', nilai: '50 Mbps' }
 
   const updAngka = (i: number, patch: Partial<DataAngka>) => {
     const next = [...sk.data_angka]
@@ -53,13 +59,13 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
         jurusanKey={ctx.siswa?.jurusan_key || ctx.siswa?.jurusan}
       />
 
-      <FieldGroup title="Alur Pengalaman & Pelaksanaan Pekerjaan">
+      <FieldGroup title={`Alur Pengalaman & Pelaksanaan Pekerjaan (${jurusanExample.badge})`}>
         <TextField
           label="1. Pekerjaan / Tugas Apa yang Kamu Kerjakan?"
           value={sk.judul}
           onChange={(v) => upd({ judul: v })}
           importance="opsional"
-          placeholder="Contoh: Service Tune-Up Mesin EFI / Input Rekap Keuangan Bulanan / Setting Router WiFi Kantor"
+          placeholder={`Contoh (${jurusanExample.badge}): "${jurusanExample.studiKasus.judul}"`}
           hint="Tuliskan nama tugas atau proyek utama yang kamu tangani."
         />
         <TextareaField
@@ -67,7 +73,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
           value={sk.latar_belakang}
           onChange={(v) => upd({ latar_belakang: v })}
           importance="opsional"
-          placeholder="Contoh: Karena tarikan mesin mobil pelanggan terasa berat dan lampu indikator check engine menyala, sehingga perlu diperbaiki."
+          placeholder={`Contoh (${jurusanExample.badge}): "${jurusanExample.studiKasus.latar_belakang}"`}
           hint="Apa kendala atau kondisi barang/sistem sebelum kamu tangani?"
         />
         <TextareaField
@@ -75,7 +81,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
           value={sk.proses_atau_formula}
           onChange={(v) => upd({ proses_atau_formula: v })}
           importance="opsional"
-          placeholder="1. Melakukan pemeriksaan awal dengan OBD-II Scanner.&#10;2. Membersihkan busi dan injektor bahan bakar.&#10;3. Melakukan pengujian tes jalan dan tes idle mesin."
+          placeholder={`Contoh (${jurusanExample.badge}):\n${jurusanExample.studiKasus.proses_atau_formula}`}
           hint="Tuliskan urutan kegiatan pengerjaannya dari awal sampai selesai (bisa pakai nomor 1, 2, 3)."
         />
         <TextareaField
@@ -83,51 +89,54 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
           value={sk.hasil}
           onChange={(v) => upd({ hasil: v })}
           importance="opsional"
-          placeholder="Contoh: Mesin mobil kembali halus di 750 RPM, tarikan responsif, dan siap diserahkan ke pelanggan."
+          placeholder={`Contoh (${jurusanExample.badge}): "${jurusanExample.studiKasus.hasil}"`}
           hint="Bagaimana kondisi barang/sistem setelah selesai kamu perbaiki atau selesaikan?"
         />
       </FieldGroup>
 
       {/* Data Angka Embedded Directly Under Step 4 as Evidence */}
-      <FieldGroup title="Bukti Catatan Angka / Ukuran Hasil Pekerjaan (Opsional)" full>
+      <FieldGroup title={`Bukti Catatan Angka / Ukuran Hasil Pekerjaan (${jurusanExample.badge})`} full>
         <div className="field field--full">
           <span className="field__label">
             Catatan Angka / Hasil Ukur <span className="field__badge field__badge--opsional">Opsional</span>
           </span>
           <span className="field__hint" style={{ marginBottom: '0.6rem' }}>
-            Jika pekerjaan kamu memiliki catatan angka atau pengukuran (contoh: "RPM Mesin" → "750 RPM", "Total Berkas Selesai" → "45 Berkas", "Kecepatan WiFi" → "50 Mbps"), tuliskan di bawah ini.
+            Jika pekerjaan kamu memiliki catatan angka atau pengukuran khas jurusan <strong>{jurusanExample.badge}</strong> (contoh: <em>"{sample1.label}" → "{sample1.nilai}"</em>, <em>"{sample2.label}" → "{sample2.nilai}"</em>), tuliskan di bawah ini.
           </span>
           <div className="array">
-            {sk.data_angka.map((d, i) => (
-              <div key={i} className="array__row" style={{ alignItems: 'flex-start' }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <TextField
-                    label={i === 0 ? 'Nama Ukuran / Parameter' : ''}
-                    value={d.label}
-                    onChange={(v) => updAngka(i, { label: v })}
-                    placeholder="Contoh: Kecepatan WiFi / RPM Mesin / Total Berkas"
-                  />
+            {sk.data_angka.map((d, i) => {
+              const sampleRow = sampleData[i % sampleData.length] || sample1
+              return (
+                <div key={i} className="array__row" style={{ alignItems: 'flex-start' }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <TextField
+                      label={i === 0 ? 'Nama Ukuran / Parameter' : ''}
+                      value={d.label}
+                      onChange={(v) => updAngka(i, { label: v })}
+                      placeholder={`Contoh: ${sampleRow.label}`}
+                    />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <TextField
+                      label={i === 0 ? 'Nilai / Angka Hasil' : ''}
+                      value={d.nilai}
+                      onChange={(v) => updAngka(i, { nilai: v })}
+                      placeholder={`Contoh: ${sampleRow.nilai}`}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    className="btn-sm btn-danger array__remove"
+                    style={{ marginTop: i === 0 ? '1.65rem' : '0' }}
+                    onClick={() => upd({ data_angka: sk.data_angka.filter((_, idx) => idx !== i) })}
+                    aria-label="Hapus baris data angka"
+                    title="Hapus baris ini"
+                  >
+                    ✕
+                  </button>
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <TextField
-                    label={i === 0 ? 'Nilai / Angka Hasil' : ''}
-                    value={d.nilai}
-                    onChange={(v) => updAngka(i, { nilai: v })}
-                    placeholder="Contoh: 50 Mbps / 750 RPM / 45 Berkas"
-                  />
-                </div>
-                <button
-                  type="button"
-                  className="btn-sm btn-danger array__remove"
-                  style={{ marginTop: i === 0 ? '1.65rem' : '0' }}
-                  onClick={() => upd({ data_angka: sk.data_angka.filter((_, idx) => idx !== i) })}
-                  aria-label="Hapus baris data angka"
-                  title="Hapus baris ini"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
+              )
+            })}
             <button
               type="button"
               className="btn-sm btn-outline array__add"
