@@ -483,31 +483,56 @@ class PklDocBuilder:
             run_logo = p_logo.add_run()
             run_logo.add_picture(logo_sekolah_path, width=Cm(6.05))  # Diperbesar 10% lagi (dari 5.5cm ke 6.05cm)
 
-        # Perhitungan spasi vertikal dinamis (Dynamic Cover Spacing Fallback)
-        # Menghitung perkiraan tinggi baris paragraf yang terpakai di atas logo
-        title_lines = 3  # "LAPORAN", "PRAKTIK KERJA LAPANGAN (PKL)", "DI [PERUSAHAAN]"
-        if len(judul_pkl) > 35:
-            title_lines += 1
-        if len(nama_prsh) > 30:
-            title_lines += 1
+        # Perhitungan spasi vertikal presisi tinggi (Dynamic Cover Spacing)
+        # Menghitung tinggi elemen fisik di atas Kop Footer (dalam pt) agar Kop
+        # terdorong hingga menyisakan 1 enter di bawahnya tanpa memicu page break ekstra.
+        import math as _math
+
+        title_h = 23.0  # "LAPORAN" (20pt bold, line_spacing 1.15)
+        title_h += 18.0  # add_spacing(1)
+        title_h += 23.0 * _math.ceil(len(judul_pkl) / 35.0)  # "PRAKTIK KERJA LAPANGAN (PKL)"
+        title_h += 23.0 * _math.ceil(len(nama_prsh) / 25.0)  # "DI [PERUSAHAAN]"
         if pedoman and kota_prsh and kota_prsh.upper() not in nama_prsh.upper():
-            title_lines += 1
+            title_h += 23.0
+        title_h += 18.0  # add_spacing(1)
 
-        subtitle_lines = 3  # "Disusun untuk memenuhi...", "Ujian...", "Tahun..."
+        sub_lines = 3  # "Disusun untuk memenuhi...", dst.
         if len(nama_sekolah) > 35:
-            subtitle_lines += 1
+            sub_lines += 1
+        if len(jurusan) > 30:
+            sub_lines += 1
+        subtitle_h = sub_lines * (14.0 * 1.15) + 18.0  # add_spacing(1)
 
-        author_lines = 3  # "disusun oleh :", "Nama", "NISN / NIS"
-        if len(nama) > 30:
-            author_lines += 1
+        author_lines = 1  # "disusun oleh :"
+        author_lines += _math.ceil(len(nama) / 25.0)  # Nama
+        author_lines += 1  # NISN / NIS
+        author_h = author_lines * (16.0 * 1.15) + 18.0  # add_spacing(1)
 
-        logo_lines = 6.0 if (logo_sekolah_path and os.path.exists(logo_sekolah_path)) else 0
-        total_top_lines = title_lines + subtitle_lines + author_lines + logo_lines
+        logo_h = 164.6 if (logo_sekolah_path and os.path.exists(logo_sekolah_path)) else 0.0
 
-        # Target kapasitas baris Halaman Cover sebelum Kop Footer (mentok sampai bawah, tersisa 1 enter sebelum page break)
-        target_lines_before_kop = 20.0
-        needed_enters = int(round(target_lines_before_kop - total_top_lines))
-        final_enters = max(0, min(5, needed_enters))
+        top_elements_h = title_h + subtitle_h + author_h + logo_h
+
+        # Kop Footer table height
+        kop = sekolah.get("kop", {})
+        kop_lines_count = 3
+        if (sekolah.get("alamat") or "").strip():
+            kop_lines_count += 1
+        if kop.get("baris_alamat_2"):
+            kop_lines_count += 1
+        kop_text_h = (kop_lines_count * 17.1) + 12.0 + 24.1
+        logo_lampung_h = 130.2
+        kop_table_h = max(logo_lampung_h, kop_text_h)
+
+        # Printable page height (A4 841.89 pt - 69.16 pt top margin - 14.17 pt bottom margin = 758.56 pt)
+        printable_h = 758.56
+        fixed_h = top_elements_h + kop_table_h
+        remaining_h = printable_h - fixed_h
+
+        # Tiap 1 enter (12pt font, 1.15 line spacing) = 13.8 pt
+        # Mengatur enter sehingga tersisa 1 enter sebelum page break
+        enter_height = 13.8
+        target_enters = _math.floor(remaining_h / enter_height) - 1
+        final_enters = max(0, min(15, target_enters))
 
         for _ in range(final_enters):
             p_sp = self.doc.add_paragraph()
