@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import PublicNavbar from '@/components/layout/PublicNavbar'
 import Footer from '@/components/layout/Footer'
 import { useAuth } from '@/store/auth'
-import { createDraft } from '@/api/client'
 import {
   IconSparkles,
   IconRocket,
@@ -21,14 +20,12 @@ export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0)
   const [previewTab, setPreviewTab] = useState<'cover' | 'identitas' | 'bab1'>('cover')
 
-  const handleStartReport = async () => {
+  const handleStartReport = () => {
     if (!token || !user) {
       nav('/register')
       return
     }
-    const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
-    const d = await createDraft(`Laporan PKL - ${today}`)
-    nav(`/wizard/${d.id}`)
+    nav('/dashboard')
   }
 
   const faqs = [

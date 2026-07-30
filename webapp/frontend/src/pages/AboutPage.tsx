@@ -2,8 +2,10 @@ import { Link } from 'react-router-dom'
 import PublicNavbar from '@/components/layout/PublicNavbar'
 import Footer from '@/components/layout/Footer'
 import { IconLightbulb, IconShield } from '@/components/common/Icons'
+import { useAuth } from '@/store/auth'
 
 export default function AboutPage() {
+  const { token } = useAuth()
   return (
     <div className="about-layout">
       <PublicNavbar />
@@ -87,7 +89,7 @@ export default function AboutPage() {
           <div className="about-cta-box">
             <h3>Siap Menyusun Laporan PKL Sesuai Standar Akademik?</h3>
             <p>Gunakan Naskara gratis dan nikmati kemudahan pembuatan laporan siap cetak.</p>
-            <Link to="/register" className="btn-primary hero-btn-lg">
+            <Link to={token ? '/dashboard' : '/register'} className="btn-primary hero-btn-lg">
               Buat Laporan Gratis Sekarang →
             </Link>
           </div>
