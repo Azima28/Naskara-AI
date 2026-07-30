@@ -1,4 +1,4 @@
-# PKL Report Generator (Web App)
+# Naskara AI (Web App)
 
 Aplikasi web local-first untuk membantu siswa SMK menyusun Laporan Praktik Kerja Lapangan (PKL) sesuai standar akademik Indonesia. Aplikasi ini mencakup wizard form 11 langkah, integrasi AI lokal (via 9router) untuk menyusun draf narasi, dan generator file `.docx` dengan presisi tingkat tinggi.
 

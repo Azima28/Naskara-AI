@@ -25,7 +25,7 @@ export default function PublicNavbar() {
             </svg>
           </div>
           <div className="public-nav__brand-text">
-            <span className="public-nav__title">Naskara<span className="public-nav__badge-sm">Academic</span></span>
+            <span className="public-nav__title">Naskara<span className="public-nav__badge-sm">AI</span></span>
             <span className="public-nav__subtitle">Generator Laporan Vokasi</span>
           </div>
         </Link>

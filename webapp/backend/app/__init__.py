@@ -1,1 +1,1 @@
-"""PKL Report Generator — backend package."""
+"""Naskara AI — backend package."""

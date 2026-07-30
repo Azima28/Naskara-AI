@@ -21,7 +21,7 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
               <path d="M12 6h4" />
               <path d="M12 10h4" />
             </svg>
-            <span>Naskara Academic</span>
+            <span>Naskara AI</span>
           </Link>
 
           <div className="auth-split__manifesto">

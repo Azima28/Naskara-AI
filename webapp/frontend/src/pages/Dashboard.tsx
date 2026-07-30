@@ -85,7 +85,7 @@ export default function DashboardPage() {
                 </svg>
               </div>
               <div className="dash-header__brand-info">
-                <strong>Naskara Academic Studio</strong>
+                <strong>Naskara AI</strong>
                 <span>Standar Panduan SMKN 4 Bandar Lampung</span>
               </div>
             </Link>

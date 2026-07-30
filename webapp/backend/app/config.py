@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     )
 
     # App
-    app_name: str = "PKL Report Generator"
+    app_name: str = "Naskara AI"
     debug: bool = False
     frontend_origin: str = "http://localhost:5173"
 

@@ -1,5 +1,5 @@
 /**
- * Utility kompresi gambar otomatis client-side untuk Naskara Academic Studio.
+ * Utility kompresi gambar otomatis client-side untuk Naskara AI.
  * Jika ukuran berkas melebihi 2MB, gambar di-resize proporsional (max 2400px)
  * dan di-kompresi dengan canvas (quality ~0.88) tanpa mengurangi kualitas visual.
  */

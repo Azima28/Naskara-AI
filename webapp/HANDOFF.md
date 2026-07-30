@@ -1,4 +1,4 @@
-# PKL Report Generator — Dokumen Handoff
+# Naskara AI — Dokumen Handoff
 
 **Project**: Web app generator Laporan PKL SMK (.docx)
 **Workspace**: `c:\Work\Project Ai\docx_skill_package`

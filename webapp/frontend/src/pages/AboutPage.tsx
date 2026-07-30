@@ -10,10 +10,10 @@ export default function AboutPage() {
 
       <section className="about-hero">
         <div className="about-hero__container">
-          <span className="about-hero__tag">TENTANG NASKARA ACADEMIC</span>
+          <span className="about-hero__tag">TENTANG NASKARA AI</span>
           <h1>Misi Membantu Pendidikan Vokasi Indonesia</h1>
           <p className="about-hero__lead">
-            Naskara Academic hadir untuk menyelesaikan masalah klasik penyusunan laporan PKL bagi siswa SMK dan mahasiswa vokasi di Indonesia: format Microsoft Word yang sering berantakan, terpotong saat penjilidan, dan ditolak pembimbing sekolah.
+            Naskara AI hadir untuk menyelesaikan masalah klasik penyusunan laporan PKL bagi siswa SMK dan mahasiswa vokasi di Indonesia: format Microsoft Word yang sering berantakan, terpotong saat penjilidan, dan ditolak pembimbing sekolah.
           </p>
         </div>
       </section>
