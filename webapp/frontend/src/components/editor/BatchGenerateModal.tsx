@@ -289,8 +289,8 @@ export default function BatchGenerateModal({
           </div>
         </div>
 
-        {/* Modal Body: 2 Columns */}
-        <div style={{ flex: 1, overflowY: 'auto', display: 'grid', gridTemplateColumns: '1fr 1.25fr', gap: 0 }}>
+        {/* Modal Body: 2 Columns (Stacked 1 Column on Mobile) */}
+        <div className="batch-modal-grid" style={{ flex: 1, overflowY: 'auto' }}>
           {/* Left Column: Sub-bab Checklist Status */}
           <div
             style={{
@@ -450,6 +450,7 @@ export default function BatchGenerateModal({
 
         {/* Gate Validation Banner & Action Footer */}
         <div
+          className="batch-modal-footer"
           style={{
             padding: '1rem 1.75rem 1.25rem',
             backgroundColor: '#ffffff',
@@ -503,7 +504,7 @@ export default function BatchGenerateModal({
           </div>
 
           {/* Right Action Buttons */}
-          <div style={{ display: 'flex', gap: '0.75rem', flexShrink: 0 }}>
+          <div className="batch-modal-footer-btns" style={{ display: 'flex', gap: '0.75rem', flexShrink: 0 }}>
             {(!isGenerating || isFinished) && (
               <button
                 type="button"

@@ -967,7 +967,52 @@ input.field__input {
 
   .shell__row {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch !important;
+    gap: 0.75rem;
+  }
+
+  .shell__row > div {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .shell__row button {
+    flex: 1 1 auto;
+    min-width: 140px;
+    justify-content: center;
+  }
+
+  .editor-lock-banner {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 0.85rem;
+    padding: 1rem !important;
+  }
+
+  .editor-lock-banner__btn {
+    width: 100% !important;
+    justify-content: center !important;
+    white-space: normal !important;
+  }
+
+  .batch-modal-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .batch-modal-footer {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+  }
+
+  .batch-modal-footer-btns {
+    flex-direction: column-reverse !important;
+    width: 100% !important;
+  }
+
+  .batch-modal-footer-btns button {
+    width: 100% !important;
+    justify-content: center !important;
   }
 
   /* Di layar kecil, stepper scroll secara horizontal tanpa merusak layout */

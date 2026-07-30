@@ -267,53 +267,31 @@ function EditorInner() {
           {/* Lock Banner when generated_sections count is less than 3 */}
           {!isUnlocked && (
             <div
-              className="card"
+              className="card editor-lock-banner"
               style={{
                 marginBottom: '1.5rem',
                 background: '#f8fafc',
                 border: '1px solid #cbd5e1',
-                padding: '1.25rem 1.5rem',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div
-                  style={{
-                    width: '44px',
-                    height: '44px',
-                    borderRadius: '10px',
-                    backgroundColor: '#f1f5f9',
-                    border: '1px solid #cbd5e1',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                  }}
-                >
-                  <IconDocument size={24} color="#475569" />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <h3 style={{ margin: '0 0 0.25rem', color: '#0f172a', fontSize: '1.05rem', fontWeight: 700 }}>
-                    Editor Terkunci — Jalankan Penyusunan Sub-bab Pertama Kali
-                  </h3>
-                  <p style={{ margin: 0, color: '#475569', fontSize: '0.9rem', lineHeight: 1.5 }}>
-                    Untuk memastikan kelengkapan dokumen, jalankan penyusunan draf terlebih dahulu. Pintu editor dan unduhan dokumen Word akan terbuka secara otomatis setelah minimal 3 sub-bab berhasil disusun.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  className="btn-primary"
-                  onClick={() => setShowBatchModal(true)}
-                  style={{
-                    whiteSpace: 'nowrap',
-                    padding: '0.65rem 1.35rem',
-                    fontSize: '0.92rem',
-                    backgroundColor: '#187257',
-                    borderColor: '#14614a',
-                  }}
-                >
-                  <IconDocument size={16} style={{ marginRight: '0.4rem' }} /> Generate Semua Sub-bab Laporan
-                </button>
+              <div className="editor-lock-banner__icon">
+                <IconDocument size={24} color="#475569" />
               </div>
+              <div className="editor-lock-banner__body">
+                <h3 className="editor-lock-banner__title">
+                  Editor Terkunci — Jalankan Penyusunan Sub-bab Pertama Kali
+                </h3>
+                <p className="editor-lock-banner__text">
+                  Untuk memastikan kelengkapan dokumen, jalankan penyusunan draf terlebih dahulu. Pintu editor dan unduhan dokumen Word akan terbuka secara otomatis setelah minimal 3 sub-bab berhasil disusun.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="btn-primary editor-lock-banner__btn"
+                onClick={() => setShowBatchModal(true)}
+              >
+                <IconDocument size={16} style={{ marginRight: '0.4rem' }} /> Generate Semua Sub-bab Laporan
+              </button>
             </div>
           )}
 
