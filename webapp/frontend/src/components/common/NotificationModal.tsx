@@ -25,11 +25,11 @@ export default function NotificationModal({
     switch (type) {
       case 'error':
         return {
-          bg: '#ecfdf5',
-          border: '#a7f3d0',
-          color: '#059669',
-          icon: <IconAlert size={24} color="#059669" />,
-          defaultTitle: 'Sistem AI / Informasi Layanan',
+          bg: '#fef2f2',
+          border: '#fecaca',
+          color: '#dc2626',
+          icon: <IconAlert size={24} color="#dc2626" />,
+          defaultTitle: 'Peringatan Sistem',
         }
       case 'warning':
         return {

@@ -26,7 +26,14 @@ export default function DashboardPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
 
-  const [modal, setModal] = useState<{ isOpen: boolean; title?: string; message: string; type?: 'error' | 'warning' | 'info' | 'success' }>({
+  const [modal, setModal] = useState<{
+    isOpen: boolean
+    title?: string
+    message: string
+    type?: 'error' | 'warning' | 'info' | 'success'
+    confirmLabel?: string
+    onConfirm?: () => void
+  }>({
     isOpen: false,
     message: '',
   })
@@ -50,10 +57,18 @@ export default function DashboardPage() {
     nav(`/wizard/${d.id}`)
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Hapus draft laporan ini secara permanen?')) return
-    await deleteDraft(id)
-    load()
+  const handleDelete = (id: string) => {
+    setModal({
+      isOpen: true,
+      title: 'Hapus Draft Laporan',
+      message: 'Hapus draft laporan ini secara permanen? Data yang telah dihapus tidak dapat dikembalikan.',
+      type: 'error',
+      confirmLabel: 'Ya, Hapus Permanen',
+      onConfirm: async () => {
+        await deleteDraft(id)
+        load()
+      },
+    })
   }
 
   const handleDownload = async (id: string) => {
@@ -261,7 +276,9 @@ export default function DashboardPage() {
           title={modal.title}
           message={modal.message}
           type={modal.type}
-          onClose={() => setModal((prev) => ({ ...prev, isOpen: false }))}
+          confirmLabel={modal.confirmLabel}
+          onConfirm={modal.onConfirm}
+          onClose={() => setModal((prev) => ({ ...prev, isOpen: false, onConfirm: undefined, confirmLabel: undefined }))}
         />
       </div>
     </ProtectedRoute>
