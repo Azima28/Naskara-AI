@@ -404,9 +404,12 @@ code {
 
 .field-group__body {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
   gap: 1.1rem 1.25rem;
   align-items: start;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 @media (min-width: 1500px) {
@@ -434,6 +437,26 @@ code {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.field__input,
+input.field__input,
+select.field__input,
+textarea.field__input {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+select.field__input {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 @keyframes pulse-red-border {
@@ -927,6 +950,20 @@ input.field__input {
 }
 
 @media (max-width: 768px) {
+  .shell {
+    padding: 0.75rem 0.5rem 3rem !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+
+  .card {
+    padding: 1.1rem 0.85rem !important;
+    border-radius: 8px !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
   .grid-2-col {
     grid-template-columns: 1fr;
   }
@@ -952,7 +989,16 @@ input.field__input {
   }
 
   .field-group__body {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  input[type="file"].field__input {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    font-size: 0.8rem !important;
   }
 
   .wizard-nav {

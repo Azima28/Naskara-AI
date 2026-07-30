@@ -338,7 +338,7 @@ export function ImageUploadField({
           onChange={handleFile}
           disabled={loading}
           className="field__input"
-          style={{ padding: '0.4rem', flex: 1, minWidth: '180px' }}
+          style={{ padding: '0.4rem', flex: 1, minWidth: 0, maxWidth: '100%', boxSizing: 'border-box' }}
         />
         {loading && <span className="muted" style={{ fontSize: '0.85rem' }}>Mengunggah...</span>}
       </div>
