@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # 1. Python FastAPI Backend (Docx Engine, Database & AI Integrations)
+  backend:
+    build:
+      context: .
+      dockerfile: ./webapp/backend/Dockerfile
+    container_name: naskara-backend
+    restart: always
+    environment:
+      - DATABASE_URL=sqlite:////app/webapp/backend/pkl_reports.db
+      - SECRET_KEY=${SECRET_KEY:-naskara-prod-secret-key-change-this-in-production}
+      - AI_ENABLED=${AI_ENABLED:-true}
+      - AI_BASE_URL=${AI_BASE_URL:-http://host.docker.internal:1234/v1}
+      - AI_MODEL=${AI_MODEL:-local-model}
+      - AI_API_KEY=${AI_API_KEY:-not-needed}
+    volumes:
+      # Persistent sqlite DB & uploads on Windows Server disk
+      - ./webapp/backend/pkl_reports.db:/app/webapp/backend/pkl_reports.db
+      - ./webapp/uploads:/app/webapp/uploads
+      - ./webapp/output:/app/webapp/output
+    expose:
+      - "8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # 2. Frontend React Single Page Application (Served by Nginx)
+  frontend:
+    build:
+      context: ./webapp/frontend
+      dockerfile: Dockerfile
+    container_name: naskara-frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+  # 3. Cloudflare Tunnel (Auto-connects zimarket.biz.id Outbound without Port Forwarding)
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: naskara-tunnel
+    restart: always
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - frontend

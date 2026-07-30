@@ -3,6 +3,7 @@
  * ke backend FastAPI. Token JWT auto-attach dari auth store.
  */
 import axios from 'axios'
+import { compressImageIfExceeds2MB } from '@/utils/imageCompressor'
 import type { PklContext } from '@/types/pkl'
 import { emptyContext } from '@/types/pkl'
 import type {
@@ -250,8 +251,9 @@ export interface AssetInfo {
 }
 
 export const uploadAsset = async (file: File, type: string = 'foto'): Promise<AssetInfo> => {
+  const processedFile = await compressImageIfExceeds2MB(file)
   const formData = new FormData()
-  formData.append('file', file)
+  formData.append('file', processedFile)
   formData.append('type', type)
   const res = await api.post<AssetInfo>('/assets/upload', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },

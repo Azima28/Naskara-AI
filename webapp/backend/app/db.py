@@ -53,7 +53,10 @@ def get_db() -> Iterator[Session]:
 
 
 def init_db() -> None:
-    """Bikin semua tabel. Dipanggil saat startup (idempotent)."""
+    """Bikin semua tabel. Dipanggil saat startup (idempotent). Set WAL mode untuk SQLite."""
     from . import models  # noqa: F401  (register models di metadata)
 
     Base.metadata.create_all(bind=engine)
+    if settings.database_url.startswith("sqlite"):
+        with engine.connect() as conn:
+            conn.exec_driver_sql("PRAGMA journal_mode=WAL;")
