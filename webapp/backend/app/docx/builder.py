@@ -485,10 +485,10 @@ class PklDocBuilder:
 
         # Perhitungan spasi vertikal presisi tinggi (Empirically Verified MS Word Dynamic Cover Spacing)
         # Menghitung spasi enter presisi agar Kop Footer terdorong mentok hingga
-        # menyisakan 1 enter di bagian paling bawah Halaman 1 tanpa meluap ke Halaman 2.
+        # menyisakan 2 enter di bagian paling bawah Halaman 1 tanpa meluap ke Halaman 2.
         import math as _math
 
-        base_enters = 7
+        base_enters = 6
         extra_lines = 0
         if kota_prsh and kota_prsh.upper() not in nama_prsh.upper():
             extra_lines += 1
@@ -497,7 +497,7 @@ class PklDocBuilder:
         if len(nama_sekolah) > 35 or len(jurusan) > 30:
             extra_lines += 1
 
-        final_enters = max(3, base_enters - extra_lines)
+        final_enters = max(2, base_enters - extra_lines)
 
         for _ in range(final_enters):
             p_sp = self.doc.add_paragraph()
