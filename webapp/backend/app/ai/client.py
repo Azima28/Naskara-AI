@@ -16,7 +16,6 @@ class DummyProvider(AIProvider):
         return "[DUMMY AI DRAFT]\n\nFitur AI sedang dinonaktifkan (ai_enabled=False)."
 
 
-@lru_cache()
 def get_ai_provider() -> AIProvider:
     if not settings.ai_enabled:
         return DummyProvider()
