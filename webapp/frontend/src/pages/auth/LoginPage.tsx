@@ -2,7 +2,7 @@ import { type FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/store/auth'
 import AuthLayout from '@/components/layout/AuthLayout'
-import { IconAlert, IconEye, IconEyeOff, IconLightning } from '@/components/common/Icons'
+import { IconAlert, IconEye, IconEyeOff } from '@/components/common/Icons'
 
 export default function LoginPage() {
   const login = useAuth((s) => s.login)
@@ -26,11 +26,6 @@ export default function LoginPage() {
         : detail?.message || r?.message || 'Email atau password salah.'
       setErr(msg)
     }
-  }
-
-  const fillDemo = () => {
-    setEmail('demo@pkl.id')
-    setPassword('password123')
   }
 
   return (
@@ -86,18 +81,6 @@ export default function LoginPage() {
 
         <button type="submit" className="btn-primary auth-submit" disabled={loading}>
           {loading ? 'Sedang Memproses...' : 'Masuk ke Dashboard →'}
-        </button>
-
-        <div className="auth-divider">
-          <span>atau pakai akun percobaan</span>
-        </div>
-
-        <button
-          type="button"
-          className="btn-outline auth-demo-btn"
-          onClick={fillDemo}
-        >
-          <IconLightning size={16} style={{ marginRight: '0.4rem' }} /> Gunakan Akun Demo (demo@pkl.id)
         </button>
 
         <p className="link-text">
