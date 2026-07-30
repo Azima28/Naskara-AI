@@ -40,9 +40,8 @@ export default function Footer() {
               <li><span>DKV (Desain Komunikasi Visual)</span></li>
               <li><span>UPW (Usaha Perjalanan Wisata)</span></li>
               <li><span>PH (Perhotelan)</span></li>
-              <li><span>TB (Tata Boga / Kuliner)</span></li>
-              <li><span>TS (Tata Busana / Fashion)</span></li>
-              <li><span>OTKP (Tata Kelola Perkantoran)</span></li>
+              <li><span>Tabog (Tata Boga / Kuliner)</span></li>
+              <li><span>Tabus (Tata Busana / Fashion)</span></li>
               <li><span>AKL (Akuntansi &amp; Keuangan)</span></li>
               <li><span>BDP (Bisnis &amp; Pemasaran)</span></li>
             </ul>

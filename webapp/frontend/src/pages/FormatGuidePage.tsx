@@ -12,12 +12,11 @@ import {
   IconBed,
   IconUtensils,
   IconScissors,
-  IconFolder,
   IconChart,
   IconShoppingBag,
 } from '@/components/common/Icons'
 
-type MajorKey = 'pplg' | 'tkj' | 'dkv' | 'upw' | 'ph' | 'tb' | 'busana' | 'otkp' | 'akl' | 'bdp'
+type MajorKey = 'pplg' | 'tkj' | 'dkv' | 'upw' | 'ph' | 'tb' | 'busana' | 'akl' | 'bdp'
 
 export default function FormatGuidePage() {
   const [activeTab, setActiveTab] = useState<MajorKey>('pplg')
@@ -28,9 +27,8 @@ export default function FormatGuidePage() {
     { id: 'dkv', name: 'Desain Komunikasi Visual (DKV)', code: 'DKV' },
     { id: 'upw', name: 'Usaha Perjalanan Wisata (UPW)', code: 'UPW' },
     { id: 'ph', name: 'Perhotelan (PH)', code: 'PH' },
-    { id: 'tb', name: 'Tata Boga / Kuliner (TB)', code: 'TB' },
-    { id: 'busana', name: 'Tata Busana / Fashion (TS)', code: 'TS' },
-    { id: 'otkp', name: 'Otomatisasi & Tata Kelola Perkantoran (OTKP)', code: 'OTKP' },
+    { id: 'tb', name: 'Tata Boga / Kuliner (Tabog)', code: 'Tabog' },
+    { id: 'busana', name: 'Tata Busana / Fashion (Tabus)', code: 'Tabus' },
     { id: 'akl', name: 'Akuntansi & Keuangan Lembaga (AKL)', code: 'AKL' },
     { id: 'bdp', name: 'Bisnis Daring & Pemasaran (BDP)', code: 'BDP' },
   ]
@@ -233,7 +231,7 @@ export default function FormatGuidePage() {
               )}
               {activeTab === 'tb' && (
                 <div>
-                  <h3><IconUtensils size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Tata Boga / Kuliner (TB)</h3>
+                  <h3><IconUtensils size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Tata Boga / Kuliner (Tabog)</h3>
                   <p><strong>Contoh Divisi:</strong> Main Kitchen / Pastry &amp; Bakery / Banquet Service / Cold Kitchen</p>
                   <p><strong>Peralatan Utama:</strong> Commercial Oven, Portioning Digital Scale, Chef Knives Set, Chiller/Freezer FIFO, Cooking Thermometer.</p>
                   <p><strong>Contoh Kegiatan:</strong> Standardisasi Mise en Place Bahan Utama, Pembuatan Pastry &amp; Bakery, Audit Hygiene HACCP, Control Food Cost Menu Buffet Banquet dari 38% ke 29.5%.</p>
@@ -241,18 +239,10 @@ export default function FormatGuidePage() {
               )}
               {activeTab === 'busana' && (
                 <div>
-                  <h3><IconScissors size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Tata Busana / Fashion (TS)</h3>
+                  <h3><IconScissors size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Tata Busana / Fashion (Tabus)</h3>
                   <p><strong>Contoh Divisi:</strong> Fashion Designer Assistant / Pattern Maker / Garment Quality Control / Sample Sewing</p>
                   <p><strong>Peralatan Utama:</strong> Mesin Jahit High-Speed Industri, Mesin Obras 4-Benang, Manekin Draping, Gunting Kain Tailor, Meteran Jahit.</p>
                   <p><strong>Contoh Kegiatan:</strong> Pembuatan Pola Busana Custom Sistem Meyneke, Draping Sample Kain Blaco, Cutting Material Kain &amp; Toleransi Jahitan 1.5 cm, Quality Control Kerapatan Stik Jahitan.</p>
-                </div>
-              )}
-              {activeTab === 'otkp' && (
-                <div>
-                  <h3><IconFolder size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Otomatisasi &amp; Tata Kelola Perkantoran (OTKP)</h3>
-                  <p><strong>Contoh Divisi:</strong> Sekretaris / Administrasi Perkantoran / Public Relation / Digital Archiving</p>
-                  <p><strong>Peralatan Utama:</strong> Mesin Scanner High-Speed, e-Office Archiving App, Telepon PABX, Filling Cabinet, Paper Shredder.</p>
-                  <p><strong>Contoh Kegiatan:</strong> Digitalisasi Surat Masuk/Keluar, Pengelolaan Agenda Rapat Direksi, Penanganan Telepon PABX &amp; Tamu Perusahaan, Retrieval Document System di bawah 1 Menit.</p>
                 </div>
               )}
               {activeTab === 'akl' && (

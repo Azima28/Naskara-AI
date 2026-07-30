@@ -130,7 +130,7 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
 
   tb: {
     jurusan_key: 'tb',
-    label: 'Tata Boga (TB / Kuliner)',
+    label: 'Tata Boga (Tabog / Kuliner)',
     icon: 'utensils',
     badge: 'Kuliner & Banquet',
     studiKasus: {
@@ -152,7 +152,7 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
 
   busana: {
     jurusan_key: 'busana',
-    label: 'Tata Busana (TS / Fashion)',
+    label: 'Tata Busana (Tabus / Fashion)',
     icon: 'scissors',
     badge: 'Fashion & Custom Making',
     studiKasus: {
@@ -168,28 +168,6 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         { label: 'Kerapatan Setikan Jahitan', nilai: '9 Stik / Inci' },
         { label: 'Penghematan Bahan Kain', nilai: '18%' },
         { label: 'Waktu Penyelesaian Pola', nilai: '60 Menit' },
-      ],
-    },
-  },
-
-  otkp: {
-    jurusan_key: 'otkp',
-    label: 'Otomatisasi & Tata Kelola Perkantoran (OTKP)',
-    icon: 'folder',
-    badge: 'Administrasi Perkantoran',
-    studiKasus: {
-      judul: 'Digitalisasi & Digital Archiving System Surat Masuk/Keluar',
-      latar_belakang:
-        'Sistem temu kembali (retrieval) arsip fisik surat masuk sering memakan waktu lama karena pencatatan agenda masih menggunakan buku register manual.',
-      proses_atau_formula:
-        '1. Melakukan alih media (scanning) dokumen surat fisik ke format PDF.\n2. Mengelompokkan dokumen berdasarkan Sistem Subjek & Kode Klasifikasi.\n3. Menginput nomor disposisi dan indeks surat ke e-Office.\n4. Pengujian kecepatan pencarian dokumen (Retrieval Time Test).',
-      hasil:
-        'Waktu temu kembali dokumen arsip berkurang drastis dari 15 menit menjadi kurang dari 1 menit per dokumen.',
-      data_angka: [
-        { label: 'Waktu Temu Kembali Manual', nilai: '15 Menit' },
-        { label: 'Waktu Temu Kembali Digital', nilai: '45 Detik' },
-        { label: 'Dokumen Terscan & Terindeks', nilai: '250 Surat' },
-        { label: 'Akurasi Klasifikasi Arsip', nilai: '99%' },
       ],
     },
   },
@@ -246,16 +224,14 @@ export function detectJurusanKey(input: string): string {
   if (lower.includes('perangkat lunak') || lower.includes('rpl') || lower.includes('pplg') || lower.includes('software') || lower.includes('coding') || lower.includes('gim')) return 'pplg'
   if (lower.includes('jaringan') || lower.includes('tkj') || lower.includes('sija') || lower.includes('komputer') || lower.includes('network')) return 'tkj'
   if (lower.includes('pemasaran') || lower.includes('bdp') || lower.includes('bisnis digital') || lower.includes('marketing')) return 'bdp'
-  if (lower.includes('perkantoran') || lower.includes('mplb') || lower.includes('otkp') || lower.includes('administrasi')) return 'otkp'
   if (lower.includes('desain') || lower.includes('dkv') || lower.includes('animasi') || lower.includes('visual') || lower.includes('broadcasting')) return 'dkv'
-  if (lower.includes('boga') || lower.includes('kuliner') || lower.includes('tb')) return 'tb'
+  if (lower.includes('boga') || lower.includes('kuliner') || lower.includes('tabog') || lower.includes('tb')) return 'tb'
   if (lower.includes('hotel') || lower.includes('perhotelan') || lower.includes('ph') || lower.includes('housekeeping')) return 'ph'
-  if (lower.includes('busana') || lower.includes('fashion') || lower.includes('ts') || lower.includes('jahit') || lower.includes('pakaian')) return 'busana'
+  if (lower.includes('busana') || lower.includes('fashion') || lower.includes('tabus') || lower.includes('ts') || lower.includes('jahit') || lower.includes('pakaian')) return 'busana'
   if (lower.includes('wisata') || lower.includes('upw') || lower.includes('tour') || lower.includes('travel') || lower.includes('perjalanan')) return 'upw'
 
   // Aliasing fallback
   if (lower.includes('rpl')) return 'pplg'
-  if (lower.includes('mplb')) return 'otkp'
 
   return 'pplg'
 }

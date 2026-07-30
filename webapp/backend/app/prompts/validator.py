@@ -152,7 +152,7 @@ _ACADEMIC_OK = {
     "itinerary", "housekeeping", "pastry", "bakery", "draping", "garmen",
     "e-office", "disposisi", "waive", "roas", "vlan", "render", "slicing",
     "haccp", "busana", "wisata", "perhotelan", "kuliner", "gim", "pplg",
-    "otkp", "upw", "akl", "bdp", "dkv", "tkj", "ph", "tb",
+    "tabog", "tabus", "upw", "akl", "bdp", "dkv", "tkj", "ph", "tb",
 }
 
 

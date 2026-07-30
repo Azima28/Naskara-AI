@@ -14,9 +14,8 @@ const MAJOR_TABS = [
   { key: 'dkv', label: 'DKV / Desain' },
   { key: 'upw', label: 'UPW / Wisata' },
   { key: 'ph', label: 'PH / Perhotelan' },
-  { key: 'tb', label: 'TB / Kuliner' },
-  { key: 'busana', label: 'TS / Fashion' },
-  { key: 'otkp', label: 'OTKP / Perkantoran' },
+  { key: 'tb', label: 'Tabog / Kuliner' },
+  { key: 'busana', label: 'Tabus / Fashion' },
   { key: 'akl', label: 'AKL / Akuntansi' },
   { key: 'bdp', label: 'BDP / Marketing' },
 ]

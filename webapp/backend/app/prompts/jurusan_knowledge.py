@@ -35,22 +35,16 @@ Istilah Teknis: Room Inspection, Housekeeping, PMS Opera, Front Desk, Check-In, 
 Fokus Analisis: Kecepatan proses check-in, kerapian & kebersihan kamar sesuai SOP 21 poin, serta kepuasan tamu hotel.
 """,
 
-    "tb": """Konteks Jurusan: Tata Boga / Kuliner (TB)
+    "tb": """Konteks Jurusan: Tata Boga / Kuliner (Tabog)
 Fokus kompetensi: Persiapan bahan (mise en place), pengolahan makanan/pastry, penyajian (plating), kebersihan dapur, dan perhitungan food cost.
-Istilah Teknis: Mise en Place, Food Cost, Yield, Plating, Garnishing, FIFO, HACCP, Stock Opname, BEP, Pastry, Bakery.
+Istilah Teknis: Mise en Place, Food Cost, Yield, Plating, Garnishing, FIFO, HACCP, Stock Opname, BEP, Pastry, Bakery, Tabog.
 Fokus Analisis: Standardisasi rasa dan penyajian, penerapan HACCP (higienitas), dan perhitungan rasio persentase biaya bahan baku (food cost).
 """,
 
-    "busana": """Konteks Jurusan: Tata Busana / Fashion (TS)
+    "busana": """Konteks Jurusan: Tata Busana / Fashion (Tabus)
 Fokus kompetensi: Pembuatan pola dasar & custom, draping, teknik memotong bahan (cutting), menjahit pakaian industri (garment), dan quality control.
-Istilah Teknis: Pola Dasar, Draping, Meyneke, Cutting, Seam Allowance, Stik Jahitan, Quality Control, Garment, Fitting, Anatomi Busana.
+Istilah Teknis: Pola Dasar, Draping, Meyneke, Cutting, Seam Allowance, Stik Jahitan, Quality Control, Garment, Fitting, Anatomi Busana, Tabus.
 Fokus Analisis: Akurasi presisi ukuran pola busana, kelancaran proses jahit high-speed, kerapatan stik jahitan, dan penghematan pemakaian bahan kain.
-""",
-
-    "otkp": """Konteks Jurusan: Otomatisasi dan Tata Kelola Perkantoran (OTKP) / MPLB
-Fokus kompetensi: Administrasi kantor, digital archiving system, korespondensi surat masuk/keluar, pengelolaan agenda rapat, dan resepsionis PABX.
-Istilah Teknis: Disposisi, Agenda Surat, Filing System, Kartu Kendali, Retrieval, In/Out Mail, Tata Kelola Arsip, e-Office, PABX.
-Fokus Analisis: Efisiensi waktu temu kembali arsip (retrieval time), kerapian tata kelola dokumen, dan standar operasional prosedur pelayanan.
 """,
 
     "akl": """Konteks Jurusan: Akuntansi dan Keuangan Lembaga (AKL)
@@ -77,12 +71,12 @@ def get_jurusan_context(jurusan_key: str) -> str:
     alias_map = {
         "rpl": "pplg",
         "software": "pplg",
-        "mplb": "otkp",
-        "perkantoran": "otkp",
         "boga": "tb",
         "kuliner": "tb",
+        "tabog": "tb",
         "ts": "busana",
         "fashion": "busana",
+        "tabus": "busana",
         "wisata": "upw",
         "travel": "upw",
         "hotel": "ph",
