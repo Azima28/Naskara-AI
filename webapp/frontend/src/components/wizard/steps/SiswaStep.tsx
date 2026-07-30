@@ -5,17 +5,17 @@ import { detectJurusanKey, getJurusanExample } from '@/utils/jurusanExamples'
 import JurusanDocxPreviewModal from '@/components/wizard/JurusanDocxPreviewModal'
 import { IconSearch } from '@/components/common/Icons'
 
-const JURUSAN_PRESETS = [
-  { name: 'PPLG (Perangkat Lunak & Gim)', value: 'Pemrograman Perangkat Lunak dan Gim', key: 'pplg' },
-  { name: 'TKJ (Teknik Komputer & Jaringan)', value: 'Teknik Komputer dan Jaringan', key: 'tkj' },
-  { name: 'DKV (Desain Komunikasi Visual)', value: 'Desain Komunikasi Visual', key: 'dkv' },
-  { name: 'UPW (Usaha Perjalanan Wisata)', value: 'Usaha Perjalanan Wisata', key: 'upw' },
-  { name: 'PH (Perhotelan)', value: 'Perhotelan', key: 'ph' },
-  { name: 'TB (Tata Boga / Kuliner)', value: 'Tata Boga', key: 'tb' },
-  { name: 'TS (Tata Busana / Fashion)', value: 'Tata Busana', key: 'busana' },
-  { name: 'OTKP (Tata Kelola Perkantoran)', value: 'Otomatisasi dan Tata Kelola Perkantoran', key: 'otkp' },
-  { name: 'AKL (Akuntansi & Keuangan)', value: 'Akuntansi dan Keuangan Lembaga', key: 'akl' },
-  { name: 'BDP (Bisnis Daring & Pemasaran)', value: 'Bisnis Daring dan Pemasaran', key: 'bdp' },
+const JURUSAN_DROPDOWN_OPTIONS = [
+  { label: 'Pemrograman Perangkat Lunak & Gim (PPLG)', value: 'Pemrograman Perangkat Lunak dan Gim', key: 'pplg', code: 'PPLG' },
+  { label: 'Teknik Komputer dan Jaringan (TKJ)', value: 'Teknik Komputer dan Jaringan', key: 'tkj', code: 'TKJ' },
+  { label: 'Desain Komunikasi Visual (DKV)', value: 'Desain Komunikasi Visual', key: 'dkv', code: 'DKV' },
+  { label: 'Usaha Perjalanan Wisata (UPW)', value: 'Usaha Perjalanan Wisata', key: 'upw', code: 'UPW' },
+  { label: 'Perhotelan (PH)', value: 'Perhotelan', key: 'ph', code: 'PH' },
+  { label: 'Tata Boga (TB / Kuliner)', value: 'Tata Boga', key: 'tb', code: 'TB' },
+  { label: 'Tata Busana (TS / Fashion)', value: 'Tata Busana', key: 'busana', code: 'TS' },
+  { label: 'Otomatisasi & Tata Kelola Perkantoran (OTKP)', value: 'Otomatisasi dan Tata Kelola Perkantoran', key: 'otkp', code: 'OTKP' },
+  { label: 'Akuntansi & Keuangan Lembaga (AKL)', value: 'Akuntansi dan Keuangan Lembaga', key: 'akl', code: 'AKL' },
+  { label: 'Bisnis Daring & Pemasaran (BDP)', value: 'Bisnis Daring dan Pemasaran', key: 'bdp', code: 'BDP' },
 ]
 
 export default function SiswaStep({ ctx, set }: { ctx: PklContext; set: (p: Partial<PklContext>) => void }) {
@@ -25,9 +25,18 @@ export default function SiswaStep({ ctx, set }: { ctx: PklContext; set: (p: Part
 
   const currentJurusanExample = getJurusanExample(s.jurusan_key || detectJurusanKey(s.jurusan))
 
-  const handleJurusanChange = (val: string, forcedKey?: string) => {
-    const key = forcedKey || detectJurusanKey(val)
-    upd({ jurusan: val, jurusan_key: key })
+  const handleSelectJurusan = (val: string, forcedKey?: string) => {
+    const item = JURUSAN_DROPDOWN_OPTIONS.find((j) => j.value === val || j.key === forcedKey)
+    if (item) {
+      upd({
+        jurusan: item.value,
+        jurusan_key: item.key,
+        kelas: `XII ${item.code}`,
+      })
+    } else {
+      const key = forcedKey || detectJurusanKey(val)
+      upd({ jurusan: val, jurusan_key: key })
+    }
   }
 
   return (
@@ -38,51 +47,20 @@ export default function SiswaStep({ ctx, set }: { ctx: PklContext; set: (p: Part
       <ImportanceLegend />
 
       <FieldGroup title="Data Akademik">
-        <TextField name="siswa.nama" label="Nama Lengkap" value={s.nama} onChange={(v) => upd({ nama: v })} importance="wajib" hint="Muncul di Cover dan Pengesahan" />
-        <ImageUploadField
-          name="siswa.foto"
-          label="Pas Foto 3x4"
-          value={s.foto || ''}
-          onChange={(v) => upd({ foto: v })}
-          importance="wajib"
-          hint="Digunakan untuk halaman Identitas Siswa"
-        />
-        <TextField name="siswa.nis" label="NIS" value={s.nis} onChange={(v) => upd({ nis: v })} importance="wajib" hint="Nomor Induk Siswa (biasanya 4-5 digit)" />
-        <TextField name="siswa.nisn" label="NISN" value={s.nisn} onChange={(v) => upd({ nisn: v })} importance="wajib" hint="Nomor Induk Siswa Nasional (10 digit)" />
-        <TextField name="siswa.kelas" label="Kelas" value={s.kelas} onChange={(v) => upd({ kelas: v })} importance="wajib" placeholder="XII AKL 1" />
-
-        <div className="field field--full">
-          <TextField
+        {/* 1. Jurusan Dropdown (Pertama) */}
+        <div className="field field--full" style={{ marginBottom: '1rem' }}>
+          <SelectField
             name="siswa.jurusan"
             label="Jurusan / Program Keahlian"
             value={s.jurusan}
-            onChange={(v) => handleJurusanChange(v)}
+            onChange={(v) => handleSelectJurusan(v)}
             importance="wajib"
-            placeholder="contoh: Rekayasa Perangkat Lunak"
-            hint="Ketik nama jurusan kamu, atau pilih cepat dari tombol di bawah"
+            hint="Pilih 1 dari 10 Konsentrasi Keahlian resmi SMKN 4 Bandar Lampung"
+            options={JURUSAN_DROPDOWN_OPTIONS.map((j) => ({
+              label: j.label,
+              value: j.value,
+            }))}
           />
-
-          <div style={{ marginTop: '0.6rem' }}>
-            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--ink-soft)', display: 'block', marginBottom: '0.4rem' }}>
-              Pilih Cepat Jurusan SMK:
-            </span>
-            <div className="checkbox-grid">
-              {JURUSAN_PRESETS.map((jp) => {
-                const isSelected = (s.jurusan_key || detectJurusanKey(s.jurusan)) === jp.key
-                return (
-                  <button
-                    key={jp.key}
-                    type="button"
-                    className={`chip ${isSelected ? 'chip--on' : ''}`}
-                    onClick={() => handleJurusanChange(jp.value, jp.key)}
-                    style={{ fontSize: '0.8rem', padding: '0.3rem 0.65rem' }}
-                  >
-                    {jp.name}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
 
           {/* Dynamic Detected Jurusan Badge & Preview Button */}
           <div
@@ -102,7 +80,7 @@ export default function SiswaStep({ ctx, set }: { ctx: PklContext; set: (p: Part
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
               <div>
                 <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--green-700)', textTransform: 'uppercase' }}>
-                  Jurusan Terdeteksi:
+                  Jurusan Aktif:
                 </span>
                 <div style={{ fontSize: '0.92rem', fontWeight: 600, color: 'var(--ink)' }}>
                   {currentJurusanExample.label}
@@ -120,6 +98,36 @@ export default function SiswaStep({ ctx, set }: { ctx: PklContext; set: (p: Part
             </button>
           </div>
         </div>
+
+        {/* 2. Nama Lengkap */}
+        <TextField name="siswa.nama" label="Nama Lengkap" value={s.nama} onChange={(v) => upd({ nama: v })} importance="wajib" hint="Muncul di Cover dan Pengesahan" />
+
+        {/* 3. Pas Foto 3x4 */}
+        <ImageUploadField
+          name="siswa.foto"
+          label="Pas Foto 3x4"
+          value={s.foto || ''}
+          onChange={(v) => upd({ foto: v })}
+          importance="wajib"
+          hint="Digunakan untuk halaman Identitas Siswa"
+        />
+
+        {/* 4. NIS */}
+        <TextField name="siswa.nis" label="NIS" value={s.nis} onChange={(v) => upd({ nis: v })} importance="wajib" hint="Nomor Induk Siswa (biasanya 4-5 digit)" />
+
+        {/* 5. NISN */}
+        <TextField name="siswa.nisn" label="NISN" value={s.nisn} onChange={(v) => upd({ nisn: v })} importance="wajib" hint="Nomor Induk Siswa Nasional (10 digit)" />
+
+        {/* 6. Kelas (Auto-filled berdasarkan jurusan) */}
+        <TextField
+          name="siswa.kelas"
+          label="Kelas"
+          value={s.kelas}
+          onChange={(v) => upd({ kelas: v })}
+          importance="wajib"
+          placeholder="XII PPLG 1"
+          hint="Terisi otomatis berdasarkan Jurusan (bisa disesuaikan nomor rombelnya, misal: XII PPLG 2)"
+        />
       </FieldGroup>
 
       {/* Modal Preview Lembaran Laporan per Jurusan */}
@@ -127,7 +135,7 @@ export default function SiswaStep({ ctx, set }: { ctx: PklContext; set: (p: Part
         isOpen={showPreviewModal}
         onClose={() => setShowPreviewModal(false)}
         initialJurusanKey={s.jurusan_key || detectJurusanKey(s.jurusan)}
-        onSelectJurusan={(val, key) => handleJurusanChange(val, key)}
+        onSelectJurusan={(val, key) => handleSelectJurusan(val, key)}
       />
 
       <FieldGroup title="Data Pribadi">
