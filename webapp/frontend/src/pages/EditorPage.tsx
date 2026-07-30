@@ -114,9 +114,9 @@ function EditorInner() {
       setBatchStatuses((prev) => ({ ...prev, [sec.key]: 'generating' }))
 
       try {
-        // Strict 15-second timeout promise (AI stall protection)
+        // 2-minute maximum timeout promise for generation, with 15s initial response check
         const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('AI tidak merespon dalam 15 detik (Timeout)')), 15000)
+          setTimeout(() => reject(new Error('AI tidak merespon (Timeout)')), 120000)
         )
 
         const res: any = await Promise.race([
@@ -847,12 +847,12 @@ function SectionEditor({
                 <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Menyusun (Maks 15s)...
+              Menyusun...
             </span>
           )}
           {batchStatus === 'failed' && (
             <span style={{ fontSize: '0.78rem', color: '#dc2626', backgroundColor: '#fef2f2', border: '1px solid #fecaca', padding: '0.2rem 0.6rem', borderRadius: '12px', fontWeight: 600, display: 'inline-flex', alignItems: 'center' }}>
-              <IconAlert size={14} color="#dc2626" style={{ marginRight: '3px' }} /> Gagal / Timeout 15s
+              <IconAlert size={14} color="#dc2626" style={{ marginRight: '3px' }} /> Gagal
             </span>
           )}
           {batchStatus === 'success' && !isCurrentGenerating && (
@@ -877,7 +877,7 @@ function SectionEditor({
 
       {(loading || isCurrentGenerating) && (
         <p className="muted" style={{ fontSize: '0.9rem', color: '#187257' }}>
-          Penyusun AI sedang menulis draf naratif (Batas waktu 15 detik)...
+          Penyusun AI sedang menulis draf naratif…
         </p>
       )}
 
