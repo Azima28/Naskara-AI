@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { PklContext } from '@/types/pkl'
 import { FieldGroup, ImportanceLegend, TextField, SelectField, ImageUploadField } from '@/components/fields/FormFields'
-import { detectJurusanKey, getJurusanExample } from '@/utils/jurusanExamples'
+import { detectJurusanKey } from '@/utils/jurusanExamples'
 import JurusanDocxPreviewModal from '@/components/wizard/JurusanDocxPreviewModal'
 import { IconSearch } from '@/components/common/Icons'
 
@@ -22,8 +22,6 @@ export default function SiswaStep({ ctx, set }: { ctx: PklContext; set: (p: Part
   const s = ctx.siswa
   const upd = (patch: Partial<typeof s>) => set({ siswa: { ...s, ...patch } })
   const [showPreviewModal, setShowPreviewModal] = useState(false)
-
-  const currentJurusanExample = getJurusanExample(s.jurusan_key || detectJurusanKey(s.jurusan))
 
   const handleSelectJurusan = (val: string, forcedKey?: string) => {
     const item = JURUSAN_DROPDOWN_OPTIONS.find((j) => j.value === val || j.key === forcedKey)
@@ -62,37 +60,12 @@ export default function SiswaStep({ ctx, set }: { ctx: PklContext; set: (p: Part
             }))}
           />
 
-          {/* Dynamic Detected Jurusan Badge & Preview Button */}
-          <div
-            style={{
-              marginTop: '0.85rem',
-              padding: '0.85rem 1rem',
-              background: 'var(--green-50, #f0fdf4)',
-              border: '1px solid var(--green-500, #4ade80)',
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: '0.75rem',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <div>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--green-700)', textTransform: 'uppercase' }}>
-                  Jurusan Aktif:
-                </span>
-                <div style={{ fontSize: '0.92rem', fontWeight: 600, color: 'var(--ink)' }}>
-                  {currentJurusanExample.label}
-                </div>
-              </div>
-            </div>
-
+          <div style={{ marginTop: '0.45rem' }}>
             <button
               type="button"
-              className="btn-sm btn-primary btn-mobile-full"
+              className="btn-sm btn-outline"
               onClick={() => setShowPreviewModal(true)}
-              style={{ fontSize: '0.82rem', fontWeight: 600, padding: '0.45rem 0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
+              style={{ fontSize: '0.8rem', fontWeight: 600, padding: '0.35rem 0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
             >
               <IconSearch size={14} /> Lihat Contoh Lembaran Laporan (.docx) Per Jurusan
             </button>
