@@ -198,8 +198,17 @@ function EditorInner() {
     )
   }
 
-  // Tentukan section apa saja yang perlu di-generate/edit
+  // Determine section list
   const sections = buildSectionList(ctx)
+
+  // Count sections that have non-empty content
+  const generatedCount = Object.keys(ctx.generated_sections || {}).filter((k) => {
+    const v = ctx.generated_sections?.[k]
+    return Array.isArray(v) ? v.length > 0 : !!(typeof v === 'string' && v.trim())
+  }).length
+
+  // Lock gate: at least 3 sections must be generated to unlock individual section editors and document download
+  const isUnlocked = generatedCount >= 3
 
   return (
     <div className="shell">
@@ -230,7 +239,7 @@ function EditorInner() {
               onClick={() => setShowBatchModal(true)}
               style={{ fontSize: '0.82rem', padding: '0.38rem 0.8rem', background: '#187257' }}
             >
-              <IconSparkles size={14} style={{ marginRight: '0.3rem' }} /> Generate Semua Sub-bab AI (Realtime)
+              <IconDocument size={14} style={{ marginRight: '0.3rem' }} /> Generate Semua Sub-bab Laporan
             </button>
             <button
               type="button"
@@ -255,14 +264,14 @@ function EditorInner() {
       <div className="editor-grid">
         {/* Editor Main Content */}
         <div className="editor-sections">
-          {/* Callout Banner when generated_sections count is 0 */}
-          {Object.keys(ctx.generated_sections || {}).length === 0 && (
+          {/* Lock Banner when generated_sections count is less than 3 */}
+          {!isUnlocked && (
             <div
               className="card"
               style={{
                 marginBottom: '1.5rem',
-                background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
-                border: '1px solid #a7f3d0',
+                background: '#f8fafc',
+                border: '1px solid #cbd5e1',
                 padding: '1.25rem 1.5rem',
               }}
             >
@@ -271,23 +280,23 @@ function EditorInner() {
                   style={{
                     width: '44px',
                     height: '44px',
-                    borderRadius: '12px',
-                    backgroundColor: '#ffffff',
+                    borderRadius: '10px',
+                    backgroundColor: '#f1f5f9',
+                    border: '1px solid #cbd5e1',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.06)',
                     flexShrink: 0,
                   }}
                 >
-                  <IconSparkles size={24} color="#059669" />
+                  <IconDocument size={24} color="#475569" />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <h3 style={{ margin: '0 0 0.25rem', color: '#064e3b', fontSize: '1.05rem', fontWeight: 700 }}>
-                    Draf Naratif Sub-bab Belum Dibuat
+                  <h3 style={{ margin: '0 0 0.25rem', color: '#0f172a', fontSize: '1.05rem', fontWeight: 700 }}>
+                    Editor Terkunci — Jalankan Penyusunan Sub-bab Pertama Kali
                   </h3>
-                  <p style={{ margin: 0, color: '#047857', fontSize: '0.9rem', lineHeight: 1.5 }}>
-                    Hemat waktu Anda dengan mengeklik tombol di bawah ini. AI Naskara akan menyusun draf naratif seluruh sub-bab sekaligus secara realtime 1 per 1.
+                  <p style={{ margin: 0, color: '#475569', fontSize: '0.9rem', lineHeight: 1.5 }}>
+                    Untuk memastikan kelengkapan dokumen, jalankan penyusunan draf terlebih dahulu. Pintu editor dan unduhan dokumen Word akan terbuka secara otomatis setelah minimal 3 sub-bab berhasil disusun.
                   </p>
                 </div>
                 <button
@@ -296,13 +305,13 @@ function EditorInner() {
                   onClick={() => setShowBatchModal(true)}
                   style={{
                     whiteSpace: 'nowrap',
-                    padding: '0.65rem 1.25rem',
+                    padding: '0.65rem 1.35rem',
                     fontSize: '0.92rem',
-                    backgroundColor: '#059669',
-                    borderColor: '#047857',
+                    backgroundColor: '#187257',
+                    borderColor: '#14614a',
                   }}
                 >
-                  <IconSparkles size={16} style={{ marginRight: '0.4rem' }} /> Generate Semua Sub-bab AI (Realtime)
+                  <IconDocument size={16} style={{ marginRight: '0.4rem' }} /> Generate Semua Sub-bab Laporan
                 </button>
               </div>
             </div>
@@ -317,6 +326,7 @@ function EditorInner() {
                 value={(ctx.generated_sections || {})[sec.key] || ''}
                 onChange={(val) => updateSection(sec.key, val)}
                 onError={showErrorModal}
+                disabled={!isUnlocked}
               />
             </div>
           ))}
@@ -362,11 +372,12 @@ function EditorInner() {
                 background: 'var(--green-600, #187257)',
                 color: '#ffffff',
                 border: '1px solid var(--green-700, #14614a)',
-                cursor: downloading ? 'wait' : 'pointer',
+                cursor: downloading || !isUnlocked ? 'not-allowed' : 'pointer',
+                opacity: !isUnlocked ? 0.5 : 1,
                 boxShadow: '0 2px 6px rgba(24, 114, 87, 0.25)',
                 marginBottom: '1rem',
               }}
-              disabled={downloading}
+              disabled={downloading || !isUnlocked}
               onClick={async () => {
                 if (!draftId) return
                 setDownloading(true)
@@ -423,8 +434,10 @@ function EditorInner() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   padding: '0.5rem 0.75rem',
+                  opacity: !isUnlocked ? 0.5 : 1,
+                  cursor: !isUnlocked ? 'not-allowed' : 'pointer',
                 }}
-                disabled={enhancing || downloading}
+                disabled={enhancing || downloading || !isUnlocked}
                 onClick={async () => {
                   if (!draftId) return
                   setEnhancing(true)
@@ -647,6 +660,7 @@ function SectionEditor({
   value,
   onChange,
   onError,
+  disabled = false,
 }: {
   sectionKey: string
   title: string
@@ -654,6 +668,7 @@ function SectionEditor({
   value: string | string[]
   onChange: (val: any) => void
   onError?: (msg: string) => void
+  disabled?: boolean
 }) {
   const [loading, setLoading] = useState(false)
   const [regen, setRegen] = useState(false)
@@ -667,6 +682,7 @@ function SectionEditor({
     : (value as string)
 
   const handleGenerate = async () => {
+    if (disabled) return
     setLoading(true)
     try {
       const res = await draftSection(sectionKey, ctx)
@@ -690,7 +706,7 @@ function SectionEditor({
   }
 
   const handleRegenerate = async () => {
-    if (!instruction) {
+    if (disabled || !instruction) {
       setRegen(false)
       return
     }
@@ -719,12 +735,18 @@ function SectionEditor({
   }
 
   return (
-    <div className="card" style={{ marginBottom: '1.5rem' }}>
+    <div className="card" style={{ marginBottom: '1.5rem', opacity: disabled ? 0.6 : 1 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h3 style={{ margin: 0 }}>{title}</h3>
         {!textValue && !loading && (
-          <button type="button" className="btn-sm btn-primary" onClick={handleGenerate}>
-            <IconSparkles size={14} style={{ marginRight: '0.3rem' }} /> Tulis Draf dengan AI
+          <button
+            type="button"
+            className="btn-sm btn-primary"
+            onClick={handleGenerate}
+            disabled={disabled}
+            style={{ opacity: disabled ? 0.5 : 1, cursor: disabled ? 'not-allowed' : 'pointer' }}
+          >
+            Tulis Draf Individu
           </button>
         )}
       </div>
@@ -737,6 +759,7 @@ function SectionEditor({
             className="input"
             rows={Math.max(5, textValue.split('\n').length + 1)}
             value={textValue}
+            disabled={disabled}
             onChange={(e) => {
               if (isArrayType) {
                 const lines = e.target.value.split('\n').map((l) => l.replace(/^-\s*/, '').trim()).filter(Boolean)
@@ -745,12 +768,18 @@ function SectionEditor({
                 onChange(e.target.value)
               }
             }}
-            style={{ width: '100%', resize: 'vertical', lineHeight: 1.6 }}
+            style={{ width: '100%', resize: 'vertical', lineHeight: 1.6, opacity: disabled ? 0.7 : 1, cursor: disabled ? 'not-allowed' : 'text' }}
           />
 
           <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', alignItems: 'center' }}>
             {!regen ? (
-              <button type="button" className="btn-sm btn-outline" onClick={() => setRegen(true)}>
+              <button
+                type="button"
+                className="btn-sm btn-outline"
+                onClick={() => setRegen(true)}
+                disabled={disabled}
+                style={{ opacity: disabled ? 0.5 : 1, cursor: disabled ? 'not-allowed' : 'pointer' }}
+              >
                 <IconPencil size={14} style={{ marginRight: '0.3rem' }} /> Perbaiki &amp; Tulis Ulang
               </button>
             ) : (
@@ -758,13 +787,14 @@ function SectionEditor({
                 <input
                   type="text"
                   className="input"
+                  disabled={disabled}
                   style={{ flex: 1, padding: '0.35rem 0.6rem' }}
                   placeholder="Instruksi: contoh 'Lebih padat', 'Gunakan istilah TKJ yang baku'"
                   value={instruction}
                   onChange={(e) => setInstruction(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleRegenerate()}
                 />
-                <button type="button" className="btn-sm" onClick={handleRegenerate}>
+                <button type="button" className="btn-sm" onClick={handleRegenerate} disabled={disabled}>
                   Proses
                 </button>
                 <button type="button" className="btn-sm btn-outline" onClick={() => setRegen(false)}>
@@ -774,25 +804,33 @@ function SectionEditor({
             )}
           </div>
 
-          <AntiAIHighlighter
-            text={textValue}
-            onReplace={(newText) => {
-              if (isArrayType) {
-                const lines = newText.split('\n').map((l) => l.replace(/^-\s*/, '').trim()).filter(Boolean)
-                onChange(lines)
-              } else {
-                onChange(newText)
-              }
-            }}
-          />
+          {!disabled && (
+            <AntiAIHighlighter
+              text={textValue}
+              onReplace={(newText) => {
+                if (isArrayType) {
+                  const lines = newText.split('\n').map((l) => l.replace(/^-\s*/, '').trim()).filter(Boolean)
+                  onChange(lines)
+                } else {
+                  onChange(newText)
+                }
+              }}
+            />
+          )}
         </>
       )}
 
       {!loading && !textValue && (
         <div style={{ padding: '2rem', textAlign: 'center', background: 'var(--paper-2, #ece8de)', borderRadius: '8px' }}>
           <p className="muted" style={{ marginBottom: '1rem' }}>Belum ada draf tulisan untuk bagian ini.</p>
-          <button type="button" className="btn-primary" onClick={handleGenerate}>
-            <IconSparkles size={16} style={{ marginRight: '0.4rem' }} /> Buat Draf Naratif Sekarang
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={handleGenerate}
+            disabled={disabled}
+            style={{ opacity: disabled ? 0.5 : 1, cursor: disabled ? 'not-allowed' : 'pointer' }}
+          >
+            Tulis Draf Individu
           </button>
         </div>
       )}

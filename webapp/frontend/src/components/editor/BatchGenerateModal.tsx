@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { draftSection, updateDraft } from '@/api/client'
 import type { PklContext } from '@/types/pkl'
-import { IconSparkles, IconCheck, IconAlert } from '@/components/common/Icons'
+import { IconCheck, IconAlert, IconDocument } from '@/components/common/Icons'
 
 const ARRAY_SECTION_KEYS = [
   'tujuan',
@@ -46,14 +46,15 @@ export default function BatchGenerateModal({
 
   const isCancelledRef = useRef<boolean>(false)
   const streamIntervalRef = useRef<any>(null)
+  const prevIsOpenRef = useRef<boolean>(false)
 
-  // Initialize status on modal open
+  // Initialize status ONLY when modal opens (prevIsOpenRef transitions false -> true)
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !prevIsOpenRef.current) {
       const initialStatuses: Record<string, SectionStatus> = {}
       sections.forEach((sec) => {
         const existing = ctx.generated_sections?.[sec.key]
-        if (existing && (Array.isArray(existing) ? existing.length > 0 : !!existing.trim())) {
+        if (existing && (Array.isArray(existing) ? existing.length > 0 : !!(typeof existing === 'string' && existing.trim()))) {
           initialStatuses[sec.key] = 'success'
         } else {
           initialStatuses[sec.key] = 'pending'
@@ -66,12 +67,14 @@ export default function BatchGenerateModal({
       setIsGenerating(false)
       setIsFinished(false)
       isCancelledRef.current = false
-    } else {
-      if (streamIntervalRef.current) {
-        clearInterval(streamIntervalRef.current)
-      }
     }
-  }, [isOpen, sections, ctx])
+
+    if (!isOpen && streamIntervalRef.current) {
+      clearInterval(streamIntervalRef.current)
+    }
+
+    prevIsOpenRef.current = isOpen
+  }, [isOpen, sections])
 
   if (!isOpen) return null
 
@@ -81,7 +84,7 @@ export default function BatchGenerateModal({
   const completedCount = successCount + failedCount
   const progressPercent = total > 0 ? Math.round((completedCount / total) * 100) : 0
 
-  // Gate Check: At least 3 sections must succeed
+  // Minimum gate check: at least 3 sections must succeed
   const meetsMinGate = successCount >= 3
 
   const startBatchGeneration = async () => {
@@ -97,17 +100,16 @@ export default function BatchGenerateModal({
       const sec = sections[i]
       setActiveKey(sec.key)
       setStatuses((prev) => ({ ...prev, [sec.key]: 'generating' }))
-      setStreamText(`✨ Penyusun AI sedang menyiapkan konteks untuk bagian "${sec.title}"...\n`)
+      setStreamText(`Menyiapkan data dan menyusun sub-bab "${sec.title}"...\n`)
 
       try {
-        // Call AI draftSection API
         const res = await draftSection(sec.key, currentCtx)
         const rawContent = res.content || ''
 
-        // Simulate streaming typing effect into live preview box
+        // Fast typing animation
         await new Promise<void>((resolve) => {
           let charIndex = 0
-          const chunkSize = Math.max(3, Math.floor(rawContent.length / 25))
+          const chunkSize = Math.max(5, Math.floor(rawContent.length / 20))
           setStreamText('')
 
           if (streamIntervalRef.current) clearInterval(streamIntervalRef.current)
@@ -124,12 +126,11 @@ export default function BatchGenerateModal({
               clearInterval(streamIntervalRef.current)
               resolve()
             } else {
-              setStreamText(rawContent.slice(0, charIndex) + '▌')
+              setStreamText(rawContent.slice(0, charIndex))
             }
-          }, 20)
+          }, 12)
         })
 
-        // Process output for array type sections
         let parsedContent: string | string[] = rawContent
         if (ARRAY_SECTION_KEYS.includes(sec.key)) {
           parsedContent = rawContent
@@ -138,7 +139,6 @@ export default function BatchGenerateModal({
             .filter(Boolean)
         }
 
-        // Update context & trigger autosave
         currentCtx = {
           ...currentCtx,
           generated_sections: {
@@ -150,22 +150,21 @@ export default function BatchGenerateModal({
         onUpdateCtx(currentCtx)
         setStatuses((prev) => ({ ...prev, [sec.key]: 'success' }))
 
-        // Autosave draft to backend
         try {
           await updateDraft(draftId, { data: currentCtx })
         } catch (saveErr) {
-          console.warn('[BatchGenerate] Failed intermediate save:', saveErr)
+          console.warn('[BatchGenerate] Intermediate save warning:', saveErr)
         }
 
       } catch (err: any) {
         const detail = err?.response?.data?.detail
         const msg = typeof detail === 'string'
           ? detail
-          : detail?.message || err?.message || 'Sistem AI timeout / offline.'
+          : detail?.message || err?.message || 'Sistem AI mengalami kendala.'
 
         setErrorMessages((prev) => ({ ...prev, [sec.key]: msg }))
         setStatuses((prev) => ({ ...prev, [sec.key]: 'failed' }))
-        setStreamText(`❌ Gagal menyusun "${sec.title}": ${msg}`)
+        setStreamText(`Gagal menyusun sub-bab "${sec.title}": ${msg}`)
       }
     }
 
@@ -206,11 +205,11 @@ export default function BatchGenerateModal({
           animation: 'slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
-        {/* Top Decorative Bar */}
+        {/* Top Header Line */}
         <div
           style={{
-            height: '6px',
-            background: 'linear-gradient(90deg, #187257 0%, #059669 50%, #3b82f6 100%)',
+            height: '5px',
+            backgroundColor: '#187257',
           }}
         />
 
@@ -229,22 +228,22 @@ export default function BatchGenerateModal({
                   width: '42px',
                   height: '42px',
                   borderRadius: '10px',
-                  backgroundColor: '#ecfdf5',
-                  border: '1px solid #a7f3d0',
+                  backgroundColor: '#f0fdf4',
+                  border: '1px solid #bbf7d0',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   flexShrink: 0,
                 }}
               >
-                <IconSparkles size={22} color="#059669" />
+                <IconDocument size={22} color="#187257" />
               </div>
               <div>
-                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700, color: '#0f172a' }}>
-                  Generasi Realtime AI Sub-bab Laporan
+                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: '#0f172a' }}>
+                  Penyusunan Sub-bab Laporan PKL
                 </h3>
                 <p style={{ margin: '0.2rem 0 0', fontSize: '0.88rem', color: '#64748b' }}>
-                  Menyusun seluruh draf naratif sub-bab secara otomatis &amp; akurat 1 per 1 (KBBI Akademis).
+                  Menyusun draf naratif seluruh sub-bab secara berurutan sesuai data yang diisi.
                 </p>
               </div>
             </div>
@@ -290,7 +289,7 @@ export default function BatchGenerateModal({
           </div>
         </div>
 
-        {/* Modal Body: 2 Columns (Sub-sections List + Live Stream Box) */}
+        {/* Modal Body: 2 Columns */}
         <div style={{ flex: 1, overflowY: 'auto', display: 'grid', gridTemplateColumns: '1fr 1.25fr', gap: 0 }}>
           {/* Left Column: Sub-bab Checklist Status */}
           <div
@@ -302,7 +301,7 @@ export default function BatchGenerateModal({
               maxHeight: '440px',
             }}
           >
-            <h4 style={{ margin: '0 0 0.85rem', fontSize: '0.92rem', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <h4 style={{ margin: '0 0 0.85rem', fontSize: '0.9rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
               Daftar Sub-bab ({sections.length})
             </h4>
 
@@ -317,17 +316,17 @@ export default function BatchGenerateModal({
                     style={{
                       padding: '0.65rem 0.85rem',
                       borderRadius: '8px',
-                      backgroundColor: isActive ? '#ffffff' : '#ffffff',
+                      backgroundColor: '#ffffff',
                       border: `1px solid ${
                         isActive
-                          ? '#059669'
+                          ? '#187257'
                           : status === 'success'
                           ? '#a7f3d0'
                           : status === 'failed'
                           ? '#fecaca'
                           : '#e2e8f0'
                       }`,
-                      boxShadow: isActive ? '0 0 0 2px rgba(5, 150, 105, 0.15)' : 'none',
+                      boxShadow: isActive ? '0 0 0 2px rgba(24, 114, 87, 0.15)' : 'none',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
@@ -361,15 +360,15 @@ export default function BatchGenerateModal({
                       </span>
                     </div>
 
-                    {/* Status Badge Icon */}
+                    {/* Status Badge */}
                     <div style={{ flexShrink: 0, marginLeft: '0.5rem' }}>
                       {status === 'generating' && (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', color: '#059669', fontSize: '0.8rem', fontWeight: 600 }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', color: '#187257', fontSize: '0.8rem', fontWeight: 600 }}>
                           <svg className="animate-spin" style={{ width: '15px', height: '15px', marginRight: '4px' }} viewBox="0 0 24 24" fill="none">
                             <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                           </svg>
-                          Proses...
+                          Menyusun...
                         </span>
                       )}
                       {status === 'success' && (
@@ -386,7 +385,7 @@ export default function BatchGenerateModal({
                         </span>
                       )}
                       {status === 'pending' && (
-                        <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>⏳ Menunggu</span>
+                        <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>Menunggu</span>
                       )}
                     </div>
                   </div>
@@ -395,7 +394,7 @@ export default function BatchGenerateModal({
             </div>
           </div>
 
-          {/* Right Column: Real-time Streaming Terminal Preview */}
+          {/* Right Column: Real-time Live Log Box */}
           <div
             style={{
               padding: '1.25rem 1.5rem',
@@ -408,9 +407,9 @@ export default function BatchGenerateModal({
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: isGenerating ? '#22c55e' : '#64748b' }} />
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: isGenerating ? '#22c55e' : '#64748b' }} />
                 <span style={{ fontSize: '0.82rem', fontFamily: 'monospace', color: '#94a3b8', textTransform: 'uppercase' }}>
-                  {isGenerating ? 'LIVE AI STREAMING LOG' : isFinished ? 'STREAMING SELESAI' : 'SIAP GENERATE'}
+                  {isGenerating ? 'TEKS REALTIME' : isFinished ? 'PROSES SELESAI' : 'PRATINJAU TEKS'}
                 </span>
               </div>
               {activeKey && (
@@ -439,12 +438,12 @@ export default function BatchGenerateModal({
             >
               {!isGenerating && !isFinished && (
                 <div style={{ color: '#64748b', textAlign: 'center', paddingTop: '3rem' }}>
-                  <IconSparkles size={32} color="#475569" style={{ marginBottom: '0.75rem' }} />
-                  <p style={{ margin: 0 }}>Klik <strong>"Mulai Generasi Realtime"</strong> di bawah untuk menyusun seluruh sub-bab laporan sekaligus.</p>
+                  <IconDocument size={32} color="#475569" style={{ marginBottom: '0.75rem' }} />
+                  <p style={{ margin: 0 }}>Klik <strong>"Mulai Penyusunan Sub-bab"</strong> di bawah untuk menyusun draf naratif laporan.</p>
                 </div>
               )}
 
-              {(isGenerating || isFinished) && (streamText || 'Menyiapkan respon AI...')}
+              {(isGenerating || isFinished) && (streamText || 'Menyiapkan respon...')}
             </div>
           </div>
         </div>
@@ -467,7 +466,7 @@ export default function BatchGenerateModal({
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#dc2626', fontSize: '0.88rem', fontWeight: 600 }}>
                 <IconAlert size={18} color="#dc2626" />
                 <span>
-                  Generasi Gagal: Hanya {successCount} dari {total} sub-bab yang berhasil dibuat. Minimal 3 sub-bab harus berhasil diselesaikan. Silakan periksa koneksi AI Anda lalu klik "Coba Lagi".
+                  Generasi Belum Memenuhi Syarat: Hanya {successCount} dari {total} sub-bab yang berhasil dibuat. Minimal 3 sub-bab harus berhasil disusun agar editor terbuka. Silakan klik "Coba Lagi".
                 </span>
               </div>
             )}
@@ -476,7 +475,7 @@ export default function BatchGenerateModal({
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#d97706', fontSize: '0.88rem', fontWeight: 600 }}>
                 <IconAlert size={18} color="#d97706" />
                 <span>
-                  {successCount} dari {total} sub-bab berhasil disusun AI ({failedCount} gagal). Anda tetap dapat mengedit draf dan mencoba regenerate bagian tersebut secara terpisah di editor.
+                  {successCount} dari {total} sub-bab berhasil disusun ({failedCount} gagal). Anda dapat membuka editor dan mencoba bagian yang gagal secara terpisah.
                 </span>
               </div>
             )}
@@ -485,20 +484,20 @@ export default function BatchGenerateModal({
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#059669', fontSize: '0.88rem', fontWeight: 600 }}>
                 <IconCheck size={18} color="#059669" />
                 <span>
-                  Seluruh {total} sub-bab berhasil disusun AI 100% sempurna! Klik tombol di samping untuk melanjutkan penyuntingan.
+                  Seluruh {total} sub-bab berhasil disusun! Klik tombol di samping untuk membuka editor laporan.
                 </span>
               </div>
             )}
 
             {!isFinished && !isGenerating && (
               <span style={{ fontSize: '0.88rem', color: '#64748b' }}>
-                Tekan tombol di samping untuk memulai alur penyusunan otomatis.
+                Klik tombol di samping untuk memulai penyusunan draf otomatis.
               </span>
             )}
 
             {isGenerating && (
-              <span style={{ fontSize: '0.88rem', color: '#059669', fontWeight: 600 }}>
-                ⚡ Sedang memproses... Harap tidak menutup popup sampai selesai.
+              <span style={{ fontSize: '0.88rem', color: '#187257', fontWeight: 600 }}>
+                Sedang menyusun sub-bab... Harap tunggu hingga proses selesai.
               </span>
             )}
           </div>
@@ -531,8 +530,8 @@ export default function BatchGenerateModal({
                   borderColor: '#14614a',
                 }}
               >
-                <IconSparkles size={16} style={{ marginRight: '0.4rem' }} />
-                {isFinished ? 'Coba Lagi Generasi Batch' : 'Mulai Generasi Realtime'}
+                <IconDocument size={16} style={{ marginRight: '0.4rem' }} />
+                {isFinished ? 'Coba Lagi Penyusunan Batch' : 'Mulai Penyusunan Sub-bab'}
               </button>
             )}
 
