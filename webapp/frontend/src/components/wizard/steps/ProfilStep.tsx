@@ -441,10 +441,10 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
           <table className="fill-table">
             <thead>
               <tr>
-                <th style={{ width: 130 }}>HARI</th>
-                <th>JAM KERJA</th>
-                <th style={{ width: 170 }}>KETERANGAN</th>
-                <th style={{ width: 40 }}></th>
+                <th style={{ width: 95 }}>HARI</th>
+                <th style={{ width: 135 }}>JAM KERJA</th>
+                <th>KETERANGAN</th>
+                <th style={{ width: 32 }}></th>
               </tr>
             </thead>
             <tbody>
@@ -484,23 +484,23 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
                         </td>
                       )}
                       <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 2, justifyContent: 'center' }}>
                           <input
                             type="text"
                             list="jam-options-list"
                             value={s.mulai}
                             onChange={e => setSlot(si, { mulai: e.target.value })}
                             placeholder="08.00"
-                            style={{ width: '80px', textAlign: 'center', padding: '4px' }}
+                            style={{ width: '58px', textAlign: 'center', padding: '3px 2px', fontSize: '0.85rem' }}
                           />
-                          <span style={{ color: 'var(--ink-soft)' }}>–</span>
+                          <span style={{ color: 'var(--ink-soft)', fontSize: '0.8rem' }}>–</span>
                           <input
                             type="text"
                             list="jam-options-list"
                             value={s.selesai}
                             onChange={e => setSlot(si, { selesai: e.target.value })}
                             placeholder="16.00"
-                            style={{ width: '80px', textAlign: 'center', padding: '4px' }}
+                            style={{ width: '58px', textAlign: 'center', padding: '3px 2px', fontSize: '0.85rem' }}
                           />
                         </div>
                       </td>
