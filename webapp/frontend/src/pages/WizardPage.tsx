@@ -238,7 +238,8 @@ function WizardInner() {
   const next = async () => {
     if (isLast) {
       await flushSave('reviewing')
-      nav(`/editor/${draftId}`)
+      const hasGen = Object.keys(ctx.generated_sections || {}).length > 0
+      nav(`/editor/${draftId}${hasGen ? '' : '?batch=true'}`)
     } else {
       await handleStepChange(Math.min(stepIdx + 1, STEPS.length - 1))
     }

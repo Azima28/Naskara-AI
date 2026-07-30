@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import { getDraft, updateDraft, generateDocx, draftSection, regenerateSection, enhanceContext } from '@/api/client'
 import AntiAIHighlighter from '@/components/editor/AntiAIHighlighter'
@@ -7,6 +7,7 @@ import EnhancementDiffModal from '@/components/editor/EnhancementDiffModal'
 import DocumentOutline from '@/components/editor/DocumentOutline'
 import RequestionPanel, { type GenerateIssue, type Requestion } from '@/components/RequestionPanel'
 import NotificationModal from '@/components/common/NotificationModal'
+import BatchGenerateModal from '@/components/editor/BatchGenerateModal'
 import type { PklContext } from '@/types/pkl'
 import { emptyContext } from '@/types/pkl'
 import { IconDocument, IconDownload, IconSparkles, IconAlert, IconPencil } from '@/components/common/Icons'
@@ -31,6 +32,7 @@ export default function EditorPage() {
 
 function EditorInner() {
   const { draftId } = useParams()
+  const [searchParams] = useSearchParams()
   const nav = useNavigate()
   const [ctx, setCtx] = useState<PklContext>(emptyContext())
   const [title, setTitle] = useState('Laporan PKL')
@@ -56,6 +58,9 @@ function EditorInner() {
   const [genQuestions, setGenQuestions] = useState<Requestion[]>([])
   const [polishNotice, setPolishNotice] = useState('')
 
+  // Batch Generation Modal State
+  const [showBatchModal, setShowBatchModal] = useState(false)
+
   // Notification Modal State
   const [modal, setModal] = useState<{ isOpen: boolean; title?: string; message: string; type?: 'error' | 'warning' | 'info' | 'success' }>({
     isOpen: false,
@@ -75,6 +80,13 @@ function EditorInner() {
   const [showDiffModal, setShowDiffModal] = useState(false)
   const [pendingEnhancedCtx, setPendingEnhancedCtx] = useState<PklContext | null>(null)
   const [activeSectionKey, setActiveSectionKey] = useState<string | undefined>(undefined)
+
+  // Auto-open Batch Modal if ?batch=true parameter is present
+  useEffect(() => {
+    if (searchParams.get('batch') === 'true') {
+      setShowBatchModal(true)
+    }
+  }, [searchParams])
 
   const flushSave = useCallback(async (extraStatus: string = 'completed') => {
     if (savingPromiseRef.current) {
@@ -214,6 +226,14 @@ function EditorInner() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <button
               type="button"
+              className="btn-sm btn-primary"
+              onClick={() => setShowBatchModal(true)}
+              style={{ fontSize: '0.82rem', padding: '0.38rem 0.8rem', background: '#187257' }}
+            >
+              <IconSparkles size={14} style={{ marginRight: '0.3rem' }} /> Generate Semua Sub-bab AI (Realtime)
+            </button>
+            <button
+              type="button"
               className="btn-sm btn-outline"
               onClick={handleManualSave}
               disabled={saveState === 'saving'}
@@ -235,6 +255,59 @@ function EditorInner() {
       <div className="editor-grid">
         {/* Editor Main Content */}
         <div className="editor-sections">
+          {/* Callout Banner when generated_sections count is 0 */}
+          {Object.keys(ctx.generated_sections || {}).length === 0 && (
+            <div
+              className="card"
+              style={{
+                marginBottom: '1.5rem',
+                background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
+                border: '1px solid #a7f3d0',
+                padding: '1.25rem 1.5rem',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div
+                  style={{
+                    width: '44px',
+                    height: '44px',
+                    borderRadius: '12px',
+                    backgroundColor: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.06)',
+                    flexShrink: 0,
+                  }}
+                >
+                  <IconSparkles size={24} color="#059669" />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <h3 style={{ margin: '0 0 0.25rem', color: '#064e3b', fontSize: '1.05rem', fontWeight: 700 }}>
+                    Draf Naratif Sub-bab Belum Dibuat
+                  </h3>
+                  <p style={{ margin: 0, color: '#047857', fontSize: '0.9rem', lineHeight: 1.5 }}>
+                    Hemat waktu Anda dengan mengeklik tombol di bawah ini. AI Naskara akan menyusun draf naratif seluruh sub-bab sekaligus secara realtime 1 per 1.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={() => setShowBatchModal(true)}
+                  style={{
+                    whiteSpace: 'nowrap',
+                    padding: '0.65rem 1.25rem',
+                    fontSize: '0.92rem',
+                    backgroundColor: '#059669',
+                    borderColor: '#047857',
+                  }}
+                >
+                  <IconSparkles size={16} style={{ marginRight: '0.4rem' }} /> Generate Semua Sub-bab AI (Realtime)
+                </button>
+              </div>
+            </div>
+          )}
+
           {sections.map((sec) => (
             <div id={`section-${sec.key}`} key={sec.key}>
               <SectionEditor
@@ -497,22 +570,35 @@ function EditorInner() {
         type={modal.type}
         onClose={() => setModal((prev) => ({ ...prev, isOpen: false }))}
       />
+
+      {/* Batch AI Realtime Stream Generation Modal */}
+      <BatchGenerateModal
+        isOpen={showBatchModal}
+        draftId={draftId || ''}
+        ctx={ctx}
+        sections={sections}
+        onUpdateCtx={(updatedCtx) => {
+          setCtx(updatedCtx)
+          dirtyRef.current = true
+        }}
+        onClose={() => setShowBatchModal(false)}
+      />
     </div>
   )
 }
 
-function buildSectionList(ctx: PklContext) {
+export function buildSectionList(ctx: PklContext) {
   const bab = ctx.config?.bab_modules || []
   const list: { key: string; title: string }[] = []
 
   // BAB I PENDAHULUAN — termasuk profil perusahaan (sub-bab 1.3-1.6)
-  if (bab.includes('PENDAHULUAN')) {
+  if (bab.length === 0 || bab.includes('PENDAHULUAN')) {
     list.push({ key: 'latar_belakang', title: 'Latar Belakang (1.1)' })
     list.push({ key: 'tujuan_pkl', title: 'Tujuan PKL (1.2)' })
     list.push({ key: 'profil_sejarah', title: 'Sejarah Singkat Perusahaan (1.3)' })
     list.push({ key: 'narasi_struktur', title: 'Narasi Struktur Organisasi (1.5)' })
   }
-  if (bab.includes('LANDASAN_TEORI') || bab.includes('TINJAUAN_PUSTAKA')) {
+  if (bab.length === 0 || bab.includes('LANDASAN_TEORI') || bab.includes('TINJAUAN_PUSTAKA')) {
     list.push({ key: 'landasan_teori', title: 'Landasan Teori (BAB III)' })
   }
   if (bab.includes('PELAKSANAAN') || bab.includes('KEGIATAN_INDUSTRI') || bab.includes('DATA_PENGAMATAN')) {
@@ -529,11 +615,23 @@ function buildSectionList(ctx: PklContext) {
       list.push({ key: 'studi_kasus_proses', title: `Proses: ${ctx.studi_kasus.judul}` })
     }
   }
-  if (bab.includes('PEMBAHASAN')) {
+  if (bab.length === 0 || bab.includes('PEMBAHASAN')) {
     list.push({ key: 'pembahasan', title: 'Pembahasan & Analisis (BAB V)' })
   }
-  if (bab.includes('PENUTUP') || bab.includes('KESIMPULAN_SARAN')) {
+  if (bab.length === 0 || bab.includes('PENUTUP') || bab.includes('KESIMPULAN_SARAN')) {
     list.push({ key: 'kesimpulan_saran', title: 'Kesimpulan dan Saran (BAB VI)' })
+  }
+
+  if (list.length === 0) {
+    list.push(
+      { key: 'latar_belakang', title: 'Latar Belakang (1.1)' },
+      { key: 'tujuan_pkl', title: 'Tujuan PKL (1.2)' },
+      { key: 'profil_sejarah', title: 'Sejarah Singkat Perusahaan (1.3)' },
+      { key: 'narasi_struktur', title: 'Narasi Struktur Organisasi (1.5)' },
+      { key: 'landasan_teori', title: 'Landasan Teori (BAB III)' },
+      { key: 'pembahasan', title: 'Pembahasan & Analisis (BAB V)' },
+      { key: 'kesimpulan_saran', title: 'Kesimpulan dan Saran (BAB VI)' }
+    )
   }
 
   return list
