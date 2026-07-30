@@ -2828,6 +2828,11 @@ input.field__input {
     padding: 0.65rem 0.85rem !important;
   }
 
+  .dash-header__brand-info strong {
+    white-space: nowrap !important;
+    font-size: 1rem !important;
+  }
+
   .dash-header__brand-info span {
     display: none !important;
   }
@@ -2836,7 +2841,7 @@ input.field__input {
     gap: 0.5rem !important;
   }
 
-  .user-role {
+  .user-info {
     display: none !important;
   }
 
