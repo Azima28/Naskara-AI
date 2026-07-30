@@ -7,10 +7,9 @@ import EnhancementDiffModal from '@/components/editor/EnhancementDiffModal'
 import DocumentOutline from '@/components/editor/DocumentOutline'
 import RequestionPanel, { type GenerateIssue, type Requestion } from '@/components/RequestionPanel'
 import NotificationModal from '@/components/common/NotificationModal'
-import BatchGenerateModal from '@/components/editor/BatchGenerateModal'
 import type { PklContext } from '@/types/pkl'
 import { emptyContext } from '@/types/pkl'
-import { IconDocument, IconDownload, IconSparkles, IconAlert, IconPencil } from '@/components/common/Icons'
+import { IconDocument, IconDownload, IconAlert, IconPencil, IconCheck } from '@/components/common/Icons'
 
 const ARRAY_SECTION_KEYS = [
   'tujuan',
@@ -58,8 +57,9 @@ function EditorInner() {
   const [genQuestions, setGenQuestions] = useState<Requestion[]>([])
   const [polishNotice, setPolishNotice] = useState('')
 
-  // Batch Generation Modal State
-  const [showBatchModal, setShowBatchModal] = useState(false)
+  // In-Page Batch Generation State
+  const [isBatchGenerating, setIsBatchGenerating] = useState(false)
+  const [batchStatuses, setBatchStatuses] = useState<Record<string, 'pending' | 'generating' | 'success' | 'failed'>>({})
 
   // Notification Modal State
   const [modal, setModal] = useState<{ isOpen: boolean; title?: string; message: string; type?: 'error' | 'warning' | 'info' | 'success' }>({
@@ -81,12 +81,113 @@ function EditorInner() {
   const [pendingEnhancedCtx, setPendingEnhancedCtx] = useState<PklContext | null>(null)
   const [activeSectionKey, setActiveSectionKey] = useState<string | undefined>(undefined)
 
-  // Auto-open Batch Modal if ?batch=true parameter is present
-  useEffect(() => {
-    if (searchParams.get('batch') === 'true') {
-      setShowBatchModal(true)
+  const handleStartInPageBatch = async () => {
+    if (isBatchGenerating || !draftIdRef.current) return
+
+    setIsBatchGenerating(true)
+    const allSections = buildSectionList(ctxRef.current)
+    const initialStatuses: Record<string, 'pending' | 'generating' | 'success' | 'failed'> = {}
+
+    allSections.forEach((sec) => {
+      const existing = ctxRef.current.generated_sections?.[sec.key]
+      if (existing && (Array.isArray(existing) ? existing.length > 0 : !!(typeof existing === 'string' && existing.trim()))) {
+        initialStatuses[sec.key] = 'success'
+      } else {
+        initialStatuses[sec.key] = 'pending'
+      }
+    })
+
+    setBatchStatuses(initialStatuses)
+
+    let currentCtx = { ...ctxRef.current }
+    const failedList: string[] = []
+
+    for (let i = 0; i < allSections.length; i++) {
+      const sec = allSections[i]
+
+      // Scroll smoothly to active section on screen
+      const el = document.getElementById(`section-${sec.key}`)
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+
+      setBatchStatuses((prev) => ({ ...prev, [sec.key]: 'generating' }))
+
+      try {
+        // Strict 15-second timeout promise (AI stall protection)
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('AI tidak merespon dalam 15 detik (Timeout)')), 15000)
+        )
+
+        const res: any = await Promise.race([
+          draftSection(sec.key, currentCtx),
+          timeoutPromise,
+        ])
+
+        const rawContent = res.content || ''
+        let parsedContent: string | string[] = rawContent
+        if (ARRAY_SECTION_KEYS.includes(sec.key)) {
+          parsedContent = rawContent
+            .split('\n')
+            .map((s: string) => s.replace(/^[0-9]+\.\s*/, '').replace(/^-\s*/, '').replace(/^[a-z]\.\s*/, '').trim())
+            .filter(Boolean)
+        }
+
+        currentCtx = {
+          ...currentCtx,
+          generated_sections: {
+            ...(currentCtx.generated_sections || {}),
+            [sec.key]: parsedContent,
+          },
+        }
+
+        setCtx(currentCtx)
+        dirtyRef.current = true
+        setBatchStatuses((prev) => ({ ...prev, [sec.key]: 'success' }))
+
+        try {
+          await updateDraft(draftIdRef.current, { data: currentCtx })
+        } catch (saveErr) {
+          console.warn('[InPageBatch] Intermediate save error:', saveErr)
+        }
+
+      } catch (err: any) {
+        failedList.push(sec.title)
+        setBatchStatuses((prev) => ({ ...prev, [sec.key]: 'failed' }))
+      }
     }
-  }, [searchParams])
+
+    setIsBatchGenerating(false)
+
+    // Calculate total successful sections in context
+    const totalGenCount = Object.keys(currentCtx.generated_sections || {}).filter((k) => {
+      const v = currentCtx.generated_sections?.[k]
+      return Array.isArray(v) ? v.length > 0 : !!(typeof v === 'string' && v.trim())
+    }).length
+
+    if (totalGenCount < 3) {
+      setModal({
+        isOpen: true,
+        title: 'Penyusunan Sub-bab Belum Memenuhi Syarat Minimal',
+        message: `Hanya ${totalGenCount} sub-bab yang berhasil disusun. Minimal 3 sub-bab harus berhasil diselesaikan agar editor terbuka. Silakan periksa server AI Anda dan klik tombol 'Generate Semua Sub-bab Laporan' kembali.`,
+        type: 'error',
+      })
+    } else if (failedList.length > 0) {
+      setModal({
+        isOpen: true,
+        title: 'Penyusunan Sub-bab Selesai',
+        message: `Sebanyak ${totalGenCount} sub-bab berhasil disusun. Terdapat ${failedList.length} sub-bab yang gagal/timeout 15 detik (${failedList.join(', ')}). Pintu editor telah terbuka dan Anda dapat mencoba bagian yang gagal tersebut secara individu.`,
+        type: 'warning',
+      })
+    }
+  }
+
+  // Auto-trigger batch generation on mount if ?batch=true parameter is present
+  useEffect(() => {
+    if (searchParams.get('batch') === 'true' && !loading) {
+      handleStartInPageBatch()
+    }
+  }, [searchParams, loading])
 
   const flushSave = useCallback(async (extraStatus: string = 'completed') => {
     if (savingPromiseRef.current) {
@@ -235,17 +336,9 @@ function EditorInner() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <button
               type="button"
-              className="btn-sm btn-primary"
-              onClick={() => setShowBatchModal(true)}
-              style={{ fontSize: '0.82rem', padding: '0.38rem 0.8rem', background: '#187257' }}
-            >
-              <IconDocument size={14} style={{ marginRight: '0.3rem' }} /> Generate Semua Sub-bab Laporan
-            </button>
-            <button
-              type="button"
               className="btn-sm btn-outline"
               onClick={handleManualSave}
-              disabled={saveState === 'saving'}
+              disabled={saveState === 'saving' || isBatchGenerating}
               style={{ fontSize: '0.82rem', padding: '0.35rem 0.7rem' }}
             >
               <IconDocument size={14} style={{ marginRight: '0.3rem' }} /> Simpan Draf
@@ -288,9 +381,12 @@ function EditorInner() {
               <button
                 type="button"
                 className="btn-primary editor-lock-banner__btn"
-                onClick={() => setShowBatchModal(true)}
+                onClick={handleStartInPageBatch}
+                disabled={isBatchGenerating}
+                style={{ opacity: isBatchGenerating ? 0.6 : 1, cursor: isBatchGenerating ? 'wait' : 'pointer' }}
               >
-                <IconDocument size={16} style={{ marginRight: '0.4rem' }} /> Generate Semua Sub-bab Laporan
+                <IconDocument size={16} style={{ marginRight: '0.4rem' }} />
+                {isBatchGenerating ? 'Sedang Menyusun Sub-bab...' : 'Generate Semua Sub-bab Laporan'}
               </button>
             </div>
           )}
@@ -304,7 +400,9 @@ function EditorInner() {
                 value={(ctx.generated_sections || {})[sec.key] || ''}
                 onChange={(val) => updateSection(sec.key, val)}
                 onError={showErrorModal}
-                disabled={!isUnlocked}
+                disabled={!isUnlocked || isBatchGenerating}
+                batchStatus={batchStatuses[sec.key]}
+                isBatchGenerating={isBatchGenerating}
               />
             </div>
           ))}
@@ -444,7 +542,7 @@ function EditorInner() {
                   </span>
                 ) : (
                   <>
-                    <IconSparkles size={16} style={{ marginRight: '0.4rem' }} /> Rapikan Bahasa Teks via AI (Opsional)
+                    <IconPencil size={16} style={{ marginRight: '0.4rem' }} /> Rapikan Bahasa Teks via AI (Opsional)
                   </>
                 )}
               </button>
@@ -561,19 +659,6 @@ function EditorInner() {
         type={modal.type}
         onClose={() => setModal((prev) => ({ ...prev, isOpen: false }))}
       />
-
-      {/* Batch AI Realtime Stream Generation Modal */}
-      <BatchGenerateModal
-        isOpen={showBatchModal}
-        draftId={draftId || ''}
-        ctx={ctx}
-        sections={sections}
-        onUpdateCtx={(updatedCtx) => {
-          setCtx(updatedCtx)
-          dirtyRef.current = true
-        }}
-        onClose={() => setShowBatchModal(false)}
-      />
     </div>
   )
 }
@@ -639,6 +724,8 @@ function SectionEditor({
   onChange,
   onError,
   disabled = false,
+  batchStatus,
+  isBatchGenerating = false,
 }: {
   sectionKey: string
   title: string
@@ -647,6 +734,8 @@ function SectionEditor({
   onChange: (val: any) => void
   onError?: (msg: string) => void
   disabled?: boolean
+  batchStatus?: 'pending' | 'generating' | 'success' | 'failed'
+  isBatchGenerating?: boolean
 }) {
   const [loading, setLoading] = useState(false)
   const [regen, setRegen] = useState(false)
@@ -660,7 +749,7 @@ function SectionEditor({
     : (value as string)
 
   const handleGenerate = async () => {
-    if (disabled) return
+    if (disabled || isBatchGenerating) return
     setLoading(true)
     try {
       const res = await draftSection(sectionKey, ctx)
@@ -684,7 +773,7 @@ function SectionEditor({
   }
 
   const handleRegenerate = async () => {
-    if (disabled || !instruction) {
+    if (disabled || isBatchGenerating || !instruction) {
       setRegen(false)
       return
     }
@@ -712,32 +801,69 @@ function SectionEditor({
     }
   }
 
+  const isCurrentGenerating = batchStatus === 'generating'
+
   return (
-    <div className="card" style={{ marginBottom: '1.5rem', opacity: disabled ? 0.6 : 1 }}>
+    <div
+      className="card"
+      style={{
+        marginBottom: '1.5rem',
+        opacity: disabled && !isCurrentGenerating ? 0.6 : 1,
+        borderColor: isCurrentGenerating ? '#187257' : undefined,
+        boxShadow: isCurrentGenerating ? '0 0 0 2px rgba(24, 114, 87, 0.2)' : undefined,
+        transition: 'all 0.2s ease',
+      }}
+    >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h3 style={{ margin: 0 }}>{title}</h3>
-        {!textValue && !loading && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          <h3 style={{ margin: 0 }}>{title}</h3>
+          {batchStatus === 'generating' && (
+            <span style={{ fontSize: '0.78rem', color: '#187257', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', padding: '0.2rem 0.6rem', borderRadius: '12px', fontWeight: 600, display: 'inline-flex', alignItems: 'center' }}>
+              <svg className="animate-spin" style={{ width: '13px', height: '13px', marginRight: '4px' }} viewBox="0 0 24 24" fill="none">
+                <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Menyusun (Maks 15s)...
+            </span>
+          )}
+          {batchStatus === 'failed' && (
+            <span style={{ fontSize: '0.78rem', color: '#dc2626', backgroundColor: '#fef2f2', border: '1px solid #fecaca', padding: '0.2rem 0.6rem', borderRadius: '12px', fontWeight: 600, display: 'inline-flex', alignItems: 'center' }}>
+              <IconAlert size={14} color="#dc2626" style={{ marginRight: '3px' }} /> Gagal / Timeout 15s
+            </span>
+          )}
+          {batchStatus === 'success' && !isCurrentGenerating && (
+            <span style={{ fontSize: '0.78rem', color: '#059669', backgroundColor: '#ecfdf5', border: '1px solid #a7f3d0', padding: '0.2rem 0.6rem', borderRadius: '12px', fontWeight: 600, display: 'inline-flex', alignItems: 'center' }}>
+              <IconCheck size={14} color="#059669" style={{ marginRight: '3px' }} /> Selesai
+            </span>
+          )}
+        </div>
+
+        {!textValue && !loading && !isCurrentGenerating && (
           <button
             type="button"
             className="btn-sm btn-primary"
             onClick={handleGenerate}
-            disabled={disabled}
-            style={{ opacity: disabled ? 0.5 : 1, cursor: disabled ? 'not-allowed' : 'pointer' }}
+            disabled={disabled || isBatchGenerating}
+            style={{ opacity: disabled || isBatchGenerating ? 0.5 : 1, cursor: disabled || isBatchGenerating ? 'not-allowed' : 'pointer' }}
           >
             Tulis Draf Individu
           </button>
         )}
       </div>
 
-      {loading && <p className="muted">Penyusun AI sedang menulis draf naratif…</p>}
+      {(loading || isCurrentGenerating) && (
+        <p className="muted" style={{ fontSize: '0.9rem', color: '#187257' }}>
+          Penyusun AI sedang menulis draf naratif (Batas waktu 15 detik)...
+        </p>
+      )}
 
-      {!loading && textValue && (
+      {!loading && !isCurrentGenerating && textValue && (
         <>
           <textarea
             className="input"
             rows={Math.max(5, textValue.split('\n').length + 1)}
             value={textValue}
-            disabled={disabled}
+            disabled={disabled || isBatchGenerating}
             onChange={(e) => {
               if (isArrayType) {
                 const lines = e.target.value.split('\n').map((l) => l.replace(/^-\s*/, '').trim()).filter(Boolean)
@@ -746,7 +872,7 @@ function SectionEditor({
                 onChange(e.target.value)
               }
             }}
-            style={{ width: '100%', resize: 'vertical', lineHeight: 1.6, opacity: disabled ? 0.7 : 1, cursor: disabled ? 'not-allowed' : 'text' }}
+            style={{ width: '100%', resize: 'vertical', lineHeight: 1.6, opacity: disabled || isBatchGenerating ? 0.7 : 1, cursor: disabled || isBatchGenerating ? 'not-allowed' : 'text' }}
           />
 
           <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', alignItems: 'center' }}>
@@ -755,8 +881,8 @@ function SectionEditor({
                 type="button"
                 className="btn-sm btn-outline"
                 onClick={() => setRegen(true)}
-                disabled={disabled}
-                style={{ opacity: disabled ? 0.5 : 1, cursor: disabled ? 'not-allowed' : 'pointer' }}
+                disabled={disabled || isBatchGenerating}
+                style={{ opacity: disabled || isBatchGenerating ? 0.5 : 1, cursor: disabled || isBatchGenerating ? 'not-allowed' : 'pointer' }}
               >
                 <IconPencil size={14} style={{ marginRight: '0.3rem' }} /> Perbaiki &amp; Tulis Ulang
               </button>
@@ -765,14 +891,14 @@ function SectionEditor({
                 <input
                   type="text"
                   className="input"
-                  disabled={disabled}
+                  disabled={disabled || isBatchGenerating}
                   style={{ flex: 1, padding: '0.35rem 0.6rem' }}
                   placeholder="Instruksi: contoh 'Lebih padat', 'Gunakan istilah TKJ yang baku'"
                   value={instruction}
                   onChange={(e) => setInstruction(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleRegenerate()}
                 />
-                <button type="button" className="btn-sm" onClick={handleRegenerate} disabled={disabled}>
+                <button type="button" className="btn-sm" onClick={handleRegenerate} disabled={disabled || isBatchGenerating}>
                   Proses
                 </button>
                 <button type="button" className="btn-sm btn-outline" onClick={() => setRegen(false)}>
@@ -782,7 +908,7 @@ function SectionEditor({
             )}
           </div>
 
-          {!disabled && (
+          {!disabled && !isBatchGenerating && (
             <AntiAIHighlighter
               text={textValue}
               onReplace={(newText) => {
@@ -798,15 +924,15 @@ function SectionEditor({
         </>
       )}
 
-      {!loading && !textValue && (
-        <div style={{ padding: '2rem', textAlign: 'center', background: 'var(--paper-2, #ece8de)', borderRadius: '8px' }}>
-          <p className="muted" style={{ marginBottom: '1rem' }}>Belum ada draf tulisan untuk bagian ini.</p>
+      {!loading && !isCurrentGenerating && !textValue && (
+        <div style={{ padding: '1.75rem', textAlign: 'center', background: 'var(--paper-2, #ece8de)', borderRadius: '8px' }}>
+          <p className="muted" style={{ marginBottom: '0.75rem' }}>Belum ada draf tulisan untuk bagian ini.</p>
           <button
             type="button"
             className="btn-primary"
             onClick={handleGenerate}
-            disabled={disabled}
-            style={{ opacity: disabled ? 0.5 : 1, cursor: disabled ? 'not-allowed' : 'pointer' }}
+            disabled={disabled || isBatchGenerating}
+            style={{ opacity: disabled || isBatchGenerating ? 0.5 : 1, cursor: disabled || isBatchGenerating ? 'not-allowed' : 'pointer' }}
           >
             Tulis Draf Individu
           </button>
