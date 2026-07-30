@@ -16,6 +16,11 @@ class AIProvider(ABC):
         """Generate response based on system and user prompts."""
         pass
 
+    async def generate_stream(self, system: str, user: str):
+        """Generate streaming response yielding content chunks."""
+        text = await self.generate(system, user)
+        yield text
+
 
 class OpenAICompatibleProvider(AIProvider):
     def __init__(self, base_url: str, model: str, api_key: str = "not-needed", timeout: int = 120):
@@ -112,4 +117,50 @@ class OpenAICompatibleProvider(AIProvider):
                     await asyncio.sleep(retry_delay)
 
         raise RuntimeError(f"Gagal terhubung ke 9router di {self.base_url} (Port 20128): {last_error}")
+
+    async def generate_stream(self, system: str, user: str):
+        """Call /chat/completions endpoint with stream=True and yield real-time token chunks."""
+        payload = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": system},
+                {"role": "user", "content": user},
+            ],
+            "temperature": 0.7,
+            "stream": True,
+        }
+
+        last_error = None
+        for base in self.candidate_urls:
+            endpoint = f"{base}/chat/completions"
+            try:
+                async with self.client.stream("POST", endpoint, json=payload) as response:
+                    if response.status_code != 200:
+                        response.raise_for_status()
+
+                    if base != self.base_url:
+                        self.base_url = base
+
+                    async for line in response.aiter_lines():
+                        line_str = line.strip()
+                        if not line_str or line_str.startswith(":") or line_str == "data: [DONE]":
+                            continue
+                        if line_str.startswith("data: "):
+                            raw_json = line_str[6:].strip()
+                            try:
+                                parsed = json.loads(raw_json)
+                                delta = parsed.get("choices", [{}])[0].get("delta", {})
+                                chunk = delta.get("content", "")
+                                if chunk:
+                                    yield chunk
+                            except Exception:
+                                continue
+                    return
+            except Exception as e:
+                print(f"[AI Provider Stream Error] URL: {endpoint}: {e}")
+                last_error = e
+
+        # Fallback to non-streaming if stream endpoint has issues
+        full_text = await self.generate(system, user)
+        yield full_text
 

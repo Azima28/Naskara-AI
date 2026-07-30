@@ -5,6 +5,7 @@ Berkomunikasi dengan AI provider untuk menghasilkan teks laporan.
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from typing import Any
@@ -198,6 +199,64 @@ async def draft_section(
             "validation_errors": last_error or [],
         }
     )
+
+@router.post("/draft-section-stream")
+async def draft_section_stream(
+    req: DraftSectionRequest,
+    user: User = Depends(get_current_user)
+):
+    """Stream token/chunk respon AI secara realtime via Server-Sent Events (SSE)."""
+    provider = get_ai_provider()
+
+    ctx = req.context_data
+    siswa = ctx.get("siswa", {})
+    jurusan_key = siswa.get("jurusan_key", "")
+    jurusan_context = get_jurusan_context(jurusan_key)
+
+    key = req.section_key
+    if key == "latar_belakang":
+        user_prompt = sections.prompt_latar_belakang(ctx, jurusan_context)
+    elif key == "tujuan_pkl":
+        user_prompt = ai_sections.prompt_tujuan_pkl(ctx)
+    elif key == "narasi_struktur":
+        user_prompt = ai_sections.prompt_narasi_struktur(ctx)
+    elif key == "landasan_teori":
+        user_prompt = ai_sections.prompt_landasan_teori_paraphrase()
+    elif key == "pembahasan":
+        user_prompt = ai_sections.prompt_hal_diperhatikan(ctx)
+    elif key == "kesimpulan_saran":
+        user_prompt = ai_sections.prompt_kesimpulan_saran(ctx, bab_num=6)
+    elif key in ["tujuan", "manfaat"]:
+        user_prompt = sections.prompt_tujuan_manfaat(ctx)
+    elif key == "profil_sejarah":
+        user_prompt = sections.prompt_profil_perusahaan(ctx)
+    elif key.startswith("kegiatan_") and key.endswith("_intro"):
+        bidang = key.replace("kegiatan_", "").replace("_intro", "").replace("_", " ").title()
+        deskripsi = ""
+        for keg in ctx.get("kegiatan", []):
+            if isinstance(keg, dict) and keg.get("bidang", "").lower() == bidang.lower():
+                deskripsi = keg.get("deskripsi_umum", "")
+                break
+        user_prompt = sections.prompt_pelaksanaan(ctx, bidang, deskripsi)
+    elif key == "studi_kasus_proses":
+        studi = ctx.get("studi_kasus", {})
+        user_prompt = f"Buat paragraf naratif proses penyelesaian studi kasus/masalah berjudul '{studi.get('judul', '')}'. {jurusan_context}. Hindari penomoran list, gunakan gaya bercerita akademik."
+    else:
+        user_prompt = f"Buat narasi untuk bagian {key.replace('_', ' ')}. Ingat: Jangan pakai bullet point."
+
+    system = SYSTEM_PROMPT_TEMPLATE
+
+    async def event_generator():
+        try:
+            async for chunk in provider.generate_stream(system, user_prompt):
+                if chunk:
+                    yield f"data: {json.dumps({'content': chunk})}\n\n"
+            yield "data: [DONE]\n\n"
+        except Exception as e:
+            err_payload = json.dumps({"error": str(e)})
+            yield f"data: {err_payload}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 @router.post("/regenerate")
 async def regenerate(

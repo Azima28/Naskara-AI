@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import ProtectedRoute from '@/components/ProtectedRoute'
-import { getDraft, updateDraft, generateDocx, draftSection, regenerateSection, enhanceContext } from '@/api/client'
+import { getDraft, updateDraft, generateDocx, draftSectionStream, regenerateSection, enhanceContext } from '@/api/client'
 import AntiAIHighlighter from '@/components/editor/AntiAIHighlighter'
 import EnhancementDiffModal from '@/components/editor/EnhancementDiffModal'
 import DocumentOutline from '@/components/editor/DocumentOutline'
@@ -114,40 +114,26 @@ function EditorInner() {
       setBatchStatuses((prev) => ({ ...prev, [sec.key]: 'generating' }))
 
       try {
-        // 2-minute maximum timeout promise for generation, with 15s initial response check
+        let accumulatedStream = ''
+
+        // 2-minute maximum timeout promise for generation
         const timeoutPromise = new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error('AI tidak merespon (Timeout)')), 120000)
         )
 
-        const res: any = await Promise.race([
-          draftSection(sec.key, currentCtx),
+        const rawContent: string = await Promise.race([
+          draftSectionStream(sec.key, currentCtx, (chunk) => {
+            accumulatedStream += chunk
+            setCtx((prev) => ({
+              ...prev,
+              generated_sections: {
+                ...(prev.generated_sections || {}),
+                [sec.key]: accumulatedStream + ' ▌',
+              },
+            }))
+          }),
           timeoutPromise,
         ])
-
-        const rawContent = res.content || ''
-
-        // Realtime Typewriter Stream Animation inside the card textarea
-        await new Promise<void>((resolve) => {
-          let charIndex = 0
-          const chunkSize = Math.max(4, Math.floor(rawContent.length / 30))
-
-          const streamTimer = setInterval(() => {
-            charIndex += chunkSize
-            if (charIndex >= rawContent.length) {
-              clearInterval(streamTimer)
-              resolve()
-            } else {
-              const streamChunk = rawContent.slice(0, charIndex) + ' ▌'
-              setCtx((prev) => ({
-                ...prev,
-                generated_sections: {
-                  ...(prev.generated_sections || {}),
-                  [sec.key]: streamChunk,
-                },
-              }))
-            }
-          }, 12)
-        })
 
         let parsedContent: string | string[] = rawContent
         if (ARRAY_SECTION_KEYS.includes(sec.key)) {
@@ -776,15 +762,28 @@ function SectionEditor({
     if (disabled || isBatchGenerating) return
     setLoading(true)
     try {
-      const res = await draftSection(sectionKey, ctx)
+      let accumulated = ''
+      const resContent = await draftSectionStream(sectionKey, ctx, (chunk) => {
+        accumulated += chunk
+        if (isArrayType) {
+          const arr = accumulated
+            .split('\n')
+            .map((s: string) => s.replace(/^[0-9]+\.\s*/, '').replace(/^-\s*/, '').replace(/^[a-z]\.\s*/, '').trim())
+            .filter(Boolean)
+          onChange(arr)
+        } else {
+          onChange(accumulated)
+        }
+      })
+
       if (isArrayType) {
-        const arr = res.content
+        const arr = resContent
           .split('\n')
-          .map((s) => s.replace(/^[0-9]+\.\s*/, '').replace(/^-\s*/, '').replace(/^[a-z]\.\s*/, '').trim())
+          .map((s: string) => s.replace(/^[0-9]+\.\s*/, '').replace(/^-\s*/, '').replace(/^[a-z]\.\s*/, '').trim())
           .filter(Boolean)
         onChange(arr)
       } else {
-        onChange(res.content)
+        onChange(resContent)
       }
     } catch (err: any) {
       const d = err?.response?.data?.detail

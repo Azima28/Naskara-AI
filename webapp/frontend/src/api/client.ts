@@ -223,6 +223,87 @@ export const draftSection = (sectionKey: string, contextData: PklContext) =>
     context_data: contextData,
   }, { timeout: 120_000 }).then((r) => r.data)
 
+export async function draftSectionStream(
+  sectionKey: string,
+  contextData: PklContext,
+  onChunk: (chunk: string) => void
+): Promise<string> {
+  const rawAuth = localStorage.getItem('pkl-auth')
+  let token = ''
+  if (rawAuth) {
+    try {
+      token = JSON.parse(rawAuth).token || ''
+    } catch {
+      /* ignore */
+    }
+  }
+
+  try {
+    const response = await fetch('/api/ai/draft-section-stream', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        section_key: sectionKey,
+        context_data: contextData,
+      }),
+    })
+
+    if (!response.ok || !response.body) {
+      const fallback = await draftSection(sectionKey, contextData)
+      onChunk(fallback.content)
+      return fallback.content
+    }
+
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder('utf-8')
+    let fullText = ''
+    let buffer = ''
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      buffer += decoder.decode(value, { stream: true })
+      const lines = buffer.split('\n')
+      buffer = lines.pop() || ''
+
+      for (const line of lines) {
+        const trimmed = line.trim()
+        if (!trimmed || trimmed.startsWith(':') || trimmed === 'data: [DONE]') continue
+        if (trimmed.startsWith('data: ')) {
+          try {
+            const parsed = JSON.parse(trimmed.slice(6))
+            if (parsed.error) {
+              throw new Error(parsed.error)
+            }
+            if (parsed.content) {
+              fullText += parsed.content
+              onChunk(parsed.content)
+            }
+          } catch {
+            /* ignore partial JSON */
+          }
+        }
+      }
+    }
+
+    if (!fullText) {
+      const fallback = await draftSection(sectionKey, contextData)
+      onChunk(fallback.content)
+      return fallback.content
+    }
+
+    return fullText
+  } catch {
+    const fallback = await draftSection(sectionKey, contextData)
+    onChunk(fallback.content)
+    return fallback.content
+  }
+}
+
 export const regenerateSection = (oldText: string, instruction: string) =>
   api.post<{ content: string }>('/ai/regenerate', {
     old_text: oldText,
