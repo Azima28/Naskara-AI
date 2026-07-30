@@ -16,6 +16,7 @@ const MAJOR_TABS = [
   { key: 'ph', label: 'PH / Perhotelan' },
   { key: 'tb', label: 'Tabog / Kuliner' },
   { key: 'busana', label: 'Tabus / Fashion' },
+  { key: 'mplb', label: 'MPLB / Perkantoran' },
   { key: 'akl', label: 'AKL / Akuntansi' },
   { key: 'bdp', label: 'BDP / Marketing' },
 ]

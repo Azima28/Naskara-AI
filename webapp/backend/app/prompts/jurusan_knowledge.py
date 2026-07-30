@@ -47,6 +47,12 @@ Istilah Teknis: Pola Dasar, Draping, Meyneke, Cutting, Seam Allowance, Stik Jahi
 Fokus Analisis: Akurasi presisi ukuran pola busana, kelancaran proses jahit high-speed, kerapatan stik jahitan, dan penghematan pemakaian bahan kain.
 """,
 
+    "mplb": """Konteks Jurusan: Manajemen Perkantoran dan Layanan Bisnis (MPLB)
+Fokus kompetensi: Administrasi kantor, digital archiving system, korespondensi surat masuk/keluar, pengelolaan agenda rapat, dan resepsionis PABX.
+Istilah Teknis: Disposisi, Agenda Surat, Filing System, Kartu Kendali, Retrieval, In/Out Mail, Tata Kelola Arsip, e-Office, PABX, MPLB.
+Fokus Analisis: Efisiensi waktu temu kembali arsip (retrieval time), kerapian tata kelola dokumen, dan standar operasional prosedur pelayanan.
+""",
+
     "akl": """Konteks Jurusan: Akuntansi dan Keuangan Lembaga (AKL)
 Fokus kompetensi: Pencatatan transaksi, penyusunan laporan keuangan, rekonsiliasi bank, waive discount denda, dan administrasi pajak/kas kecil.
 Istilah Teknis: Debitur, Kreditur, Angsuran, Denda, Waive Discount, Rekonsiliasi, Cash Opname, Rekening Koran, Jurnal Penyesuaian (Adjusting), Trial Balance.
@@ -77,6 +83,9 @@ def get_jurusan_context(jurusan_key: str) -> str:
         "ts": "busana",
         "fashion": "busana",
         "tabus": "busana",
+        "otkp": "mplb",
+        "perkantoran": "mplb",
+        "administrasi": "mplb",
         "wisata": "upw",
         "travel": "upw",
         "hotel": "ph",

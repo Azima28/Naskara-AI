@@ -42,6 +42,7 @@ export default function Footer() {
               <li><span>PH (Perhotelan)</span></li>
               <li><span>Tabog (Tata Boga / Kuliner)</span></li>
               <li><span>Tabus (Tata Busana / Fashion)</span></li>
+              <li><span>MPLB (Manajemen Perkantoran &amp; Layanan Bisnis)</span></li>
               <li><span>AKL (Akuntansi &amp; Keuangan)</span></li>
               <li><span>BDP (Bisnis &amp; Pemasaran)</span></li>
             </ul>

@@ -10,6 +10,7 @@ const JURUSAN_DROPDOWN_OPTIONS = [
   { label: 'Perhotelan (PH)', value: 'Perhotelan', key: 'ph', code: 'PH' },
   { label: 'Tata Boga (Tabog / Kuliner)', value: 'Tata Boga', key: 'tb', code: 'Tabog' },
   { label: 'Tata Busana (Tabus / Fashion)', value: 'Tata Busana', key: 'busana', code: 'Tabus' },
+  { label: 'Manajemen Perkantoran & Layanan Bisnis (MPLB)', value: 'Manajemen Perkantoran dan Layanan Bisnis', key: 'mplb', code: 'MPLB' },
   { label: 'Akuntansi & Keuangan Lembaga (AKL)', value: 'Akuntansi dan Keuangan Lembaga', key: 'akl', code: 'AKL' },
   { label: 'Bisnis Daring & Pemasaran (BDP)', value: 'Bisnis Daring dan Pemasaran', key: 'bdp', code: 'BDP' },
 ]
@@ -48,7 +49,7 @@ export default function SiswaStep({ ctx, set }: { ctx: PklContext; set: (p: Part
             value={s.jurusan}
             onChange={(v) => handleSelectJurusan(v)}
             importance="wajib"
-            hint="Pilih 1 dari 9 Konsentrasi Keahlian resmi SMKN 4 Bandar Lampung"
+            hint="Pilih 1 dari 10 Konsentrasi Keahlian resmi SMKN 4 Bandar Lampung"
             options={JURUSAN_DROPDOWN_OPTIONS.map((j) => ({
               label: j.label,
               value: j.value,
