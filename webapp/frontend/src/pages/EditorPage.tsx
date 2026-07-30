@@ -125,6 +125,30 @@ function EditorInner() {
         ])
 
         const rawContent = res.content || ''
+
+        // Realtime Typewriter Stream Animation inside the card textarea
+        await new Promise<void>((resolve) => {
+          let charIndex = 0
+          const chunkSize = Math.max(4, Math.floor(rawContent.length / 30))
+
+          const streamTimer = setInterval(() => {
+            charIndex += chunkSize
+            if (charIndex >= rawContent.length) {
+              clearInterval(streamTimer)
+              resolve()
+            } else {
+              const streamChunk = rawContent.slice(0, charIndex) + ' ▌'
+              setCtx((prev) => ({
+                ...prev,
+                generated_sections: {
+                  ...(prev.generated_sections || {}),
+                  [sec.key]: streamChunk,
+                },
+              }))
+            }
+          }, 12)
+        })
+
         let parsedContent: string | string[] = rawContent
         if (ARRAY_SECTION_KEYS.includes(sec.key)) {
           parsedContent = rawContent
