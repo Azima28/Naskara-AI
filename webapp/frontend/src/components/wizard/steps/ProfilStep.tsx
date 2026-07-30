@@ -10,13 +10,17 @@ import {
   FieldGroup, ImportanceLegend, StringArrayField, TextareaField, TextField, ImageUploadField
 } from '@/components/fields/FormFields'
 
-// ─── Konstanta pilihan jam ─────────────────────────────────────────────────── //
-const JAM_OPTIONS = [
-  '06.00', '06.30', '07.00', '07.30', '08.00', '08.30', '09.00', '09.30',
-  '10.00', '10.30', '11.00', '11.30', '12.00', '12.30', '13.00', '13.30',
-  '14.00', '14.30', '15.00', '15.30', '16.00', '16.30', '17.00', '17.30',
-  '18.00', '18.30', '19.00', '19.30', '20.00', '20.30', '21.00', '21.30', '22.00',
-]
+// ─── Pilihan rekomendasi jam (00.00 - 24.00) ────────────────────────────────── //
+const JAM_OPTIONS: string[] = []
+for (let h = 0; h <= 24; h++) {
+  const hh = String(h).padStart(2, '0')
+  JAM_OPTIONS.push(`${hh}.00`)
+  if (h < 24) {
+    JAM_OPTIONS.push(`${hh}.15`)
+    JAM_OPTIONS.push(`${hh}.30`)
+    JAM_OPTIONS.push(`${hh}.45`)
+  }
+}
 
 // ─── Jadwal Jam Kerja: editor slot per hari, langsung di tabel laporan ────── //
 const DAY_ORDER = ['SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU', 'MINGGU']
@@ -427,6 +431,12 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
         </p>
 
 
+        <datalist id="jam-options-list">
+          {JAM_OPTIONS.map(v => (
+            <option key={v} value={v} />
+          ))}
+        </datalist>
+
         <div className="table-scroll">
           <table className="fill-table">
             <thead>
@@ -475,27 +485,23 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
                       )}
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'center' }}>
-                          <select
+                          <input
+                            type="text"
+                            list="jam-options-list"
                             value={s.mulai}
                             onChange={e => setSlot(si, { mulai: e.target.value })}
-                            style={{ width: 'auto' }}
-                          >
-                            <option value="">—</option>
-                            {JAM_OPTIONS.map(v => (
-                              <option key={v} value={v}>{v}</option>
-                            ))}
-                          </select>
+                            placeholder="08.00"
+                            style={{ width: '80px', textAlign: 'center', padding: '4px' }}
+                          />
                           <span style={{ color: 'var(--ink-soft)' }}>–</span>
-                          <select
+                          <input
+                            type="text"
+                            list="jam-options-list"
                             value={s.selesai}
                             onChange={e => setSlot(si, { selesai: e.target.value })}
-                            style={{ width: 'auto' }}
-                          >
-                            <option value="">—</option>
-                            {JAM_OPTIONS.map(v => (
-                              <option key={v} value={v}>{v}</option>
-                            ))}
-                          </select>
+                            placeholder="16.00"
+                            style={{ width: '80px', textAlign: 'center', padding: '4px' }}
+                          />
                         </div>
                       </td>
                       <td>
