@@ -462,11 +462,24 @@ async def generate_docx(
             detail=f"Gagal generate dokumen: {str(e)}",
         )
 
-    # 4. Determine filename
+    # 4. Determine filename: Nama_SingkatanKelas.docx
     siswa = data.get("siswa", {})
-    nama = siswa.get("nama", "PKL").strip() or "PKL"
-    safe_name = "".join(c if c.isalnum() or c in " -_" else "" for c in nama).strip()
-    download_name = f"Laporan-PKL-{safe_name}.docx"
+    nama = (siswa.get("nama") or "").strip()
+    kelas = (siswa.get("kelas") or "").strip()
+
+    def _sanitize(val: str) -> str:
+        if not val:
+            return ""
+        clean = re.sub(r"[^\w\s-]", "", val)
+        return re.sub(r"\s+", "_", clean).strip("_")
+
+    safe_nama = _sanitize(nama) or "Laporan_PKL"
+    safe_kelas = _sanitize(kelas)
+
+    if safe_kelas:
+        download_name = f"{safe_nama}_{safe_kelas}.docx"
+    else:
+        download_name = f"{safe_nama}.docx"
 
     # Save a permanent copy to 'hasil' folder for evaluation
     try:
@@ -475,12 +488,12 @@ async def generate_docx(
             project_root = project_root.parent.parent.parent
         elif project_root.name == "backend":
             project_root = project_root.parent.parent
-        
+
         hasil_dir = project_root / "hasil"
         hasil_dir.mkdir(parents=True, exist_ok=True)
-        
+
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        eval_filename = f"[{timestamp}] Laporan PKL - {safe_name}.docx"
+        eval_filename = f"[{timestamp}] {download_name}"
         eval_path = hasil_dir / eval_filename
         shutil.copy2(output_path, eval_path)
     except Exception as e:
@@ -491,6 +504,10 @@ async def generate_docx(
         path=output_path,
         filename=download_name,
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    )
+    # Always expose Content-Disposition header so frontend can extract the exact filename
+    response.headers["Access-Control-Expose-Headers"] = (
+        "X-Polish-Partial, X-Polish-Message, Content-Disposition"
     )
     # Beri tahu user bila ada bagian yang gagal dipolish AI (sistem AI bermasalah).
     # Dokumen tetap dihasilkan dari data asli; bagian yang sudah berhasil dipolish
@@ -506,8 +523,4 @@ async def generate_docx(
         from urllib.parse import quote
         response.headers["X-Polish-Partial"] = ",".join(polish_failed)
         response.headers["X-Polish-Message"] = quote(msg)
-        # Izinkan frontend membaca header kustom dari respons blob.
-        response.headers["Access-Control-Expose-Headers"] = (
-            "X-Polish-Partial, X-Polish-Message, Content-Disposition"
-        )
     return response

@@ -162,8 +162,8 @@ export const generateDocx = async (draftId: string): Promise<string> => {
 
     // Extract filename from Content-Disposition header or use default
     const disposition = response.headers['content-disposition'] || ''
-    const match = disposition.match(/filename[^;=\n]*=(['"]?)([^'";\n]*)\1/)
-    const filename = match?.[2] || `Laporan-PKL-${draftId}.docx`
+    const match = disposition.match(/filename\*?=(?:UTF-8'')?(['"]?)([^'";\n]*)\1/i)
+    let filename = match?.[2] ? decodeURIComponent(match[2]) : `Laporan-PKL-${draftId}.docx`
 
     // Trigger browser download
     const blob = new Blob([response.data], {
