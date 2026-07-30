@@ -6,6 +6,7 @@ import AntiAIHighlighter from '@/components/editor/AntiAIHighlighter'
 import EnhancementDiffModal from '@/components/editor/EnhancementDiffModal'
 import DocumentOutline from '@/components/editor/DocumentOutline'
 import RequestionPanel, { type GenerateIssue, type Requestion } from '@/components/RequestionPanel'
+import NotificationModal from '@/components/common/NotificationModal'
 import type { PklContext } from '@/types/pkl'
 import { emptyContext } from '@/types/pkl'
 import { IconDocument, IconDownload, IconSparkles, IconAlert, IconPencil } from '@/components/common/Icons'
@@ -54,6 +55,21 @@ function EditorInner() {
   const [genIssues, setGenIssues] = useState<GenerateIssue[]>([])
   const [genQuestions, setGenQuestions] = useState<Requestion[]>([])
   const [polishNotice, setPolishNotice] = useState('')
+
+  // Notification Modal State
+  const [modal, setModal] = useState<{ isOpen: boolean; title?: string; message: string; type?: 'error' | 'warning' | 'info' | 'success' }>({
+    isOpen: false,
+    message: '',
+  })
+
+  const showErrorModal = (msg: string, title?: string) => {
+    setModal({
+      isOpen: true,
+      title: title || 'Informasi Layanan AI',
+      message: msg,
+      type: 'error',
+    })
+  }
 
   // Diff Modal State
   const [showDiffModal, setShowDiffModal] = useState(false)
@@ -227,6 +243,7 @@ function EditorInner() {
                 ctx={ctx}
                 value={(ctx.generated_sections || {})[sec.key] || ''}
                 onChange={(val) => updateSection(sec.key, val)}
+                onError={showErrorModal}
               />
             </div>
           ))}
@@ -347,7 +364,7 @@ function EditorInner() {
                     const msg = typeof detail === 'string'
                       ? detail
                       : detail?.message || err?.message || 'Gagal merapikan data via AI.'
-                    alert(msg)
+                    showErrorModal(msg)
                   } finally {
                     setEnhancing(false)
                   }
@@ -471,6 +488,15 @@ function EditorInner() {
           }}
         />
       )}
+
+      {/* Notification Pop-up Modal */}
+      <NotificationModal
+        isOpen={modal.isOpen}
+        title={modal.title}
+        message={modal.message}
+        type={modal.type}
+        onClose={() => setModal((prev) => ({ ...prev, isOpen: false }))}
+      />
     </div>
   )
 }
@@ -522,12 +548,14 @@ function SectionEditor({
   ctx,
   value,
   onChange,
+  onError,
 }: {
   sectionKey: string
   title: string
   ctx: PklContext
   value: string | string[]
   onChange: (val: any) => void
+  onError?: (msg: string) => void
 }) {
   const [loading, setLoading] = useState(false)
   const [regen, setRegen] = useState(false)
@@ -556,7 +584,8 @@ function SectionEditor({
     } catch (err: any) {
       const d = err?.response?.data?.detail
       const msg = (d && typeof d === 'object' ? d.message : d) || err?.message || 'Gagal membuat draf AI'
-      alert(msg)
+      if (onError) onError(msg)
+      else alert(msg)
     } finally {
       setLoading(false)
     }
@@ -582,7 +611,10 @@ function SectionEditor({
       setInstruction('')
       setRegen(false)
     } catch (err: any) {
-      alert(err?.response?.data?.detail || err?.message || 'Gagal memperbarui draf')
+      const d = err?.response?.data?.detail
+      const msg = (d && typeof d === 'object' ? d.message : d) || err?.message || 'Gagal memperbarui draf'
+      if (onError) onError(msg)
+      else alert(msg)
     } finally {
       setLoading(false)
     }

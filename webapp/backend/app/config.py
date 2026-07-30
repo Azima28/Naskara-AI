@@ -43,7 +43,7 @@ class Settings(BaseSettings):
     # AI provider (9router / OpenCode / OpenAI-compatible port 2018)
     ai_enabled: bool = True
     ai_base_url: str = "http://localhost:2018/v1"
-    ai_model: str = "local-model"
+    ai_model: str = "opencode"
     ai_api_key: str = "not-needed"
     ai_timeout: int = 120
 

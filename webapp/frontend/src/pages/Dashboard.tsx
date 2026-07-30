@@ -4,6 +4,7 @@ import { useAuth } from '@/store/auth'
 import { listDrafts, createDraft, deleteDraft, generateDocx } from '@/api/client'
 import type { DraftSummary } from '@/types/api'
 import ProtectedRoute from '@/components/ProtectedRoute'
+import NotificationModal from '@/components/common/NotificationModal'
 import {
   IconPlus,
   IconPencil,
@@ -24,6 +25,11 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
+
+  const [modal, setModal] = useState<{ isOpen: boolean; title?: string; message: string; type?: 'error' | 'warning' | 'info' | 'success' }>({
+    isOpen: false,
+    message: '',
+  })
 
   const load = async () => {
     try {
@@ -55,7 +61,12 @@ export default function DashboardPage() {
     try {
       await generateDocx(id)
     } catch (err: any) {
-      alert(err.message || 'Gagal mengunduh dokumen .docx')
+      setModal({
+        isOpen: true,
+        title: 'Gagal Mengunduh Dokumen',
+        message: err?.message || 'Gagal mengunduh dokumen .docx',
+        type: 'error',
+      })
     } finally {
       setDownloadingId(null)
     }
@@ -268,6 +279,14 @@ export default function DashboardPage() {
 
           </div>
         </main>
+
+        <NotificationModal
+          isOpen={modal.isOpen}
+          title={modal.title}
+          message={modal.message}
+          type={modal.type}
+          onClose={() => setModal((prev) => ({ ...prev, isOpen: false }))}
+        />
       </div>
     </ProtectedRoute>
   )

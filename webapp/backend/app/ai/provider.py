@@ -26,7 +26,7 @@ class OpenAICompatibleProvider(AIProvider):
 
         headers = {"Authorization": f"Bearer {self.api_key}"} if self.api_key != "not-needed" else {}
         self.client = httpx.AsyncClient(
-            timeout=httpx.Timeout(self.timeout, connect=0.8),
+            timeout=httpx.Timeout(self.timeout, connect=15.0),
             headers=headers
         )
 
@@ -49,6 +49,8 @@ class OpenAICompatibleProvider(AIProvider):
         for attempt in range(1, max_retries + 1):
             try:
                 resp = await self.client.post(endpoint, json=payload)
+                if resp.status_code != 200:
+                    print(f"[AI Provider HTTP Error {resp.status_code}] Response body: {resp.text[:300]}")
                 resp.raise_for_status()
                 try:
                     data = resp.json()
@@ -64,15 +66,14 @@ class OpenAICompatibleProvider(AIProvider):
                     return data["choices"][0]["message"]["content"]
 
             except (httpx.ConnectError, httpx.ConnectTimeout) as e:
-                # Target host/port is offline or connection refused/timed out.
-                # Do not waste time retrying 3x on a non-responsive local port.
-                print(f"[AI Provider Offline] Local AI server is unreachable ({type(e).__name__}): {e}")
-                raise RuntimeError(f"AI Provider offline: {e}")
+                print(f"[AI Provider Unreachable] Cannot connect to AI base_url ({self.base_url}) on attempt {attempt}: {e}")
+                last_error = e
 
             except httpx.HTTPStatusError as e:
                 # Client errors (4xx) should not be retried, but Server errors (5xx) should be retried
+                print(f"[AI Provider Status Error {e.response.status_code}] {e.response.text}")
                 if e.response.status_code < 500:
-                    raise RuntimeError(f"AI Provider client error ({e.response.status_code}): {e}")
+                    raise RuntimeError(f"AI Provider client error ({e.response.status_code}): {e.response.text[:200]}")
                 last_error = e
                 print(f"[AI Provider Retry] Attempt {attempt}/{max_retries} server error ({e.response.status_code}): {e}")
 
