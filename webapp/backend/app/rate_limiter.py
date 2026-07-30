@@ -29,7 +29,7 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
             "/auth/login": (10, 60),      # 10 req/menit
             "/auth/register": (10, 60),   # 10 req/menit
             "/generate": (10, 60),        # 10 req/menit (CPU heavy docx)
-            "/ai/": (15, 60),             # 15 req/menit (LLM API heavy)
+            "/ai/": (60, 60),             # 60 req/menit (LLM API generation)
             "/assets/upload": (15, 60),   # 15 req/menit
         }
 
