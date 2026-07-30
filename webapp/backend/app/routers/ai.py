@@ -175,16 +175,15 @@ async def draft_section(
                 continue
 
         except Exception as e:
-            # Provider gagal/error (500, timeout, mati) → jangan tampilkan error
-            # teknis mentah ke user. Beri tahu bahwa SISTEM yang bermasalah dan
-            # hasil yang sudah berhasil tetap tersimpan (user tidak kehilangan
-            # section lain yang sudah jadi — cukup lanjutkan bagian ini nanti).
-            print(f"[AI Provider Error] section={key}: {e}")
+            # Provider gagal/error (500, timeout, mati)
+            err_msg = str(e)
+            print(f"[AI Provider Error] section={key}: {err_msg}")
             raise HTTPException(
                 status_code=503,
                 detail={
-                    "message": "Sistem AI sedang mengalami masalah. Bagian lain yang sudah berhasil digenerate tetap tersimpan — Anda bisa melanjutkan bagian ini nanti tanpa mengulang dari awal.",
+                    "message": f"Sistem AI mengalami kendala ({err_msg}). Bagian lain yang telah berhasil dibuat tetap tersimpan aman — Anda dapat melanjutkan bagian ini nanti.",
                     "section_key": key,
+                    "technical_error": err_msg,
                     "retryable": True,
                 },
             )
@@ -359,3 +358,24 @@ ATURAN:
             status_code=500,
             detail=f"Gagal merapikan data menggunakan AI ({str(e)}). Silakan periksa koneksi AI atau coba lagi."
         )
+
+
+@router.get("/test")
+async def test_ai_connection(
+    user: User = Depends(get_current_user)
+) -> dict:
+    """Diagnostic endpoint to test connection to local AI 9router/OpenCode."""
+    provider = get_ai_provider()
+    try:
+        res = await provider.generate("Kamu adalah asisten tes.", "Jawab kata 'OK'.")
+        return {
+            "status": "ok",
+            "message": "Koneksi ke AI Provider 9router/OpenCode Berhasil!",
+            "response": res,
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": "Gagal terhubung ke AI Provider.",
+            "error_detail": str(e),
+        }
