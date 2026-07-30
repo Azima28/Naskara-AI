@@ -431,18 +431,12 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
         </p>
 
 
-        <datalist id="jam-options-list">
-          {JAM_OPTIONS.map(v => (
-            <option key={v} value={v} />
-          ))}
-        </datalist>
-
         <div className="table-scroll">
           <table className="fill-table">
             <thead>
               <tr>
-                <th style={{ width: 95 }}>HARI</th>
-                <th style={{ width: 135 }}>JAM KERJA</th>
+                <th style={{ width: 90 }}>HARI</th>
+                <th style={{ minWidth: 140 }}>JAM KERJA</th>
                 <th>KETERANGAN</th>
                 <th style={{ width: 32 }}></th>
               </tr>
@@ -485,23 +479,33 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
                       )}
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 2, justifyContent: 'center' }}>
-                          <input
-                            type="text"
-                            list="jam-options-list"
+                          <select
                             value={s.mulai}
                             onChange={e => setSlot(si, { mulai: e.target.value })}
-                            placeholder="08.00"
-                            style={{ width: '58px', textAlign: 'center', padding: '3px 2px', fontSize: '0.85rem' }}
-                          />
+                            style={{ width: 'auto', padding: '3px 2px', fontSize: '0.82rem' }}
+                          >
+                            <option value="">—</option>
+                            {JAM_OPTIONS.map(v => (
+                              <option key={v} value={v}>{v}</option>
+                            ))}
+                            {s.mulai && !JAM_OPTIONS.includes(s.mulai) && (
+                              <option value={s.mulai}>{s.mulai}</option>
+                            )}
+                          </select>
                           <span style={{ color: 'var(--ink-soft)', fontSize: '0.8rem' }}>–</span>
-                          <input
-                            type="text"
-                            list="jam-options-list"
+                          <select
                             value={s.selesai}
                             onChange={e => setSlot(si, { selesai: e.target.value })}
-                            placeholder="16.00"
-                            style={{ width: '58px', textAlign: 'center', padding: '3px 2px', fontSize: '0.85rem' }}
-                          />
+                            style={{ width: 'auto', padding: '3px 2px', fontSize: '0.82rem' }}
+                          >
+                            <option value="">—</option>
+                            {JAM_OPTIONS.map(v => (
+                              <option key={v} value={v}>{v}</option>
+                            ))}
+                            {s.selesai && !JAM_OPTIONS.includes(s.selesai) && (
+                              <option value={s.selesai}>{s.selesai}</option>
+                            )}
+                          </select>
                         </div>
                       </td>
                       <td>
