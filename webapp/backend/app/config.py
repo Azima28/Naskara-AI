@@ -40,9 +40,9 @@ class Settings(BaseSettings):
     secret_key: str = "ganti-saya-jadi-string-acak-panjang"
     access_token_expire_minutes: int = 60 * 24 * 7  # 7 hari
 
-    # AI provider (9router / OpenCode / OpenAI-compatible port 2018)
+    # AI provider (9router / OpenCode / OpenAI-compatible port 20128)
     ai_enabled: bool = True
-    ai_base_url: str = "http://localhost:2018/v1"
+    ai_base_url: str = "http://localhost:20128/v1"
     ai_model: str = "opencode"
     ai_api_key: str = "not-needed"
     ai_timeout: int = 120

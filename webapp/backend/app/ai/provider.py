@@ -27,7 +27,7 @@ class OpenAICompatibleProvider(AIProvider):
         # Generate candidate base_urls for Docker-to-Host fallback
         self.candidate_urls = [self.base_url]
         if "host.docker.internal" in self.base_url:
-            port = "2018"
+            port = "20128"
             if ":" in self.base_url.split("//")[-1]:
                 port = self.base_url.split(":")[-1].split("/")[0]
             path = "/v1" if self.base_url.endswith("/v1") else ""
@@ -111,5 +111,5 @@ class OpenAICompatibleProvider(AIProvider):
                 if attempt < max_retries:
                     await asyncio.sleep(retry_delay)
 
-        raise RuntimeError(f"Gagal terhubung ke 9router di {self.base_url} (Port 2018): {last_error}")
+        raise RuntimeError(f"Gagal terhubung ke 9router di {self.base_url} (Port 20128): {last_error}")
 
