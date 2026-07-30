@@ -6,23 +6,12 @@ import type { DraftSummary } from '@/types/api'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import {
   IconPlus,
-  IconCode,
-  IconGlobe,
-  IconPalette,
-  IconLightning,
   IconPencil,
   IconDocument,
   IconDownload,
   IconTrash,
   IconChecklist,
   IconCheck,
-  IconCompass,
-  IconBed,
-  IconUtensils,
-  IconScissors,
-  IconFolder,
-  IconChart,
-  IconShoppingBag,
 } from '@/components/common/Icons'
 
 export default function DashboardPage() {
@@ -157,43 +146,6 @@ export default function DashboardPage() {
                 <span className="stat-card__label">Format Dokumen</span>
                 <span className="stat-card__val">.docx Native</span>
                 <span className="stat-card__sub">Compat MS Word 2016-365</span>
-              </div>
-            </div>
-
-            {/* Template Quick Starters */}
-            <div className="dash-quick-starter">
-              <h3><IconLightning size={16} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Pilih Templat Jurusan SMKN 4 Bandar Lampung:</h3>
-              <div className="quick-starter-grid">
-                <button onClick={() => handleCreate('PPLG')} className="starter-chip">
-                  <IconCode size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> PPLG (Perangkat Lunak &amp; Gim)
-                </button>
-                <button onClick={() => handleCreate('TKJ')} className="starter-chip">
-                  <IconGlobe size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> TKJ (Jaringan &amp; Komputer)
-                </button>
-                <button onClick={() => handleCreate('DKV')} className="starter-chip">
-                  <IconPalette size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> DKV (Desain Komunikasi Visual)
-                </button>
-                <button onClick={() => handleCreate('UPW')} className="starter-chip">
-                  <IconCompass size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> UPW (Usaha Perjalanan Wisata)
-                </button>
-                <button onClick={() => handleCreate('PH')} className="starter-chip">
-                  <IconBed size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> PH (Perhotelan)
-                </button>
-                <button onClick={() => handleCreate('TB')} className="starter-chip">
-                  <IconUtensils size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> TB (Tata Boga / Kuliner)
-                </button>
-                <button onClick={() => handleCreate('TS')} className="starter-chip">
-                  <IconScissors size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> TS (Tata Busana / Fashion)
-                </button>
-                <button onClick={() => handleCreate('OTKP')} className="starter-chip">
-                  <IconFolder size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> OTKP (Tata Kelola Perkantoran)
-                </button>
-                <button onClick={() => handleCreate('AKL')} className="starter-chip">
-                  <IconChart size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> AKL (Akuntansi &amp; Keuangan)
-                </button>
-                <button onClick={() => handleCreate('BDP')} className="starter-chip">
-                  <IconShoppingBag size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> BDP (Bisnis &amp; Pemasaran)
-                </button>
               </div>
             </div>
 
