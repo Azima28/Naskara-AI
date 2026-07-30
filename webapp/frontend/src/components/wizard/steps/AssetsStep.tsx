@@ -1,17 +1,14 @@
 import { useState, useRef, useCallback } from 'react'
-import type { Lampiran, PklContext } from '@/types/pkl'
+import type { PklContext } from '@/types/pkl'
 import { uploadAsset } from '@/api/client'
 
 export default function AssetsStep({ ctx, set }: { ctx: PklContext; set: (p: Partial<PklContext>) => void }) {
-  const lampiran = ctx.lampiran
   const assets = ctx.assets
 
   const [uploading, setUploading] = useState(false)
   const [dragOver, setDragOver] = useState(false)
   const [uploadError, setUploadError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const toggleLampiran = (key: keyof Lampiran) => set({ lampiran: { ...lampiran, [key]: !lampiran[key] } })
 
   const handleFiles = useCallback(async (files: FileList | null) => {
     if (!files || files.length === 0) return
@@ -199,24 +196,22 @@ export default function AssetsStep({ ctx, set }: { ctx: PklContext; set: (p: Par
         )}
       </div>
 
-      {/* Checklist lampiran fisik — TIDAK memengaruhi isi .docx; sekadar
-          pengingat berkas yang dijilid manual di belakang laporan. */}
-      <div className="field-group">
-        <h3 className="field-group__title">Checklist Lampiran Fisik (opsional)</h3>
-        <p className="muted" style={{ marginTop: 0 }}>
-          Pengingat berkas yang biasanya dijilid di belakang laporan (jurnal, absensi,
-          sertifikat, dsb). Centangan ini <strong>tidak mengubah isi file .docx</strong> —
-          berkasnya kamu lampirkan sendiri saat mencetak.
+      {/* Catatan Pengingat Berkas Cetak & Lampiran Fisik (Informasional) */}
+      <div className="field-group" style={{ background: 'var(--paper-2, #ece8de)', padding: '1.25rem 1.5rem', borderRadius: '10px', border: '1px solid var(--line, #ddd6c8)', marginTop: '2rem' }}>
+        <h3 className="field-group__title" style={{ margin: '0 0 0.4rem', color: '#187257' }}>
+          📌 Catatan Pengingat Berkas Fisik saat Mencetak Laporan
+        </h3>
+        <p className="muted" style={{ margin: '0 0 0.85rem', fontSize: '0.88rem', lineHeight: 1.5 }}>
+          Berkas-berkas berikut merupakan dokumen fisik bertanda tangan basah / cap asli yang biasanya dijilid di halaman paling belakang saat laporan dicetak:
         </p>
-        <div className="checkbox-grid">
-          {Object.entries(lampiran)
-            .filter(([, val]) => typeof val === 'boolean')
-            .map(([key, val]) => (
-              <label key={key} className={`chip ${val ? 'chip--on' : ''}`}>
-                <input type="checkbox" checked={Boolean(val)} onChange={() => toggleLampiran(key as keyof Lampiran)} />
-                {key.replace(/_/g, ' ')}
-              </label>
-            ))}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <span className="chip" style={{ background: '#ffffff', cursor: 'default', opacity: 0.9 }}>📄 Jurnal Kegiatan</span>
+          <span className="chip" style={{ background: '#ffffff', cursor: 'default', opacity: 0.9 }}>📄 Absensi PKL</span>
+          <span className="chip" style={{ background: '#ffffff', cursor: 'default', opacity: 0.9 }}>📜 Sertifikat PKL</span>
+          <span className="chip" style={{ background: '#ffffff', cursor: 'default', opacity: 0.9 }}>📝 Lembar Penilaian</span>
+          <span className="chip" style={{ background: '#ffffff', cursor: 'default', opacity: 0.9 }}>✉️ Surat Permohonan</span>
+          <span className="chip" style={{ background: '#ffffff', cursor: 'default', opacity: 0.9 }}>✉️ Surat Balasan</span>
+          <span className="chip" style={{ background: '#ffffff', cursor: 'default', opacity: 0.9 }}>🖼️ Foto Dokumentasi</span>
         </div>
       </div>
     </>
