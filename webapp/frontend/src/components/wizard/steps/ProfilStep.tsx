@@ -52,6 +52,32 @@ function parseSlots(j: JamKerja): Slot[] {
   return []
 }
 
+/** Conversi string "HH.MM" ke menit murni untuk validasi urutan jam. */
+const toMin = (t: string): number => {
+  if (!t) return NaN
+  const m = t.trim().match(/^(\d{1,2})[.:](\d{2})$/)
+  return m ? parseInt(m[1]) * 60 + parseInt(m[2]) : NaN
+}
+
+/** Jam Mulai slot si: di-disable jika < Jam Selesai slot sebelumnya di hari yang sama. */
+function isStartDisabled(val: string, slots: Slot[], si: number): boolean {
+  if (si <= 0) return false
+  const prevSlot = slots[si - 1]
+  const prevEnd = prevSlot.selesai || prevSlot.mulai
+  const prevMin = toMin(prevEnd)
+  const valMin = toMin(val)
+  if (isNaN(prevMin) || isNaN(valMin)) return false
+  return valMin < prevMin
+}
+
+/** Jam Selesai slot si: di-disable jika <= Jam Mulai slot si (tidak boleh mundur atau sama). */
+function isEndDisabled(val: string, mulai: string): boolean {
+  const mulaiMin = toMin(mulai)
+  const valMin = toMin(val)
+  if (isNaN(mulaiMin) || isNaN(valMin)) return false
+  return valMin <= mulaiMin
+}
+
 /** Simpan slot kembali ke format jam & keterangan multi-baris. */
 function serializeSlots(slots: Slot[]): { jam: string; keterangan: string } {
   return {
@@ -451,7 +477,17 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
                 const nRows = slots.length + 1 // + baris "tambah slot"
 
                 const setSlot = (si: number, patch: Partial<Slot>) => {
-                  const next = slots.map((s, x) => (x === si ? { ...s, ...patch } : s))
+                  const next = slots.map((s, x) => {
+                    if (x !== si) return s
+                    const updated = { ...s, ...patch }
+                    // Jika jam mulai diubah dan jam selesai menjadi <= jam mulai, reset jam selesai
+                    if (patch.mulai !== undefined && updated.selesai) {
+                      if (toMin(updated.selesai) <= toMin(patch.mulai)) {
+                        updated.selesai = ''
+                      }
+                    }
+                    return updated
+                  })
                   setSlots(di, next)
                 }
                 const addSlot = () => {
@@ -486,7 +522,7 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
                           >
                             <option value="">—</option>
                             {JAM_OPTIONS.map(v => (
-                              <option key={v} value={v}>{v}</option>
+                              <option key={v} value={v} disabled={isStartDisabled(v, slots, si)}>{v}</option>
                             ))}
                             {s.mulai && !JAM_OPTIONS.includes(s.mulai) && (
                               <option value={s.mulai}>{s.mulai}</option>
@@ -500,7 +536,7 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
                           >
                             <option value="">—</option>
                             {JAM_OPTIONS.map(v => (
-                              <option key={v} value={v}>{v}</option>
+                              <option key={v} value={v} disabled={isEndDisabled(v, s.mulai)}>{v}</option>
                             ))}
                             {s.selesai && !JAM_OPTIONS.includes(s.selesai) && (
                               <option value={s.selesai}>{s.selesai}</option>
