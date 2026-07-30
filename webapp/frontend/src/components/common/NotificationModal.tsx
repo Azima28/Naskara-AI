@@ -25,35 +25,35 @@ export default function NotificationModal({
     switch (type) {
       case 'error':
         return {
-          bg: '#fef2f2',
-          border: '#fecaca',
-          color: '#dc2626',
-          icon: <IconAlert size={24} color="#dc2626" />,
-          defaultTitle: 'Sistem AI / Server Informasi',
+          bg: '#ecfdf5',
+          border: '#a7f3d0',
+          color: '#059669',
+          icon: <IconAlert size={24} color="#059669" />,
+          defaultTitle: 'Sistem AI / Informasi Layanan',
         }
       case 'warning':
         return {
           bg: '#fffbeb',
           border: '#fde68a',
-          color: '#b45309',
-          icon: <IconAlert size={24} color="#b45309" />,
+          color: '#d97706',
+          icon: <IconAlert size={24} color="#d97706" />,
           defaultTitle: 'Perhatian Sistem',
         }
       case 'success':
         return {
-          bg: '#f0fdf4',
-          border: '#bbf7d0',
-          color: '#16a34a',
-          icon: <IconCheck size={24} color="#16a34a" />,
+          bg: '#ecfdf5',
+          border: '#a7f3d0',
+          color: '#059669',
+          icon: <IconCheck size={24} color="#059669" />,
           defaultTitle: 'Berhasil',
         }
       default:
         return {
-          bg: '#f0f9ff',
-          border: '#bae6fd',
-          color: '#0284c7',
-          icon: <IconSparkles size={24} color="#0284c7" />,
-          defaultTitle: 'Informasi',
+          bg: '#ecfdf5',
+          border: '#a7f3d0',
+          color: '#059669',
+          icon: <IconSparkles size={24} color="#059669" />,
+          defaultTitle: 'Informasi Naskara AI',
         }
     }
   }
