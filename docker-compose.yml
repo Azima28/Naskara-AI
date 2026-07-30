@@ -13,7 +13,7 @@ services:
       - SECRET_KEY=${SECRET_KEY:-naskara-prod-secret-key-change-this-in-production}
       - AI_ENABLED=${AI_ENABLED:-true}
       - AI_BASE_URL=${AI_BASE_URL:-http://host.docker.internal:20128/v1}
-      - AI_MODEL=${AI_MODEL:-opencode}
+      - AI_MODEL=${AI_MODEL:-deepseek-opencode}
       - AI_API_KEY=${AI_API_KEY:-not-needed}
     volumes:
       # Persistent sqlite DB & uploads on Windows Server disk
