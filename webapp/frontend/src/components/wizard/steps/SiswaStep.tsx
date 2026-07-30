@@ -1,9 +1,6 @@
-import { useState } from 'react'
 import type { PklContext } from '@/types/pkl'
 import { FieldGroup, ImportanceLegend, TextField, SelectField, ImageUploadField } from '@/components/fields/FormFields'
 import { detectJurusanKey } from '@/utils/jurusanExamples'
-import JurusanDocxPreviewModal from '@/components/wizard/JurusanDocxPreviewModal'
-import { IconSearch } from '@/components/common/Icons'
 
 const JURUSAN_DROPDOWN_OPTIONS = [
   { label: 'Pemrograman Perangkat Lunak & Gim (PPLG)', value: 'Pemrograman Perangkat Lunak dan Gim', key: 'pplg', code: 'PPLG' },
@@ -21,7 +18,6 @@ const JURUSAN_DROPDOWN_OPTIONS = [
 export default function SiswaStep({ ctx, set }: { ctx: PklContext; set: (p: Partial<PklContext>) => void }) {
   const s = ctx.siswa
   const upd = (patch: Partial<typeof s>) => set({ siswa: { ...s, ...patch } })
-  const [showPreviewModal, setShowPreviewModal] = useState(false)
 
   const handleSelectJurusan = (val: string, forcedKey?: string) => {
     const item = JURUSAN_DROPDOWN_OPTIONS.find((j) => j.value === val || j.key === forcedKey)
@@ -59,17 +55,6 @@ export default function SiswaStep({ ctx, set }: { ctx: PklContext; set: (p: Part
               value: j.value,
             }))}
           />
-
-          <div style={{ marginTop: '0.45rem' }}>
-            <button
-              type="button"
-              className="btn-sm btn-outline"
-              onClick={() => setShowPreviewModal(true)}
-              style={{ fontSize: '0.8rem', fontWeight: 600, padding: '0.35rem 0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
-            >
-              <IconSearch size={14} /> Lihat Contoh Lembaran Laporan (.docx) Per Jurusan
-            </button>
-          </div>
         </div>
 
         {/* 2. Nama Lengkap */}
@@ -102,14 +87,6 @@ export default function SiswaStep({ ctx, set }: { ctx: PklContext; set: (p: Part
           hint="Terisi otomatis berdasarkan Jurusan (bisa disesuaikan nomor rombelnya, misal: XII PPLG 2)"
         />
       </FieldGroup>
-
-      {/* Modal Preview Lembaran Laporan per Jurusan */}
-      <JurusanDocxPreviewModal
-        isOpen={showPreviewModal}
-        onClose={() => setShowPreviewModal(false)}
-        initialJurusanKey={s.jurusan_key || detectJurusanKey(s.jurusan)}
-        onSelectJurusan={(val, key) => handleSelectJurusan(val, key)}
-      />
 
       <FieldGroup title="Data Pribadi">
         <TextField label="Tempat Lahir" value={s.tempat_lahir} onChange={(v) => upd({ tempat_lahir: v })} importance="wajib" placeholder="Bandar Lampung" />
