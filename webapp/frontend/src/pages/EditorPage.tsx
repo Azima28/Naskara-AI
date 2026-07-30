@@ -870,7 +870,7 @@ function SectionEditor({
             disabled={disabled || isBatchGenerating}
             style={{ opacity: disabled || isBatchGenerating ? 0.5 : 1, cursor: disabled || isBatchGenerating ? 'not-allowed' : 'pointer' }}
           >
-            Tulis Draf Individu
+            Generate AI
           </button>
         )}
       </div>
@@ -932,7 +932,8 @@ function SectionEditor({
             )}
           </div>
 
-          {!disabled && !isBatchGenerating && (
+          {/* Fitur Saran Penulisan Natural (Anti-AI) nonaktif sementara atas permintaan user */}
+          {false && !disabled && !isBatchGenerating && (
             <AntiAIHighlighter
               text={textValue}
               onReplace={(newText) => {
@@ -958,7 +959,7 @@ function SectionEditor({
             disabled={disabled || isBatchGenerating}
             style={{ opacity: disabled || isBatchGenerating ? 0.5 : 1, cursor: disabled || isBatchGenerating ? 'not-allowed' : 'pointer' }}
           >
-            Tulis Draf Individu
+            Generate AI
           </button>
         </div>
       )}
