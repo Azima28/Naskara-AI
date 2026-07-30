@@ -1404,6 +1404,49 @@ input.field__input {
   background: var(--paper);
 }
 
+.auth-split__mobile-header {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .auth-split {
+    flex-direction: column;
+  }
+
+  .auth-split__mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--green-700);
+    padding: 0.85rem 1.25rem;
+    color: #fff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
+  .auth-split__mobile-header .auth-split__logo {
+    margin-bottom: 0 !important;
+    font-size: 1.15rem !important;
+  }
+
+  .desktop-only-logo {
+    display: none !important;
+  }
+
+  .auth-split__form-container {
+    order: 1 !important;
+    padding: 1.5rem 1rem !important;
+  }
+
+  .auth-split__hero {
+    order: 2 !important;
+    padding: 2rem 1.25rem !important;
+  }
+
+  .auth-split__form-box {
+    padding: 1.5rem 1.25rem !important;
+  }
+}
+
 .auth-split__hero {
   flex: 1;
   position: relative;
