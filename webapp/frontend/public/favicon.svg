@@ -1,18 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
   <defs>
-    <linearGradient id="naskaraBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#4f46e5" />
-      <stop offset="50%" stop-color="#7c3aed" />
-      <stop offset="100%" stop-color="#9333ea" />
+    <linearGradient id="naskaraGreenBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="50%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#047857" />
     </linearGradient>
-    <linearGradient id="naskaraSparkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#38bdf8" />
-      <stop offset="100%" stop-color="#34d399" />
+    <linearGradient id="naskaraGoldSparkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#fbbf24" />
     </linearGradient>
   </defs>
 
-  <!-- Rounded Background Shield -->
-  <rect width="512" height="512" rx="120" fill="url(#naskaraBgGrad)" />
+  <!-- Emerald Green Rounded Background Shield -->
+  <rect width="512" height="512" rx="120" fill="url(#naskaraGreenBgGrad)" />
 
   <!-- Main Document Icon & Lines -->
   <g fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round">
@@ -26,6 +26,6 @@
     <line x1="165" y1="360" x2="265" y2="360" stroke-width="24" />
   </g>
 
-  <!-- Glowing AI Spark Star (Top Right) -->
-  <path d="M370 70 C370 115 385 130 430 130 C385 130 370 145 370 190 C370 145 355 130 310 130 C355 130 370 115 370 70 Z" fill="url(#naskaraSparkGrad)" />
+  <!-- Glowing Golden AI Spark Star (Top Right) -->
+  <path d="M370 70 C370 115 385 130 430 130 C385 130 370 145 370 190 C370 145 355 130 310 130 C355 130 370 115 370 70 Z" fill="url(#naskaraGoldSparkGrad)" />
 </svg>
