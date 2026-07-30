@@ -12,24 +12,20 @@ import {
 
 // ─── Konstanta pilihan jam ─────────────────────────────────────────────────── //
 const JAM_OPTIONS = [
-  '07.00', '07.30', '08.00', '08.30', '09.00', '09.30', '10.00', '10.30',
-  '11.00', '11.30', '12.00', '12.30', '13.00', '13.30', '14.00', '14.30',
-  '15.00', '15.30', '16.00', '16.30', '17.00', '17.30', '18.00',
+  '06.00', '06.30', '07.00', '07.30', '08.00', '08.30', '09.00', '09.30',
+  '10.00', '10.30', '11.00', '11.30', '12.00', '12.30', '13.00', '13.30',
+  '14.00', '14.30', '15.00', '15.30', '16.00', '16.30', '17.00', '17.30',
+  '18.00', '18.30', '19.00', '19.30', '20.00', '20.30', '21.00', '21.30', '22.00',
 ]
 
 // ─── Jadwal Jam Kerja: editor slot per hari, langsung di tabel laporan ────── //
 const DAY_ORDER = ['SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU', 'MINGGU']
 
-/** Satu slot jadwal dalam sehari. TUTUP hanya punya jam mulai. */
+/** Satu slot jadwal dalam sehari. */
 interface Slot {
   mulai: string
   selesai: string
   label: string
-}
-
-const toMin = (t: string): number => {
-  const m = (t || '').trim().match(/^(\d{1,2})[.:](\d{2})$/)
-  return m ? parseInt(m[1]) * 60 + parseInt(m[2]) : NaN
 }
 
 /** Baca slot dari data tersimpan (jam & keterangan multi-baris). */
@@ -39,9 +35,7 @@ function parseSlots(j: JamKerja): Slot[] {
   if (jamLines.length) {
     return jamLines.map((line, k) => {
       const range = line.match(/(\d{1,2}[.:]\d{2})\s*[-–]\s*(\d{1,2}[.:]\d{2})/)
-      // Label kosong dibiarkan kosong (round-trip dengan placeholder);
-      // baris satu-waktu tanpa label diasumsikan TUTUP.
-      const label = ketLines[k] || (range ? '' : 'TUTUP')
+      const label = ketLines[k] !== undefined ? ketLines[k] : ''
       if (range) return { mulai: range[1], selesai: range[2], label }
       const single = line.match(/^(\d{1,2}[.:]\d{2})$/)
       return { mulai: single ? single[1] : '', selesai: '', label }
@@ -49,7 +43,7 @@ function parseSlots(j: JamKerja): Slot[] {
   }
   // Kompatibilitas data lama (jam_mulai/jam_selesai terpisah)
   if (j.jam_mulai || j.jam_selesai) {
-    return [{ mulai: j.jam_mulai, selesai: j.jam_selesai, label: 'OPERASIONAL' }]
+    return [{ mulai: j.jam_mulai || '08.00', selesai: j.jam_selesai || '16.00', label: 'OPERASIONAL' }]
   }
   return []
 }
@@ -57,32 +51,9 @@ function parseSlots(j: JamKerja): Slot[] {
 /** Simpan slot kembali ke format jam & keterangan multi-baris. */
 function serializeSlots(slots: Slot[]): { jam: string; keterangan: string } {
   return {
-    jam: slots.map(s => (s.label === 'TUTUP' || !s.selesai ? s.mulai : `${s.mulai} - ${s.selesai}`)).join('\n'),
+    jam: slots.map(s => (s.selesai ? `${s.mulai} - ${s.selesai}` : s.mulai)).join('\n'),
     keterangan: slots.map(s => s.label).join('\n'),
   }
-}
-
-/** Rentang menit yang sudah terpakai slot lain (untuk deteksi bentrok). */
-function occupiedRanges(slots: Slot[], skipIdx: number): Array<[number, number]> {
-  return slots
-    .filter((s, i) => i !== skipIdx && s.label !== 'TUTUP' && s.mulai && s.selesai)
-    .map(s => [toMin(s.mulai), toMin(s.selesai)] as [number, number])
-    .filter(([a, b]) => !isNaN(a) && !isNaN(b))
-}
-
-/** Jam mulai tidak boleh jatuh DI DALAM slot lain. */
-function startDisabled(t: string, ranges: Array<[number, number]>): boolean {
-  const v = toMin(t)
-  return ranges.some(([a, b]) => v >= a && v < b)
-}
-
-/** Jam selesai harus > mulai dan rentangnya tidak boleh menabrak slot lain. */
-function endDisabled(t: string, mulai: string, ranges: Array<[number, number]>): boolean {
-  const v = toMin(t)
-  const m = toMin(mulai)
-  if (isNaN(m)) return false
-  if (v <= m) return true
-  return ranges.some(([a, b]) => a < v && b > m)
 }
 
 // ─── Sub-komponen: Area & Cabang ──────────────────────────────────────────── //
@@ -477,22 +448,16 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
 
                 const setSlot = (si: number, patch: Partial<Slot>) => {
                   const next = slots.map((s, x) => (x === si ? { ...s, ...patch } : s))
-                  // Label TUTUP tidak punya jam selesai.
-                  if ((patch.label || '').trim().toUpperCase() === 'TUTUP') next[si].selesai = ''
                   setSlots(di, next)
                 }
                 const addSlot = () => {
                   const last = slots[slots.length - 1]
                   const mulai = last ? (last.selesai || last.mulai) : '08.00'
-                  // Label sengaja kosong supaya contoh abu-abu (placeholder)
-                  // terlihat dan user mengisinya sendiri.
                   setSlots(di, [...slots, { mulai, selesai: '', label: '' }])
                 }
                 const removeSlot = (si: number) => setSlots(di, slots.filter((_, x) => x !== si))
 
                 const rows = slots.map((s, si) => {
-                  const ranges = occupiedRanges(slots, si)
-                  const isTutup = s.label.trim().toUpperCase() === 'TUTUP'
                   return (
                     <tr key={`${di}-${si}`}>
                       {si === 0 && (
@@ -517,24 +482,20 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
                           >
                             <option value="">—</option>
                             {JAM_OPTIONS.map(v => (
-                              <option key={v} value={v} disabled={startDisabled(v, ranges)}>{v}</option>
+                              <option key={v} value={v}>{v}</option>
                             ))}
                           </select>
-                          {!isTutup && (
-                            <>
-                              <span style={{ color: 'var(--ink-soft)' }}>–</span>
-                              <select
-                                value={s.selesai}
-                                onChange={e => setSlot(si, { selesai: e.target.value })}
-                                style={{ width: 'auto' }}
-                              >
-                                <option value="">—</option>
-                                {JAM_OPTIONS.map(v => (
-                                  <option key={v} value={v} disabled={endDisabled(v, s.mulai, ranges)}>{v}</option>
-                                ))}
-                              </select>
-                            </>
-                          )}
+                          <span style={{ color: 'var(--ink-soft)' }}>–</span>
+                          <select
+                            value={s.selesai}
+                            onChange={e => setSlot(si, { selesai: e.target.value })}
+                            style={{ width: 'auto' }}
+                          >
+                            <option value="">—</option>
+                            {JAM_OPTIONS.map(v => (
+                              <option key={v} value={v}>{v}</option>
+                            ))}
+                          </select>
                         </div>
                       </td>
                       <td>
@@ -542,7 +503,7 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
                         <input
                           type="text"
                           value={s.label}
-                          placeholder="cth: OPERASIONAL"
+                          placeholder="cth: OPERASIONAL / ISTIRAHAT"
                           onChange={e => setSlot(si, { label: e.target.value })}
                           style={{ textAlign: 'center' }}
                         />
