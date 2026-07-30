@@ -136,30 +136,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* KPI Stats Bar */}
-            <div className="dash-stats">
-              <div className="stat-card">
-                <span className="stat-card__label">Total Draft Laporan</span>
-                <span className="stat-card__val">{drafts.length}</span>
-                <span className="stat-card__sub">Dokumen Tersimpan</span>
-              </div>
-              <div className="stat-card">
-                <span className="stat-card__label">Standar Margin</span>
-                <span className="stat-card__val">4-4-3-3</span>
-                <span className="stat-card__sub">Kiri-Atas-Kanan-Bawah cm</span>
-              </div>
-              <div className="stat-card">
-                <span className="stat-card__label">Penomoran Halaman</span>
-                <span className="stat-card__val">Romawi / Arab</span>
-                <span className="stat-card__sub">Otomatis Terpisah Section</span>
-              </div>
-              <div className="stat-card">
-                <span className="stat-card__label">Format Dokumen</span>
-                <span className="stat-card__val">.docx Native</span>
-                <span className="stat-card__sub">Compat MS Word 2016-365</span>
-              </div>
-            </div>
-
             {/* Draft Management Section */}
             <div className="dash-drafts-panel">
               <div className="dash-drafts-panel__head">

@@ -7,8 +7,6 @@ import {
   IconSparkles,
   IconRocket,
   IconDocument,
-  IconCross,
-  IconCheck,
   IconShield,
   IconLightning,
   IconPencil,
@@ -17,7 +15,6 @@ import {
 export default function LandingPage() {
   const { token, user } = useAuth()
   const nav = useNavigate()
-  const [openFaq, setOpenFaq] = useState<number | null>(0)
   const [previewTab, setPreviewTab] = useState<'cover' | 'identitas' | 'bab1'>('cover')
 
   const handleStartReport = () => {
@@ -27,33 +24,6 @@ export default function LandingPage() {
     }
     nav('/dashboard')
   }
-
-  const faqs = [
-    {
-      q: 'Apakah file laporan yang dihasilkan bisa diedit kembali di MS Word?',
-      a: 'Ya, 100%! Aplikasi kami menghasilkan file .docx native murni yang sepenuhnya kompatibel dengan Microsoft Word 2016, 2019, 2021, Office 365, maupun WPS Office. Anda bebas mengedit font, isi paragraf, maupun posisi gambar kapan saja.',
-    },
-    {
-      q: 'Bagaimana sistem menangani penomoran halaman Romawi dan Arab?',
-      a: 'Sistem membagi dokumen menjadi beberapa Section fisik MS Word. Bagian Depan (Pengesahan, Kata Pengantar, Daftar Isi) secara otomatis diberi nomor halaman Romawi kecil (i, ii, iii...) di bawah tengah. Mulai dari BAB I PENDAHULUAN, nomor halaman berganti ke Angka Arab (1, 2, 3...) di kanan atas, sesuai pedoman baku SMKN 4 Bandung.',
-    },
-    {
-      q: 'Mengapa draf buatan AI di Naskara dijamin bebas halusinasi?',
-      a: 'Engine AI kami dilengkapi 3-layer anti-halusinasi yang mengunci fakta dasar (nama siswa, industri, divisi, peralatan, dan tanggal PKL). AI hanya memperhalus tata bahasa Indonesia baku akademik tanpa mengarang fakta palsu atau istilah yang tidak Anda alami selama PKL.',
-    },
-    {
-      q: 'Apakah format Margin 4-4-3-3 cm benar-benar presisi?',
-      a: 'Sangat presisi. Kami mengatur Page Setup langsung pada XML Microsoft Word: Kiri 4.0 cm (untuk jilid), Atas 4.0 cm, Kanan 3.0 cm, dan Bawah 3.0 cm. Selain itu, seluruh tabel identitas dibatasi lebar maksimum 14.00 cm agar tidak menabrak batas margin kanan.',
-    },
-    {
-      q: 'Apakah bisa digunakan untuk jurusan SMK selain PPLG?',
-      a: 'Sangat bisa! Naskara mendukung 10 Konsentrasi Keahlian resmi SMKN 4 Bandung (PPLG, TKJ, DKV, UPW, Perhotelan, Tata Boga, Tata Busana, OTKP, Akuntansi, Bisnis Daring & Pemasaran). Kami menyediakan contoh jurnal kegiatan & profil industri khusus untuk setiap jurusan.',
-    },
-    {
-      q: 'Bagaimana jika Daftar Isi MS Word saya menampilkan "Error! Bookmark not defined"?',
-      a: 'Di Naskara, error tersebut 100% tidak akan terjadi. Setiap gambar lampiran dan judul sub-bab secara otomatis didaftarkan dengan ID Bookmark terenkapsulasi yang diikat langsung pada paragraph body dokumen.',
-    },
-  ]
 
   return (
     <div className="landing-layout">
@@ -254,93 +224,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Section 1: Problem vs Solution Visual Comparison */}
-      <section className="comparison-section">
-        <div className="comparison-section__container">
-          <div className="section-head">
-            <span className="section-head__tag">PERBANDINGAN NYATA</span>
-            <h2>Mengapa Cara Manual di Word Sering Ditolak Pembimbing?</h2>
-            <p className="muted">
-              Menyusun laporan PKL secara manual di Microsoft Word sering memicu error format yang membuang waktu revisi berulang kali.
-            </p>
-          </div>
-
-          <div className="comparison-grid">
-            {/* Card Manual */}
-            <div className="comparison-card comparison-card--bad">
-              <div className="comparison-card__badge"><IconCross size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> CARA MANUAL DI MS WORD</div>
-              <h3>Sering Rusak &amp; Ditolak Pembimbing</h3>
-              <ul className="comparison-list">
-                <li>
-                  <span className="icon"><IconCross size={18} color="var(--red-600)" /></span>
-                  <div>
-                    <strong>Margin Tidak Sesuai (2.5 cm Default)</strong>
-                    <p>Halaman terpotong saat dijilid karena margin kiri tidak 4 cm.</p>
-                  </div>
-                </li>
-                <li>
-                  <span className="icon"><IconCross size={18} color="var(--red-600)" /></span>
-                  <div>
-                    <strong>"Error! Bookmark not defined" di Daftar Isi</strong>
-                    <p>Gambar lampiran tidak diikat bookmark sehingga TOC rusak saat di-update.</p>
-                  </div>
-                </li>
-                <li>
-                  <span className="icon"><IconCross size={18} color="var(--red-600)" /></span>
-                  <div>
-                    <strong>Halaman Sampul Melimpah ke Halaman 2</strong>
-                    <p>Jarak enter manual tidak konsisten jika dibuka di versi Word berbeda.</p>
-                  </div>
-                </li>
-                <li>
-                  <span className="icon"><IconCross size={18} color="var(--red-600)" /></span>
-                  <div>
-                    <strong>Sub-list Menggunakan <code>a)</code> bukan <code>a.</code> Bold</strong>
-                    <p>Tidak memenuhi standar tata tulis ilmiah Indonesia baku.</p>
-                  </div>
-                </li>
-              </ul>
-            </div>
-
-            {/* Card Naskara */}
-            <div className="comparison-card comparison-card--good">
-              <div className="comparison-card__badge"><IconCheck size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> SOLUSI NASKARA ACADEMIC</div>
-              <h3>100% Rapi &amp; Siap Langsung Cetak</h3>
-              <ul className="comparison-list">
-                <li>
-                  <span className="icon"><IconCheck size={18} color="var(--green-700)" /></span>
-                  <div>
-                    <strong>Margin Presisi 4-4-3-3 cm Terkunci</strong>
-                    <p>Otomatis diset pada XML dokumen: 4cm Kiri, 4cm Atas, 3cm Kanan, 3cm Bawah.</p>
-                  </div>
-                </li>
-                <li>
-                  <span className="icon"><IconCheck size={18} color="var(--green-700)" /></span>
-                  <div>
-                    <strong>TOC Safe dengan Bookmark Terenkapsulasi</strong>
-                    <p>Lampiran diisi ID bookmark valid sehingga Daftar Isi MS Word 100% aman.</p>
-                  </div>
-                </li>
-                <li>
-                  <span className="icon"><IconCheck size={18} color="var(--green-700)" /></span>
-                  <div>
-                    <strong>Enter Spacing Terhitung Presisi Point</strong>
-                    <p>Kop pengesahan &amp; footer cover dijamin dorong tepat ke batas bawah halaman.</p>
-                  </div>
-                </li>
-                <li>
-                  <span className="icon"><IconCheck size={18} color="var(--green-700)" /></span>
-                  <div>
-                    <strong>Sub-list Standar <code>a.</code> <code>b.</code> <code>c.</code> Bold &amp; Kapital</strong>
-                    <p>Format otomatis: Huruf kapital awal kalimat &amp; penanda titik tebal.</p>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Section 2: 4-Step Workflow */}
       <section className="workflow-section">
         <div className="workflow-section__container">
@@ -419,36 +302,6 @@ export default function LandingPage() {
               <h3>Bookmark Lampiran MS Word Safe</h3>
               <p>Setiap gambar dokumentasi diberi penanda bookmark otomatis sehingga tidak menimbulkan error pada Daftar Isi.</p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Section 4: FAQ Accordion */}
-      <section className="faq-section">
-        <div className="faq-section__container">
-          <div className="section-head">
-            <span className="section-head__tag">PERTANYAAN UMUM</span>
-            <h2>Sering Ditanyakan seputar Naskara</h2>
-          </div>
-
-          <div className="faq-list">
-            {faqs.map((item, idx) => (
-              <div
-                key={idx}
-                className={`faq-item ${openFaq === idx ? 'is-open' : ''}`}
-                onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-              >
-                <div className="faq-item__question">
-                  <h3>{item.q}</h3>
-                  <span className="faq-item__icon">{openFaq === idx ? '−' : '+'}</span>
-                </div>
-                {openFaq === idx && (
-                  <div className="faq-item__answer">
-                    <p>{item.a}</p>
-                  </div>
-                )}
-              </div>
-            ))}
           </div>
         </div>
       </section>
