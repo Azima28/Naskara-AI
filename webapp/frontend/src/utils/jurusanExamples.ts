@@ -32,10 +32,10 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       hasil:
         'Waktu pemuatan halaman rekapitulasi berkurang drastis dari 3,8 detik menjadi 0,2 detik, dan penggunaan memori server berkurang hingga 65%.',
       data_angka: [
-        { label: 'Waktu Query Sebelum Optimasi', nilai: '3.8 Detik' },
-        { label: 'Waktu Query Setelah Optimasi', nilai: '0.2 Detik' },
-        { label: 'Penghematan Memori Server', nilai: '65%' },
-        { label: 'Jumlah Record Terproses', nilai: '50.000 Data' },
+        { label: 'Waktu Pemuatan Aplikasi (Sebelum)', nilai: '3,8 Detik / 15 Menit' },
+        { label: 'Waktu Pemuatan Aplikasi (Setelah)', nilai: '0,2 Detik / 2 Menit' },
+        { label: 'Ukuran File / Memori Server', nilai: '8 MB (Hemat 65%)' },
+        { label: 'Jumlah Data Terproses', nilai: '50.000 Record' },
       ],
     },
   },
@@ -54,10 +54,10 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       hasil:
         'Lalu lintas data antar divisi menjadi terisolasi aman, latency koneksi stabil di angka 12ms, dan kecepatan internet merata 100 Mbps di seluruh divisi.',
       data_angka: [
-        { label: 'Throughput Sebelum Limiting', nilai: '10 Mbps (Unstable)' },
-        { label: 'Throughput Setelah Queuing', nilai: '100 Mbps (Stable)' },
-        { label: 'Latency Rata-Rata', nilai: '12 ms' },
-        { label: 'Jumlah Client Terhubung', nilai: '45 User' },
+        { label: 'Waktu Setting Router & VLAN (Durasi)', nilai: '2 Jam / 1 Hari' },
+        { label: 'Kecepatan Internet (Setelah Limiting)', nilai: '100 Mbps (Stabil)' },
+        { label: 'Latency Rata-Rata Koneksi', nilai: '12 ms' },
+        { label: 'Jumlah Komputer / User Terhubung', nilai: '45 Unit' },
       ],
     },
   },
@@ -76,10 +76,10 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       hasil:
         'Waktu komputasi render berkurang dari 45 menit menjadi 12 menit tanpa penurunan kualitas visual.',
       data_angka: [
-        { label: 'Waktu Render Sebelum Optimasi', nilai: '45 Menit' },
-        { label: 'Waktu Render Setelah Optimasi', nilai: '12 Menit' },
+        { label: 'Waktu Render Video (Sebelum Optimasi)', nilai: '45 Menit' },
+        { label: 'Waktu Render Video (Setelah Optimasi)', nilai: '12 Menit' },
         { label: 'Ukuran File Video Final', nilai: '150 MB' },
-        { label: 'Resolusi Output', nilai: '1920x1080 (60 FPS)' },
+        { label: 'Durasi Video Iklan', nilai: '60 Detik / 1 Menit' },
       ],
     },
   },
@@ -98,9 +98,9 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       hasil:
         'Paket wisata 3D2N berhasil disusun dengan efisiensi harga 12% dibanding kompetitor dan kepuasan peserta tour mencapai 98%.',
       data_angka: [
-        { label: 'Efisiensi Biaya Paket', nilai: '12%' },
-        { label: 'Total Peserta Tour', nilai: '120 Pax' },
-        { label: 'Margin Keuntungan Perusahaan', nilai: '15%' },
+        { label: 'Durasi Paket Perjalanan Tur', nilai: '3 Hari 2 Malam' },
+        { label: 'Efisiensi Biaya Paket Wisata', nilai: '12%' },
+        { label: 'Total Peserta Rombongan Tur', nilai: '120 Pax / Orang' },
         { label: 'Indeks Kepuasan Pelanggan', nilai: '98%' },
       ],
     },
@@ -121,8 +121,8 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         'Waktu pembersihan dan inspeksi kamar turun dari 35 menit menjadi 20 menit, sehingga antrean check-in terurai 50% lebih cepat.',
       data_angka: [
         { label: 'Waktu Cleaning Per Kamar', nilai: '20 Menit' },
-        { label: 'Kecepatan Process Check-In', nilai: '2.5 Menit / Guest' },
-        { label: 'Kamar Siap Huni Tepat Waktu', nilai: '99%' },
+        { label: 'Waktu Proses Check-In Tamu', nilai: '2,5 Menit / Guest' },
+        { label: 'Durasi Kesiapan Kamar VIP', nilai: '1 Jam' },
         { label: 'Tingkat Okupansi Akhir Pekan', nilai: '92%' },
       ],
     },
@@ -142,10 +142,10 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       hasil:
         'Persentase Food Cost berhasil ditekan dari 38% menjadi 29,5%, sesuai standar efisiensi operasional hotel dan restoran.',
       data_angka: [
-        { label: 'Food Cost Sebelum Control', nilai: '38%' },
-        { label: 'Food Cost Setelah Control', nilai: '29.5%' },
-        { label: 'Waktu Persiapan (Mise en Place)', nilai: '45 Menit' },
-        { label: 'Tingkat Kepatuhan HACCP', nilai: '98%' },
+        { label: 'Waktu Persiapan Bahan (Mise en Place)', nilai: '45 Menit / 1 Jam' },
+        { label: 'Persentase Food Cost (Sebelum)', nilai: '38%' },
+        { label: 'Persentase Food Cost (Setelah)', nilai: '29,5%' },
+        { label: 'Daya Tahan Bahan Chiller', nilai: '3 Hari' },
       ],
     },
   },
@@ -164,10 +164,10 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       hasil:
         'Presisi ukuran pakaian mencapai 99,5% tanpa kelonggaran/kesempitan, dan waste sisa bahan kain berkurang hingga 18%.',
       data_angka: [
-        { label: 'Toleransi Presisi Ukuran', nilai: '±0.2 cm' },
+        { label: 'Waktu Penyelesaian Pola Busana', nilai: '60 Menit / 2 Jam' },
+        { label: 'Toleransi Presisi Ukuran Pola', nilai: '±0,2 cm' },
         { label: 'Kerapatan Setikan Jahitan', nilai: '9 Stik / Inci' },
-        { label: 'Penghematan Bahan Kain', nilai: '18%' },
-        { label: 'Waktu Penyelesaian Pola', nilai: '60 Menit' },
+        { label: 'Penghematan Sisa Bahan Kain', nilai: '18%' },
       ],
     },
   },
@@ -186,10 +186,10 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       hasil:
         'Waktu temu kembali dokumen arsip berkurang drastis dari 15 menit menjadi kurang dari 1 menit per dokumen.',
       data_angka: [
-        { label: 'Waktu Temu Kembali Manual', nilai: '15 Menit' },
-        { label: 'Waktu Temu Kembali Digital', nilai: '45 Detik' },
-        { label: 'Dokumen Terscan & Terindeks', nilai: '250 Surat' },
-        { label: 'Akurasi Klasifikasi Arsip', nilai: '99%' },
+        { label: 'Waktu Temu Kembali Surat (Sebelum)', nilai: '15 Menit / 2 Jam' },
+        { label: 'Waktu Temu Kembali Surat (Setelah)', nilai: '45 Detik / 1 Menit' },
+        { label: 'Lama Proses Disposisi Surat', nilai: '1 Hari' },
+        { label: 'Jumlah Dokumen Terindeks', nilai: '250 Berkas' },
       ],
     },
   },
@@ -208,10 +208,10 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       hasil:
         'Debitur mendapatkan keringanan pembayaran denda sebesar 37,99% sehingga total tunggakan denda berkurang dari Rp 4.596.800,- menjadi Rp 2.851.000,- dan pembayaran pelunasan berhasil diproses.',
       data_angka: [
-        { label: 'Total Denda Awal Kredit', nilai: 'Rp 4.596.800,-' },
+        { label: 'Total Denda Awal Kredit', nilai: 'Rp 4.596.800' },
         { label: 'Hasil Negosiasi Diskon (Waive)', nilai: '37,99%' },
-        { label: 'Total Denda Setelah Diskon', nilai: 'Rp 2.851.000,-' },
-        { label: 'Sisa Pokok Hutang Debitur', nilai: 'Rp 16.448.301,-' },
+        { label: 'Lama Proses Rekonsiliasi Bank', nilai: '3 Jam / 2 Hari' },
+        { label: 'Sisa Pokok Hutang Debitur', nilai: 'Rp 16.448.301' },
       ],
     },
   },
@@ -230,10 +230,10 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       hasil:
         'Kampanye menghasilkan 1.250 leads prospektif dengan Conversion Rate naik sebesar 4,5% dan kenaikan total omzet bulanan sebesar 18%.',
       data_angka: [
-        { label: 'Total Impresi Iklan (Reach)', nilai: '45.000 User' },
+        { label: 'Jangkauan Promosi Iklan (Reach)', nilai: '45.000 User' },
+        { label: 'Lama Durasi Kampanye Iklan', nilai: '7 Hari / 1 Bulan' },
         { label: 'Click-Through Rate (CTR)', nilai: '4.5%' },
-        { label: 'Total Konversi Penjualan', nilai: '120 Transaksi' },
-        { label: 'Peningkatan Omzet Bulanan', nilai: '18%' },
+        { label: 'Peningkatan Omzet Bulanan', nilai: 'Rp 18.500.000 (18%)' },
       ],
     },
   },

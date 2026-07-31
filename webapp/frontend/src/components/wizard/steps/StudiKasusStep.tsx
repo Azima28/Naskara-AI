@@ -102,7 +102,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
             Hasil yang Bisa Diukur <span className="field__badge field__badge--opsional">OPSIONAL</span>
           </span>
           <p className="muted" style={{ margin: '0.25rem 0 0.75rem', fontSize: '0.88rem', lineHeight: 1.5 }}>
-            Ada hasil pekerjaanmu yang bisa dinyatakan dengan angka?<br />
+            Ada hasil pekerjaanmu yang bisa dinyatakan dengan angka? (Bebas menggunakan satuan: <strong>detik, menit, jam, hari, MB, %, Rp, unit, dll.</strong>)<br />
             Jika ada, tuliskan di sini. Jika tidak ada, bagian ini boleh dikosongkan.
           </p>
 
