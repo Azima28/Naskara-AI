@@ -64,7 +64,7 @@ export default function SekolahStep({ ctx, set }: { ctx: PklContext; set: (p: Pa
             <TextField name="sekolah.kota" label="Kota" value={s.kota} onChange={(v) => upd({ kota: v })} importance="wajib" hint="Dipakai untuk tanggal di Kata Pengantar (misal: Bandar Lampung, 25 Juli 2026)" readOnly={locked} />
             <TextField name="sekolah.telp" label="No. Telp" value={s.telp} onChange={(v) => upd({ telp: v })} importance="wajib" readOnly={locked} />
             <TextField name="sekolah.email" label="Email" value={s.email} onChange={(v) => upd({ email: v })} importance="wajib" readOnly={locked} />
-            <TextField name="sekolah.website" label="Website" value={s.website} onChange={(v) => upd({ website: v })} importance="wajib" readOnly={locked} />
+            <TextField name="sekolah.website" label="Website" value={s.website} onChange={(v) => upd({ website: v })} importance="opsional" hint="Kosongkan jika tidak ada" readOnly={locked} />
           </>
         )}
       </PrefilledGroup>

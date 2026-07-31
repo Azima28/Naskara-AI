@@ -40,10 +40,10 @@ export default function PerusahaanStep({ ctx, set }: { ctx: PklContext; set: (p:
             { label: 'Lainnya', value: 'Lainnya' },
           ]}
         />
-        <TextField name="perusahaan.no_telp" label="No. Telp" value={p.no_telp} onChange={(v) => upd({ no_telp: v })} importance="wajib" />
-        <TextField name="perusahaan.fax" label="Fax" value={p.fax} onChange={(v) => upd({ fax: v })} importance="opsional" hint="Kosongkan jika tidak ada" />
-        <TextField name="perusahaan.email" label="Email" value={p.email} onChange={(v) => upd({ email: v })} importance="wajib" type="email" />
-        <TextField name="perusahaan.website" label="Website" value={p.website} onChange={(v) => upd({ website: v })} importance="wajib" />
+        <TextField name="perusahaan.no_telp" label="No. Telp" value={p.no_telp} onChange={(v) => upd({ no_telp: v })} importance="wajib" placeholder="Contoh: (0721) 123456" />
+        <TextField name="perusahaan.fax" label="Fax (No. Telp / Fax Perusahaan)" value={p.fax} onChange={(v) => upd({ fax: v })} importance="opsional" placeholder="Contoh: (0721) 123456" hint="Nomor telpon fax perusahaan. Kosongkan jika tidak ada" />
+        <TextField name="perusahaan.email" label="Email" value={p.email} onChange={(v) => upd({ email: v })} importance="wajib" type="email" placeholder="Contoh: info@banklampung.co.id" />
+        <TextField name="perusahaan.website" label="Website" value={p.website} onChange={(v) => upd({ website: v })} importance="opsional" placeholder="Contoh: https://banklampung.co.id" hint="Kosongkan jika tidak ada" />
       </FieldGroup>
 
       <FieldGroup title="Pimpinan / Kepala Cabang">
