@@ -1,6 +1,8 @@
 export interface DataAngkaExample {
   label: string
-  nilai: string
+  sebelum: string
+  sesudah: string
+  nilai?: string
 }
 
 export interface JurusanExample {
@@ -22,7 +24,7 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
   pplg: {
     jurusan_key: 'pplg',
     label: 'Pemrograman Perangkat Lunak & Gim (PPLG / RPL)',
-    icon: 'code',
+    icon: '💻',
     badge: 'Perangkat Lunak & IT',
     contohPelajaran: [
       'Memahami pembuatan dan pengujian REST API',
@@ -36,12 +38,11 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       proses_atau_formula:
         '1. Melakukan profiling query menggunakan EXPLAIN ANALYZE.\n2. Menambahkan composite index pada kolom created_at dan status_id.\n3. Mengubah struktur subquery JOIN menjadi INNER JOIN ber-indeks.\n4. Melakukan testing beban dengan k6 / Apache JMeter.',
       hasil:
-        'Waktu pemuatan halaman rekapitulasi berkurang drastis dari 3,8 detik menjadi 0,2 detik, dan penggunaan memori server berkurang hingga 65%.',
+        'Waktu pemuatan halaman rekapitulasi berkurang drastis dari 4,5 detik menjadi 0,6 detik, dan penggunaan memori server berkurang hingga 82%.',
       data_angka: [
-        { label: 'Waktu Pemuatan Aplikasi (Sebelum)', nilai: '3,8 Detik / 15 Menit' },
-        { label: 'Waktu Pemuatan Aplikasi (Setelah)', nilai: '0,2 Detik / 2 Menit' },
-        { label: 'Ukuran File / Memori Server', nilai: '8 MB (Hemat 65%)' },
-        { label: 'Jumlah Data Terproses', nilai: '50.000 Record' },
+        { label: 'Waktu Pemuatan Aplikasi (Speed)', sebelum: '4,5 Detik', sesudah: '0,6 Detik', nilai: '0,6 Detik' },
+        { label: 'Ukuran Memori & File Server', sebelum: '12 MB', sesudah: '2,1 MB (Hemat 82%)', nilai: '2,1 MB' },
+        { label: 'Kapasitas Pengunjung Bersamaan', sebelum: '20 User', sesudah: '250 User', nilai: '250 User' },
       ],
     },
   },
@@ -49,7 +50,7 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
   tkj: {
     jurusan_key: 'tkj',
     label: 'Teknik Komputer & Jaringan (TKJ)',
-    icon: 'globe',
+    icon: '🌐',
     badge: 'Jaringan & Server',
     contohPelajaran: [
       'Melakukan crimping kabel UTP dan testing koneksi jaringan LAN',
@@ -65,10 +66,9 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       hasil:
         'Lalu lintas data antar divisi menjadi terisolasi aman, latency koneksi stabil di angka 12ms, dan kecepatan internet merata 100 Mbps di seluruh divisi.',
       data_angka: [
-        { label: 'Waktu Setting Router & VLAN (Durasi)', nilai: '2 Jam / 1 Hari' },
-        { label: 'Kecepatan Internet (Setelah Limiting)', nilai: '100 Mbps (Stabil)' },
-        { label: 'Latency Rata-Rata Koneksi', nilai: '12 ms' },
-        { label: 'Jumlah Komputer / User Terhubung', nilai: '45 Unit' },
+        { label: 'Latency & Respon Koneksi', sebelum: '65 ms (Sering Lag)', sesudah: '12 ms (Stabil & Lancar)', nilai: '12 ms' },
+        { label: 'Pembagian Bandwidth Komputer', sebelum: 'Acak (Saling Rebut)', sesudah: 'Rata 20 Mbps / PC', nilai: '20 Mbps' },
+        { label: 'Waktu Pemasangan Kabel LAN', sebelum: '3 Jam', sesudah: '45 Menit', nilai: '45 Menit' },
       ],
     },
   },
@@ -76,7 +76,7 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
   dkv: {
     jurusan_key: 'dkv',
     label: 'Desain Komunikasi Visual (DKV)',
-    icon: 'palette',
+    icon: '🎨',
     badge: 'Desain & Media',
     contohPelajaran: [
       'Mengoperasikan software desain grafis (Adobe Illustrator / Photoshop)',
@@ -90,12 +90,11 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       proses_atau_formula:
         '1. Mengubah aset gambar dari raster bitmap menjadi format vektor (SVG/AI).\n2. Pengaturan hierarki tipografi dan palet warna CMYK sesuai Brand Guidelines.\n3. Pengaturan Media Encoder H.264 profil target bit-rate 15 Mbps.\n4. Render final video iklan 60 FPS.',
       hasil:
-        'Waktu komputasi render berkurang dari 45 menit menjadi 12 menit tanpa penurunan kualitas visual.',
+        'Waktu komputasi render berkurang dari 3 jam menjadi 45 menit tanpa penurunan kualitas visual.',
       data_angka: [
-        { label: 'Waktu Render Video (Sebelum Optimasi)', nilai: '45 Menit' },
-        { label: 'Waktu Render Video (Setelah Optimasi)', nilai: '12 Menit' },
-        { label: 'Ukuran File Video Final', nilai: '150 MB' },
-        { label: 'Durasi Video Iklan', nilai: '60 Detik / 1 Menit' },
+        { label: 'Ukuran File Ekspor Desain', sebelum: '450 MB', sesudah: '35 MB (Tanpa Pecah)', nilai: '35 MB' },
+        { label: 'Waktu Pembuatan & Render', sebelum: '3 Jam', sesudah: '45 Menit', nilai: '45 Menit' },
+        { label: 'Jangkauan Penonton Konten (Reach)', sebelum: '1.200 Orang', sesudah: '15.500 Orang', nilai: '15.500 Orang' },
       ],
     },
   },
@@ -103,7 +102,7 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
   upw: {
     jurusan_key: 'upw',
     label: 'Usaha Perjalanan Wisata (UPW)',
-    icon: 'compass',
+    icon: '🗺️',
     badge: 'Pariwisata & Tour',
     contohPelajaran: [
       'Menyusun paket itinerary dan perhitungan estimasi biaya tur (costing)',
@@ -117,12 +116,11 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       proses_atau_formula:
         '1. Analisis rute perjalanan dan estimasi waktu tempuh (Time Table).\n2. Negosiasi kontrak rate dengan vendor armada bus dan restoran mitra.\n3. Perhitungan komponen Variable Cost dan Fixed Cost per pax.\n4. Simulasi Margin Keuntungan 15% pada harga jual paket tour.',
       hasil:
-        'Paket wisata 3D2N berhasil disusun dengan efisiensi harga 12% dibanding kompetitor dan kepuasan peserta tour mencapai 98%.',
+        'Paket wisata 3D2N berhasil disusun dengan efisiensi harga 21% dibanding kompetitor dan kepuasan peserta tour mencapai 98%.',
       data_angka: [
-        { label: 'Durasi Paket Perjalanan Tur', nilai: '3 Hari 2 Malam' },
-        { label: 'Efisiensi Biaya Paket Wisata', nilai: '12%' },
-        { label: 'Total Peserta Rombongan Tur', nilai: '120 Pax / Orang' },
-        { label: 'Indeks Kepuasan Pelanggan', nilai: '98%' },
+        { label: 'Total Biaya Paket Per Pax', sebelum: 'Rp 1.850.000', sesudah: 'Rp 1.450.000 (Hemat 21%)', nilai: 'Rp 1.450.000' },
+        { label: 'Waktu Penyusunan Jadwal Tour', sebelum: '2 Hari', sesudah: '3 Jam', nilai: '3 Jam' },
+        { label: 'Indeks Kepuasan Peserta Tur', sebelum: '78%', sesudah: '98%', nilai: '98%' },
       ],
     },
   },
@@ -130,7 +128,7 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
   ph: {
     jurusan_key: 'ph',
     label: 'Perhotelan (PH)',
-    icon: 'bed',
+    icon: '🏨',
     badge: 'Hospitality & Hotel',
     contohPelajaran: [
       'Melakukan standar pembersihan dan inspeksi kamar (housekeeping)',
@@ -144,12 +142,11 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       proses_atau_formula:
         '1. Penerapan Check-list digital Room Inspection 21 Poin via Property Management System (PMS).\n2. Pembagian zonasi penyiapan linenn dan amenities per lantai.\n3. Pelatihan koordinasi real-time antara Front Desk dan Floor Supervisor.\n4. Audit waktu rata-rata pembersihan kamar Deluxe Room.',
       hasil:
-        'Waktu pembersihan dan inspeksi kamar turun dari 35 menit menjadi 20 menit, sehingga antrean check-in terurai 50% lebih cepat.',
+        'Waktu pembersihan dan inspeksi kamar turun dari 40 menit menjadi 20 menit, sehingga antrean check-in terurai 50% lebih cepat.',
       data_angka: [
-        { label: 'Waktu Cleaning Per Kamar', nilai: '20 Menit' },
-        { label: 'Waktu Proses Check-In Tamu', nilai: '2,5 Menit / Guest' },
-        { label: 'Durasi Kesiapan Kamar VIP', nilai: '1 Jam' },
-        { label: 'Tingkat Okupansi Akhir Pekan', nilai: '92%' },
+        { label: 'Waktu Cleaning Kamar Deluxe', sebelum: '40 Menit', sesudah: '20 Menit', nilai: '20 Menit' },
+        { label: 'Waktu Tunggu Check-In Tamu', sebelum: '15 Menit / Guest', sesudah: '3 Menit / Guest', nilai: '3 Menit' },
+        { label: 'Tingkat Kesiapan Kamar VIP', sebelum: '80%', sesudah: '100% Ready', nilai: '100%' },
       ],
     },
   },
@@ -157,7 +154,7 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
   tb: {
     jurusan_key: 'tb',
     label: 'Tata Boga (Tabog / Kuliner)',
-    icon: 'utensils',
+    icon: '🍳',
     badge: 'Kuliner & Banquet',
     contohPelajaran: [
       'Melakukan persiapan bahan makanan (Mise en Place) dengan presisi',
@@ -171,12 +168,11 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       proses_atau_formula:
         '1. Penerapan metode FIFO (First In First Out) pada penyimpanan chiller.\n2. Penimbangan porsi bahan (portion control) presisi saat Mise en Place.\n3. Perhitungan standar resep dan yield percentage bahan baku.\n4. Audit ketaatan prosedur higienitas sanitasi HACCP.',
       hasil:
-        'Persentase Food Cost berhasil ditekan dari 38% menjadi 29,5%, sesuai standar efisiensi operasional hotel dan restoran.',
+        'Persentase Food Cost berhasil ditekan dari 38% menjadi 28,5%, sesuai standar efisiensi operasional hotel dan restoran.',
       data_angka: [
-        { label: 'Waktu Persiapan Bahan (Mise en Place)', nilai: '45 Menit / 1 Jam' },
-        { label: 'Persentase Food Cost (Sebelum)', nilai: '38%' },
-        { label: 'Persentase Food Cost (Setelah)', nilai: '29,5%' },
-        { label: 'Daya Tahan Bahan Chiller', nilai: '3 Hari' },
+        { label: 'Persentase Food Waste (Sisa Bahan)', sebelum: '38%', sesudah: '28,5% (Sesuai Standar)', nilai: '28,5%' },
+        { label: 'Waktu Persiapan (Mise en Place)', sebelum: '2 Jam', sesudah: '45 Menit', nilai: '45 Menit' },
+        { label: 'Daya Tahan Bahan Chiller', sebelum: '1 Hari', sesudah: '4 Hari (Chiller FIFO)', nilai: '4 Hari' },
       ],
     },
   },
@@ -184,7 +180,7 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
   busana: {
     jurusan_key: 'busana',
     label: 'Tata Busana (Tabus / Fashion)',
-    icon: 'scissors',
+    icon: '✂️',
     badge: 'Fashion & Custom Making',
     contohPelajaran: [
       'Membaca dan merancang pola dasar busana (draping & flat pattern)',
@@ -200,10 +196,9 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       hasil:
         'Presisi ukuran pakaian mencapai 99,5% tanpa kelonggaran/kesempitan, dan waste sisa bahan kain berkurang hingga 18%.',
       data_angka: [
-        { label: 'Waktu Penyelesaian Pola Busana', nilai: '60 Menit / 2 Jam' },
-        { label: 'Toleransi Presisi Ukuran Pola', nilai: '±0,2 cm' },
-        { label: 'Kerapatan Setikan Jahitan', nilai: '9 Stik / Inci' },
-        { label: 'Penghematan Sisa Bahan Kain', nilai: '18%' },
+        { label: 'Sisa Potongan Kain (Waste Cut)', sebelum: 'Terganti 30%', sesudah: 'Hemat Sisa 12%', nilai: '12%' },
+        { label: 'Presisi Ukuran Pola Baju', sebelum: 'Selisih ±1,5 cm', sesudah: 'Presisi ±0,2 cm', nilai: '±0,2 cm' },
+        { label: 'Waktu Pembuatan Pola & Jahit', sebelum: '4 Jam', sesudah: '1,5 Jam', nilai: '1,5 Jam' },
       ],
     },
   },
@@ -211,7 +206,7 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
   mplb: {
     jurusan_key: 'mplb',
     label: 'Manajemen Perkantoran & Layanan Bisnis (MPLB)',
-    icon: 'folder',
+    icon: '📁',
     badge: 'Administrasi & Perkantoran',
     contohPelajaran: [
       'Mengelola arsip fisik dan digitalisasi dokumen kantor',
@@ -227,10 +222,9 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       hasil:
         'Waktu temu kembali dokumen arsip berkurang drastis dari 15 menit menjadi kurang dari 1 menit per dokumen.',
       data_angka: [
-        { label: 'Waktu Temu Kembali Surat (Sebelum)', nilai: '15 Menit / 2 Jam' },
-        { label: 'Waktu Temu Kembali Surat (Setelah)', nilai: '45 Detik / 1 Menit' },
-        { label: 'Lama Proses Disposisi Surat', nilai: '1 Hari' },
-        { label: 'Jumlah Dokumen Terindeks', nilai: '250 Berkas' },
+        { label: 'Waktu Temu Kembali Berkas Arsip', sebelum: '15 Menit', sesudah: '45 Detik (Via e-Office)', nilai: '45 Detik' },
+        { label: 'Waktu Lembar Disposisi Surat', sebelum: '1 Hari', sesudah: '2 Jam', nilai: '2 Jam' },
+        { label: 'Berkas Fisik Terdigitalisasi', sebelum: '0 Berkas', sesudah: '250 Berkas (PDF)', nilai: '250 Berkas' },
       ],
     },
   },
@@ -238,7 +232,7 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
   akl: {
     jurusan_key: 'akl',
     label: 'Akuntansi & Keuangan Lembaga (AKL)',
-    icon: 'chart',
+    icon: '📊',
     badge: 'Akuntansi & Keuangan',
     contohPelajaran: [
       'Menginput dan merapikan catatan transaksi keuangan ke jurnal umum',
@@ -254,10 +248,9 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       hasil:
         'Debitur mendapatkan keringanan pembayaran denda sebesar 37,99% sehingga total tunggakan denda berkurang dari Rp 4.596.800,- menjadi Rp 2.851.000,- dan pembayaran pelunasan berhasil diproses.',
       data_angka: [
-        { label: 'Total Denda Awal Kredit', nilai: 'Rp 4.596.800' },
-        { label: 'Hasil Negosiasi Diskon (Waive)', nilai: '37,99%' },
-        { label: 'Lama Proses Rekonsiliasi Bank', nilai: '3 Jam / 2 Hari' },
-        { label: 'Sisa Pokok Hutang Debitur', nilai: 'Rp 16.448.301' },
+        { label: 'Total Denda Tagihan Debitur', sebelum: 'Rp 4.596.800', sesudah: 'Rp 2.851.000 (Diskon 37,99%)', nilai: 'Rp 2.851.000' },
+        { label: 'Status Pelunasan Pembayaran', sebelum: 'Menunggak / Macet', sesudah: 'Lunas Terbayar', nilai: 'Lunas' },
+        { label: 'Waktu Rekonsiliasi Kas & Denda', sebelum: '2 Hari', sesudah: '3 Jam', nilai: '3 Jam' },
       ],
     },
   },
@@ -265,7 +258,7 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
   bdp: {
     jurusan_key: 'bdp',
     label: 'Bisnis Daring & Pemasaran (BDP)',
-    icon: 'shopping-bag',
+    icon: '🛍️',
     badge: 'Pemasaran & Bisnis',
     contohPelajaran: [
       'Membuat materi konten promosi digital dan riset produk',
@@ -279,12 +272,11 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       proses_atau_formula:
         '1. Merancang materi konten video pendek (Reels/TikTok).\n2. Memasang Meta Ads dengan target audiens usia 18-35 tahun.\n3. Melakukan tracking Meta Pixel untuk pencatatan transaksi masuk.\n4. Evaluasi mingguan pada rasio konversi (CTR & Conversion Rate).',
       hasil:
-        'Kampanye menghasilkan 1.250 leads prospektif dengan Conversion Rate naik sebesar 4,5% dan kenaikan total omzet bulanan sebesar 18%.',
+        'Kampanye menghasilkan 1.250 leads prospektif dengan Conversion Rate naik sebesar 4,5% dan kenaikan total omzet bulanan sebesar Rp 18.500.000.',
       data_angka: [
-        { label: 'Jangkauan Promosi Iklan (Reach)', nilai: '45.000 User' },
-        { label: 'Lama Durasi Kampanye Iklan', nilai: '7 Hari / 1 Bulan' },
-        { label: 'Click-Through Rate (CTR)', nilai: '4.5%' },
-        { label: 'Peningkatan Omzet Bulanan', nilai: 'Rp 18.500.000 (18%)' },
+        { label: 'Jangkauan Iklan Promosi (Reach)', sebelum: '500 Orang / Hari', sesudah: '8.500 Orang / Hari', nilai: '8.500 Orang' },
+        { label: 'Jumlah Pembeli Harian', sebelum: '5 Pembeli', sesudah: '35 Pembeli', nilai: '35 Pembeli' },
+        { label: 'Total Omzet Penjualan Bulanan', sebelum: 'Rp 4.500.000', sesudah: 'Rp 18.500.000', nilai: 'Rp 18.500.000' },
       ],
     },
   },
