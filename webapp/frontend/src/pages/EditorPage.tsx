@@ -36,7 +36,7 @@ function EditorInner() {
   const [ctx, setCtx] = useState<PklContext>(emptyContext())
   const [title, setTitle] = useState('Laporan PKL')
   const [loading, setLoading] = useState(true)
-  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const dirtyRef = useRef(false)
 
   const ctxRef = useRef(ctx)
@@ -220,7 +220,7 @@ function EditorInner() {
         dirtyRef.current = false
       })
       .catch((err) => {
-        setSaveState('idle')
+        setSaveState('error')
         throw err
       })
       .finally(() => {
