@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # 1. Python FastAPI Backend (Docx Engine, Database & AI Integrations)
   backend:
