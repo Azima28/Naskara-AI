@@ -1,5 +1,6 @@
 import type { PklContext, Kegiatan, Kendala, Peralatan } from '@/types/pkl'
 import { emptyKegiatan, emptyKendala, emptyPeralatan, emptyTugas } from '@/types/pkl'
+import { getJurusanExample } from '@/utils/jurusanExamples'
 import {
   FieldGroup,
   ImageUploadField,
@@ -10,6 +11,7 @@ import {
 
 export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: Partial<PklContext>) => void }) {
   const { kegiatan, kendala, pelajaran, peralatan, config } = ctx
+  const jurusanExample = getJurusanExample(ctx.siswa?.jurusan_key || ctx.siswa?.jurusan)
 
   const upd = (patch: Partial<PklContext>) => set(patch)
 
@@ -236,42 +238,46 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
 
       {/* ── 4. Pengalaman & Hal yang Kamu Pelajari ─────────────────────────── */}
       <FieldGroup title="Pengalaman & Hal yang Kamu Pelajari" full>
-        <p className="muted" style={{ margin: '-0.5rem 0 0.75rem', fontSize: '0.88rem', lineHeight: 1.5 }}>
-          Ceritakan pengalamanmu selama PKL dengan bahasa sehari-hari. Tidak perlu dibuat formal — <strong>ceritakan saja seperti kamu sedang bercerita kepada guru tentang pengalaman PKL-mu.</strong>
+        <p className="muted" style={{ margin: '-0.5rem 0 1rem', fontSize: '0.88rem', lineHeight: 1.5 }}>
+          Tuliskan poin-poin pelajaran serta cerita pengalaman harianmu selama PKL.
         </p>
 
-        {/* Box Panduan Inspirasi Cerita */}
-        <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '0.85rem 1rem', marginBottom: '1.25rem', fontSize: '0.85rem', color: '#334155' }}>
-          <strong style={{ color: '#0f172a', display: 'block', marginBottom: '0.35rem' }}>Kamu bisa menceritakan:</strong>
-          <ul style={{ margin: 0, paddingLeft: '1.1rem', lineHeight: 1.6 }}>
-            <li>Apa yang paling kamu pelajari?</li>
-            <li>Apa yang awalnya sulit?</li>
-            <li>Apa yang sekarang sudah bisa kamu lakukan?</li>
-            <li>Apa yang berubah dari dirimu setelah PKL?</li>
-            <li>Pengalaman apa yang paling berkesan?</li>
-          </ul>
-          <div style={{ marginTop: '0.5rem', fontStyle: 'italic', color: '#475569', borderTop: '1px dashed #cbd5e1', paddingTop: '0.4rem' }}>
-            <strong>Contoh:</strong> "Awalnya saya kesulitan menggunakan software yang dipakai di perusahaan. Setelah beberapa kali mencoba dan bertanya kepada pembimbing, saya akhirnya bisa menggunakannya sendiri."
-          </div>
-        </div>
-
+        {/* 1. Poin-poin Pelajaran Utama */}
         <StringArrayField
-          label="Apa pelajaran utama yang kamu dapatkan?"
+          label={`Apa pelajaran utama yang kamu dapatkan? (${jurusanExample.badge})`}
           items={pelajaran}
           onChange={(items) => upd({ pelajaran: items })}
           importance="wajib"
-          placeholder="Contoh: Meningkatkan kedisiplinan dan keberanian bertanya."
+          placeholder={`Contoh (${jurusanExample.badge}): Meningkatkan kedisiplinan, etika komunikasi, dan keterampilan praktek.`}
           addLabel="+ Tambah Poin Pelajaran"
         />
 
-        <div style={{ marginTop: '1.25rem' }}>
+        {/* 2. Box Panduan & Cerita Pengalaman */}
+        <div style={{ marginTop: '1.75rem', paddingTop: '1.25rem', borderTop: '1px dashed var(--line, #cbd5e1)' }}>
+          <strong style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.92rem', color: 'var(--ink)' }}>
+            Cerita Pengalaman Selama PKL
+          </strong>
+
+          {/* Box Panduan Inspirasi Cerita */}
+          <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '0.85rem 1rem', marginBottom: '1rem', fontSize: '0.85rem', color: '#334155' }}>
+            <strong style={{ color: '#0f172a', display: 'block', marginBottom: '0.35rem' }}>Panduan Menulis Cerita (Bahasa Sehari-hari):</strong>
+            <ul style={{ margin: 0, paddingLeft: '1.1rem', lineHeight: 1.6 }}>
+              <li>Apa yang paling kamu pelajari di tempat PKL?</li>
+              <li>Apa yang awalnya sulit, lalu sekarang sudah bisa kamu lakukan?</li>
+              <li>Pengalaman atau kejadian apa yang paling berkesan bagimu?</li>
+            </ul>
+            <div style={{ marginTop: '0.5rem', fontStyle: 'italic', color: '#475569', borderTop: '1px dashed #cbd5e1', paddingTop: '0.4rem' }}>
+              <strong>Contoh:</strong> "Awalnya saya merasa canggung dan kesulitan saat pertama kali bertugas. Namun setelah beberapa kali mencoba dan bertanya kepada pembimbing, saya akhirnya bisa melakukannya sendiri dengan lancar."
+            </div>
+          </div>
+
           <TextareaField
-            label="Cerita Pengalaman"
+            label="Ceritakan Pengalamanmu di Sini"
             value={ctx.refleksi_bab5 || ''}
             onChange={(v) => upd({ refleksi_bab5: v })}
             importance="wajib"
-            placeholder="Tulis pengalamanmu di sini dengan bahasa kamu sendiri..."
-            hint="🤖 AI akan membantu mengubah ceritamu menjadi paragraf laporan yang lebih rapi."
+            placeholder="Tuliskan pengalamanmu dengan bahasa sehari-hari..."
+            hint="🤖 AI akan membantu merapikan ceritamu menjadi paragraf laporan akademik."
             rows={5}
           />
         </div>
