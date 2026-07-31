@@ -240,7 +240,7 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
 }
 
 export function detectJurusanKey(input: string): string {
-  if (!input) return 'pplg'
+  if (!input) return 'mplb'
   const lower = input.toLowerCase().trim()
   if (lower.includes('akuntansi') || lower.includes('akl') || lower.includes('keuangan') || lower.includes('perbankan')) return 'akl'
   if (lower.includes('perangkat lunak') || lower.includes('rpl') || lower.includes('pplg') || lower.includes('software') || lower.includes('coding') || lower.includes('gim')) return 'pplg'
@@ -252,17 +252,19 @@ export function detectJurusanKey(input: string): string {
   if (lower.includes('hotel') || lower.includes('perhotelan') || lower.includes('ph') || lower.includes('housekeeping')) return 'ph'
   if (lower.includes('busana') || lower.includes('fashion') || lower.includes('tabus') || lower.includes('ts') || lower.includes('jahit') || lower.includes('pakaian')) return 'busana'
   if (lower.includes('wisata') || lower.includes('upw') || lower.includes('tour') || lower.includes('travel') || lower.includes('perjalanan')) return 'upw'
+  if (lower.includes('otomotif') || lower.includes('tkro') || lower.includes('tbsm')) return 'mplb'
+  if (lower.includes('farmasi') || lower.includes('kesehatan')) return 'mplb'
 
   // Aliasing fallback
   if (lower.includes('rpl')) return 'pplg'
   if (lower.includes('otkp')) return 'mplb'
 
-  return 'pplg'
+  return 'mplb'
 }
 
 export function getJurusanExample(jurusanKey?: string): JurusanExample {
-  if (!jurusanKey) return JURUSAN_EXAMPLES['pplg']
+  if (!jurusanKey) return JURUSAN_EXAMPLES['mplb']
   const key = jurusanKey.toLowerCase().trim()
   const detectedKey = detectJurusanKey(key)
-  return JURUSAN_EXAMPLES[key] || JURUSAN_EXAMPLES[detectedKey] || JURUSAN_EXAMPLES['pplg']
+  return JURUSAN_EXAMPLES[key] || JURUSAN_EXAMPLES[detectedKey] || JURUSAN_EXAMPLES['mplb']
 }

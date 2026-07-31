@@ -79,12 +79,12 @@ export default function SiswaStep({ ctx, set }: { ctx: PklContext; set: (p: Part
         {/* 6. Kelas (Auto-filled berdasarkan jurusan) */}
         <TextField
           name="siswa.kelas"
-          label="Kelas"
+          label="Nomor Kelas / Rombel"
           value={s.kelas}
           onChange={(v) => upd({ kelas: v })}
           importance="wajib"
-          placeholder="XII PPLG 1"
-          hint="Terisi otomatis berdasarkan Jurusan (bisa disesuaikan nomor rombelnya, misal: XII PPLG 2)"
+          placeholder="XII OTKP 1"
+          hint="Terisi otomatis berdasarkan Jurusan (bisa disesuaikan nomor rombelnya, misal: XII OTKP 1 atau XII BOGA 2)"
         />
       </FieldGroup>
 

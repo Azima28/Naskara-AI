@@ -6,32 +6,14 @@ interface AntiAIHighlighterProps {
 }
 
 const AI_WORD_MAP: Record<string, string> = {
-  'signifikan': 'penting',
-  'implementasi': 'penerapan',
-  'optimal': 'maksimal',
-  'kompleks': 'rumit',
-  'kolaborasi': 'kerja sama',
-  'transformasi': 'perubahan',
-  'inovasi': 'pembaharuan',
-  'eksplorasi': 'pencarian',
-  'esensial': 'penting',
   'robust': 'handal',
-  'scalable': 'mudah dikembangkan',
+  'scalable': 'dapat dikembangkan',
   'seamless': 'lancar',
   'leverage': 'memanfaatkan',
   'facilitate': 'membantu',
   'enhance': 'meningkatkan',
   'era globalisasi': 'saat ini',
-  'perkembangan teknologi': 'kemajuan teknologi',
   'revolusioner': 'baru',
-  'oleh karena itu': 'sebab itu',
-  'di samping itu': 'selain itu',
-  'dengan demikian': 'jadi',
-  'hal tersebut': 'hal ini',
-  'sangat penting': 'penting',
-  'diharapkan dapat': 'diharapkan',
-  'berperan penting': 'berperan',
-  'memberikan kontribusi': 'membantu',
 }
 
 export default function AntiAIHighlighter({ text, onReplace }: AntiAIHighlighterProps) {
@@ -73,7 +55,7 @@ export default function AntiAIHighlighter({ text, onReplace }: AntiAIHighlighter
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
         <strong style={{ fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
-          <IconLightbulb size={16} /> Saran Penulisan Natural (Bebas Gaya Bahasa AI)
+          <IconLightbulb size={16} /> Saran Variasi Kata Laporan Akademis
         </strong>
         {onReplace && (
           <button
@@ -91,13 +73,13 @@ export default function AntiAIHighlighter({ text, onReplace }: AntiAIHighlighter
               gap: '0.3rem',
             }}
           >
-            <IconSparkles size={14} /> Ganti Semua Kata AI
+            <IconSparkles size={14} /> Ganti dengan Kata Alternatif
           </button>
         )}
       </div>
 
       <p style={{ margin: '0 0 0.5rem 0', lineHeight: 1.5 }}>
-        Terdapat beberapa kata/frasa khas buatan AI. Klik tombol saran untuk menggantinya menjadi kata yang lebih alami:
+        Berikut beberapa pilihan kata baku alternatif untuk memperkaya laporanmu:
       </p>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>

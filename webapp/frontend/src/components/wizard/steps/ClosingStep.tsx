@@ -1,5 +1,5 @@
 import type { PklContext, DaftarPustaka } from '@/types/pkl'
-import { FieldGroup, TextField } from '@/components/fields/FormFields'
+import { FieldGroup, TextField, TextareaField } from '@/components/fields/FormFields'
 
 function DaftarPustakaTable({ items, onChange }: { items: DaftarPustaka[], onChange: (i: DaftarPustaka[]) => void }) {
   const update = (idx: number, patch: Partial<DaftarPustaka>) => {
@@ -55,12 +55,35 @@ export default function ClosingStep({ ctx, set }: { ctx: PklContext; set: (p: Pa
 
   return (
     <>
-      <h2>Penutup & Referensi</h2>
+      <h2>Penutup, Kesimpulan &amp; Referensi</h2>
+
+      <FieldGroup title="Kesimpulan &amp; Saran (BAB V)" full>
+        <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 8, padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.85rem', color: '#166534' }}>
+          <strong>💡 Tidak perlu menulis panjang.</strong> 1–3 kalimat sudah cukup. AI akan membantu mengembangkannya menjadi bagian laporan resmi.
+        </div>
+
+        <TextareaField
+          label="Apa yang kamu dapatkan setelah mengikuti PKL? (Kesimpulan)"
+          value={ctx.kesimpulan_user || ''}
+          onChange={(v) => set({ kesimpulan_user: v })}
+          importance="wajib"
+          placeholder="Contoh: Selama PKL saya belajar bekerja sama, lebih disiplin, dan memahami bagaimana pekerjaan dilakukan di dunia kerja nyata."
+          rows={3}
+        />
+        <TextareaField
+          label="Apa yang ingin kamu sarankan untuk sekolah atau perusahaan? (Saran)"
+          value={ctx.saran_user || ''}
+          onChange={(v) => set({ saran_user: v })}
+          importance="wajib"
+          placeholder="Contoh: Sekolah dapat menambah kegiatan praktik agar siswa lebih siap menghadapi dunia kerja."
+          rows={3}
+        />
+      </FieldGroup>
 
       <FieldGroup title="Kata Pengantar">
         <div style={{ marginTop: '0.5rem' }}>
           <TextField label="Tempat Penulisan" value={kp.kota} onChange={(v) => updKp({ kota: v })} importance="wajib" placeholder="Bandar Lampung" hint="Untuk ttd Kata Pengantar" />
-          <TextField label="Tanggal Penulisan" value={kp.tanggal} onChange={(v) => updKp({ tanggal: v })} importance="wajib" placeholder="Juli 2024" />
+          <TextField label="Tanggal Penulisan" value={kp.tanggal} onChange={(v) => updKp({ tanggal: v })} importance="wajib" placeholder="Juli 2026" />
         </div>
       </FieldGroup>
 

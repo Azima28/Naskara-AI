@@ -67,7 +67,7 @@ export function sanitizePklContext(raw?: any): PklContext {
 export const api = axios.create({
   baseURL: '/api',
   headers: { 'Content-Type': 'application/json' },
-  timeout: 120_000,
+  timeout: 240_000,
 })
 
 // --------------------------------------------------------------------------- //
@@ -157,7 +157,7 @@ export const generateDocx = async (draftId: string): Promise<string> => {
   try {
     const response = await api.post(`/generate/${draftId}`, null, {
       responseType: 'blob',
-      timeout: 120_000, // docx generation may take longer
+      timeout: 240_000, // docx generation may take longer
     })
 
     // Extract filename from Content-Disposition header or use default

@@ -57,9 +57,17 @@ def is_vague(value: object) -> bool:
 # Field yang diperiksa vague + pertanyaan lanjutan untuk user.
 # (path, ambil_nilai, pertanyaan, wajib)
 _REQUESTION_CATALOG = [
+    ("siswa.nama", lambda d: d.get("siswa", {}).get("nama"),
+     "Siapa nama lengkap kamu? Masukkan nama sesuai kartu pelajar atau ijazah.", True),
+    ("siswa.nis", lambda d: d.get("siswa", {}).get("nis"),
+     "Berapa Nomor Induk Siswa (NIS) kamu? Nama ini akan tercetak di lembar identitas.", True),
     ("siswa.jurusan", lambda d: d.get("siswa", {}).get("jurusan"),
      "Jurusan/kompetensi keahlian kamu apa? (contoh: Akuntansi, TKJ, "
      "Bisnis Daring dan Pemasaran)", True),
+    ("sekolah.nama", lambda d: d.get("sekolah", {}).get("nama"),
+     "Apa nama sekolah kamu? (contoh: SMKN 4 Bandar Lampung)", True),
+    ("pkl.tanggal_mulai", lambda d: d.get("pkl", {}).get("tanggal_mulai"),
+     "Kapan tanggal mulai pelaksanaan PKL kamu?", True),
     ("perusahaan.nama", lambda d: d.get("perusahaan", {}).get("nama"),
      "Nama tempat PKL kamu apa? Tulis nama resminya ya (contoh: PT Reksa "
      "Finance, Kantor Pos Cabang Metro).", True),

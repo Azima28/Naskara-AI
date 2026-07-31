@@ -21,9 +21,12 @@ export default function LoginPage() {
       nav('/dashboard')
     } catch (r: any) {
       const detail = r?.response?.data?.detail
-      const msg = typeof detail === 'string'
+      let msg = typeof detail === 'string'
         ? detail
-        : detail?.message || r?.message || 'Email atau password salah.'
+        : detail?.message || r?.message || 'Email atau kata sandi salah.'
+      if (msg.includes('401') || msg.includes('status code')) {
+        msg = 'Email atau kata sandi salah. Silakan periksa kembali.'
+      }
       setErr(msg)
     }
   }
@@ -31,7 +34,7 @@ export default function LoginPage() {
   return (
     <AuthLayout
       title="Selamat Datang Kembali"
-      subtitle="Masuk ke akun Naskara untuk melanjutkan penyusunan laporan Anda."
+      subtitle="Masuk ke Pembuat Laporan PKL (Naskara AI) untuk melanjutkan penyusunan laporan Anda."
     >
       <form onSubmit={onSubmit} className="auth-form">
         {err && (

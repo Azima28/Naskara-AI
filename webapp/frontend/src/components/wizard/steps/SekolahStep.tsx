@@ -79,7 +79,7 @@ export default function SekolahStep({ ctx, set }: { ctx: PklContext; set: (p: Pa
             <TextField label="Baris 2 (Dinas)" value={s.kop?.baris_2} onChange={(v) => updKop({ baris_2: v })} importance="wajib" hint="Contoh: DINAS PENDIDIKAN DAN KEBUDAYAAN" readOnly={locked} />
             <TextField label="Baris 3 (Nama)" value={s.kop?.baris_3} onChange={(v) => updKop({ baris_3: v })} importance="wajib" hint="Contoh: SMK NEGERI 4 BANDAR LAMPUNG" readOnly={locked} />
             <TextField label="NPSN" value={s.kop?.npsn} onChange={(v) => updKop({ npsn: v })} importance="wajib" hint="Nomor Pokok Sekolah Nasional" readOnly={locked} />
-            <TextField label="NSS" value={s.kop?.nss} onChange={(v) => updKop({ nss: v })} importance="wajib" readOnly={locked} />
+            <TextField label="NSS (Nomor Statistik Sekolah - Opsional)" value={s.kop?.nss} onChange={(v) => updKop({ nss: v })} importance="opsional" hint="Kosongkan jika sekolah tidak menggunakan NSS" readOnly={locked} />
           </>
         )}
       </PrefilledGroup>
@@ -90,9 +90,9 @@ export default function SekolahStep({ ctx, set }: { ctx: PklContext; set: (p: Pa
           setelah nama di Halaman Pengesahan (contoh: S.Pd., M.M.)
         </p>
         <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
-          <TextField name="sekolah.kepala_sekolah.nama" label="Nama Kepala Sekolah" value={s.kepala_sekolah.nama} onChange={(v) => updPejabat('kepala_sekolah', { nama: v })} importance="wajib" placeholder="Contoh: Drs. H. Yulianto, M.Pd." />
+          <TextField name="sekolah.kepala_sekolah.nama" label="Nama Kepala Sekolah (Tanpa Gelar)" value={s.kepala_sekolah.nama} onChange={(v) => updPejabat('kepala_sekolah', { nama: v })} importance="wajib" placeholder="Contoh: Yulianto" hint="Isi nama saja tanpa gelar agar tidak tercetak ganda di laporan" />
           <TextField name="sekolah.kepala_sekolah.nip" label="NIP Kepala Sekolah" value={s.kepala_sekolah.nip} onChange={(v) => updPejabat('kepala_sekolah', { nip: v })} importance="wajib" placeholder="Contoh: 19680712 199403 1 005" />
-          <TextField name="sekolah.kepala_sekolah.gelar" label="Gelar Kepala Sekolah" value={s.kepala_sekolah.gelar} onChange={(v) => updPejabat('kepala_sekolah', { gelar: v })} importance="wajib" placeholder="Contoh: M.Pd." />
+          <TextField name="sekolah.kepala_sekolah.gelar" label="Gelar Lengkap (Depan &amp; Belakang)" value={s.kepala_sekolah.gelar} onChange={(v) => updPejabat('kepala_sekolah', { gelar: v })} importance="wajib" placeholder="Contoh: Drs. H. ..., M.Pd." hint="Tuliskan gelar depan dan belakang secara lengkap" />
         </div>
 
         <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>

@@ -22,9 +22,12 @@ export default function RegisterPage() {
       nav('/dashboard')
     } catch (r: any) {
       const detail = r?.response?.data?.detail
-      const msg = typeof detail === 'string'
+      let msg = typeof detail === 'string'
         ? detail
         : detail?.message || r?.message || 'Gagal mendaftar akun baru.'
+      if (msg.includes('422') || msg.includes('status code')) {
+        msg = 'Pendaftaran gagal. Pastikan email belum terdaftar & kata sandi minimal 6 karakter.'
+      }
       setErr(msg)
     }
   }
@@ -56,7 +59,7 @@ export default function RegisterPage() {
         </div>
 
         <div className="auth-field">
-          <label htmlFor="email">Alamat Email Active</label>
+          <label htmlFor="email">Alamat Email Aktif</label>
           <input
             id="email"
             type="email"

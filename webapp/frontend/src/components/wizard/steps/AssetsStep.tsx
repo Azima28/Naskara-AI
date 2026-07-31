@@ -79,7 +79,7 @@ export default function AssetsStep({ ctx, set }: { ctx: PklContext; set: (p: Par
       <h2>Lampiran & Gambar</h2>
 
       <div className="field-group">
-        <h3 className="field-group__title">Foto Dokumentasi Kegiatan (wajib minimal 1)</h3>
+        <h3 className="field-group__title">Foto Dokumentasi Kegiatan (Disarankan minimal 1 foto)</h3>
         <p className="muted" style={{ marginTop: 0, marginBottom: '1rem' }}>
           Foto yang diupload di sini akan tercetak di halaman <strong>LAMPIRAN</strong> laporan,
           lengkap dengan keterangannya — contoh: foto kantor, foto bersama karyawan,

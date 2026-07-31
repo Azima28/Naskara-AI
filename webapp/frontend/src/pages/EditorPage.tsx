@@ -356,6 +356,11 @@ function EditorInner() {
             <span className="save-indicator">
               {saveState === 'saving' && 'menyimpan draf…'}
               {saveState === 'saved' && 'tersimpan ✓'}
+              {saveState === 'error' && (
+                <span style={{ color: '#dc2626', fontWeight: 'bold' }}>
+                  Gagal menyimpan - Cek Koneksi Internet! ⚠
+                </span>
+              )}
             </span>
           </div>
         </div>
@@ -382,10 +387,10 @@ function EditorInner() {
               </div>
               <div className="editor-lock-banner__body">
                 <h3 className="editor-lock-banner__title">
-                  Editor Terkunci — Jalankan Penyusunan Sub-bab Pertama Kali
+                  Draf Awal Teks Laporan PKL Kamu
                 </h3>
                 <p className="editor-lock-banner__text">
-                  Untuk memastikan kelengkapan dokumen, jalankan penyusunan draf terlebih dahulu. Pintu editor dan unduhan dokumen Word akan terbuka secara otomatis setelah minimal 3 sub-bab berhasil disusun.
+                  Teks laporan dapat kamu susun otomatis menggunakan AI atau kamu tulis sendiri secara bebas di bawah ini.
                 </p>
               </div>
               <button
@@ -886,7 +891,7 @@ function SectionEditor({
             className="input"
             rows={Math.max(5, textValue.split('\n').length + 1)}
             value={textValue}
-            disabled={disabled || isBatchGenerating}
+            disabled={isBatchGenerating}
             onChange={(e) => {
               if (isArrayType) {
                 const lines = e.target.value.split('\n').map((l) => l.replace(/^-\s*/, '').trim()).filter(Boolean)

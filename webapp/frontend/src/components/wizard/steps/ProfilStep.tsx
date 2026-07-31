@@ -542,7 +542,7 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
                         <input
                           type="text"
                           value={s.label}
-                          placeholder="cth: OPERASIONAL / ISTIRAHAT"
+                          placeholder="cth: Jam Kerja / Istirahat"
                           onChange={e => setSlot(si, { label: e.target.value })}
                           style={{ textAlign: 'center' }}
                         />

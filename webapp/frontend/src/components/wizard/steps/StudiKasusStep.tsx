@@ -11,7 +11,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
 
   const jurusanExample = getJurusanExample(ctx.siswa?.jurusan_key || ctx.siswa?.jurusan)
   const sampleData = jurusanExample.studiKasus.data_angka
-  const sample1 = sampleData[0] || { label: 'RPM Mesin', nilai: '750 RPM' }
+  const sample1 = sampleData[0] || { label: 'Jumlah Dokumen / Unit Diproses', nilai: '45 Berkas' }
 
   const updAngka = (i: number, patch: Partial<DataAngka>) => {
     const next = [...sk.data_angka]
@@ -23,7 +23,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
     <>
       <h2>Topik Utama & Pengalaman Kerja Paling Berkesan (BAB IV & V)</h2>
       <p className="muted">
-        Opsional. Ceritakan 1 pekerjaan utama yang paling sering atau berkesan selama kamu PKL. AI akan membantu merapikan tulisan kamu menjadi narasi alur cerita laporan resmi yang bagus.
+        Ceritakan 1 pekerjaan utama yang paling sering atau berkesan selama kamu PKL. AI akan membantu merapikan tulisan kamu menjadi narasi alur cerita laporan resmi yang bagus.
       </p>
 
       {/* Storyline Flow Progress Banner */}
@@ -75,7 +75,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
           onChange={(v) => upd({ latar_belakang: v })}
           importance="wajib"
           placeholder={`Contoh (${jurusanExample.badge}): "${jurusanExample.studiKasus.latar_belakang}"`}
-          hint="Apa kendala atau kondisi barang/sistem sebelum kamu tangani?"
+          hint="Bagaimana kondisi awal atau kendala sebelum pekerjaan kamu selesaikan?"
         />
         <TextareaField
           label="3. Langkah-Langkah yang Kamu Lakukan untuk Menyelesaikannya (Urut)"
@@ -91,7 +91,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
           onChange={(v) => upd({ hasil: v })}
           importance="wajib"
           placeholder={`Contoh (${jurusanExample.badge}): "${jurusanExample.studiKasus.hasil}"`}
-          hint="Bagaimana kondisi barang/sistem setelah selesai kamu perbaiki atau selesaikan?"
+          hint="Bagaimana hasil akhir setelah pekerjaan tersebut selesai kamu lakukan?"
         />
       </FieldGroup>
 

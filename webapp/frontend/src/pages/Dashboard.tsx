@@ -218,16 +218,16 @@ export default function DashboardPage() {
                         </span>
                       </div>
                       <span className={`status-badge ${d.status === 'ready' ? 'status-badge--ready' : 'status-badge--draft'}`}>
-                        {d.status === 'ready' ? 'Siap Generate' : 'Draf Diisi'}
+                        {d.status === 'ready' ? 'Siap Diunduh (.docx)' : 'Draf Diisi'}
                       </span>
                     </div>
 
                     <div className="draft-card-item__actions">
                       <Link to={`/wizard/${d.id}`} className="btn-sm btn-primary">
-                        <IconPencil size={14} style={{ marginRight: '0.3rem' }} /> Edit di Wizard
+                        <IconPencil size={14} style={{ marginRight: '0.3rem' }} /> Lanjutkan Isi Form Data
                       </Link>
                       <Link to={`/editor/${d.id}`} className="btn-sm btn-outline">
-                        <IconDocument size={14} style={{ marginRight: '0.3rem' }} /> Live Editor &amp; AI
+                        <IconDocument size={14} style={{ marginRight: '0.3rem' }} /> Edit &amp; Rapikan Teks AI
                       </Link>
                       <button
                         onClick={() => handleDownload(d.id)}
@@ -263,8 +263,8 @@ export default function DashboardPage() {
                 <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Profil Perusahaan</strong> (Sejarah, Visi Misi, Bidang Usaha)</div>
                 <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Jurnal Kegiatan Harian</strong> (Minimal 3-5 kegiatan teknis)</div>
                 <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Peralatan &amp; Kendala</strong> (Perangkat kerja &amp; solusi kendala)</div>
-                <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Kesimpulan &amp; Saran</strong> (Draf AI anti-halusinasi)</div>
-                <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Lampiran Dokumentasi</strong> (Foto kegiatan &amp; ID Bookmark valid)</div>
+                <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Kesimpulan &amp; Saran</strong> (Draf AI akurat &amp; rapi)</div>
+                <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Lampiran Dokumentasi</strong> (Foto kegiatan PKL)</div>
               </div>
             </div>
 

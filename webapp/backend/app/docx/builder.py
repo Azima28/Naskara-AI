@@ -1102,9 +1102,14 @@ class PklDocBuilder:
             )
         kepsek = data.get("sekolah", {}).get("kepala_sekolah", {})
         if kepsek.get("nama"):
-            gelar = kepsek.get("gelar", "")
+            nama_kepsek = kepsek.get("nama", "").strip()
+            gelar_kepsek = kepsek.get("gelar", "").strip()
+            if gelar_kepsek and gelar_kepsek.lower() not in nama_kepsek.lower():
+                full_kepsek = f"{nama_kepsek}, {gelar_kepsek}"
+            else:
+                full_kepsek = nama_kepsek
             items.append(
-                f"{kepsek['nama']}{', ' + gelar if gelar else ''}, selaku kepala sekolah yang telah "
+                f"{full_kepsek}, selaku kepala sekolah yang telah "
                 f"memberikan izin dan kesempatan untuk melaksanakan PKL."
             )
         ketua = data.get("sekolah", {}).get("ketua_kk", {})

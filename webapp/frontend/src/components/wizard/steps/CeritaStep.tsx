@@ -11,10 +11,10 @@ export default function CeritaStep({ ctx, set }: { ctx: PklContext; set: (p: Par
 
   const wordCount = cerita.trim().split(/\s+/).filter(x => x.length > 0).length
 
-  /** Hard gate: AI tidak bisa mengekstrak apa pun di bawah ini. */
-  const MIN_WORDS = 100
+  /** Minimal kata agar AI bisa bekerja */
+  const MIN_WORDS = 15
   /** Target ideal: hasil ekstraksi jauh lebih lengkap di atas ini. */
-  const IDEAL_WORDS = 300
+  const IDEAL_WORDS = 100
 
   const belowMinimum = wordCount < MIN_WORDS
 
@@ -85,18 +85,18 @@ export default function CeritaStep({ ctx, set }: { ctx: PklContext; set: (p: Par
         <div style={{ marginBottom: '1rem' }}>
           {belowMinimum ? (
             <span style={{ fontSize: '0.85rem', color: 'var(--red-600)', fontWeight: 600 }}>
-              {wordCount} kata — masih perlu {MIN_WORDS - wordCount} kata lagi untuk bisa diproses
+              {wordCount} kata — tuliskan minimal 2–3 kalimat (minimal {MIN_WORDS} kata) agar AI bisa merapikan
             </span>
           ) : wordCount < IDEAL_WORDS ? (
             <span style={{ fontSize: '0.85rem', color: 'var(--green-700)', fontWeight: 600 }}>
               {wordCount} kata — sudah cukup untuk diproses
               <span style={{ fontWeight: 400, opacity: 0.85 }}>
-                {' '}(sekitar {IDEAL_WORDS} kata hasilnya lebih lengkap)
+                {' '}(jika ditulis lebih detail hasilnya akan semakin lengkap)
               </span>
             </span>
           ) : (
             <span style={{ fontSize: '0.85rem', color: 'var(--green-700)', fontWeight: 600 }}>
-              {wordCount} kata — panjangnya sudah ideal
+              {wordCount} kata — panjangnya sudah sangat ideal
             </span>
           )}
         </div>
@@ -123,7 +123,7 @@ export default function CeritaStep({ ctx, set }: { ctx: PklContext; set: (p: Par
           {parsing
             ? 'AI sedang menganalisis ceritamu…'
             : belowMinimum
-              ? `Tulis minimal ${MIN_WORDS} kata dulu`
+              ? `Tulis minimal 2-3 kalimat dulu`
               : 'Susun Jadi Bagian Laporan'}
         </button>
       </div>

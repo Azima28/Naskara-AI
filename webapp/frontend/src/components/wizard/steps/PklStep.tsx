@@ -35,13 +35,13 @@ export default function PklStep({ ctx, set }: { ctx: PklContext; set: (p: Partia
       <FieldGroup title="Waktu Pelaksanaan">
         <TextField name="pkl.tanggal_mulai" label="Tanggal Mulai" value={p.tanggal_mulai} onChange={(v) => upd({ tanggal_mulai: v, ...calcDates(v, p.tanggal_selesai) })} importance="wajib" type="date" />
         <TextField name="pkl.tanggal_selesai" label="Tanggal Selesai" value={p.tanggal_selesai} onChange={(v) => upd({ tanggal_selesai: v, ...calcDates(p.tanggal_mulai, v) })} importance="wajib" type="date" />
-        <NumberField name="pkl.durasi_bulan" label="Durasi (bulan)" value={p.durasi_bulan} onChange={(v) => upd({ durasi_bulan: v })} importance="opsional" hint="Dihitung sendiri setelah kamu mengisi kedua tanggal di atas." readOnly />
-        <NumberField name="pkl.jam_pelajaran" label="Jam Pelajaran" value={p.jam_pelajaran} onChange={(v) => upd({ jam_pelajaran: v })} importance="wajib" />
+        <NumberField name="pkl.durasi_bulan" label="Durasi (bulan)" value={p.durasi_bulan} onChange={(v) => upd({ durasi_bulan: v })} importance="opsional" hint="Terhitung otomatis dari tanggal mulai dan selesai yang kamu pilih di atas." readOnly />
+        <NumberField name="pkl.jam_pelajaran" label="Total Jam Pelajaran / Jam Kerja PKL" value={p.jam_pelajaran} onChange={(v) => upd({ jam_pelajaran: v })} importance="wajib" hint="Jumlah total jam kegiatan PKL (contoh: 500 jam)" />
       </FieldGroup>
 
       <FieldGroup title="Penempatan Siswa">
         <TextField label="Bagian / Divisi Penempatan Kamu (Siswa)" value={p.bagian_ditempatkan} onChange={(v) => upd({ bagian_ditempatkan: v })} importance="wajib" placeholder="Contoh: Divisi IT, Bagian Keuangan" hint="Tuliskan nama bagian atau divisi tempat kamu (siswa) ditempatkan selama PKL. Kosongkan jika pindah-pindah divisi." />
-        <TextField label="Tahun Ajaran" value={p.tahun_ajaran} onChange={(v) => upd({ tahun_ajaran: v })} importance="opsional" hint="Dihitung sendiri dari tanggal mulai." readOnly />
+        <TextField label="Tahun Ajaran" value={p.tahun_ajaran} onChange={(v) => upd({ tahun_ajaran: v })} importance="opsional" hint="Terhitung otomatis berdasarkan tanggal mulai." readOnly />
       </FieldGroup>
     </>
   )

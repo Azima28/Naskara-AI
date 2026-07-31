@@ -183,7 +183,7 @@ export default function EnhancementDiffModal({
         >
           <div>
             <h3 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'var(--font-serif)' }}>
-              Hasil Penyempurnaan Teks Akademis (KBBI)
+              Teks Hasil Merapikan Bahasa (Sesuai KBBI)
             </h3>
             <p className="muted" style={{ margin: '0.25rem 0 0', fontSize: '0.85rem' }}>
               Tinjau perbandingan teks sebelum dan sesudah dirapikan oleh AI sebelum menerapkannya ke dokumen.
@@ -232,8 +232,8 @@ export default function EnhancementDiffModal({
                   >
                     {d.label}
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: 'var(--line, #ddd6c8)' }}>
-                    {/* Data Mentah (Before) */}
+                  <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '1fr 1fr', gap: '1px', background: 'var(--line, #ddd6c8)' }}>
+                    {/* Teks Asli Siswa (Before) */}
                     <div style={{ background: '#fffdf5', padding: '0.85rem' }}>
                       <span
                         style={{
@@ -246,7 +246,7 @@ export default function EnhancementDiffModal({
                           marginBottom: '0.35rem',
                         }}
                       >
-                        Data Mentah (Sebelum)
+                        Teks Asli Siswa (Sebelum)
                       </span>
                       <p style={{ margin: 0, fontSize: '0.86rem', whiteSpace: 'pre-wrap', lineHeight: 1.5, color: '#4a4539' }}>
                         {d.oldVal}

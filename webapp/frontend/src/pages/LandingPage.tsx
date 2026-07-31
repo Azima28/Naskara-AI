@@ -41,7 +41,7 @@ export default function LandingPage() {
           </h1>
 
           <p className="hero-section__subtitle">
-            Hasilkan file <strong>Microsoft Word (.docx) native</strong> otomatis dengan margin 4-4-3-3 cm, penomoran Romawi/Arab presisi, tabel identitas rapi, dan draf AI anti-halusinasi.
+            Buat Laporan PKL <strong>Microsoft Word (.docx) Rapi &amp; Standar Sekolah</strong> otomatis dengan margin 4-4-3-3 cm, penomoran Romawi/Arab presisi, tabel identitas rapi, dan draf AI akurat sesuai data kegiatanmu.
           </p>
 
           <div className="hero-section__cta-group">
@@ -62,10 +62,10 @@ export default function LandingPage() {
                 <span className="dot green"></span>
               </div>
               <div className="hero-mockup__title-bar">
-                Laporan_PKL_SMKN4_Bandar_Lampung_Official.docx (Real Live Preview)
+                Laporan_PKL_SMKN4_Bandar_Lampung_Official.docx (Tampilan Pratinjau Langsung)
               </div>
               <div className="hero-mockup__status-badge">
-                Native MS Word XML
+                Format MS Word (.docx) Standar Sekolah
               </div>
             </div>
 
@@ -103,7 +103,7 @@ export default function LandingPage() {
                 {previewTab === 'cover' && (
                   <div className="doc-page-mockup__content preview-fade-in">
                     <div className="doc-heading">LAPORAN PRAKTEK KERJA LAPANGAN</div>
-                    <div className="doc-subheading">PADA PT. TELEKOMUNIKASI INDONESIA TSK</div>
+                    <div className="doc-subheading">PADA KANTOR / PERUSAHAAN MITRA PKL</div>
                     <div className="doc-spacing-enter">[ Enter Spacing Otomatis Presisi - Push Footer ]</div>
 
                     <div className="doc-logo-box">
@@ -121,8 +121,8 @@ export default function LandingPage() {
                     <div className="doc-meta-table">
                       <div className="meta-row"><span>Nama Siswa</span><span>: Muhammad Rizky Pratama</span></div>
                       <div className="meta-row"><span>NIS / NISN</span><span>: 212210482 / 0054819283</span></div>
-                      <div className="meta-row"><span>Kelas</span><span>: XII PPLG 1</span></div>
-                      <div className="meta-row"><span>Kompetensi</span><span>: Pemrograman Perangkat Lunak dan Gim</span></div>
+                      <div className="meta-row"><span>Kelas</span><span>: XII [Jurusan Kamu]</span></div>
+                      <div className="meta-row"><span>Kompetensi</span><span>: [Nama Kompetensi Keahlian Kamu]</span></div>
                     </div>
 
                     <div className="doc-footer-school">
@@ -158,7 +158,7 @@ export default function LandingPage() {
                     </table>
 
                     <div className="preview-table-spec-badge">
-                      ✓ Max Table Width: 14.00 cm (Fit A4 Printable Area)
+                      ✓ Tabel Otomatis Rapi &amp; Pas di Kertas A4
                     </div>
 
                     <div className="doc-page-mockup__page-num" style={{ marginTop: '3rem' }}>
@@ -214,7 +214,7 @@ export default function LandingPage() {
           <div className="trust-divider"></div>
           <div className="trust-stat">
             <span className="trust-stat__num">0 Error</span>
-            <span className="trust-stat__label">Bookmark TOC MS Word</span>
+            <span className="trust-stat__label">Daftar Isi &amp; Nomor Halaman Rapi</span>
           </div>
           <div className="trust-divider"></div>
           <div className="trust-stat">
@@ -246,8 +246,8 @@ export default function LandingPage() {
             </div>
             <div className="step-card">
               <div className="step-card__num">03</div>
-              <h3>Asisten AI Anti-Halusinasi</h3>
-              <p>Gunakan generator AI untuk memperhalus draf paragraf Kesimpulan &amp; Saran tanpa mengubah fakta.</p>
+              <h3>Pemeriksaan Otomatis Kesesuaian Data</h3>
+              <p>Gunakan generator AI untuk memperhalus draf paragraf Kesimpulan &amp; Saran sesuai data asli kegiatanmu.</p>
             </div>
             <div className="step-card">
               <div className="step-card__num">04</div>
@@ -293,8 +293,8 @@ export default function LandingPage() {
 
             <div className="feature-box">
               <div className="feature-box__icon"><IconShield size={28} color="var(--green-700)" /></div>
-              <h3>3-Layer Anti-Halusinasi AI</h3>
-              <p>AI mengunci konteks fakta teknis Anda sehingga hasil tulisan alami, profesional, dan bebas dari kalimat mengarang.</p>
+              <h3>Pemeriksaan Otomatis Kesesuaian Data</h3>
+              <p>Sistem menjaga agar tulisan laporan tetap sesuai fakta kegiatanmu secara alami dan profesional.</p>
             </div>
 
             <div className="feature-box">

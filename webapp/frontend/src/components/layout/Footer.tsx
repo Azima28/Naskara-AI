@@ -12,7 +12,7 @@ export default function Footer() {
               <span className="public-footer__badge">SMKN 4 Bandar Lampung Standard</span>
             </div>
             <p className="public-footer__desc">
-              Platform otomatisasi penyusunan laporan Praktek Kerja Lapangan (PKL) resmi vokasi Indonesia. Menghasilkan dokumen Microsoft Word (.docx) native dengan presisi margin 4-4-3-3 cm, penomoran Romawi/Arab, dan bebas dari halusinasi AI.
+              Platform otomatisasi penyusunan laporan Praktek Kerja Lapangan (PKL) resmi vokasi Indonesia. Menghasilkan dokumen Microsoft Word (.docx) rapi dengan presisi margin 4-4-3-3 cm, penomoran Romawi/Arab, dan draf teks yang akurat.
             </p>
             <div className="public-footer__trust-tag">
               <span className="trust-dot"></span> Format Teruji di MS Word 2016 - 365
@@ -54,7 +54,7 @@ export default function Footer() {
             <div className="public-footer__specs">
               <div className="spec-chip">Margin: 4cm Kiri, 4cm Atas, 3cm Kanan, 3cm Bawah</div>
               <div className="spec-chip">Font: Times New Roman 12pt / 1.5 Spasi</div>
-              <div className="spec-chip">Bookmark Lampiran TOC MS Word Safe</div>
+              <div className="spec-chip">Daftar Isi &amp; Nomor Halaman Otomatis Rapi</div>
               <div className="spec-chip">Sub-list Penomoran: a. b. c. Bold</div>
             </div>
           </div>

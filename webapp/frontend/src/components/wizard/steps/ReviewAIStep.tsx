@@ -103,7 +103,7 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
                     <input
                       type="text"
                       className="field__input"
-                      placeholder="Nama Tugas (misal: Memperbaiki Komputer)"
+                      placeholder="Nama Tugas (misal: Memperbaiki Komputer / Melayani Pelanggan / Input Data)"
                       value={t.nama}
                       onChange={(e) => {
                         const nextTugas = [...k.tugas]
@@ -117,7 +117,7 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
                     <input
                       type="text"
                       className="field__input"
-                      placeholder="Detail (misal: Menginstal Windows 11 & Driver)"
+                      placeholder="Detail (misal: Menginstal Windows, mencatat transaksi, atau melayani tamu)"
                       value={t.detail}
                       onChange={(e) => {
                         const nextTugas = [...k.tugas]

@@ -24,14 +24,14 @@ const MAJOR_TABS = [
 export default function JurusanDocxPreviewModal({
   isOpen,
   onClose,
-  initialJurusanKey = 'rpl',
+  initialJurusanKey = 'mplb',
   onSelectJurusan,
 }: JurusanDocxPreviewModalProps) {
-  const [activeKey, setActiveKey] = useState<string>(initialJurusanKey || 'rpl')
+  const [activeKey, setActiveKey] = useState<string>(initialJurusanKey || 'mplb')
 
   if (!isOpen) return null
 
-  const example: JurusanExample = JURUSAN_EXAMPLES[activeKey] || JURUSAN_EXAMPLES['rpl']
+  const example: JurusanExample = JURUSAN_EXAMPLES[activeKey] || JURUSAN_EXAMPLES['mplb']
   const sk = example.studiKasus
 
   const handleApply = () => {
