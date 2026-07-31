@@ -405,13 +405,6 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
           AI akan membantu merapikan bahasanya saat kamu download laporan.
         </p>
 
-        {/* Info: 8 poin SMKN4 otomatis */}
-        <div style={{ background: '#eff6ff', border: '1px solid #93c5fd', borderRadius: 8, padding: '0.75rem', marginBottom: '0.75rem', fontSize: '0.83rem', color: '#1e40af' }}>
-          <strong>Sudah termasuk otomatis:</strong> 8 aturan resmi SMKN 4 Bandar Lampung selalu muncul di laporan
-          (mematuhi aturan industri, menggunakan seragam, tidak mengaktifkan HP, dst).
-          Yang kamu isi di sini adalah <em>tambahan khusus</em> dari perusahaanmu.
-        </div>
-
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
           <button
             type="button"

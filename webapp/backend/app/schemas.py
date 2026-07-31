@@ -255,7 +255,7 @@ class JobDescription(BaseModel):
 
 
 class ProfilPerusahaan(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
     logo_perusahaan: str = ""          # path/URL logo perusahaan (opsional, untuk dokumen)
     sejarah: str = ""
     visi: str = ""
@@ -265,6 +265,7 @@ class ProfilPerusahaan(BaseModel):
     struktur_organisasi: str = ""      # path/URL gambar bagan struktur
     narasi_struktur: str = ""          # teks narasi manfaat struktur (AI-generated)
     tata_tertib: list[str] = Field(default_factory=list)
+    tata_tertib_perusahaan: list[str] = Field(default_factory=list)
     jam_kerja: list[JamKerja] = Field(default_factory=list)
     job_descriptions: list[JobDescription] = Field(default_factory=list)
 
@@ -434,7 +435,7 @@ Status = Literal["collecting", "reviewing", "ready", "generated", "completed"]
 
 class PklContext(BaseModel):
     """Root object = pkl-context.json (18 top-level keys)."""
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
 
     version: str = "1.0"
     status: Status = "collecting"
