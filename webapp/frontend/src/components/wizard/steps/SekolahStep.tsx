@@ -90,24 +90,24 @@ export default function SekolahStep({ ctx, set }: { ctx: PklContext; set: (p: Pa
           setelah nama di Halaman Pengesahan (contoh: S.Pd., M.M.)
         </p>
         <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
-          <TextField name="sekolah.kepala_sekolah.nama" label="Kepala Sekolah - Nama" value={s.kepala_sekolah.nama} onChange={(v) => updPejabat('kepala_sekolah', { nama: v })} importance="wajib" />
-          <TextField name="sekolah.kepala_sekolah.nip" label="Kepala Sekolah - NIP" value={s.kepala_sekolah.nip} onChange={(v) => updPejabat('kepala_sekolah', { nip: v })} importance="wajib" />
-          <TextField name="sekolah.kepala_sekolah.gelar" label="Kepala Sekolah - Gelar" value={s.kepala_sekolah.gelar} onChange={(v) => updPejabat('kepala_sekolah', { gelar: v })} importance="wajib" />
+          <TextField name="sekolah.kepala_sekolah.nama" label="Nama Kepala Sekolah" value={s.kepala_sekolah.nama} onChange={(v) => updPejabat('kepala_sekolah', { nama: v })} importance="wajib" placeholder="Contoh: Drs. H. Yulianto, M.Pd." />
+          <TextField name="sekolah.kepala_sekolah.nip" label="NIP Kepala Sekolah" value={s.kepala_sekolah.nip} onChange={(v) => updPejabat('kepala_sekolah', { nip: v })} importance="wajib" placeholder="Contoh: 19680712 199403 1 005" />
+          <TextField name="sekolah.kepala_sekolah.gelar" label="Gelar Kepala Sekolah" value={s.kepala_sekolah.gelar} onChange={(v) => updPejabat('kepala_sekolah', { gelar: v })} importance="wajib" placeholder="Contoh: M.Pd." />
         </div>
 
         <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
-          <TextField name="sekolah.waka_humas.nama" label="Waka Humas - Nama" value={s.waka_humas.nama} onChange={(v) => updPejabat('waka_humas', { nama: v })} importance="wajib" />
-          <TextField name="sekolah.waka_humas.nip" label="Waka Humas - NIP" value={s.waka_humas.nip} onChange={(v) => updPejabat('waka_humas', { nip: v })} importance="wajib" />
+          <TextField name="sekolah.waka_humas.nama" label="Nama Waka Humas" value={s.waka_humas.nama} onChange={(v) => updPejabat('waka_humas', { nama: v })} importance="wajib" placeholder="Contoh: Dra. Hj. Ratna, M.T." />
+          <TextField name="sekolah.waka_humas.nip" label="NIP Waka Humas" value={s.waka_humas.nip} onChange={(v) => updPejabat('waka_humas', { nip: v })} importance="wajib" placeholder="Contoh: 19720515 199802 2 001" />
         </div>
 
         <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
-          <TextField name="sekolah.ketua_kk.nama" label="Ketua Jurusan / KK - Nama" value={s.ketua_kk.nama} onChange={(v) => updPejabat('ketua_kk', { nama: v })} importance="wajib" />
-          <TextField name="sekolah.ketua_kk.nip" label="Ketua Jurusan / KK - NIP" value={s.ketua_kk.nip} onChange={(v) => updPejabat('ketua_kk', { nip: v })} importance="wajib" />
+          <TextField name="sekolah.ketua_kk.nama" label="Nama Ketua Jurusan" value={s.ketua_kk.nama} onChange={(v) => updPejabat('ketua_kk', { nama: v })} importance="wajib" placeholder="Contoh: Budi Santoso, S.Kom., M.T." />
+          <TextField name="sekolah.ketua_kk.nip" label="NIP Ketua Jurusan" value={s.ketua_kk.nip} onChange={(v) => updPejabat('ketua_kk', { nip: v })} importance="wajib" placeholder="Contoh: 19800101 200501 1 003" />
         </div>
 
         <div>
-          <TextField name="sekolah.pembimbing_sekolah.nama" label="Pembimbing Sekolah - Nama" value={s.pembimbing_sekolah.nama} onChange={(v) => updPejabat('pembimbing_sekolah', { nama: v })} importance="wajib" />
-          <TextField name="sekolah.pembimbing_sekolah.nip" label="Pembimbing Sekolah - NIP" value={s.pembimbing_sekolah.nip} onChange={(v) => updPejabat('pembimbing_sekolah', { nip: v })} importance="wajib" />
+          <TextField name="sekolah.pembimbing_sekolah.nama" label="Nama Pembimbing Sekolah" value={s.pembimbing_sekolah.nama} onChange={(v) => updPejabat('pembimbing_sekolah', { nama: v })} importance="wajib" placeholder="Contoh: Ahmad Rizki, S.Pd." />
+          <TextField name="sekolah.pembimbing_sekolah.nip" label="NIP Pembimbing Sekolah" value={s.pembimbing_sekolah.nip} onChange={(v) => updPejabat('pembimbing_sekolah', { nip: v })} importance="wajib" placeholder="Contoh: 19850320 201001 1 008" />
         </div>
       </FieldGroup>
     </>
