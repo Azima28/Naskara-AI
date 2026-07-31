@@ -54,12 +54,18 @@ export default function CeritaStep({ ctx, set }: { ctx: PklContext; set: (p: Par
 
   return (
     <>
-      <h2>Ceritakan Pengalaman PKL-mu</h2>
+      <h2>Tulis Cerita Bebas Pengalaman PKL</h2>
       <p className="muted">
-        Tidak perlu pusing memikirkan format! Ceritakan saja secara detail apa saja yang kamu kerjakan,
-        alat apa yang kamu pakai, masalah apa yang terjadi, dan pelajaran apa yang kamu dapatkan.
-        Nanti AI yang akan memecahnya menjadi bagian-bagian laporan yang rapi.
+        Tidak perlu pusing memikirkan format! Ceritakan saja secara bebas apa saja yang kamu kerjakan,
+        alat apa yang kamu pakai, masalah apa yang terjadi, dan pelajaran yang didapat.
       </p>
+
+      {/* Info Penjelas Alur Cerita -> Kegiatan */}
+      <div style={{ background: '#eff6ff', border: '1px solid #93c5fd', borderRadius: 8, padding: '0.85rem 1rem', marginBottom: '1.25rem', fontSize: '0.88rem', color: '#1e40af', lineHeight: 1.5 }}>
+        <strong>💡 Bagaimana cara kerjanya?</strong>
+        <br />
+        Cerita yang kamu tulis di kolom di bawah ini adalah <strong>bahan mentah</strong>. Setelah kamu menekan tombol <strong>"Susun Jadi Bagian Laporan"</strong>, AI akan otomatis menganalisis dan memecah ceritamu menjadi formulir terstruktur (<strong>Kegiatan, Peralatan Kantor, Kendala &amp; Solusi</strong>) di langkah berikutnya (<strong>Kegiatan, Peralatan &amp; Kendala</strong>).
+      </div>
 
       <div className="nested-card" style={{ marginBottom: '1.5rem' }}>
         <h3 style={{ margin: '0 0 0.6rem', fontSize: '1.05rem' }}>
