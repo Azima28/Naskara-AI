@@ -24,7 +24,7 @@ export default function EnhancementDiffModal({
   // Check Profil Perusahaan
   if (oldCtx.profil_perusahaan?.sejarah !== newCtx.profil_perusahaan?.sejarah) {
     diffs.push({
-      label: 'Sejarah Perusahaan (1.3)',
+      label: 'Sejarah Perusahaan',
       oldVal: oldCtx.profil_perusahaan?.sejarah || '(Kosong)',
       newVal: newCtx.profil_perusahaan?.sejarah || '(Kosong)',
     })
@@ -46,21 +46,83 @@ export default function EnhancementDiffModal({
     })
   }
 
-  // Check Narasi Struktur Organisasi
-  if (oldCtx.profil_perusahaan?.narasi_struktur !== newCtx.profil_perusahaan?.narasi_struktur) {
+  // Check Kegiatan & Tugas Spesifik
+  const formatKegiatan = (kegs?: typeof oldCtx.kegiatan) =>
+    (kegs || [])
+      .map(
+        (k, i) =>
+          `[Divisi ${i + 1}: ${k.bidang}]\nDeskripsi: ${k.deskripsi_umum}\nTugas:\n` +
+          (k.tugas || []).map((t) => `- ${t.nama}: ${t.detail}`).join('\n')
+      )
+      .join('\n\n')
+  const oldKegStr = formatKegiatan(oldCtx.kegiatan)
+  const newKegStr = formatKegiatan(newCtx.kegiatan)
+  if (oldKegStr !== newKegStr) {
     diffs.push({
-      label: 'Narasi Struktur Organisasi (1.5)',
-      oldVal: oldCtx.profil_perusahaan?.narasi_struktur || '(Kosong)',
-      newVal: newCtx.profil_perusahaan?.narasi_struktur || '(Kosong)',
+      label: 'Kegiatan & Poin Tugas Spesifik',
+      oldVal: oldKegStr || '(Kosong)',
+      newVal: newKegStr || '(Kosong)',
+    })
+  }
+
+  // Check Peralatan
+  const formatPeralatan = (peralatan?: typeof oldCtx.peralatan) =>
+    (peralatan || []).map((p, i) => `${i + 1}. ${p.nama}: ${p.deskripsi}`).join('\n')
+  const oldAlatStr = formatPeralatan(oldCtx.peralatan)
+  const newAlatStr = formatPeralatan(newCtx.peralatan)
+  if (oldAlatStr !== newAlatStr) {
+    diffs.push({
+      label: 'Daftar Nama Peralatan & Deskripsi Alat',
+      oldVal: oldAlatStr || '(Kosong)',
+      newVal: newAlatStr || '(Kosong)',
+    })
+  }
+
+  // Check Kendala
+  const formatKendala = (kendala?: typeof oldCtx.kendala) =>
+    (kendala || []).map((k, i) => `Kendala ${i + 1}: ${k.masalah}\nSolusi: ${k.solusi}`).join('\n\n')
+  const oldKendalaStr = formatKendala(oldCtx.kendala)
+  const newKendalaStr = formatKendala(newCtx.kendala)
+  if (oldKendalaStr !== newKendalaStr) {
+    diffs.push({
+      label: 'Kendala & Cara Mengatasinya',
+      oldVal: oldKendalaStr || '(Kosong)',
+      newVal: newKendalaStr || '(Kosong)',
+    })
+  }
+
+  // Check Studi Kasus Teknis
+  const formatStudiKasus = (sk?: typeof oldCtx.studi_kasus) => {
+    if (!sk) return ''
+    const parts = []
+    if (sk.judul) parts.push(`Judul Pekerjaan: ${sk.judul}`)
+    if (sk.latar_belakang) parts.push(`Kondisi Awal: ${sk.latar_belakang}`)
+    if (sk.proses_atau_formula) parts.push(`Langkah Kerja: ${sk.proses_atau_formula}`)
+    if (sk.hasil) parts.push(`Hasil Akhir: ${sk.hasil}`)
+    if (sk.data_angka && sk.data_angka.length > 0) {
+      parts.push(
+        'Hasil yang Bisa Diukur (Data Angka):\n' +
+          sk.data_angka.map((d) => `- ${d.label}: ${d.nilai}`).join('\n')
+      )
+    }
+    return parts.join('\n\n')
+  }
+  const oldSkStr = formatStudiKasus(oldCtx.studi_kasus)
+  const newSkStr = formatStudiKasus(newCtx.studi_kasus)
+  if (oldSkStr !== newSkStr) {
+    diffs.push({
+      label: 'Studi Kasus Teknis & Parameter Hasil Angka',
+      oldVal: oldSkStr || '(Kosong)',
+      newVal: newSkStr || '(Kosong)',
     })
   }
 
   // Check Refleksi & Kesimpulan
-  if (oldCtx.refleksi !== newCtx.refleksi) {
+  if (oldCtx.refleksi_bab5 !== newCtx.refleksi_bab5) {
     diffs.push({
-      label: 'Refleksi / Cerita Pengalaman',
-      oldVal: oldCtx.refleksi || '(Kosong)',
-      newVal: newCtx.refleksi || '(Kosong)',
+      label: 'Pengalaman & Pelajaran (Refleksi)',
+      oldVal: oldCtx.refleksi_bab5 || '(Kosong)',
+      newVal: newCtx.refleksi_bab5 || '(Kosong)',
     })
   }
   if (oldCtx.kesimpulan_user !== newCtx.kesimpulan_user) {

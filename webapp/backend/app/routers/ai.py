@@ -362,11 +362,13 @@ async def enhance_context(
             "job_descriptions": ctx.get("profil_perusahaan", {}).get("job_descriptions", []),
         },
         "kegiatan": ctx.get("kegiatan", []),
+        "peralatan": ctx.get("peralatan", []),
         "studi_kasus": {
             "judul": ctx.get("studi_kasus", {}).get("judul", ""),
             "latar_belakang": ctx.get("studi_kasus", {}).get("latar_belakang", ""),
             "proses_atau_formula": ctx.get("studi_kasus", {}).get("proses_atau_formula", ""),
             "hasil": ctx.get("studi_kasus", {}).get("hasil", ""),
+            "data_angka": ctx.get("studi_kasus", {}).get("data_angka", []),
         },
         "kendala": ctx.get("kendala", []),
         "pelajaran": ctx.get("pelajaran", []),
@@ -376,13 +378,14 @@ async def enhance_context(
     }
 
     system_prompt = """Kamu adalah editor profesional untuk laporan akademik siswa SMK.
-Tugasmu adalah merapikan teks mentah berikut menjadi bahasa formal, akademis (KBBI), dan profesional.
-Banyak siswa menggunakan bahasa tidak baku, terlalu singkat, atau kata tidak pasti (misal: "gatau", "apa aja", "bongkar mesin").
+Tugasmu adalah merapikan seluruh teks mentah dari formulir wizard (Kegiatan & Poin Tugas Spesifik, Peralatan & Deskripsi Alat, Kendala & Solusi, Studi Kasus Teknis & Parameter Hasil Angka, Pelajaran, Refleksi, Kesimpulan, dan Saran) menjadi bahasa formal, akademis (KBBI), dan profesional.
+
+Banyak siswa menggunakan bahasa santai, tidak baku, atau terlalu singkat (misal: "bongkar mesin", "benerin pc", "gatau", "apa aja").
 
 ATURAN:
-1. Perbaiki tata bahasa, ejaan, dan gunakan sudut pandang formal (Penulis).
-2. Jika ada kata "gatau" / "apa saja", kembangkan menjadi deskripsi akademis yang masuk akal.
-3. PERTAHANKAN struktur keys JSON persis sama seperti input. JANGAN menghapus field.
+1. Perbaiki tata bahasa, ejaan, dan gunakan kata baku profesional (misal: "Membongkar dan melakukan perawatan mesin", "Melakukan perbaikan dan pengujian perangkat PC").
+2. Merapikan seluruh poin tugas spesifik, deskripsi alat, parameter hasil (data angka), kendala, dan studi kasus.
+3. PERTAHANKAN struktur keys JSON persis sama seperti input. JANGAN menghapus atau mengubah nama field key.
 4. HANYA kembalikan JSON murni tanpa markdown (tanpa ```json)."""
 
     user_prompt = f"Teks Laporan Mentah (JSON):\n{json.dumps(text_payload, ensure_ascii=False)}"
