@@ -12,7 +12,6 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
   const jurusanExample = getJurusanExample(ctx.siswa?.jurusan_key || ctx.siswa?.jurusan)
   const sampleData = jurusanExample.studiKasus.data_angka
   const sample1 = sampleData[0] || { label: 'RPM Mesin', nilai: '750 RPM' }
-  const sample2 = sampleData[1] || { label: 'Kecepatan Internet', nilai: '50 Mbps' }
 
   const updAngka = (i: number, patch: Partial<DataAngka>) => {
     const next = [...sk.data_angka]
@@ -96,23 +95,49 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
         />
       </FieldGroup>
 
-      {/* Data Angka Embedded Directly Under Step 4 as Evidence */}
-      <FieldGroup title={`Bukti Catatan Angka / Ukuran Hasil Pekerjaan (${jurusanExample.badge})`} full>
+      {/* Data Angka / Hasil yang Bisa Diukur (OPSIONAL) */}
+      <FieldGroup title={`Hasil yang Bisa Diukur (${jurusanExample.badge})`} full>
         <div className="field field--full">
           <span className="field__label">
-            Catatan Angka / Hasil Ukur <span className="field__badge field__badge--opsional">Opsional</span>
+            Hasil yang Bisa Diukur <span className="field__badge field__badge--opsional">OPSIONAL</span>
           </span>
-          <span className="field__hint" style={{ marginBottom: '0.6rem' }}>
-            Jika pekerjaan kamu memiliki catatan angka atau pengukuran khas jurusan <strong>{jurusanExample.badge}</strong> (contoh: <em>"{sample1.label}" → "{sample1.nilai}"</em>, <em>"{sample2.label}" → "{sample2.nilai}"</em>), tuliskan di bawah ini.
-          </span>
+          <p className="muted" style={{ margin: '0.25rem 0 0.75rem', fontSize: '0.88rem', lineHeight: 1.5 }}>
+            Ada hasil pekerjaanmu yang bisa dinyatakan dengan angka?<br />
+            Jika ada, tuliskan di sini. Jika tidak ada, bagian ini boleh dikosongkan.
+          </p>
+
+          {/* Contoh Sederhana Berdasarkan Jurusan */}
+          <div
+            style={{
+              background: '#f8fafc',
+              border: '1px solid #cbd5e1',
+              borderRadius: '8px',
+              padding: '0.75rem 1rem',
+              marginBottom: '1.25rem',
+              fontSize: '0.85rem',
+              color: '#334155',
+            }}
+          >
+            <strong style={{ color: '#0f172a', display: 'block', marginBottom: '0.35rem' }}>
+              Contoh ({jurusanExample.badge}):
+            </strong>
+            <ul style={{ margin: 0, paddingLeft: '1.1rem', lineHeight: 1.6 }}>
+              {sampleData.map((s, idx) => (
+                <li key={idx}>
+                  {s.label} → <strong>{s.nilai}</strong>
+                </li>
+              ))}
+            </ul>
+          </div>
+
           <div className="array">
             {sk.data_angka.map((d, i) => {
               const sampleRow = sampleData[i % sampleData.length] || sample1
               return (
-                <div key={i} className="array__row">
+                <div key={i} className="array__row" style={{ alignItems: 'flex-start' }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <TextField
-                      label={i === 0 ? 'Nama Ukuran / Parameter' : ''}
+                      label="Apa yang diukur?"
                       value={d.label}
                       onChange={(v) => updAngka(i, { label: v })}
                       placeholder={`Contoh: ${sampleRow.label}`}
@@ -120,7 +145,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <TextField
-                      label={i === 0 ? 'Nilai / Angka Hasil' : ''}
+                      label="Berapa hasilnya?"
                       value={d.nilai}
                       onChange={(v) => updAngka(i, { nilai: v })}
                       placeholder={`Contoh: ${sampleRow.nilai}`}
@@ -132,6 +157,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
                     onClick={() => upd({ data_angka: sk.data_angka.filter((_, idx) => idx !== i) })}
                     aria-label="Hapus baris data angka"
                     title="Hapus baris ini"
+                    style={{ marginTop: '1.8rem' }}
                   >
                     ✕ Hapus
                   </button>
@@ -143,7 +169,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
               className="btn-sm btn-outline array__add"
               onClick={() => upd({ data_angka: [...sk.data_angka, emptyDataAngka()] })}
             >
-              + Tambah Catatan Angka
+              + Tambah hasil lain
             </button>
           </div>
         </div>
