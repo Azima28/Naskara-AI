@@ -137,7 +137,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
                 <div key={i} className="array__row" style={{ alignItems: 'flex-start' }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <TextField
-                      label="Apa yang diukur?"
+                      label="Apa yang diukur? (Sebelum / Sesudah)"
                       value={d.label}
                       onChange={(v) => updAngka(i, { label: v })}
                       placeholder={`Contoh: ${sampleRow.label}`}
