@@ -8,6 +8,7 @@ export interface JurusanExample {
   label: string
   icon: string
   badge: string
+  contohPelajaran: string[]
   studiKasus: {
     judul: string
     latar_belakang: string
@@ -23,6 +24,11 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
     label: 'Pemrograman Perangkat Lunak & Gim (PPLG / RPL)',
     icon: 'code',
     badge: 'Perangkat Lunak & IT',
+    contohPelajaran: [
+      'Memahami pembuatan dan pengujian REST API',
+      'Mengoptimalkan performa query database',
+      'Bekerja secara kolaboratif dalam tim pengembang software',
+    ],
     studiKasus: {
       judul: 'Optimasi Speed & Performance Query Database pada Rekapitulasi Laporan Bulanan',
       latar_belakang:
@@ -45,6 +51,11 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
     label: 'Teknik Komputer & Jaringan (TKJ)',
     icon: 'globe',
     badge: 'Jaringan & Server',
+    contohPelajaran: [
+      'Melakukan crimping kabel UTP dan testing koneksi jaringan LAN',
+      'Mengonfigurasi IP Address, Router MikroTik, dan VLAN',
+      'Melakukan instalasi dan troubleshooting perangkat komputer/jaringan',
+    ],
     studiKasus: {
       judul: 'Konfigurasi Manajemen Bandwidth Router MikroTik & Segmentation VLAN',
       latar_belakang:
@@ -67,6 +78,11 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
     label: 'Desain Komunikasi Visual (DKV)',
     icon: 'palette',
     badge: 'Desain & Media',
+    contohPelajaran: [
+      'Mengoperasikan software desain grafis (Adobe Illustrator / Photoshop)',
+      'Memahami hierarki tipografi dan komposisi tata letak media cetak/digital',
+      'Membuat aset visual dan motion graphic untuk kebutuhan promosi',
+    ],
     studiKasus: {
       judul: 'Perancangan Branding Visual & Optimasi Asset Rendering Motion Graphic',
       latar_belakang:
@@ -89,6 +105,11 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
     label: 'Usaha Perjalanan Wisata (UPW)',
     icon: 'compass',
     badge: 'Pariwisata & Tour',
+    contohPelajaran: [
+      'Menyusun paket itinerary dan perhitungan estimasi biaya tur (costing)',
+      'Melakukan komunikasi dan reservasi dengan vendor armada & hotel',
+      'Memberikan pelayanan panduan wisata (guiding) secara profesional',
+    ],
     studiKasus: {
       judul: 'Penyusunan Paket Itinerary Tour Bandung-Lembang & Optimasi Travel Costing',
       latar_belakang:
@@ -111,6 +132,11 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
     label: 'Perhotelan (PH)',
     icon: 'bed',
     badge: 'Hospitality & Hotel',
+    contohPelajaran: [
+      'Melakukan standar pembersihan dan inspeksi kamar (housekeeping)',
+      'Melakukan prosedur check-in dan check-out tamu hotel di Front Desk',
+      'Menjaga etika keramahan (hospitality) dan komunikasi profesional',
+    ],
     studiKasus: {
       judul: 'Standardisasi Housekeeping Room Inspection & Optimasi Guest Check-In Speed',
       latar_belakang:
@@ -133,6 +159,11 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
     label: 'Tata Boga (Tabog / Kuliner)',
     icon: 'utensils',
     badge: 'Kuliner & Banquet',
+    contohPelajaran: [
+      'Melakukan persiapan bahan makanan (Mise en Place) dengan presisi',
+      'Menerapkan standar higienitas dan sanitasi keselamatan kerja dapur (HACCP)',
+      'Mengolah dan menyajikan hidangan sesuai standar resep restoran/hotel',
+    ],
     studiKasus: {
       judul: 'Standardisasi Mise en Place & Efisiensi Food Cost Menu Banquet Event',
       latar_belakang:
@@ -155,6 +186,11 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
     label: 'Tata Busana (Tabus / Fashion)',
     icon: 'scissors',
     badge: 'Fashion & Custom Making',
+    contohPelajaran: [
+      'Membaca dan merancang pola dasar busana (draping & flat pattern)',
+      'Mengoperasikan mesin jahit industri dengan setikan presisi',
+      'Melakukan pemotongan bahan (cutting) dan pengawasan kualitas jahitan',
+    ],
     studiKasus: {
       judul: 'Pembuatan Pola Busana Custom Draping & Quality Control Presisi Jahitan',
       latar_belakang:
@@ -177,6 +213,11 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
     label: 'Manajemen Perkantoran & Layanan Bisnis (MPLB)',
     icon: 'folder',
     badge: 'Administrasi & Perkantoran',
+    contohPelajaran: [
+      'Mengelola arsip fisik dan digitalisasi dokumen kantor',
+      'Melakukan penanganan surat masuk, surat keluar, dan disposisi',
+      'Melayani komunikasi telepon dan penerimaan tamu kantor secara ramah',
+    ],
     studiKasus: {
       judul: 'Digitalisasi & Digital Archiving System Surat Masuk/Keluar',
       latar_belakang:
@@ -199,6 +240,11 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
     label: 'Akuntansi & Keuangan Lembaga (AKL)',
     icon: 'chart',
     badge: 'Akuntansi & Keuangan',
+    contohPelajaran: [
+      'Menginput dan merapikan catatan transaksi keuangan ke jurnal umum',
+      'Melakukan penghitungan dan rekonsiliasi kas/bank',
+      'Menyusun draf laporan keuangan sederhana dan verifikasi kuitansi',
+    ],
     studiKasus: {
       judul: 'Pendataan & Penghitungan Waive Discount Debitur Macet serta Rekonsiliasi',
       latar_belakang:
@@ -221,6 +267,11 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
     label: 'Bisnis Daring & Pemasaran (BDP)',
     icon: 'shopping-bag',
     badge: 'Pemasaran & Bisnis',
+    contohPelajaran: [
+      'Membuat materi konten promosi digital dan riset produk',
+      'Melayani transaksi penjualan dan pelayanan konsumen (customer service)',
+      'Mengelola toko online (e-commerce) dan pencatatan stok barang',
+    ],
     studiKasus: {
       judul: 'Analisis Efektivitas Kampanye Social Media Ads & Conversion Rate E-Commerce',
       latar_belakang:

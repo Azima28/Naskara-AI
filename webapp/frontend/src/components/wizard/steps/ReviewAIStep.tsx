@@ -243,14 +243,40 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
         </p>
 
         {/* 1. Poin-poin Pelajaran Utama */}
-        <StringArrayField
-          label={`Apa pelajaran utama yang kamu dapatkan? (${jurusanExample.badge})`}
-          items={pelajaran}
-          onChange={(items) => upd({ pelajaran: items })}
-          importance="wajib"
-          placeholder={`Contoh (${jurusanExample.badge}): Meningkatkan kedisiplinan, etika komunikasi, dan keterampilan praktek.`}
-          addLabel="+ Tambah Poin Pelajaran"
-        />
+        <div style={{ marginBottom: '1.25rem' }}>
+          {/* Contoh Pelajaran Khusus Jurusan */}
+          <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '0.75rem 1rem', marginBottom: '0.85rem', fontSize: '0.85rem', color: '#334155' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <strong style={{ color: '#0f172a' }}>
+                💡 Contoh Poin Pelajaran ({jurusanExample.label}):
+              </strong>
+              {pelajaran.length === 0 && (
+                <button
+                  type="button"
+                  className="btn-sm btn-outline"
+                  onClick={() => upd({ pelajaran: [...(jurusanExample.contohPelajaran || [])] })}
+                  style={{ fontSize: '0.78rem', padding: '0.25rem 0.6rem', color: 'var(--green-700)', borderColor: 'var(--green-600)', fontWeight: 600 }}
+                >
+                  + Gunakan Contoh Jurusan Ini
+                </button>
+              )}
+            </div>
+            <ul style={{ margin: '0.35rem 0 0', paddingLeft: '1.1rem', lineHeight: 1.5 }}>
+              {(jurusanExample.contohPelajaran || []).map((cp, idx) => (
+                <li key={idx}>{cp}</li>
+              ))}
+            </ul>
+          </div>
+
+          <StringArrayField
+            label="Apa pelajaran utama yang kamu dapatkan?"
+            items={pelajaran}
+            onChange={(items) => upd({ pelajaran: items })}
+            importance="wajib"
+            placeholder="Contoh: Meningkatkan kedisiplinan dan keterampilan kerja."
+            addLabel="+ Tambah Poin Pelajaran"
+          />
+        </div>
 
         {/* 2. Box Panduan & Cerita Pengalaman */}
         <div style={{ marginTop: '1.75rem', paddingTop: '1.25rem', borderTop: '1px dashed var(--line, #cbd5e1)' }}>
