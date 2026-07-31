@@ -12,7 +12,6 @@ import SekolahStep from '@/components/wizard/steps/SekolahStep'
 import PerusahaanStep from '@/components/wizard/steps/PerusahaanStep'
 import PklStep from '@/components/wizard/steps/PklStep'
 import ProfilStep from '@/components/wizard/steps/ProfilStep'
-import CeritaStep from '@/components/wizard/steps/CeritaStep'
 import ReviewAIStep from '@/components/wizard/steps/ReviewAIStep'
 import StudiKasusStep from '@/components/wizard/steps/StudiKasusStep'
 import ClosingStep from '@/components/wizard/steps/ClosingStep'
@@ -30,7 +29,6 @@ const STEPS: StepDef[] = [
   { id: 'perusahaan', title: 'Data Perusahaan', render: (c, s) => <PerusahaanStep ctx={c} set={s} /> },
   { id: 'pkl', title: 'Periode PKL', render: (c, s) => <PklStep ctx={c} set={s} /> },
   { id: 'profil', title: 'Profil Perusahaan (BAB II)', render: (c, s) => <ProfilStep ctx={c} set={s} /> },
-  { id: 'cerita', title: 'Tulis Cerita Bebas (AI)', render: (c, s) => <CeritaStep ctx={c} set={s} /> },
   { id: 'review-ai', title: 'Kegiatan, Peralatan & Kendala', render: (c, s) => <ReviewAIStep ctx={c} set={s} /> },
   { id: 'studi-kasus', title: 'Studi Kasus Teknis', render: (c, s) => <StudiKasusStep ctx={c} set={s} /> },
   { id: 'closing', title: 'Penutup & Kesimpulan', render: (c, s) => <ClosingStep ctx={c} set={s} /> },
@@ -220,8 +218,6 @@ function WizardInner() {
         return filled(ctx.pkl.tanggal_mulai) && filled(ctx.pkl.tanggal_selesai)
       case 'profil':
         return filled(ctx.profil_perusahaan.sejarah) || filled(ctx.profil_perusahaan.visi)
-      case 'cerita':
-        return filled(ctx.refleksi)
       case 'review-ai':
         return ctx.kegiatan.length > 0
       case 'studi-kasus':
