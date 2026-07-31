@@ -43,44 +43,67 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
   return (
     <>
       <h2>Kegiatan, Peralatan & Kendala</h2>
-      <p className="muted">
-        Isi bagian ini jadi BAB II, IV, dan V laporanmu: bidang &amp; tugas kegiatan,
-        peralatan kantor yang dipakai (dengan fotonya), serta hambatan &amp; solusi.
-        Kalau kamu memakai AI di langkah sebelumnya, hasil ekstraksinya sudah
-        terisi di sini — tinggal dicek dan dilengkapi.
+      <p className="muted" style={{ fontSize: '0.95rem', lineHeight: 1.6 }}>
+        Di sini kamu akan menceritakan <strong>apa yang kamu kerjakan selama PKL, alat yang kamu gunakan, masalah yang kamu temui, dan apa yang kamu pelajari.</strong>
       </p>
 
-      {/* Recommended BAB Info */}
+      {/* Info Penjelas Bahasa Formal & AI */}
+      <div style={{ background: '#eff6ff', border: '1px solid #93c5fd', borderRadius: 8, padding: '0.85rem 1rem', marginBottom: '1.5rem', fontSize: '0.88rem', color: '#1e40af', lineHeight: 1.5 }}>
+        <strong>💡 Tidak perlu menggunakan bahasa formal.</strong>
+        <br />
+        Tulis berdasarkan pengalamanmu sehari-hari — AI akan membantu merapikannya menjadi bahasa laporan.
+      </div>
+
+      {/* Recommended BAB Info (if available) */}
       {config?.bab_modules && config.bab_modules.length > 0 && (
-        <div style={{ padding: '1rem', background: 'var(--green-50)', borderLeft: '4px solid var(--green-600)', marginBottom: '1.5rem', borderRadius: '4px' }}>
-          <strong>Rekomendasi Struktur BAB dari AI:</strong>
-          <p style={{ margin: '0.5rem 0 0', fontSize: '0.9rem' }}>
+        <div style={{ padding: '0.85rem 1rem', background: 'var(--green-50)', borderLeft: '4px solid var(--green-600)', marginBottom: '1.5rem', borderRadius: '6px' }}>
+          <strong style={{ color: 'var(--green-800)', fontSize: '0.85rem' }}>Rekomendasi Struktur BAB dari AI:</strong>
+          <p style={{ margin: '0.3rem 0 0', fontSize: '0.88rem', color: 'var(--green-700)' }}>
             {config.bab_modules.join(' ➔ ')}
           </p>
         </div>
       )}
 
-      {/* Kegiatan / Pelaksanaan */}
-      <FieldGroup title="Data Pengamatan / Kegiatan (BAB IV)" full>
-        {kegiatan.length === 0 && <p className="muted">Belum ada kegiatan yang terekstrak.</p>}
+      {/* ── 1. Kegiatan Selama PKL ────────────────────────────────────────── */}
+      <FieldGroup title="Kegiatan Selama PKL" full>
+        <p className="muted" style={{ margin: '-0.5rem 0 1rem', fontSize: '0.88rem' }}>
+          Ceritakan bagian/divisi tempat kamu bekerja dan tugas yang kamu lakukan.
+        </p>
+        {kegiatan.length === 0 && (
+          <p className="muted" style={{ fontStyle: 'italic', fontSize: '0.88rem' }}>
+            Belum ada kegiatan yang diisi. Klik "+ Tambah Kegiatan / Divisi" di bawah.
+          </p>
+        )}
         {kegiatan.map((k, i) => (
-          <div key={i} className="nested-card">
+          <div key={i} className="nested-card" style={{ marginBottom: '1.25rem' }}>
             <div className="nested-card__head">
-              <strong>Bidang {i + 1}</strong>
+              <strong>Kegiatan / Divisi {i + 1}</strong>
               <button type="button" className="btn-sm btn-danger" onClick={() => removeKegiatan(i)}>✕</button>
             </div>
-            <TextField label="Nama Bidang/Bagian" value={k.bidang} onChange={(v) => updKegiatan(i, { bidang: v })} placeholder="Divisi Umum" />
-            <TextareaField label="Deskripsi Umum" value={k.deskripsi_umum} onChange={(v) => updKegiatan(i, { deskripsi_umum: v })} placeholder="Di divisi ini, saya bertanggung jawab untuk..." />
-            
-            <div style={{ marginTop: '1rem' }}>
-              <strong>Tugas-tugas:</strong>
+            <TextField
+              label="Kamu bekerja di bagian apa?"
+              value={k.bidang}
+              onChange={(v) => updKegiatan(i, { bidang: v })}
+              placeholder="Contoh: Divisi IT / Administrasi / Produksi / Marketing"
+              importance="wajib"
+            />
+            <TextareaField
+              label="Apa yang biasanya kamu lakukan di bagian ini?"
+              value={k.deskripsi_umum}
+              onChange={(v) => updKegiatan(i, { deskripsi_umum: v })}
+              placeholder="Contoh: Membantu memperbaiki komputer, menginstal aplikasi, dan merapikan kabel LAN."
+              importance="wajib"
+            />
+
+            <div style={{ marginTop: '1.25rem' }}>
+              <strong style={{ fontSize: '0.88rem', color: 'var(--ink)' }}>Tugas yang kamu lakukan:</strong>
               {k.tugas.map((t, j) => (
                 <div key={j} className="array__row" style={{ marginTop: '0.5rem' }}>
                   <div style={{ flex: 1, minWidth: 0, width: '100%' }}>
                     <input
                       type="text"
                       className="field__input"
-                      placeholder="Nama Tugas (misal: Menginput Data)"
+                      placeholder="Nama Tugas (misal: Memperbaiki Komputer)"
                       value={t.nama}
                       onChange={(e) => {
                         const nextTugas = [...k.tugas]
@@ -94,7 +117,7 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
                     <input
                       type="text"
                       className="field__input"
-                      placeholder="Detail (misal: Menggunakan MS Excel)"
+                      placeholder="Detail (misal: Menginstal Windows 11 & Driver)"
                       value={t.detail}
                       onChange={(e) => {
                         const nextTugas = [...k.tugas]
@@ -128,106 +151,153 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
             </div>
           </div>
         ))}
-        <button type="button" className="btn-sm btn-outline" onClick={addKegiatan}>+ Tambah Bidang Baru</button>
+        <button type="button" className="btn-sm btn-outline" onClick={addKegiatan}>+ Tambah Kegiatan / Divisi</button>
       </FieldGroup>
 
-      {/* Peralatan & Perlengkapan Kantor (BAB IV) */}
-      <FieldGroup title="Peralatan & Perlengkapan Kantor (BAB IV)" full>
-        <p className="muted" style={{ marginBottom: '0.75rem' }}>
-          Daftar peralatan/perlengkapan yang digunakan selama PKL. Akan muncul di sub-bab khusus di BAB IV sesuai format Niken.
+      {/* ── 2. Peralatan yang Kamu Gunakan ──────────────────────────────────── */}
+      <FieldGroup title="Peralatan yang Kamu Gunakan" full>
+        <p className="muted" style={{ margin: '-0.5rem 0 0.5rem', fontSize: '0.88rem', lineHeight: 1.5 }}>
+          Tuliskan alat yang kamu gunakan selama PKL, misalnya <strong>komputer, laptop, printer, kamera, mesin, atau peralatan khusus lainnya.</strong>
         </p>
-        {(peralatan || []).length === 0 && <p className="muted">Belum ada peralatan. Tambahkan peralatan yang digunakan selama PKL.</p>}
+        <p className="muted" style={{ margin: '0 0 1rem', fontSize: '0.83rem', color: '#6b7280', fontStyle: 'italic' }}>
+          * Tidak perlu menambahkan alat yang hanya kamu lihat tetapi tidak kamu gunakan.
+        </p>
+        {(peralatan || []).length === 0 && (
+          <p className="muted" style={{ fontStyle: 'italic', fontSize: '0.88rem' }}>
+            Belum ada peralatan yang diisi. Klik "+ Tambah Peralatan" di bawah.
+          </p>
+        )}
         {(peralatan || []).map((p, i) => (
-          <div key={i} className="nested-card">
+          <div key={i} className="nested-card" style={{ marginBottom: '1.25rem' }}>
             <div className="nested-card__head">
               <strong>Peralatan {i + 1}</strong>
               <button type="button" className="btn-sm btn-danger" onClick={() => removePeralatan(i)}>✕</button>
             </div>
+            <TextField
+              label="Nama peralatan"
+              value={p.nama}
+              onChange={(v) => updPeralatan(i, { nama: v })}
+              placeholder="Contoh: Laptop Lenovo / Mesin Fotokopi Canon"
+              importance="wajib"
+            />
+            <TextareaField
+              label="Digunakan untuk"
+              value={p.deskripsi}
+              onChange={(v) => updPeralatan(i, { deskripsi: v })}
+              placeholder="Contoh: Membuat laporan, mengolah data transaksi, dan mendesain banner."
+              importance="wajib"
+            />
             <ImageUploadField
-              label="Gambar Peralatan (Wajib)"
+              label="Foto peralatan"
               value={p.gambar}
               onChange={(v) => updPeralatan(i, { gambar: v })}
               importance="wajib"
-              hint="Format JPG/PNG. Akan ditampilkan di laporan dengan caption nama peralatan."
-            />
-            <TextField
-              label="Nama Peralatan/Perlengkapan"
-              value={p.nama}
-              onChange={(v) => updPeralatan(i, { nama: v })}
-              placeholder="Komputer, Mesin Fotokopi, dll."
-            />
-            <TextareaField
-              label="Deskripsi Fungsi/Kegunaan"
-              value={p.deskripsi}
-              onChange={(v) => updPeralatan(i, { deskripsi: v })}
-              placeholder="Digunakan untuk menginput data customer ke sistem..."
+              hint="Unggah foto alat yang kamu gunakan (JPG/PNG)."
             />
           </div>
         ))}
         <button type="button" className="btn-sm btn-outline" onClick={addPeralatan}>+ Tambah Peralatan</button>
       </FieldGroup>
 
-      {/* Hambatan & Solusi */}
-      <FieldGroup title="Hambatan & Solusi (BAB V)" full>
-        <p className="muted" style={{ marginBottom: '0.75rem' }}>
-          Daftar masalah yang kamu hadapi dan bagaimana kamu menyelesaikannya.
+      {/* ── 3. Kendala & Cara Mengatasinya ─────────────────────────────────── */}
+      <FieldGroup title="Kendala & Cara Mengatasinya" full>
+        <p className="muted" style={{ margin: '-0.5rem 0 1rem', fontSize: '0.88rem' }}>
+          Pernah mengalami masalah atau kesulitan selama PKL? Ceritakan masalahnya dan bagaimana kamu mengatasinya.
         </p>
-        {kendala.length === 0 && <p className="muted">Tidak ada kendala yang terekstrak.</p>}
+        {kendala.length === 0 && (
+          <p className="muted" style={{ fontStyle: 'italic', fontSize: '0.88rem' }}>
+            Belum ada kendala yang diisi. Klik "+ Tambah Kendala" di bawah.
+          </p>
+        )}
         {kendala.map((k, i) => (
-          <div key={i} className="nested-card">
+          <div key={i} className="nested-card" style={{ marginBottom: '1.25rem' }}>
             <div className="nested-card__head">
               <strong>Kendala {i + 1}</strong>
               <button type="button" className="btn-sm btn-danger" onClick={() => removeKendala(i)}>✕</button>
             </div>
-            <TextField label="Masalah yang dihadapi" value={k.masalah} onChange={(v) => updKendala(i, { masalah: v })} placeholder="Koneksi internet lambat..." />
-            <TextareaField label="Solusi" value={k.solusi} onChange={(v) => updKendala(i, { solusi: v })} placeholder="Menggunakan koneksi cadangan..." />
+            <TextField
+              label="Apa kendalanya?"
+              value={k.masalah}
+              onChange={(v) => updKendala(i, { masalah: v })}
+              placeholder="Contoh: Koneksi internet sering lambat saat input data."
+              importance="wajib"
+            />
+            <TextareaField
+              label="Bagaimana kamu mengatasinya?"
+              value={k.solusi}
+              onChange={(v) => updKendala(i, { solusi: v })}
+              placeholder="Contoh: Menggunakan koneksi cadangan modem seluler."
+              importance="wajib"
+            />
           </div>
         ))}
         <button type="button" className="btn-sm btn-outline" onClick={addKendala}>+ Tambah Kendala</button>
       </FieldGroup>
 
-      {/* Refleksi Pembahasan BAB V */}
-      <FieldGroup title="Pembahasan & Refleksi (BAB V)" full>
-        <p className="muted" style={{ margin: '-0.5rem 0 0.75rem', fontSize: '0.85rem' }}>
-          Pelajaran yang kamu dapatkan dan cerita pengalaman selama PKL.
+      {/* ── 4. Pengalaman & Hal yang Kamu Pelajari ─────────────────────────── */}
+      <FieldGroup title="Pengalaman & Hal yang Kamu Pelajari" full>
+        <p className="muted" style={{ margin: '-0.5rem 0 0.75rem', fontSize: '0.88rem', lineHeight: 1.5 }}>
+          Ceritakan pengalamanmu selama PKL dengan bahasa sehari-hari. Tidak perlu dibuat formal — <strong>ceritakan saja seperti kamu sedang bercerita kepada guru tentang pengalaman PKL-mu.</strong>
         </p>
+
+        {/* Box Panduan Inspirasi Cerita */}
+        <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '0.85rem 1rem', marginBottom: '1.25rem', fontSize: '0.85rem', color: '#334155' }}>
+          <strong style={{ color: '#0f172a', display: 'block', marginBottom: '0.35rem' }}>Kamu bisa menceritakan:</strong>
+          <ul style={{ margin: 0, paddingLeft: '1.1rem', lineHeight: 1.6 }}>
+            <li>Apa yang paling kamu pelajari?</li>
+            <li>Apa yang awalnya sulit?</li>
+            <li>Apa yang sekarang sudah bisa kamu lakukan?</li>
+            <li>Apa yang berubah dari dirimu setelah PKL?</li>
+            <li>Pengalaman apa yang paling berkesan?</li>
+          </ul>
+          <div style={{ marginTop: '0.5rem', fontStyle: 'italic', color: '#475569', borderTop: '1px dashed #cbd5e1', paddingTop: '0.4rem' }}>
+            <strong>Contoh:</strong> "Awalnya saya kesulitan menggunakan software yang dipakai di perusahaan. Setelah beberapa kali mencoba dan bertanya kepada pembimbing, saya akhirnya bisa menggunakannya sendiri."
+          </div>
+        </div>
+
         <StringArrayField
-          label="Pelajaran Utama"
+          label="Apa pelajaran utama yang kamu dapatkan?"
           items={pelajaran}
           onChange={(items) => upd({ pelajaran: items })}
           importance="wajib"
-          placeholder="Meningkatkan kedisiplinan..."
+          placeholder="Contoh: Meningkatkan kedisiplinan dan keberanian bertanya."
+          addLabel="+ Tambah Poin Pelajaran"
         />
-        <div style={{ marginTop: '1rem' }}>
+
+        <div style={{ marginTop: '1.25rem' }}>
           <TextareaField
-            label="Cerita Refleksi"
+            label="Cerita Pengalaman"
             value={ctx.refleksi_bab5 || ''}
             onChange={(v) => upd({ refleksi_bab5: v })}
             importance="wajib"
-            placeholder="Menurut saya, lingkungan kerja sangat membantu..."
-            hint="Tulis bebas. AI akan merangkumnya menjadi paragraf profesional untuk sub-bab 'Hal-hal yang perlu diperhatikan'."
+            placeholder="Tulis pengalamanmu di sini dengan bahasa kamu sendiri..."
+            hint="🤖 AI akan membantu mengubah ceritamu menjadi paragraf laporan yang lebih rapi."
+            rows={5}
           />
         </div>
       </FieldGroup>
 
-      {/* Kesimpulan dan Saran BAB VI */}
-      <FieldGroup title="Kesimpulan dan Saran (BAB VI)" full>
-        <p className="muted" style={{ margin: '-0.5rem 0 0.75rem', fontSize: '0.85rem' }}>
-          Tulis kesimpulan & saranmu secara singkat. AI akan mengembangkannya dengan gaya bahasa yang profesional.
-        </p>
+      {/* ── 5. Kesimpulan & Saran ────────────────────────────────────────── */}
+      <FieldGroup title="Kesimpulan & Saran" full>
+        <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 8, padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.85rem', color: '#166534' }}>
+          <strong>💡 Tidak perlu menulis panjang.</strong> 1–3 kalimat sudah cukup. AI akan membantu mengembangkannya menjadi bagian laporan resmi.
+        </div>
+
         <TextareaField
-          label="Ide Kesimpulan"
+          label="Apa yang kamu dapatkan setelah mengikuti PKL? (Kesimpulan)"
           value={ctx.kesimpulan_user || ''}
           onChange={(v) => upd({ kesimpulan_user: v })}
           importance="wajib"
-          placeholder="Kesimpulannya, saya banyak belajar tentang kerja tim..."
+          placeholder="Contoh: Selama PKL saya belajar bekerja sama, lebih disiplin, dan memahami bagaimana pekerjaan di bidang IT dilakukan di dunia kerja."
+          rows={3}
         />
         <TextareaField
-          label="Ide Saran"
+          label="Apa yang ingin kamu sarankan untuk sekolah atau perusahaan? (Saran)"
           value={ctx.saran_user || ''}
           onChange={(v) => upd({ saran_user: v })}
           importance="wajib"
-          placeholder="Untuk sekolah, perbanyak praktik. Untuk perusahaan, perbaiki AC..."
+          placeholder="Contoh: Sekolah dapat menambah kegiatan praktik agar siswa lebih siap menghadapi dunia kerja."
+          rows={3}
         />
       </FieldGroup>
     </>
