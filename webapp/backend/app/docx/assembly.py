@@ -315,32 +315,65 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
     bab_lines: dict[int | str, float] = {}
     current_bab_key: int | str | None = None  # None sebelum BAB I PENDAHULUAN
 
+    # Lacak posisi offset baris kumulatif per bookmark heading!
+    bookmark_offset_lines: dict[str, float] = {}
+    bookmark_bab_key: dict[str, int | str] = {}
+
+    def _norm(s: str) -> str:
+        return re.sub(r"\s+", " ", str(s or "")).strip().upper()
+
+    outline_map: dict[str, str] = {_norm(text): bm for _, text, bm in builder.outline}
+
+    bab_lines: dict[int | str, float] = {}
+    current_bab_key: int | str | None = None  # None sebelum BAB I PENDAHULUAN
+
+    bookmark_offset_lines: dict[str, float] = {}
+    bookmark_bab_key: dict[str, int | str] = {}
+
     for elem in builder.doc.element.body:
         tag = elem.tag.split("}")[-1] if "}" in elem.tag else elem.tag
 
         if tag == "p":
-            text = "".join(elem.itertext()).strip()
-            if not text:
+            text_raw = "".join(elem.itertext()).strip()
+            if not text_raw:
                 continue
 
-            m_bab = re.search(r"BAB\s+([IVXLCDM\d]+)", text, re.IGNORECASE)
+            text_norm = _norm(text_raw)
+
+            m_bab = re.search(r"BAB\s+([IVXLCDM\d]+)", text_norm, re.IGNORECASE)
             if m_bab:
                 bab_num = _roman_to_int(m_bab.group(1))
                 current_bab_key = bab_num
                 bab_lines[current_bab_key] = bab_lines.get(current_bab_key, 0.0) + 4.0
+                bm = outline_map.get(text_norm)
+                if bm:
+                    bookmark_offset_lines[bm] = 0.0
+                    bookmark_bab_key[bm] = current_bab_key
                 continue
-            elif "DAFTAR PUSTAKA" in text.upper():
+            elif "DAFTAR PUSTAKA" in text_norm:
                 current_bab_key = "DAFTAR_PUSTAKA"
                 bab_lines[current_bab_key] = bab_lines.get(current_bab_key, 0.0) + 3.0
+                bm = outline_map.get(text_norm)
+                if bm:
+                    bookmark_offset_lines[bm] = 0.0
+                    bookmark_bab_key[bm] = current_bab_key
                 continue
-            elif "LAMPIRAN" in text.upper() and not "DAFTAR" in text.upper():
+            elif "LAMPIRAN" in text_norm and not "DAFTAR" in text_norm:
                 current_bab_key = "LAMPIRAN"
                 bab_lines[current_bab_key] = bab_lines.get(current_bab_key, 0.0) + 3.0
+                bm = outline_map.get(text_norm)
+                if bm:
+                    bookmark_offset_lines[bm] = 0.0
+                    bookmark_bab_key[bm] = current_bab_key
                 continue
 
-            # Hanya akumulasi baris jika sudah berada di dalam BAB / DAFTAR PUSTAKA / LAMPIRAN
             if current_bab_key is not None:
-                lines = max(1.0, math.ceil(len(text) / 62.0)) * 1.2
+                bm = outline_map.get(text_norm)
+                if bm:
+                    bookmark_offset_lines[bm] = bab_lines.get(current_bab_key, 0.0)
+                    bookmark_bab_key[bm] = current_bab_key
+
+                lines = max(1.0, math.ceil(len(text_raw) / 62.0)) * 1.2
                 bab_lines[current_bab_key] = bab_lines.get(current_bab_key, 0.0) + lines
 
         elif tag == "tbl" and current_bab_key is not None:
@@ -367,26 +400,28 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
     # LAMPIRAN
     bab_start_pages["LAMPIRAN"] = cur_page
 
-    # Susun entri sections dengan nomor halaman dinamis hasil kalkulasi
+    # Susun entri sections dengan nomor halaman presisi (BAB + offset sub-bab)
     active_bab_num: int | str = 1
     for level, text, bookmark in builder.outline:
-        m_bab = re.search(r"BAB\s+([IVXLCDM\d]+)", text, re.IGNORECASE)
-        if m_bab:
-            active_bab_num = _roman_to_int(m_bab.group(1))
-            pg = bab_start_pages.get(active_bab_num, cur_page)
-        elif "DAFTAR PUSTAKA" in text.upper():
-            active_bab_num = "DAFTAR_PUSTAKA"
-            pg = bab_start_pages.get("DAFTAR_PUSTAKA", cur_page)
-        elif "LAMPIRAN" in text.upper():
-            active_bab_num = "LAMPIRAN"
-            pg = bab_start_pages.get("LAMPIRAN", cur_page)
-        else:
-            m_sub = re.match(r"^(\d+)\.", text)
-            if m_sub:
-                active_bab_num = int(m_sub.group(1))
-                pg = bab_start_pages.get(active_bab_num, cur_page)
+        b_key = bookmark_bab_key.get(bookmark)
+        if b_key is None:
+            m_bab = re.search(r"BAB\s+([IVXLCDM\d]+)", text, re.IGNORECASE)
+            if m_bab:
+                active_bab_num = _roman_to_int(m_bab.group(1))
+            elif "DAFTAR PUSTAKA" in text.upper():
+                active_bab_num = "DAFTAR_PUSTAKA"
+            elif "LAMPIRAN" in text.upper():
+                active_bab_num = "LAMPIRAN"
             else:
-                pg = bab_start_pages.get(active_bab_num, cur_page)
+                m_s = re.match(r"^(\d+)\.", text)
+                if m_s:
+                    active_bab_num = int(m_s.group(1))
+            b_key = active_bab_num
+
+        b_start = bab_start_pages.get(b_key, cur_page)
+        off_lines = bookmark_offset_lines.get(bookmark, 0.0)
+        off_pages = int(off_lines // LINES_PER_PAGE)
+        pg = b_start + off_pages
 
         sections.append((text, bookmark, level, str(pg)))
 
