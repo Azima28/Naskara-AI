@@ -226,7 +226,8 @@ export const draftSection = (sectionKey: string, contextData: PklContext) =>
 export async function draftSectionStream(
   sectionKey: string,
   contextData: PklContext,
-  onChunk: (chunk: string) => void
+  onChunk: (chunk: string) => void,
+  signal?: AbortSignal
 ): Promise<string> {
   const rawAuth = localStorage.getItem('pkl-auth')
   let token = ''
@@ -249,6 +250,7 @@ export async function draftSectionStream(
         section_key: sectionKey,
         context_data: contextData,
       }),
+      signal,
     })
 
     if (!response.ok || !response.body) {

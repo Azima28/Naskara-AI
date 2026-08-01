@@ -6,6 +6,7 @@ import AntiAIHighlighter from '@/components/editor/AntiAIHighlighter'
 import DocumentOutline from '@/components/editor/DocumentOutline'
 import RequestionPanel, { type GenerateIssue, type Requestion } from '@/components/RequestionPanel'
 import NotificationModal from '@/components/common/NotificationModal'
+import ProfilPolishModal from '@/components/editor/ProfilPolishModal'
 import type { PklContext } from '@/types/pkl'
 import { emptyContext } from '@/types/pkl'
 import { IconDocument, IconDownload, IconAlert, IconPencil, IconCheck } from '@/components/common/Icons'
@@ -58,6 +59,7 @@ function EditorInner() {
   // In-Page Batch Generation State
   const [isBatchGenerating, setIsBatchGenerating] = useState(false)
   const [batchStatuses, setBatchStatuses] = useState<Record<string, 'pending' | 'generating' | 'success' | 'failed'>>({})
+  const [showProfilPolishModal, setShowProfilPolishModal] = useState(false)
 
   // Notification Modal State
   const [modal, setModal] = useState<{ isOpen: boolean; title?: string; message: string; type?: 'error' | 'warning' | 'info' | 'success' }>({
@@ -177,13 +179,16 @@ function EditorInner() {
         message: `Hanya ${totalGenCount} sub-bab yang berhasil disusun. Minimal 3 sub-bab harus berhasil diselesaikan agar editor terbuka. Silakan periksa server AI Anda dan klik tombol 'Generate Semua Sub-bab Laporan' kembali.`,
         type: 'error',
       })
-    } else if (failedList.length > 0) {
-      setModal({
-        isOpen: true,
-        title: 'Penyusunan Sub-bab Selesai',
-        message: `Sebanyak ${totalGenCount} sub-bab berhasil disusun. Terdapat ${failedList.length} sub-bab yang gagal/timeout 15 detik (${failedList.join(', ')}). Pintu editor telah terbuka dan Anda dapat mencoba bagian yang gagal tersebut secara individu.`,
-        type: 'warning',
-      })
+    } else {
+      setShowProfilPolishModal(true)
+      if (failedList.length > 0) {
+        setModal({
+          isOpen: true,
+          title: 'Penyusunan Sub-bab Selesai',
+          message: `Sebanyak ${totalGenCount} sub-bab berhasil disusun. Terdapat ${failedList.length} sub-bab yang gagal/timeout 15 detik (${failedList.join(', ')}). Pintu editor telah terbuka dan Anda dapat mencoba bagian yang gagal tersebut secara individu.`,
+          type: 'warning',
+        })
+      }
     }
   }
 
@@ -593,6 +598,24 @@ function EditorInner() {
         message={modal.message}
         type={modal.type}
         onClose={() => setModal((prev) => ({ ...prev, isOpen: false }))}
+      />
+
+      {/* Profil Perusahaan Polish Modal */}
+      <ProfilPolishModal
+        isOpen={showProfilPolishModal}
+        ctx={ctx}
+        onComplete={(updatedProfil) => {
+          const updated = {
+            ...ctxRef.current,
+            profil_perusahaan: { ...ctxRef.current.profil_perusahaan, ...updatedProfil },
+          }
+          setCtx(updated)
+          dirtyRef.current = true
+          if (draftIdRef.current) {
+            updateDraft(draftIdRef.current, { data: updated }).catch(() => {})
+          }
+        }}
+        onClose={() => setShowProfilPolishModal(false)}
       />
     </div>
   )

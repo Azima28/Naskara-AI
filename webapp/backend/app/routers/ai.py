@@ -127,6 +127,12 @@ async def draft_section(
         user_prompt = sections.prompt_tujuan_manfaat(ctx)
     elif key == "profil_sejarah":
         user_prompt = sections.prompt_profil_perusahaan(ctx)
+    elif key == "visi_misi":
+        user_prompt = ai_sections.prompt_visi_misi(ctx)
+    elif key == "tata_tertib_perusahaan":
+        user_prompt = ai_sections.prompt_tata_tertib_perusahaan(ctx)
+    elif key == "job_descriptions":
+        user_prompt = ai_sections.prompt_job_descriptions(ctx)
     elif key.startswith("kegiatan_") and key.endswith("_intro"):
         bidang = key.replace("kegiatan_", "").replace("_intro", "").replace("_", " ").title()
         deskripsi = ""
@@ -230,6 +236,12 @@ async def draft_section_stream(
         user_prompt = sections.prompt_tujuan_manfaat(ctx)
     elif key == "profil_sejarah":
         user_prompt = sections.prompt_profil_perusahaan(ctx)
+    elif key == "visi_misi":
+        user_prompt = ai_sections.prompt_visi_misi(ctx)
+    elif key == "tata_tertib_perusahaan":
+        user_prompt = ai_sections.prompt_tata_tertib_perusahaan(ctx)
+    elif key == "job_descriptions":
+        user_prompt = ai_sections.prompt_job_descriptions(ctx)
     elif key.startswith("kegiatan_") and key.endswith("_intro"):
         bidang = key.replace("kegiatan_", "").replace("_intro", "").replace("_", " ").title()
         deskripsi = ""
