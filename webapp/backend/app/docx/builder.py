@@ -181,7 +181,7 @@ class PklDocBuilder:
         paragraph._p.insert(0, start)
         paragraph._p.append(end)
 
-    def add_toc_entry(self, text: str, bookmark: str, level: int = 1, page_val: str = "1") -> Any:
+    def add_toc_entry(self, text: str, bookmark: str, level: int = 1) -> Any:
         """Satu baris daftar isi: teks .... <PAGEREF bookmark>.
 
         Nomor halaman berupa field PAGEREF sehingga Word mengisinya
@@ -205,7 +205,7 @@ class PklDocBuilder:
         fld = parse_xml(
             f'<w:fldSimple {nsdecls("w")} w:instr=" PAGEREF {bookmark} \\h ">'
             f'<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>'
-            f'<w:sz w:val="24"/></w:rPr><w:t>{page_val}</w:t></w:r></w:fldSimple>'
+            f'<w:sz w:val="24"/></w:rPr><w:t>1</w:t></w:r></w:fldSimple>'
         )
         p._p.append(fld)
         return p
@@ -260,23 +260,23 @@ class PklDocBuilder:
         else:
             body.append(sdt)
 
-    def populate_native_toc(self, sections_list: list[tuple[str, str, int] | tuple[str, str, int, str]]) -> None:
+    def populate_native_toc(self, sections_list: list[tuple[str, str, int]]) -> None:
         """Populasi Daftar Isi dengan field PAGEREF yang menunjuk bookmark nyata.
 
         Tiap entri berupa field ``PAGEREF <bookmark> \\h`` sehingga nomor
-        halaman dihitung Word/LibreOffice dari posisi heading SEBENARNYA.
-        `sections_list` berisi ``(teks, bookmark, level, [initial_page])``.
+        halaman dihitung Word/LibreOffice dari posisi heading SEBENARNYA —
+        bukan angka hardcode yang cepat basi. Cache di dalam field dibiarkan
+        placeholder ("1") — angka asli diisi belakangan oleh
+        ``embed_toc_page_numbers`` (re-render via Word) atau oleh
+        ``enable_update_fields`` saat dokumen dibuka di Word. ``sections_list``
+        berisi ``(teks, bookmark, level)``; entri tanpa bookmark valid dilewati.
         """
         sdtContent_list = self.doc.element.body.xpath('.//w:sdtContent')
         if not sdtContent_list:
             return
         sdtContent = sdtContent_list[0]
 
-        for item in sections_list:
-            text = item[0]
-            bookmark = item[1]
-            level = item[2]
-            page_val = str(item[3]) if len(item) > 3 and item[3] else "1"
+        for text, bookmark, level in sections_list:
             if not bookmark:
                 continue
             indent_dxa = "0" if level == 1 else ("360" if level == 2 else "720")
@@ -289,7 +289,7 @@ class PklDocBuilder:
                 f'<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="24"/></w:rPr><w:t xml:space="preserve">{_xml_escape(text)}</w:t></w:r>'
                 f'<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="24"/></w:rPr><w:tab/></w:r>'
                 f'<w:fldSimple w:instr=" PAGEREF {bookmark} \\h ">'
-                f'<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="24"/></w:rPr><w:t>{page_val}</w:t></w:r>'
+                f'<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="24"/></w:rPr><w:t>1</w:t></w:r>'
                 f'</w:fldSimple>'
                 f'</w:p>'
             )
