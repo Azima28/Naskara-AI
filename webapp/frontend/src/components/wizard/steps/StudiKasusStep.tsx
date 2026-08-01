@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { DataAngka, PklContext, StudiKasus } from '@/types/pkl'
 import { emptyDataAngka } from '@/types/pkl'
 import { FieldGroup, TextareaField, TextField, ImageArrayUploadField } from '@/components/fields/FormFields'
@@ -6,6 +7,7 @@ import { getJurusanExample } from '@/utils/jurusanExamples'
 import { IconDocument } from '@/components/common/Icons'
 
 export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p: Partial<PklContext>) => void }) {
+  const [showAlurExample, setShowAlurExample] = useState(false)
   const sk = ctx.studi_kasus
   const upd = (patch: Partial<StudiKasus>) => set({ studi_kasus: { ...sk, ...patch } })
 
@@ -25,15 +27,6 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
       nilai: `${s.sebelum} ➔ ${s.sesudah}`,
     }))
     upd({ data_angka: sampleRows })
-  }
-
-  const handleApplySampleStudiKasus = () => {
-    upd({
-      judul: jurusanExample.studiKasus.judul,
-      latar_belakang: jurusanExample.studiKasus.latar_belakang,
-      proses_atau_formula: jurusanExample.studiKasus.proses_atau_formula,
-      hasil: jurusanExample.studiKasus.hasil,
-    })
   }
 
   return (
@@ -73,50 +66,61 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
       </div>
 
       <FieldGroup title="Alur Pengalaman &amp; Pelaksanaan Pekerjaan Utama">
-        {/* Dynamic Major-Specific Storyline Guidance & 1-Click Apply */}
-        <div
-          style={{
-            background: '#f8fafc',
-            border: '1px solid #cbd5e1',
-            borderRadius: '8px',
-            padding: '0.85rem 1rem',
-            marginBottom: '1.25rem',
-            fontSize: '0.85rem',
-            color: '#334155',
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.6rem' }}>
-            <strong style={{ color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              💡 Contoh Alur Pekerjaan ({jurusanExample.label}):
-            </strong>
-            <button
-              type="button"
-              className="btn-sm btn-outline"
-              onClick={handleApplySampleStudiKasus}
-              style={{ fontSize: '0.78rem', padding: '0.3rem 0.75rem', color: 'var(--green-700)', borderColor: 'var(--green-600)', fontWeight: 600, background: '#ffffff' }}
-            >
-              + Gunakan Contoh Pekerjaan Jurusan Ini
-            </button>
-          </div>
+        {/* Collapsible Major-Specific Storyline Guidance */}
+        <div style={{ marginBottom: '1.25rem' }}>
+          <button
+            type="button"
+            className="btn-sm btn-outline btn-mobile-full"
+            onClick={() => setShowAlurExample(!showAlurExample)}
+            style={{
+              fontSize: '0.82rem',
+              padding: '0.45rem 0.85rem',
+              background: '#ffffff',
+              fontWeight: 600,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+            }}
+          >
+            💡 {showAlurExample ? 'Sembunyikan Contoh Alur Pekerjaan' : `Lihat Contoh Alur Pekerjaan (${jurusanExample.label})`}
+          </button>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.82rem', lineHeight: 1.45 }}>
-            <div>
-              <span style={{ fontWeight: 600, color: '#0f172a' }}>1. Nama Pekerjaan: </span>
-              <span style={{ color: '#334155' }}>"{jurusanExample.studiKasus.judul}"</span>
+          {showAlurExample && (
+            <div
+              style={{
+                marginTop: '0.65rem',
+                background: '#f8fafc',
+                border: '1px solid #cbd5e1',
+                borderRadius: '8px',
+                padding: '0.85rem 1rem',
+                fontSize: '0.85rem',
+                color: '#334155',
+              }}
+            >
+              <strong style={{ color: '#0f172a', display: 'block', marginBottom: '0.5rem' }}>
+                💡 Contoh Alur Pekerjaan ({jurusanExample.label}):
+              </strong>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.82rem', lineHeight: 1.45 }}>
+                <div>
+                  <span style={{ fontWeight: 600, color: '#0f172a' }}>1. Nama Pekerjaan: </span>
+                  <span style={{ color: '#334155' }}>"{jurusanExample.studiKasus.judul}"</span>
+                </div>
+                <div>
+                  <span style={{ fontWeight: 600, color: '#0f172a' }}>2. Masalah Awal: </span>
+                  <span style={{ color: '#334155' }}>"{jurusanExample.studiKasus.latar_belakang}"</span>
+                </div>
+                <div>
+                  <span style={{ fontWeight: 600, color: '#0f172a' }}>3. Langkah Kerja: </span>
+                  <span style={{ color: '#334155', whiteSpace: 'pre-line' }}>{jurusanExample.studiKasus.proses_atau_formula}</span>
+                </div>
+                <div>
+                  <span style={{ fontWeight: 600, color: '#0f172a' }}>4. Hasil Akhir: </span>
+                  <span style={{ color: '#334155' }}>"{jurusanExample.studiKasus.hasil}"</span>
+                </div>
+              </div>
             </div>
-            <div>
-              <span style={{ fontWeight: 600, color: '#0f172a' }}>2. Masalah Awal: </span>
-              <span style={{ color: '#334155' }}>"{jurusanExample.studiKasus.latar_belakang}"</span>
-            </div>
-            <div>
-              <span style={{ fontWeight: 600, color: '#0f172a' }}>3. Langkah Kerja: </span>
-              <span style={{ color: '#334155', whiteSpace: 'pre-line' }}>{jurusanExample.studiKasus.proses_atau_formula}</span>
-            </div>
-            <div>
-              <span style={{ fontWeight: 600, color: '#0f172a' }}>4. Hasil Akhir: </span>
-              <span style={{ color: '#334155' }}>"{jurusanExample.studiKasus.hasil}"</span>
-            </div>
-          </div>
+          )}
         </div>
 
         <TextField
