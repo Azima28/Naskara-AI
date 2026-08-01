@@ -660,36 +660,38 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
             </div>
 
             {/* Simulated DOCX Table */}
-            <div style={{ background: '#ffffff', border: '1px solid #000000', padding: '0.6rem', margin: '0.5rem 0', fontFamily: '"Times New Roman", serif', fontSize: '10pt', color: '#000000' }}>
-              <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '0.4rem', textTransform: 'uppercase' }}>
+            <div style={{ margin: '0.6rem 0', fontFamily: '"Times New Roman", serif', fontSize: '9.5pt', color: '#000000', width: '100%', boxSizing: 'border-box' }}>
+              <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '0.4rem', textTransform: 'uppercase', fontSize: '0.85rem' }}>
                 Tabel 2.1 Jadwal Kerja Operasional Perusahaan
               </div>
-              <table style={{ width: '100%', borderCollapse: 'collapse', border: '1.5px solid #000000', fontSize: '9.5pt' }}>
-                <thead>
-                  <tr style={{ background: '#f2f2f2' }}>
-                    <th style={{ border: '1px solid #000000', padding: '5px 6px', textAlign: 'center', width: '25%' }}>HARI</th>
-                    <th style={{ border: '1px solid #000000', padding: '5px 6px', textAlign: 'center', width: '35%' }}>JAM KERJA</th>
-                    <th style={{ border: '1px solid #000000', padding: '5px 6px', textAlign: 'center', width: '40%' }}>KETERANGAN</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td style={{ border: '1px solid #000000', padding: '5px 6px', fontWeight: 'bold', textAlign: 'center', verticalAlign: 'middle' }}>SENIN</td>
-                    <td style={{ border: '1px solid #000000', padding: '5px 6px', textAlign: 'center' }}>08.00 – 12.00<br />12.00 – 13.00<br />13.00 – 16.00</td>
-                    <td style={{ border: '1px solid #000000', padding: '5px 6px', textAlign: 'center' }}>OPERASIONAL<br />ISTIRAHAT<br />OPERASIONAL</td>
-                  </tr>
-                  <tr>
-                    <td style={{ border: '1px solid #000000', padding: '5px 6px', fontWeight: 'bold', textAlign: 'center', verticalAlign: 'middle' }}>SELASA</td>
-                    <td style={{ border: '1px solid #000000', padding: '5px 6px', textAlign: 'center' }}>08.00 – 12.00<br />12.00 – 13.00<br />13.00 – 16.00</td>
-                    <td style={{ border: '1px solid #000000', padding: '5px 6px', textAlign: 'center' }}>OPERASIONAL<br />ISTIRAHAT<br />OPERASIONAL</td>
-                  </tr>
-                  <tr>
-                    <td style={{ border: '1px solid #000000', padding: '5px 6px', fontWeight: 'bold', textAlign: 'center', verticalAlign: 'middle' }}>SABTU</td>
-                    <td style={{ border: '1px solid #000000', padding: '5px 6px', textAlign: 'center' }}>08.00 – 12.00<br />12.00</td>
-                    <td style={{ border: '1px solid #000000', padding: '5px 6px', textAlign: 'center' }}>OPERASIONAL<br />TUTUP</td>
-                  </tr>
-                </tbody>
-              </table>
+              <div className="table-scroll" style={{ width: '100%', overflowX: 'auto', background: '#ffffff' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', border: '1.5px solid #000000', fontSize: '9pt', boxSizing: 'border-box' }}>
+                  <thead>
+                    <tr style={{ background: '#f2f2f2' }}>
+                      <th style={{ border: '1px solid #000000', padding: '4px 6px', textAlign: 'center', width: '25%' }}>HARI</th>
+                      <th style={{ border: '1px solid #000000', padding: '4px 6px', textAlign: 'center', width: '35%' }}>JAM KERJA</th>
+                      <th style={{ border: '1px solid #000000', padding: '4px 6px', textAlign: 'center', width: '40%' }}>KETERANGAN</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style={{ border: '1px solid #000000', padding: '4px 6px', fontWeight: 'bold', textAlign: 'center', verticalAlign: 'middle' }}>SENIN</td>
+                      <td style={{ border: '1px solid #000000', padding: '4px 6px', textAlign: 'center' }}>08.00 – 12.00<br />12.00 – 13.00<br />13.00 – 16.00</td>
+                      <td style={{ border: '1px solid #000000', padding: '4px 6px', textAlign: 'center' }}>OPERASIONAL<br />ISTIRAHAT<br />OPERASIONAL</td>
+                    </tr>
+                    <tr>
+                      <td style={{ border: '1px solid #000000', padding: '4px 6px', fontWeight: 'bold', textAlign: 'center', verticalAlign: 'middle' }}>SELASA</td>
+                      <td style={{ border: '1px solid #000000', padding: '4px 6px', textAlign: 'center' }}>08.00 – 12.00<br />12.00 – 13.00<br />13.00 – 16.00</td>
+                      <td style={{ border: '1px solid #000000', padding: '5px 6px', textAlign: 'center' }}>OPERASIONAL<br />ISTIRAHAT<br />OPERASIONAL</td>
+                    </tr>
+                    <tr>
+                      <td style={{ border: '1px solid #000000', padding: '4px 6px', fontWeight: 'bold', textAlign: 'center', verticalAlign: 'middle' }}>SABTU</td>
+                      <td style={{ border: '1px solid #000000', padding: '4px 6px', textAlign: 'center' }}>08.00 – 12.00<br />12.00</td>
+                      <td style={{ border: '1px solid #000000', padding: '4px 6px', textAlign: 'center' }}>OPERASIONAL<br />TUTUP</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             <p style={{ marginTop: '0.4rem', marginBottom: 0, fontSize: '0.78rem', color: '#475569', fontStyle: 'italic' }}>
