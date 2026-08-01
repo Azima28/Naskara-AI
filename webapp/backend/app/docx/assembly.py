@@ -278,6 +278,11 @@ def assemble_report(data: dict) -> str:
     return output_path
 
 
+def _roman_to_int(roman: str) -> int:
+    rom_map = {"I": 1, "II": 2, "III": 3, "IV": 4, "V": 5, "VI": 6, "VII": 7, "VIII": 8}
+    return rom_map.get(roman.upper(), 1)
+
+
 def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[str, str, int, str]]:
     """Bangun entri Daftar Isi dari heading yang BENAR-BENAR tertulis.
 
@@ -304,30 +309,25 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
         ("KATA PENGANTAR", "kata_pengantar", 1, "v"),
     ]
 
+    page_estimates = {1: 1, 2: 4, 3: 7, 4: 10, 5: 16, 6: 20}
     current_page = 1
-    bab_count = 0
+    sub_count_in_bab = 0
 
     for level, text, bookmark in builder.outline:
-        if level == 1:
-            if "BAB I " in text or text.startswith("BAB I"):
-                current_page = 1
-            elif "BAB II " in text or text.startswith("BAB II"):
-                current_page = 4
-            elif "BAB III " in text or text.startswith("BAB III"):
-                current_page = 7
-            elif "BAB IV " in text or text.startswith("BAB IV"):
-                current_page = 10
-            elif "BAB V " in text or text.startswith("BAB V"):
-                current_page = 15
-            elif "BAB VI " in text or text.startswith("BAB VI"):
-                current_page = 19
-            elif "DAFTAR PUSTAKA" in text:
-                current_page = max(current_page + 1, 21)
-            elif "LAMPIRAN" in text:
-                current_page = max(current_page + 1, 22)
-            else:
-                bab_count += 1
-                current_page = max(1, bab_count * 3)
+        m_bab = re.search(r"BAB\s+([IVXLCDM\d]+)", text, re.IGNORECASE)
+        if m_bab:
+            bab_num = _roman_to_int(m_bab.group(1))
+            current_page = page_estimates.get(bab_num, max(current_page + 1, bab_num * 3))
+            sub_count_in_bab = 0
+        elif "DAFTAR PUSTAKA" in text.upper():
+            current_page = max(current_page + 1, 22)
+        elif "LAMPIRAN" in text.upper():
+            current_page = max(current_page + 1, 23)
+        else:
+            if level == 2:
+                sub_count_in_bab += 1
+                if sub_count_in_bab > 2 and sub_count_in_bab % 2 == 1:
+                    current_page += 1
 
         sections.append((text, bookmark, level, str(current_page)))
 
