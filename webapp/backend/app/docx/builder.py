@@ -277,7 +277,7 @@ class PklDocBuilder:
             bookmark = item[1]
             level = item[2]
             page_val = str(item[3]) if len(item) > 3 and item[3] else "1"
-            if not bookmark:
+            if not text or not bookmark:
                 continue
             indent_dxa = "0" if level == 1 else ("360" if level == 2 else "720")
             p_xml = parse_xml(

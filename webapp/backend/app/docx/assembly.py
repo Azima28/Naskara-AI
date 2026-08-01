@@ -431,13 +431,13 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
         f for f in (data.get("lampiran", {}) or {}).get("foto_kegiatan", [])
         if isinstance(f, dict) and f.get("gambar")
     ]
-    for i in range(1, max(len(foto_lampiran) + 1, 10)):
+    for i in range(1, len(foto_lampiran) + 1):
         pg_lamp = pg_lamp_base + ((i - 1) // 2)
         sections.append(("", f"lamp_{i}", 1, str(pg_lamp)))
 
     pg_dp_base = bab_start_pages.get(4, cur_page)
     peralatan = [p for p in data.get("peralatan", []) if p.get("gambar")]
-    for i in range(1, max(len(peralatan) + 1, 10)):
+    for i in range(1, len(peralatan) + 1):
         sections.append(("", f"gambar_{i}", 1, str(pg_dp_base)))
 
     return sections
