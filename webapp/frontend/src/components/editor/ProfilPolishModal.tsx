@@ -89,7 +89,6 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
   })
 
   const [streamTexts, setStreamTexts] = useState<Record<string, string>>({})
-  const [activeItemKey, setActiveItemKey] = useState<string | null>(null)
   const [isDoneAll, setIsDoneAll] = useState(false)
 
   const updatedProfilRef = useRef<ProfilPerusahaan>({ ...ctx.profil_perusahaan })
@@ -120,7 +119,6 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
   }, [isOpen])
 
   const processItem = async (item: PolishItem) => {
-    setActiveItemKey(item.key)
     setStatuses((prev) => ({ ...prev, [item.key]: 'generating' }))
     setStreamTexts((prev) => ({ ...prev, [item.key]: '' }))
 
@@ -292,7 +290,6 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
           {POLISH_ITEMS.map((item) => {
             const st = statuses[item.key]
             const text = streamTexts[item.key] || ''
-            const isActive = activeItemKey === item.key
 
             return (
               <div
