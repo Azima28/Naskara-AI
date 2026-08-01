@@ -1301,7 +1301,7 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
     builder.add_sub_heading_3(f"{_LETTERS[tt_sub - 1]}. Tata Tertib dan Kewajiban Karyawan")
     builder.add_body(
         profil.get("tata_tertib_list_intro")
-        or f"Berikut adalah tata tertib dan kewajiban karyawan {nama_prsh}:"
+        or "Berikut adalah tata tertib dan kewajiban umum peserta PKL di tempat kerja:"
     )
     for i, tt in enumerate(OFFICIAL_SMKN4_TATA_TERTIB, 1):
         clean_tt = tt.strip().rstrip(";").strip()
