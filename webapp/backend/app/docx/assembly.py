@@ -264,12 +264,12 @@ def assemble_report(data: dict) -> str:
 
     builder.save(output_path)
 
-    # Jika MS Word COM tersedia di Windows, presisikan dengan re-render Word fisik
+    # Jika LibreOffice (Docker/Linux) atau MS Word COM (Windows) tersedia, presisikan dengan re-render fisik
     try:
         from .builder import compute_toc_page_numbers
-        word_pages = compute_toc_page_numbers(output_path)
-        if word_pages:
-            builder.embed_toc_page_numbers(word_pages)
+        exact_pages = compute_toc_page_numbers(output_path, sec_list=sec_list)
+        if exact_pages:
+            builder.embed_toc_page_numbers(exact_pages)
             builder.save(output_path)
     except Exception:
         pass
@@ -308,8 +308,8 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
         ("KATA PENGANTAR", "kata_pengantar", 1, "v"),
     ]
 
-    # Kapasitas 1 halaman HVS / A4 (TNR 12pt, 1.5 spasi, margin 4-4-3-3cm) ≈ 25 baris
-    LINES_PER_PAGE = 25.0
+    # Kapasitas 1 halaman HVS / A4 (TNR 12pt, 1.5 spasi, margin 4-4-3-3cm) ≈ 35 baris
+    LINES_PER_PAGE = 35.0
 
     # Kelompokkan estimasi tinggi/baris elemen di builder.doc per BAB
     bab_lines: dict[int | str, float] = {}
@@ -404,9 +404,9 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
 
                 # Deteksi indentasi list (area teks menyempit)
                 has_ind = elem.find(".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ind") is not None
-                chars_per_line = 48.0 if has_ind else 62.0
+                chars_per_line = 60.0 if has_ind else 78.0
 
-                lines = max(1.0, math.ceil(len(text_raw) / chars_per_line)) * 1.2 + img_lines
+                lines = max(1.0, math.ceil(len(text_raw) / chars_per_line)) + img_lines
                 bab_lines[current_bab_key] = bab_lines.get(current_bab_key, 0.0) + lines
 
                 # Deteksi page break (<w:br w:type="page"/>)
@@ -417,7 +417,7 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
                 )
                 if has_page_break:
                     cur_l = bab_lines[current_bab_key]
-                    bab_lines[current_bab_key] = math.ceil(cur_l / 25.0) * 25.0
+                    bab_lines[current_bab_key] = math.ceil(cur_l / LINES_PER_PAGE) * LINES_PER_PAGE
 
         elif tag == "tbl" and current_bab_key is not None:
             # Tabel menghitung jumlah baris fisik

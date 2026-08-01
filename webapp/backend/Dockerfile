@@ -5,11 +5,17 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     TZ=Asia/Jakarta
 
-# Install LibreOffice & standard fonts for native 1:1 headless page layout computation
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Install LibreOffice & Microsoft core fonts for native 1:1 headless page layout computation
+RUN sed -i 's/Components: main/Components: main contrib/g' /etc/apt/sources.list.d/debian.sources 2>/dev/null || true \
+    && sed -i 's/main$/main contrib/g' /etc/apt/sources.list 2>/dev/null || true \
+    && echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | debconf-set-selections \
+    && apt-get update && apt-get install -y --no-install-recommends \
     libreoffice-writer \
     fonts-liberation \
-    && rm -rf /var/lib/apt/lists/*
+    ttf-mscorefonts-installer \
+    fontconfig \
+    && rm -rf /var/lib/apt/lists/* \
+    && fc-cache -f -v
 
 WORKDIR /app
 
