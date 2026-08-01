@@ -21,14 +21,6 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
     upd({ data_angka: next })
   }
 
-  const handleApplySampleData = () => {
-    const sampleRows: DataAngka[] = sampleData.map((s) => ({
-      label: s.label,
-      nilai: `${s.sebelum} ➔ ${s.sesudah}`,
-    }))
-    upd({ data_angka: sampleRows })
-  }
-
   return (
     <>
       <h2>Topik Utama &amp; Pengalaman Kerja Paling Berkesan (BAB IV &amp; V)</h2>
@@ -168,10 +160,9 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
             Jika ada, tuliskan di sini. Jika tidak ada, bagian ini boleh dikosongkan.
           </p>
 
-          {/* Dynamic Major-Specific Example Card with Docx Preview & 1-Click Apply */}
+          {/* Dynamic Major-Specific Example Card with Docx Preview */}
           <JurusanExampleCard
             jurusanKey={ctx.siswa?.jurusan_key || ctx.siswa?.jurusan}
-            onApplySampleData={handleApplySampleData}
           />
 
           <div className="array">
