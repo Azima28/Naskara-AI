@@ -42,7 +42,10 @@ class OpenAICompatibleProvider(AIProvider):
                 if candidate not in self.candidate_urls:
                     self.candidate_urls.append(candidate)
 
-        headers = {"Authorization": f"Bearer {self.api_key}"} if self.api_key != "not-needed" else {}
+        headers = {}
+        if self.api_key and self.api_key.strip():
+            headers["Authorization"] = f"Bearer {self.api_key.strip()}"
+
         self.client = httpx.AsyncClient(
             timeout=httpx.Timeout(self.timeout, connect=10.0),
             headers=headers
