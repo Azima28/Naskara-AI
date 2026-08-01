@@ -55,8 +55,23 @@ function parseVisiMisi(text: string): { visi: string; misi: string[] } {
 function parseNumberedList(text: string): string[] {
   return text
     .split('\n')
-    .map((line) => line.trim().replace(/^\d+\.\s*/, '').replace(/^-\s*/, ''))
-    .filter(Boolean)
+    .map((line) => line.trim().replace(/^\d+\.\s*/, '').replace(/^-\s*/, '').replace(/^[*•]\s*/, ''))
+    .filter((line) => {
+      const trimmed = line.trim()
+      if (!trimmed || trimmed.startsWith('[') || trimmed.startsWith('#')) return false
+      if (trimmed.toLowerCase().includes('berikut adalah') || trimmed.toLowerCase().includes('tata tertib perusahaan')) return false
+      return true
+    })
+    .map((line) => {
+      // Jika ada item terlalu panjang (>200 karakter), potong ke kalimat pertama saja
+      if (line.length > 200) {
+        const firstDot = line.indexOf('.')
+        if (firstDot > 10 && firstDot < 200) {
+          return line.slice(0, firstDot + 1)
+        }
+      }
+      return line
+    })
 }
 
 function parseJobDescriptions(text: string): Array<{ posisi: string; tugas: string[] }> {

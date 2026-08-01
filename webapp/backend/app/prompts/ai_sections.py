@@ -337,22 +337,22 @@ DATA NYATA dari user (ground truth - JANGAN ubah isi aturan, hanya rapikan bahas
 {tt_str}
 
 Instruksi:
-1. Rapikan tiap poin menjadi kalimat formal bahasa Indonesia baku.
+1. Rapikan tiap poin menjadi 1 KALIMAT ATURAN PENDEK BAHASA INDONESIA BAKU (maksimal 10-15 kata per poin).
 2. Setiap poin harus diawali kata kerja imperatif formal:
    "Mematuhi...", "Melaksanakan...", "Tidak diperkenankan...", "Wajib...", dst.
 3. Akhiri setiap poin dengan tanda titik koma (;) kecuali poin terakhir pakai titik (.).
 4. Jika ada poin yang sama atau sangat mirip, gabungkan menjadi 1 poin.
 
-FORMAT OUTPUT WAJIB - hanya daftar poin yang sudah dirapikan, satu per baris:
-1. (poin 1 yang sudah dirapikan)
-2. (poin 2 yang sudah dirapikan)
+FORMAT OUTPUT WAJIB - HANYA DAFTAR POIN RINGKAS YANG SUDAH DIRAPIKAN, SATU PER BARIS:
+1. (poin aturan 1 pendek)
+2. (poin aturan 2 pendek)
 ... dst
 
 ATURAN KERAS:
+- DILARANG MEMBUAT PARAGRAF NARASI/CERITA LAPORAN AKADEMIK.
 - DILARANG mengarang aturan baru yang tidak ada di input user.
 - JANGAN kurangi poin yang ada, kecuali duplikat.
-- Output dalam Bahasa Indonesia formal (EYD).
-- Output HANYA daftar bernomor, tanpa pengantar, tanpa penutup.
+- Output HANYA daftar bernomor berisi poin-poin aturan ringkas, tanpa pengantar, tanpa penutup.
 """
 
 
@@ -385,25 +385,26 @@ DATA NYATA dari user (ground truth - JANGAN ubah jenis tugas, hanya rapikan baha
 {jd_str}
 
 Instruksi:
-1. Untuk tiap POSISI, rapikan deskripsi tugasnya menjadi kalimat formal.
+1. Untuk tiap POSISI, rapikan deskripsi tugasnya menjadi 1 KALIMAT PENDEK RINGKAS (maksimal 10-15 kata).
 2. Tiap tugas harus dimulai dengan kata kerja aktif: "Melakukan...", "Memastikan...", "Mengelola...", "Bertanggung jawab atas...", dst.
-3. Jika tugas sangat singkat (< 5 kata), expand menjadi kalimat lengkap yang profesional.
+3. Jika tugas sangat singkat (< 5 kata), rapikan menjadi kalimat tugas utuh yang profesional.
    Contoh: "bersihkan pc" → "Melakukan pembersihan dan perawatan rutin perangkat komputer"
 4. JANGAN tambahkan tugas yang tidak disebutkan user.
 
 FORMAT OUTPUT WAJIB:
 [POSISI: nama posisi 1]
-1. (tugas 1 yang sudah dirapikan)
-2. (tugas 2 yang sudah dirapikan)
+1. (tugas 1 pendek yang sudah dirapikan)
+2. (tugas 2 pendek yang sudah dirapikan)
 
 [POSISI: nama posisi 2]
-1. (tugas 1 yang sudah dirapikan)
+1. (tugas 1 pendek yang sudah dirapikan)
 ... dst
 
 ATURAN KERAS:
 - Tag [POSISI: ...] WAJIB ada untuk setiap posisi.
+- DILARANG MEMBUAT PARAGRAF NARASI/CERITA LAPORAN.
 - DILARANG mengarang tugas baru.
-- Output dalam Bahasa Indonesia formal (EYD).
+- Output HANYA poin-poin tugas ringkas per posisi.
 """
 
 

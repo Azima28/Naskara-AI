@@ -23,6 +23,16 @@ from ..prompts import ai_sections
 
 router = APIRouter(prefix="/ai", tags=["ai"])
 
+LIST_POLISH_SYSTEM_PROMPT = """Kamu adalah editor profesional data Laporan PKL SMK.
+Tugasmu HANYA merapikan tata bahasa (EYD/Baku) dari data mentah yang diisi siswa.
+
+ATURAN UTAMA:
+1. DILARANG MEMBUAT PARAGRAF NARASI/CERITA ATAU TEKS PENGANTAR LAPORAN.
+2. DILARANG MEMBUAT KALIMAT PENGANTAR ATAU PENUTUP (misal: "Berikut adalah...", "Demikian...").
+3. Setiap poin aturan/tugas WAJIB BERUPA 1 KALIMAT PENDEK RINGKAS (maksimal 10-15 kata per poin).
+4. DILARANG MENGARANG FAKTA ATAU ATURAN/TUGAS BARU YANG TIDAK ADA DI INPUT USER.
+5. HANYA kembalikan poin-poin ringkas sesuai format tag yang diminta."""
+
 def extract_json_from_llm(text: str) -> dict:
     """Ekstrak JSON dari output LLM yang mungkin berisi markdown atau teks pembuka."""
     text = text.strip()
@@ -147,12 +157,17 @@ async def draft_section(
     else:
         user_prompt = f"Buat narasi untuk bagian {key.replace('_', ' ')}. Ingat: Jangan pakai bullet point."
 
+    system = LIST_POLISH_SYSTEM_PROMPT if key in ["tata_tertib_perusahaan", "visi_misi", "job_descriptions"] else SYSTEM_PROMPT_TEMPLATE
+
+    if not user_prompt.strip() and key in ["tata_tertib_perusahaan", "job_descriptions"]:
+        return DraftSectionOut(content="")
+
     # ── Generate dengan validasi + auto-retry ──────────────────────────────
     last_error = None
     for attempt in range(2):  # attempt 0 = normal, attempt 1 = retry dengan sistem lebih ketat
         try:
-            system = SYSTEM_PROMPT_TEMPLATE
-            if attempt == 1:
+            current_system = system
+            if attempt == 1 and system == SYSTEM_PROMPT_TEMPLATE:
                 # Retry: tambahkan penekanan ulang aturan keras di awal user prompt
                 user_prompt = (
                     "[PERCOBAAN KEDUA — OUTPUT SEBELUMNYA DITOLAK]\n"
@@ -162,7 +177,7 @@ async def draft_section(
                     "3. Output dalam Bahasa Indonesia formal.\n\n"
                 ) + user_prompt
 
-            draft = await provider.generate(system, user_prompt)
+            draft = await provider.generate(current_system, user_prompt)
             draft = draft.strip()
 
             # Validasi output
@@ -256,10 +271,14 @@ async def draft_section_stream(
     else:
         user_prompt = f"Buat narasi untuk bagian {key.replace('_', ' ')}. Ingat: Jangan pakai bullet point."
 
-    system = SYSTEM_PROMPT_TEMPLATE
+    system = LIST_POLISH_SYSTEM_PROMPT if key in ["tata_tertib_perusahaan", "visi_misi", "job_descriptions"] else SYSTEM_PROMPT_TEMPLATE
 
     async def event_generator():
         try:
+            if not user_prompt.strip() and key in ["tata_tertib_perusahaan", "job_descriptions"]:
+                yield "data: [DONE]\n\n"
+                return
+
             async for chunk in provider.generate_stream(system, user_prompt):
                 if chunk:
                     yield f"data: {json.dumps({'content': chunk})}\n\n"
