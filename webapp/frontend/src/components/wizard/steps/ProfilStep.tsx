@@ -231,6 +231,14 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
   const jurusanExample = getJurusanExample(ctx.siswa?.jurusan_key || ctx.siswa?.jurusan)
   const contohCabang = jurusanExample.contohCabang
 
+  const [isMultiBranch, setIsMultiBranch] = useState<boolean>(() => {
+    const ac = pr.area_cabang || []
+    if (ac.length > 1) return true
+    if (ac[0]?.nama_area?.trim()) return true
+    if (ac[0]?.cabang && ac[0].cabang.length > 1) return true
+    return false
+  })
+
   const [showContohCabang, setShowContohCabang] = useState(false)
   const [showContohTataTertib, setShowContohTataTertib] = useState(false)
   const [showContohJamKerja, setShowContohJamKerja] = useState(false)
@@ -244,8 +252,7 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
     next[i] = { ...next[i], ...patch }
     upd({ jam_kerja: next })
   }
-  /** Tambah hari baru: otomatis pilih hari pertama yang belum dipakai dan
-   *  menyalin susunan slot dari hari sebelumnya (biasanya jadwalnya sama). */
+
   const addJam = () => {
     const used = new Set(pr.jam_kerja.map(j => (j.hari || '').toUpperCase()))
     const nextDay = DAY_ORDER.find(d => !used.has(d)) || ''
@@ -383,8 +390,7 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
       {/* ── Profil Lokasi (Alamat + Head Office + Cabang) ────────────────── */}
       <FieldGroup title="Profil Lokasi PKL" full>
         <p className="muted" style={{ margin: '-0.5rem 0 0.75rem', fontSize: '0.85rem' }}>
-          Alamat tempat kamu PKL sudah diisi di langkah Perusahaan. Di sini isi alamat kantor pusat dan daftar cabang
-          (minimal 1 cabang).
+          Alamat tempat kamu PKL sudah diisi di langkah Perusahaan. Di sini isi alamat kantor pusat dan lokasi/cabang perusahaan.
         </p>
 
         <TextField
@@ -392,98 +398,123 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
           value={pr.head_office}
           onChange={v => upd({ head_office: v })}
           importance="wajib"
-          hint="Kantor utama perusahaan, bisa beda kota dengan tempat kamu PKL."
-          placeholder="cth: Jalan Tentara Pelajar Blok B No. 3&5 (Rukan Permata Senayan), Kebayoran Lama, Jakarta Selatan 12210"
+          hint="Kantor utama perusahaan (bisa sama atau beda kota dengan lokasi tempat kamu PKL)."
+          placeholder="cth: Jalan Tentara Pelajar Blok B No. 3&5, Kebayoran Lama, Jakarta Selatan"
         />
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '1rem 0 0.5rem' }}>
-          <div>
-            <strong style={{ fontSize: '0.9rem' }}>Daftar Cabang Perusahaan</strong>
-            <span style={{ color: '#ef4444', marginLeft: 4 }}>*</span>
-            <span style={{ fontSize: '0.8rem', color: '#6b7280', marginLeft: 8 }}>
-              (wajib min. 1 cabang)
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setShowContohCabang(v => !v)}
-            style={{ fontSize: '0.75rem', color: 'var(--green-700)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
-          >
-            {showContohCabang ? '↑ Sembunyikan contoh' : 'Lihat contoh'}
-          </button>
-        </div>
+        {/* Pertanyaan Sederhana: 1 Tempat vs Multi Cabang */}
+        <div style={{ marginTop: '1.25rem', padding: '1rem 1.1rem', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '10px' }}>
+          <label style={{ fontSize: '0.9rem', fontWeight: 600, color: '#0f172a', display: 'block', marginBottom: '0.6rem' }}>
+            Apakah tempat PKL kamu memiliki lebih dari 1 lokasi / cabang perusahaan? <span style={{ color: '#ef4444' }}>*</span>
+          </label>
 
-        {showContohCabang && (
-          <div style={{ background: '#eff6ff', border: '1px solid #93c5fd', borderRadius: 8, padding: '0.85rem 1rem', marginBottom: '0.85rem', fontSize: '0.85rem', color: '#1e40af', lineHeight: 1.5 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.5rem' }}>
-              <strong>💡 Contoh Isian Cabang &amp; Area ({jurusanExample.label}):</strong>
-              <button
-                type="button"
-                className="btn-sm btn-outline"
-                onClick={() => {
+          <div style={{ display: 'flex', gap: '1.25rem', marginBottom: '0.85rem', flexWrap: 'wrap' }}>
+            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.88rem', fontWeight: !isMultiBranch ? 600 : 400 }}>
+              <input
+                type="radio"
+                name="isMultiBranch"
+                checked={!isMultiBranch}
+                onChange={() => {
+                  setIsMultiBranch(false)
+                  const currentCabangName = pr.area_cabang?.[0]?.cabang?.[0]?.nama || ctx.perusahaan?.nama_lengkap || ctx.perusahaan?.nama || ''
                   upd({
                     area_cabang: [
                       {
                         nama_area: '',
-                        cabang: [{ nama: contohCabang.tipeBiasa.cabang }]
+                        cabang: [{ nama: currentCabangName }]
                       }
                     ]
                   })
                 }}
-                style={{ fontSize: '0.78rem', padding: '0.25rem 0.6rem', color: 'var(--green-700)', borderColor: 'var(--green-600)', fontWeight: 600, background: '#ffffff' }}
-              >
-                + Isikan 1 Cabang Contoh Jurusan Ini
+              />
+              <span>Tidak (Hanya 1 lokasi / toko / studio / hotel / kantor)</span>
+            </label>
+
+            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.88rem', fontWeight: isMultiBranch ? 600 : 400 }}>
+              <input
+                type="radio"
+                name="isMultiBranch"
+                checked={isMultiBranch}
+                onChange={() => {
+                  setIsMultiBranch(true)
+                  if (!pr.area_cabang || pr.area_cabang.length === 0) {
+                    upd({ area_cabang: [emptyAreaCabang()] })
+                  }
+                }}
+              />
+              <span>Ya (Punya banyak cabang / kelompok area)</span>
+            </label>
+          </div>
+
+          {/* OPSI 1: HANYA 1 LOKASI (SINGLE INPUT - SUPER SIMPLE) */}
+          {!isMultiBranch && (
+            <div style={{ background: '#ffffff', padding: '0.85rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
+              <TextField
+                label="Nama / Alamat Lokasi Tempat Kamu PKL"
+                value={pr.area_cabang?.[0]?.cabang?.[0]?.nama || ''}
+                onChange={(v) => {
+                  upd({
+                    area_cabang: [
+                      {
+                        nama_area: '',
+                        cabang: [{ nama: v }]
+                      }
+                    ]
+                  })
+                }}
+                importance="wajib"
+                placeholder={`cth: ${contohCabang.tipeBiasa.cabang}`}
+                hint="Tuliskan nama tempat/cabang tempat kamu melaksanakan PKL."
+              />
+            </div>
+          )}
+
+          {/* OPSI 2: BANYAK CABANG / BER-AREA (MULTI CABANG ENGINE) */}
+          {isMultiBranch && (
+            <div style={{ background: '#ffffff', padding: '0.85rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', marginTop: '0.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <span style={{ fontSize: '0.84rem', fontWeight: 600, color: 'var(--green-700)' }}>
+                  Kelola Daftar Cabang &amp; Wilayah Area ({jurusanExample.label})
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowContohCabang(v => !v)}
+                  style={{ fontSize: '0.75rem', color: 'var(--green-700)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  {showContohCabang ? '↑ Sembunyikan contoh' : 'Lihat contoh perusahaan besar'}
+                </button>
+              </div>
+
+              {showContohCabang && (
+                <div style={{ background: '#eff6ff', border: '1px solid #93c5fd', borderRadius: 8, padding: '0.75rem', marginBottom: '0.75rem', fontSize: '0.82rem', color: '#1e40af', lineHeight: 1.5 }}>
+                  <strong>Contoh Perusahaan Banyak Cabang ({contohCabang.tipeBesar.namaPerusahaan}):</strong>
+                  <div style={{ marginTop: '0.35rem' }}>
+                    • <strong>{contohCabang.tipeBesar.area1.namaArea}:</strong> {contohCabang.tipeBesar.area1.cabang.join(', ')}<br />
+                    • <strong>{contohCabang.tipeBesar.area2.namaArea}:</strong> {contohCabang.tipeBesar.area2.cabang.join(', ')}
+                  </div>
+                  <p style={{ marginTop: '0.4rem', marginBottom: 0, fontSize: '0.78rem', color: '#1d4ed8', fontStyle: 'italic' }}>
+                    * Jika cabang tidak dikelompokkan per wilayah, kosongkan saja input Nama Area!
+                  </p>
+                </div>
+              )}
+
+              {pr.area_cabang.map((area, i) => (
+                <AreaCabangCard
+                  key={i}
+                  area={area}
+                  idx={i}
+                  onChange={patch => updArea(i, patch)}
+                  onRemove={() => removeArea(i)}
+                  totalAreas={pr.area_cabang.length}
+                  jurusanExample={jurusanExample}
+                />
+              ))}
+              <button type="button" className="btn-sm btn-outline" onClick={addArea}>
+                + Tambah Kelompok Area / Cabang Lain
               </button>
             </div>
-
-            {/* OPSI A: Perusahaan Biasa / 1 Tempat */}
-            <div style={{ background: '#ffffff', border: '1px solid #bfdbfe', borderRadius: 6, padding: '0.65rem 0.85rem', marginBottom: '0.6rem' }}>
-              <span style={{ fontWeight: 700, color: '#1e3a8a', display: 'block', marginBottom: '0.2rem' }}>
-                🟢 KONDISI 1: Perusahaan / Tempat PKL Biasa ({contohCabang.tipeBiasa.namaTempat})
-              </span>
-              <div style={{ fontSize: '0.82rem', color: '#1e40af' }}>
-                • <strong>Nama Area:</strong> <code style={{ background: '#fee2e2', color: '#991b1b', padding: '1px 5px', borderRadius: 4 }}>[KOSONGKAN SAJA]</code> *(Tidak perlu diisi)*<br />
-                • <strong>Daftar Cabang:</strong> <code style={{ background: '#dcfce7', color: '#166534', padding: '1px 5px', borderRadius: 4 }}>{contohCabang.tipeBiasa.cabang}</code>
-              </div>
-            </div>
-
-            {/* OPSI B: Perusahaan Besar Banyak Cabang */}
-            <div style={{ background: '#ffffff', border: '1px solid #bfdbfe', borderRadius: 6, padding: '0.65rem 0.85rem' }}>
-              <span style={{ fontWeight: 700, color: '#1e3a8a', display: 'block', marginBottom: '0.2rem' }}>
-                🏢 KONDISI 2: Perusahaan Besar ({contohCabang.tipeBesar.namaPerusahaan})
-              </span>
-              <div style={{ fontSize: '0.82rem', color: '#1e40af' }}>
-                • <strong>{contohCabang.tipeBesar.area1.namaArea}:</strong> {contohCabang.tipeBesar.area1.cabang.join(', ')}<br />
-                • <strong>{contohCabang.tipeBesar.area2.namaArea}:</strong> {contohCabang.tipeBesar.area2.cabang.join(', ')}
-              </div>
-            </div>
-
-            <p style={{ marginTop: '0.5rem', marginBottom: 0, color: '#1d4ed8', fontSize: '0.8rem', fontStyle: 'italic' }}>
-              * Mayoritas tempat PKL siswa (toko, studio, kantor lokal) adalah KONDISI 1. Cukup kosongkan Nama Area!
-            </p>
-          </div>
-        )}
-
-        {pr.area_cabang.length === 0 && (
-          <div style={{ background: '#fef3c7', border: '1px solid #fbbf24', borderRadius: 8, padding: '0.75rem', marginBottom: '0.75rem', fontSize: '0.85rem', color: '#92400e' }}>
-            Belum ada cabang. Klik tombol di bawah untuk menambah minimal 1 cabang.
-          </div>
-        )}
-
-        {pr.area_cabang.map((area, i) => (
-          <AreaCabangCard
-            key={i}
-            area={area}
-            idx={i}
-            onChange={patch => updArea(i, patch)}
-            onRemove={() => removeArea(i)}
-            totalAreas={pr.area_cabang.length}
-            jurusanExample={jurusanExample}
-          />
-        ))}
-        <button type="button" className="btn-sm btn-outline" onClick={addArea}>
-          + Tambah Area / Kelompok Cabang
-        </button>
+          )}
+        </div>
       </FieldGroup>
 
       {/* ── Tata Tertib ──────────────────────────────────────────────────── */}
