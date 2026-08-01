@@ -280,7 +280,7 @@ function WizardInner() {
         </div>
       </header>
 
-      {/* Progress stepper — pil bernomor + nama langkah supaya jelas */}
+      {/* Progress stepper — pil bernomor DENGAN label */}
       <nav className="stepper">
         {STEPS.map((s, i) => (
           <button
@@ -290,7 +290,7 @@ function WizardInner() {
             onClick={() => handleStepChange(i)}
             title={s.title}
           >
-            <span className="stepper__num">{isStepDone(i) && i !== stepIdx ? '✓' : i + 1}</span>
+            <span className="stepper__num">{i + 1}</span>
             <span className="stepper__text">{s.title}</span>
           </button>
         ))}
