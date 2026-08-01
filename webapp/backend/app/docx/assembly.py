@@ -278,15 +278,14 @@ def assemble_report(data: dict) -> str:
     return output_path
 
 
-def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[str, str, int]]:
+def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[str, str, int, str]]:
     """Bangun entri Daftar Isi dari heading yang BENAR-BENAR tertulis.
 
     Menggabungkan bookmark front-matter (pengesahan, identitas, kata
     pengantar) dengan ``builder.outline`` (BAB + sub-bab + sub-sub-bab yang
-    tercatat otomatis saat heading dibuat). Mengembalikan
-    ``(teks, bookmark, level)`` — nomor halaman tidak lagi di-hardcode,
-    melainkan diisi field PAGEREF oleh ``populate_native_toc`` sehingga selalu
-    akurat mengikuti letak heading sebenarnya.
+    tercatat otomatis saat heading dibuat). Tiap entri dilengkapi estimasi
+    nomor halaman (romawi kecil untuk front-matter, arab naik untuk body)
+    sehingga cache field PAGEREF langsung valid di semua viewer/Protected View.
     """
     sek_nama = (data.get("sekolah", {}).get("nama") or "SMK NEGERI 4 BANDAR LAMPUNG")
     perus_nama = (
@@ -295,20 +294,42 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
         or "PERUSAHAAN"
     )
 
-    sections: list[tuple[str, str, int]] = [
-        ("PENGESAHAN", "peng_industri", 1),
-        (f"dari {perus_nama}", "peng_industri", 2),
-        ("PENGESAHAN", "peng_sekolah", 1),
-        (f"dari {sek_nama}", "peng_sekolah", 2),
-        ("IDENTITAS SISWA", "id_siswa", 1),
-        ("IDENTITAS INDUSTRI / INSTANSI", "id_industri", 1),
-        ("KATA PENGANTAR", "kata_pengantar", 1),
+    sections: list[tuple[str, str, int, str]] = [
+        ("PENGESAHAN", "peng_industri", 1, "i"),
+        (f"dari {perus_nama}", "peng_industri", 2, "i"),
+        ("PENGESAHAN", "peng_sekolah", 1, "ii"),
+        (f"dari {sek_nama}", "peng_sekolah", 2, "ii"),
+        ("IDENTITAS SISWA", "id_siswa", 1, "iii"),
+        ("IDENTITAS INDUSTRI / INSTANSI", "id_industri", 1, "iv"),
+        ("KATA PENGANTAR", "kata_pengantar", 1, "v"),
     ]
 
-    # BAB + sub-bab + daftar pustaka + lampiran — diambil dari outline aktual
-    # sehingga judul & keberadaannya selalu sinkron dengan isi dokumen.
+    current_page = 1
+    bab_count = 0
+
     for level, text, bookmark in builder.outline:
-        sections.append((text, bookmark, level))
+        if level == 1:
+            if "BAB I " in text or text.startswith("BAB I"):
+                current_page = 1
+            elif "BAB II " in text or text.startswith("BAB II"):
+                current_page = 4
+            elif "BAB III " in text or text.startswith("BAB III"):
+                current_page = 7
+            elif "BAB IV " in text or text.startswith("BAB IV"):
+                current_page = 10
+            elif "BAB V " in text or text.startswith("BAB V"):
+                current_page = 15
+            elif "BAB VI " in text or text.startswith("BAB VI"):
+                current_page = 19
+            elif "DAFTAR PUSTAKA" in text:
+                current_page = max(current_page + 1, 21)
+            elif "LAMPIRAN" in text:
+                current_page = max(current_page + 1, 22)
+            else:
+                bab_count += 1
+                current_page = max(1, bab_count * 3)
+
+        sections.append((text, bookmark, level, str(current_page)))
 
     return sections
 

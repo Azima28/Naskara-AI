@@ -181,7 +181,7 @@ class PklDocBuilder:
         paragraph._p.insert(0, start)
         paragraph._p.append(end)
 
-    def add_toc_entry(self, text: str, bookmark: str, level: int = 1) -> Any:
+    def add_toc_entry(self, text: str, bookmark: str, level: int = 1, page_val: str = "1") -> Any:
         """Satu baris daftar isi: teks .... <PAGEREF bookmark>.
 
         Nomor halaman berupa field PAGEREF sehingga Word mengisinya
@@ -205,7 +205,7 @@ class PklDocBuilder:
         fld = parse_xml(
             f'<w:fldSimple {nsdecls("w")} w:instr=" PAGEREF {bookmark} \\h ">'
             f'<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>'
-            f'<w:sz w:val="24"/></w:rPr><w:t>1</w:t></w:r></w:fldSimple>'
+            f'<w:sz w:val="24"/></w:rPr><w:t>{page_val}</w:t></w:r></w:fldSimple>'
         )
         p._p.append(fld)
         return p
@@ -260,23 +260,23 @@ class PklDocBuilder:
         else:
             body.append(sdt)
 
-    def populate_native_toc(self, sections_list: list[tuple[str, str, int]]) -> None:
+    def populate_native_toc(self, sections_list: list[tuple[str, str, int] | tuple[str, str, int, str]]) -> None:
         """Populasi Daftar Isi dengan field PAGEREF yang menunjuk bookmark nyata.
 
         Tiap entri berupa field ``PAGEREF <bookmark> \\h`` sehingga nomor
-        halaman dihitung Word/LibreOffice dari posisi heading SEBENARNYA —
-        bukan angka hardcode yang cepat basi. Cache di dalam field dibiarkan
-        placeholder ("1") — angka asli diisi belakangan oleh
-        ``embed_toc_page_numbers`` (re-render via Word) atau oleh
-        ``enable_update_fields`` saat dokumen dibuka di Word. ``sections_list``
-        berisi ``(teks, bookmark, level)``; entri tanpa bookmark valid dilewati.
+        halaman dihitung Word/LibreOffice dari posisi heading SEBENARNYA.
+        `sections_list` berisi ``(teks, bookmark, level, [initial_page])``.
         """
         sdtContent_list = self.doc.element.body.xpath('.//w:sdtContent')
         if not sdtContent_list:
             return
         sdtContent = sdtContent_list[0]
 
-        for text, bookmark, level in sections_list:
+        for item in sections_list:
+            text = item[0]
+            bookmark = item[1]
+            level = item[2]
+            page_val = str(item[3]) if len(item) > 3 and item[3] else "1"
             if not bookmark:
                 continue
             indent_dxa = "0" if level == 1 else ("360" if level == 2 else "720")
@@ -289,7 +289,7 @@ class PklDocBuilder:
                 f'<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="24"/></w:rPr><w:t xml:space="preserve">{_xml_escape(text)}</w:t></w:r>'
                 f'<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="24"/></w:rPr><w:tab/></w:r>'
                 f'<w:fldSimple w:instr=" PAGEREF {bookmark} \\h ">'
-                f'<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="24"/></w:rPr><w:t>1</w:t></w:r>'
+                f'<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="24"/></w:rPr><w:t>{page_val}</w:t></w:r>'
                 f'</w:fldSimple>'
                 f'</w:p>'
             )
@@ -1659,6 +1659,13 @@ def compute_toc_page_numbers(docx_path: str) -> dict[str, str]:
             except Exception:
                 sec_starts[i + 1] = 1
 
+        # Deteksi secara dinamis section mana yang menjadi awal Body Matter (BAB I)
+        body_sec_idx = doc.Sections.Count
+        for bm in doc.Bookmarks:
+            if bm.Name in ("bab_1", "bab_pendahuluan"):
+                body_sec_idx = _sec_index(bm)
+                break
+
         for bm in doc.Bookmarks:
             name = bm.Name
             if not name or name.startswith("_"):
@@ -1669,11 +1676,11 @@ def compute_toc_page_numbers(docx_path: str) -> dict[str, str]:
                 sec_start = sec_starts.get(sec_idx, 1)
 
                 rel_page = max(1, phys_page - sec_start + 1)
-                if sec_idx <= 3:
-                    # Section 1..3 (Cover Luar, Cover Dalam, Front Matter - Pengesahan dst): Romawi kecil (i, ii, iii, dst)
+                if sec_idx < body_sec_idx:
+                    # Front Matter (Pengesahan, Identitas, Kata Pengantar): Romawi kecil (i, ii, iii, dst)
                     pages[name] = _to_roman(rel_page).lower()
                 else:
-                    # Section 4+ (Body Matter - BAB I PENDAHULUAN dst): Arab relatif per section, reset mulai 1
+                    # Body Matter (BAB I PENDAHULUAN dst): Arab relatif per section, reset mulai 1
                     pages[name] = str(rel_page)
             except Exception:
                 continue
