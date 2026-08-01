@@ -264,9 +264,11 @@ export async function draftSectionStream(
     let fullText = ''
     let buffer = ''
 
+    let isStreamDone = false
+
     while (true) {
       const { done, value } = await reader.read()
-      if (done) break
+      if (done || isStreamDone) break
 
       buffer += decoder.decode(value, { stream: true })
       const lines = buffer.split('\n')
@@ -274,7 +276,11 @@ export async function draftSectionStream(
 
       for (const line of lines) {
         const trimmed = line.trim()
-        if (!trimmed || trimmed.startsWith(':') || trimmed === 'data: [DONE]') continue
+        if (!trimmed || trimmed.startsWith(':')) continue
+        if (trimmed === 'data: [DONE]') {
+          isStreamDone = true
+          break
+        }
         if (trimmed.startsWith('data: ')) {
           try {
             const parsed = JSON.parse(trimmed.slice(6))
@@ -285,21 +291,25 @@ export async function draftSectionStream(
               fullText += parsed.content
               onChunk(parsed.content)
             }
-          } catch {
-            /* ignore partial JSON */
+          } catch (e: any) {
+            if (e?.message && e.message.includes('error')) throw e
+            /* ignore partial JSON parse errors */
           }
         }
       }
     }
 
-    if (!fullText) {
+    if (!fullText && !signal?.aborted) {
       const fallback = await draftSection(sectionKey, contextData)
       onChunk(fallback.content)
       return fallback.content
     }
 
     return fullText
-  } catch {
+  } catch (err: any) {
+    if (signal?.aborted || err?.name === 'AbortError') {
+      throw err
+    }
     const fallback = await draftSection(sectionKey, contextData)
     onChunk(fallback.content)
     return fallback.content

@@ -128,10 +128,14 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
     let accumulated = ''
     let isNoResponseTriggered = false
 
-    // Inactivity heartbeat check: 15 seconds without receiving a chunk
+    // Inactivity heartbeat check: 20 seconds without receiving a chunk
     if (heartbeatIntervalRef.current) clearInterval(heartbeatIntervalRef.current)
     heartbeatIntervalRef.current = setInterval(() => {
-      if (Date.now() - lastChunkTimeRef.current > 15000) {
+      if (Date.now() - lastChunkTimeRef.current > 20000) {
+        // Jika teks sudah berhasil ter-generate dengan cukup panjang (>30 karakter),
+        // jangan batalkan stream karena AI mungkin sedang jeda antartoken.
+        if (accumulated.trim().length > 30) return
+
         isNoResponseTriggered = true
         if (abortControllerRef.current) {
           abortControllerRef.current.abort()
@@ -161,7 +165,7 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
         heartbeatIntervalRef.current = null
       }
 
-      if (isNoResponseTriggered) return
+      if (isNoResponseTriggered && accumulated.trim().length <= 30) return
 
       const finalContent = resultText || accumulated
       setStreamTexts((prev) => ({ ...prev, [item.key]: finalContent }))
@@ -193,7 +197,27 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
         heartbeatIntervalRef.current = null
       }
 
-      if (err?.name === 'AbortError' || isNoResponseTriggered) {
+      const finalContent = accumulated.trim()
+      if (finalContent.length > 30) {
+        // Meskipun koneksi abort/terputus di akhir, teks yang sudah lengkap tetap disimpan & sukses
+        setStreamTexts((prev) => ({ ...prev, [item.key]: finalContent }))
+        if (item.key === 'profil_sejarah') updatedProfilRef.current.sejarah = finalContent
+        else if (item.key === 'visi_misi') {
+          const parsed = parseVisiMisi(finalContent)
+          if (parsed.visi) updatedProfilRef.current.visi = parsed.visi
+          if (parsed.misi.length > 0) updatedProfilRef.current.misi = parsed.misi
+        } else if (item.key === 'tata_tertib_perusahaan') {
+          const list = parseNumberedList(finalContent)
+          if (list.length > 0) {
+            updatedProfilRef.current.tata_tertib_perusahaan = list
+            updatedProfilRef.current.tata_tertib = list
+          }
+        } else if (item.key === 'job_descriptions') {
+          const parsedJobs = parseJobDescriptions(finalContent)
+          if (parsedJobs.length > 0) updatedProfilRef.current.job_descriptions = parsedJobs
+        }
+        setStatuses((prev) => ({ ...prev, [item.key]: 'success' }))
+      } else if (err?.name === 'AbortError' || isNoResponseTriggered) {
         setStatuses((prev) => ({ ...prev, [item.key]: 'no_response' }))
       } else {
         setStatuses((prev) => ({ ...prev, [item.key]: 'failed' }))
