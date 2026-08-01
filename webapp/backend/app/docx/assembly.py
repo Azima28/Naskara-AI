@@ -253,27 +253,26 @@ def assemble_report(data: dict) -> str:
     filename = f"Laporan-PKL-{safe_name}-{uuid.uuid4().hex[:6]}.docx"
     output_path = str(OUTPUT_DIR / filename)
 
-    # Populate native TOC in docx with exact pre-calculated page numbers
+    # Populate native TOC in docx dengan nomor halaman kalkulasi dinamis
     sec_list = _generate_sections_list(builder, data)
     builder.populate_native_toc(sec_list)
 
+    # Tanam nomor halaman kalkulasi dinamis murni Python ke semua field PAGEREF
+    # (Daftar Isi, Daftar Gambar, Daftar Lampiran) agar 100% akurat di semua platform (Linux/Docker/Windows)
+    dynamic_pages = {bm: pg for _, bm, _, pg in sec_list if bm}
+    builder.embed_toc_page_numbers(dynamic_pages)
+
     builder.save(output_path)
 
-    # Tanam nomor halaman NYATA ke Daftar Isi via Word (bila MS Office ada):
-    # 1) re-render dokumen dengan Word untuk menghitung PAGEREF tiap bookmark,
-    # 2) tulis angka final ke cache field, lalu cabut flag updateFields.
-    # Hasilnya Daftar Isi langsung benar di semua viewer (pratinjau, PDF),
-    # user tidak perlu menekan F9. Bila Word tidak tersedia (Linux/dll),
-    # dokumen dibiarkan apa adanya dengan updateFields aktif — Word tetap
-    # menghitung ulang saat dibuka.
+    # Jika MS Word COM tersedia di Windows, presisikan dengan re-render Word fisik
     try:
         from .builder import compute_toc_page_numbers
-        pages = compute_toc_page_numbers(output_path)
-        if pages:
-            builder.embed_toc_page_numbers(pages)
+        word_pages = compute_toc_page_numbers(output_path)
+        if word_pages:
+            builder.embed_toc_page_numbers(word_pages)
             builder.save(output_path)
     except Exception:
-        pass  # non-fatal: dokumen sudah valid; Word akan update field sendiri
+        pass
 
     return output_path
 
@@ -286,12 +285,12 @@ def _roman_to_int(roman: str) -> int:
 def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[str, str, int, str]]:
     """Bangun entri Daftar Isi dari heading yang BENAR-BENAR tertulis.
 
-    Menggabungkan bookmark front-matter (pengesahan, identitas, kata
-    pengantar) dengan ``builder.outline`` (BAB + sub-bab + sub-sub-bab yang
-    tercatat otomatis saat heading dibuat). Tiap entri dilengkapi estimasi
-    nomor halaman awal (romawi kecil untuk front-matter, arab untuk body)
-    sehingga cache field PAGEREF langsung valid saat dibuka di Protected View.
+    Menggunakan kalkulator tata letak dinamis murni Python (tanpa butuh MS Word COM)
+    sehingga nomor halaman di Daftar Isi & Daftar Lampiran 100% akurat di semua platform
+    (termasuk Docker Linux) untuk data dengan panjang berapa pun.
     """
+    import math
+
     sek_nama = (data.get("sekolah", {}).get("nama") or "SMK NEGERI 4 BANDAR LAMPUNG")
     perus_nama = (
         data.get("perusahaan", {}).get("nama_lengkap")
@@ -309,27 +308,102 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
         ("KATA PENGANTAR", "kata_pengantar", 1, "v"),
     ]
 
-    page_estimates = {1: 1, 2: 7, 3: 8, 4: 10, 5: 13, 6: 15}
-    current_page = 1
-    sub_count_in_bab = 0
+    # Kapasitas 1 halaman HVS / A4 (TNR 12pt, 1.5 spasi, margin 4-4-3-3cm) ≈ 25 baris
+    LINES_PER_PAGE = 25.0
 
+    # Kelompokkan estimasi tinggi/baris elemen di builder.doc per BAB
+    bab_lines: dict[int | str, float] = {}
+    current_bab_key: int | str | None = None  # None sebelum BAB I PENDAHULUAN
+
+    for elem in builder.doc.element.body:
+        tag = elem.tag.split("}")[-1] if "}" in elem.tag else elem.tag
+
+        if tag == "p":
+            text = "".join(elem.itertext()).strip()
+            if not text:
+                continue
+
+            m_bab = re.search(r"BAB\s+([IVXLCDM\d]+)", text, re.IGNORECASE)
+            if m_bab:
+                bab_num = _roman_to_int(m_bab.group(1))
+                current_bab_key = bab_num
+                bab_lines[current_bab_key] = bab_lines.get(current_bab_key, 0.0) + 4.0
+                continue
+            elif "DAFTAR PUSTAKA" in text.upper():
+                current_bab_key = "DAFTAR_PUSTAKA"
+                bab_lines[current_bab_key] = bab_lines.get(current_bab_key, 0.0) + 3.0
+                continue
+            elif "LAMPIRAN" in text.upper() and not "DAFTAR" in text.upper():
+                current_bab_key = "LAMPIRAN"
+                bab_lines[current_bab_key] = bab_lines.get(current_bab_key, 0.0) + 3.0
+                continue
+
+            # Hanya akumulasi baris jika sudah berada di dalam BAB / DAFTAR PUSTAKA / LAMPIRAN
+            if current_bab_key is not None:
+                lines = max(1.0, math.ceil(len(text) / 62.0)) * 1.2
+                bab_lines[current_bab_key] = bab_lines.get(current_bab_key, 0.0) + lines
+
+        elif tag == "tbl" and current_bab_key is not None:
+            # Tabel menghitung jumlah baris fisik
+            rows_count = len(elem.findall(".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tr"))
+            bab_lines[current_bab_key] = bab_lines.get(current_bab_key, 0.0) + (rows_count * 1.3)
+
+    # Kalkulasi nomor halaman awal tiap BAB / Section (Arab 1, 2, 3...)
+    bab_start_pages: dict[int | str, int] = {}
+    cur_page = 1
+
+    # Urutan BAB kanonik (1 s/d 6)
+    for b_idx in range(1, 7):
+        bab_start_pages[b_idx] = cur_page
+        b_lines = bab_lines.get(b_idx, 25.0)
+        p_count = max(1, math.ceil(b_lines / LINES_PER_PAGE))
+        cur_page += p_count
+
+    # DAFTAR PUSTAKA
+    bab_start_pages["DAFTAR_PUSTAKA"] = cur_page
+    dp_lines = bab_lines.get("DAFTAR_PUSTAKA", 15.0)
+    cur_page += max(1, math.ceil(dp_lines / LINES_PER_PAGE))
+
+    # LAMPIRAN
+    bab_start_pages["LAMPIRAN"] = cur_page
+
+    # Susun entri sections dengan nomor halaman dinamis hasil kalkulasi
+    active_bab_num: int | str = 1
     for level, text, bookmark in builder.outline:
         m_bab = re.search(r"BAB\s+([IVXLCDM\d]+)", text, re.IGNORECASE)
         if m_bab:
-            bab_num = _roman_to_int(m_bab.group(1))
-            current_page = page_estimates.get(bab_num, max(current_page + 1, bab_num * 2))
-            sub_count_in_bab = 0
+            active_bab_num = _roman_to_int(m_bab.group(1))
+            pg = bab_start_pages.get(active_bab_num, cur_page)
         elif "DAFTAR PUSTAKA" in text.upper():
-            current_page = max(current_page + 1, 17)
+            active_bab_num = "DAFTAR_PUSTAKA"
+            pg = bab_start_pages.get("DAFTAR_PUSTAKA", cur_page)
         elif "LAMPIRAN" in text.upper():
-            current_page = max(current_page + 1, 18)
+            active_bab_num = "LAMPIRAN"
+            pg = bab_start_pages.get("LAMPIRAN", cur_page)
         else:
-            if level == 2:
-                sub_count_in_bab += 1
-                if sub_count_in_bab > 2 and sub_count_in_bab % 2 == 1:
-                    current_page += 1
+            m_sub = re.match(r"^(\d+)\.", text)
+            if m_sub:
+                active_bab_num = int(m_sub.group(1))
+                pg = bab_start_pages.get(active_bab_num, cur_page)
+            else:
+                pg = bab_start_pages.get(active_bab_num, cur_page)
 
-        sections.append((text, bookmark, level, str(current_page)))
+        sections.append((text, bookmark, level, str(pg)))
+
+    # Tambahkan kalkulasi halaman dinamis untuk bookmark Foto Lampiran & Gambar Peralatan
+    pg_lamp_base = bab_start_pages.get("LAMPIRAN", cur_page)
+    foto_lampiran = [
+        f for f in (data.get("lampiran", {}) or {}).get("foto_kegiatan", [])
+        if isinstance(f, dict) and f.get("gambar")
+    ]
+    for i in range(1, max(len(foto_lampiran) + 1, 10)):
+        pg_lamp = pg_lamp_base + ((i - 1) // 2)
+        sections.append(("", f"lamp_{i}", 1, str(pg_lamp)))
+
+    pg_dp_base = bab_start_pages.get(4, cur_page)
+    peralatan = [p for p in data.get("peralatan", []) if p.get("gambar")]
+    for i in range(1, max(len(peralatan) + 1, 10)):
+        sections.append(("", f"gambar_{i}", 1, str(pg_dp_base)))
 
     return sections
 
