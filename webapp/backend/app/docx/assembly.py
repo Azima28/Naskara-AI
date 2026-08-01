@@ -188,11 +188,11 @@ def assemble_report(data: dict) -> str:
         if isinstance(r, str):
             refs.append(r)
         elif isinstance(r, dict):
-            penulis = r.get("penulis", "").strip()
-            tahun = r.get("tahun", "").strip()
-            judul = r.get("judul", "").strip()
-            sumber = r.get("sumber", "").strip()
-            url = r.get("url", "").strip()
+            penulis = str(r.get("penulis", "") or "").strip()
+            tahun = str(r.get("tahun", "") or "").strip()
+            judul = str(r.get("judul", "") or "").strip()
+            sumber = str(r.get("sumber", "") or "").strip()
+            url = str(r.get("url", "") or "").strip()
             parts = []
             if penulis: parts.append(penulis)
             if tahun: parts.append(f"({tahun})")
