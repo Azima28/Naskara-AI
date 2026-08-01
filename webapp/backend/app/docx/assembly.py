@@ -283,15 +283,14 @@ def _roman_to_int(roman: str) -> int:
     return rom_map.get(roman.upper(), 1)
 
 
-def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[str, str, int]]:
+def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[str, str, int, str]]:
     """Bangun entri Daftar Isi dari heading yang BENAR-BENAR tertulis.
 
     Menggabungkan bookmark front-matter (pengesahan, identitas, kata
     pengantar) dengan ``builder.outline`` (BAB + sub-bab + sub-sub-bab yang
-    tercatat otomatis saat heading dibuat). Mengembalikan
-    ``(teks, bookmark, level)`` — nomor halaman diisi field dynamic PAGEREF
-    oleh ``populate_native_toc`` sehingga selalu akurat mengikuti letak
-    heading sebenarnya.
+    tercatat otomatis saat heading dibuat). Tiap entri dilengkapi estimasi
+    nomor halaman awal (romawi kecil untuk front-matter, arab untuk body)
+    sehingga cache field PAGEREF langsung valid saat dibuka di Protected View.
     """
     sek_nama = (data.get("sekolah", {}).get("nama") or "SMK NEGERI 4 BANDAR LAMPUNG")
     perus_nama = (
@@ -300,20 +299,37 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
         or "PERUSAHAAN"
     )
 
-    sections: list[tuple[str, str, int]] = [
-        ("PENGESAHAN", "peng_industri", 1),
-        (f"dari {perus_nama}", "peng_industri", 2),
-        ("PENGESAHAN", "peng_sekolah", 1),
-        (f"dari {sek_nama}", "peng_sekolah", 2),
-        ("IDENTITAS SISWA", "id_siswa", 1),
-        ("IDENTITAS INDUSTRI / INSTANSI", "id_industri", 1),
-        ("KATA PENGANTAR", "kata_pengantar", 1),
+    sections: list[tuple[str, str, int, str]] = [
+        ("PENGESAHAN", "peng_industri", 1, "i"),
+        (f"dari {perus_nama}", "peng_industri", 2, "i"),
+        ("PENGESAHAN", "peng_sekolah", 1, "ii"),
+        (f"dari {sek_nama}", "peng_sekolah", 2, "ii"),
+        ("IDENTITAS SISWA", "id_siswa", 1, "iii"),
+        ("IDENTITAS INDUSTRI / INSTANSI", "id_industri", 1, "iv"),
+        ("KATA PENGANTAR", "kata_pengantar", 1, "v"),
     ]
 
-    # BAB + sub-bab + daftar pustaka + lampiran — diambil dari outline aktual
-    # sehingga judul & keberadaannya selalu sinkron dengan isi dokumen.
+    page_estimates = {1: 1, 2: 7, 3: 8, 4: 10, 5: 13, 6: 15}
+    current_page = 1
+    sub_count_in_bab = 0
+
     for level, text, bookmark in builder.outline:
-        sections.append((text, bookmark, level))
+        m_bab = re.search(r"BAB\s+([IVXLCDM\d]+)", text, re.IGNORECASE)
+        if m_bab:
+            bab_num = _roman_to_int(m_bab.group(1))
+            current_page = page_estimates.get(bab_num, max(current_page + 1, bab_num * 2))
+            sub_count_in_bab = 0
+        elif "DAFTAR PUSTAKA" in text.upper():
+            current_page = max(current_page + 1, 17)
+        elif "LAMPIRAN" in text.upper():
+            current_page = max(current_page + 1, 18)
+        else:
+            if level == 2:
+                sub_count_in_bab += 1
+                if sub_count_in_bab > 2 and sub_count_in_bab % 2 == 1:
+                    current_page += 1
+
+        sections.append((text, bookmark, level, str(current_page)))
 
     return sections
 
