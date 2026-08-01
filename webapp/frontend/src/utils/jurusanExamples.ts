@@ -5,12 +5,26 @@ export interface DataAngkaExample {
   nilai?: string
 }
 
+export interface ContohCabangExample {
+  tipeBiasa: {
+    namaTempat: string
+    cabang: string
+    penjelasan: string
+  }
+  tipeBesar: {
+    namaPerusahaan: string
+    area1: { namaArea: string; cabang: string[] }
+    area2: { namaArea: string; cabang: string[] }
+  }
+}
+
 export interface JurusanExample {
   jurusan_key: string
   label: string
   icon: string
   badge: string
   contohPelajaran: string[]
+  contohCabang: ContohCabangExample
   studiKasus: {
     judul: string
     latar_belakang: string
@@ -31,6 +45,18 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       'Mengoptimalkan performa query database',
       'Bekerja secara kolaboratif dalam tim pengembang software',
     ],
+    contohCabang: {
+      tipeBiasa: {
+        namaTempat: 'Studio / Software House Local (1 Tempat PKL)',
+        cabang: 'Kantor Utama Dev Studio - Jl. ZA Pagar Alam No. 45, Bandar Lampung',
+        penjelasan: 'Bila studio/kantor tempat kamu PKL cuma ada 1 lokasi, kosongkan saja Nama Area!',
+      },
+      tipeBesar: {
+        namaPerusahaan: 'PT Solusi Teknologi Indonesia (Banyak Cabang)',
+        area1: { namaArea: 'Area Jakarta (Pusat)', cabang: ['Cabang Sudirman', 'Cabang Senayan'] },
+        area2: { namaArea: 'Area Sumatra', cabang: ['Cabang Bandar Lampung', 'Cabang Palembang'] },
+      },
+    },
     studiKasus: {
       judul: 'Optimasi Speed & Performance Query Database pada Rekapitulasi Laporan Bulanan',
       latar_belakang:
@@ -57,6 +83,18 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       'Mengonfigurasi IP Address, Router MikroTik, dan VLAN',
       'Melakukan instalasi dan troubleshooting perangkat komputer/jaringan',
     ],
+    contohCabang: {
+      tipeBiasa: {
+        namaTempat: 'Toko Komputer & Service Center (1 Tempat PKL)',
+        cabang: 'Toko Utama & Service Center - Jl. Kartini No. 12, Bandar Lampung',
+        penjelasan: 'Bila toko/tempat service kamu cuma ada 1 lokasi, kosongkan saja Nama Area!',
+      },
+      tipeBesar: {
+        namaPerusahaan: 'PT Telkom Indonesia / Provider Internet (Banyak Cabang)',
+        area1: { namaArea: 'Witel Lampung & Bengkulu', cabang: ['Witel Bandar Lampung', 'Witel Metro'] },
+        area2: { namaArea: 'Witel Sumsel', cabang: ['Witel Palembang Pusat'] },
+      },
+    },
     studiKasus: {
       judul: 'Konfigurasi Manajemen Bandwidth Router MikroTik & Segmentation VLAN',
       latar_belakang:
@@ -83,6 +121,18 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       'Memahami hierarki tipografi dan komposisi tata letak media cetak/digital',
       'Membuat aset visual dan motion graphic untuk kebutuhan promosi',
     ],
+    contohCabang: {
+      tipeBiasa: {
+        namaTempat: 'Studio Foto & Digital Printing (1 Tempat PKL)',
+        cabang: 'Studio Utama & Printing - Jl. Teuku Umar No. 88, Bandar Lampung',
+        penjelasan: 'Bila studio/percetakan kamu cuma ada 1 lokasi, kosongkan saja Nama Area!',
+      },
+      tipeBesar: {
+        namaPerusahaan: 'PT Media Advertising & Printing (Banyak Cabang)',
+        area1: { namaArea: 'Area Jabodetabek', cabang: ['Studio Kreatif Jakarta', 'Percetakan Bekasi'] },
+        area2: { namaArea: 'Area Sumatra', cabang: ['Cabang Percetakan Bandar Lampung'] },
+      },
+    },
     studiKasus: {
       judul: 'Perancangan Branding Visual & Optimasi Asset Rendering Motion Graphic',
       latar_belakang:
@@ -109,6 +159,18 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       'Melakukan komunikasi dan reservasi dengan vendor armada & hotel',
       'Memberikan pelayanan panduan wisata (guiding) secara profesional',
     ],
+    contohCabang: {
+      tipeBiasa: {
+        namaTempat: 'Agen Tour & Travel Local (1 Tempat PKL)',
+        cabang: 'Kantor Pusat Tour & Travel - Jl. Raden Intan No. 24, Bandar Lampung',
+        penjelasan: 'Bila agen travel tempat kamu PKL cuma ada 1 lokasi, kosongkan saja Nama Area!',
+      },
+      tipeBesar: {
+        namaPerusahaan: 'PT Panorama Travel Indonesia (Banyak Cabang)',
+        area1: { namaArea: 'Area Jawa', cabang: ['Cabang Utama Jakarta', 'Cabang Bandung'] },
+        area2: { namaArea: 'Area Sumatra', cabang: ['Cabang Bandar Lampung'] },
+      },
+    },
     studiKasus: {
       judul: 'Penyusunan Paket Itinerary Tour Bandung-Lembang & Optimasi Travel Costing',
       latar_belakang:
@@ -135,6 +197,18 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       'Melakukan prosedur check-in dan check-out tamu hotel di Front Desk',
       'Menjaga etika keramahan (hospitality) dan komunikasi profesional',
     ],
+    contohCabang: {
+      tipeBiasa: {
+        namaTempat: 'Hotel / Penginapan Local (1 Tempat PKL)',
+        cabang: 'Hotel Utama - Jl. Wolter Monginsidi No. 15, Bandar Lampung',
+        penjelasan: 'Bila hotel tempat kamu PKL cuma ada 1 lokasi, kosongkan saja Nama Area!',
+      },
+      tipeBesar: {
+        namaPerusahaan: 'Jaringan Hotel Santika / Aston (Banyak Cabang)',
+        area1: { namaArea: 'Area Sumatra', cabang: ['Hotel Santika Premiere Bandar Lampung', 'Hotel Santika Palembang'] },
+        area2: { namaArea: 'Area Jawa', cabang: ['Hotel Santika Jakarta'] },
+      },
+    },
     studiKasus: {
       judul: 'Standardisasi Housekeeping Room Inspection & Optimasi Guest Check-In Speed',
       latar_belakang:
@@ -161,6 +235,18 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       'Menerapkan standar higienitas dan sanitasi keselamatan kerja dapur (HACCP)',
       'Mengolah dan menyajikan hidangan sesuai standar resep restoran/hotel',
     ],
+    contohCabang: {
+      tipeBiasa: {
+        namaTempat: 'Restoran / Rumah Makan / Bakery (1 Tempat PKL)',
+        cabang: 'Dapur Utama & Outlet - Jl. Antasari No. 30, Bandar Lampung',
+        penjelasan: 'Bila rumah makan/bakery tempat kamu PKL cuma ada 1 lokasi, kosongkan saja Nama Area!',
+      },
+      tipeBesar: {
+        namaPerusahaan: 'PT Restoran Boga Nusantara / Restaurant Chain (Banyak Cabang)',
+        area1: { namaArea: 'Area Sumatra', cabang: ['Restoran Cabang Bandar Lampung', 'Cabang Palembang'] },
+        area2: { namaArea: 'Area Jawa', cabang: ['Restoran Cabang Jakarta'] },
+      },
+    },
     studiKasus: {
       judul: 'Standardisasi Mise en Place & Efisiensi Food Cost Menu Banquet Event',
       latar_belakang:
@@ -187,6 +273,18 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       'Mengoperasikan mesin jahit industri dengan setikan presisi',
       'Melakukan pemotongan bahan (cutting) dan pengawasan kualitas jahitan',
     ],
+    contohCabang: {
+      tipeBiasa: {
+        namaTempat: 'Rumah Jahit & Tailor Custom (1 Tempat PKL)',
+        cabang: 'Workshop Jahit - Jl. Pangeran Antasari No. 18, Bandar Lampung',
+        penjelasan: 'Bila rumah jahit/boutique kamu cuma ada 1 lokasi, kosongkan saja Nama Area!',
+      },
+      tipeBesar: {
+        namaPerusahaan: 'PT Fashion Busana Indonesia (Banyak Cabang)',
+        area1: { namaArea: 'Area Produksi', cabang: ['Pabrik Garmen Bandung', 'Studio Desain Jakarta'] },
+        area2: { namaArea: 'Area Retail Boutique', cabang: ['Boutique Cabang Bandar Lampung'] },
+      },
+    },
     studiKasus: {
       judul: 'Pembuatan Pola Busana Custom Draping & Quality Control Presisi Jahitan',
       latar_belakang:
@@ -213,6 +311,18 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       'Melakukan penanganan surat masuk, surat keluar, dan disposisi',
       'Melayani komunikasi telepon dan penerimaan tamu kantor secara ramah',
     ],
+    contohCabang: {
+      tipeBiasa: {
+        namaTempat: 'Kantor Notaris / CV Perkantoran / Instansi (1 Tempat PKL)',
+        cabang: 'Kantor Utama - Jl. Diponegoro No. 112, Bandar Lampung',
+        penjelasan: 'Bila kantor/instansi tempat kamu PKL cuma ada 1 lokasi, kosongkan saja Nama Area!',
+      },
+      tipeBesar: {
+        namaPerusahaan: 'PT Pos Indonesia / BUMN (Banyak Cabang)',
+        area1: { namaArea: 'Regional I (Lampung)', cabang: ['Kantor Pos Cabang Utama Bandar Lampung', 'Kantor Pos Metro'] },
+        area2: { namaArea: 'Regional II (Sumsel)', cabang: ['Kantor Pos Palembang'] },
+      },
+    },
     studiKasus: {
       judul: 'Digitalisasi & Digital Archiving System Surat Masuk/Keluar',
       latar_belakang:
@@ -239,6 +349,18 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       'Melakukan penghitungan dan rekonsiliasi kas/bank',
       'Menyusun draf laporan keuangan sederhana dan verifikasi kuitansi',
     ],
+    contohCabang: {
+      tipeBiasa: {
+        namaTempat: 'Koperasi / Kantor Akuntan / BPR (1 Tempat PKL)',
+        cabang: 'Kantor Koperasi - Jl. Gajah Mada No. 50, Bandar Lampung',
+        penjelasan: 'Bila koperasi/kantor akuntan kamu cuma ada 1 lokasi, kosongkan saja Nama Area!',
+      },
+      tipeBesar: {
+        namaPerusahaan: 'PT Reksa Finance / Bank Lampung (Banyak Cabang)',
+        area1: { namaArea: 'Area I (Lampung)', cabang: ['PT Reksa Finance Cabang Bandar Lampung', 'Cabang Metro'] },
+        area2: { namaArea: 'Area II (Sumsel)', cabang: ['PT Reksa Finance Cabang Palembang'] },
+      },
+    },
     studiKasus: {
       judul: 'Pendataan & Penghitungan Waive Discount Debitur Macet serta Rekonsiliasi',
       latar_belakang:
@@ -265,6 +387,18 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       'Melayani transaksi penjualan dan pelayanan konsumen (customer service)',
       'Mengelola toko online (e-commerce) dan pencatatan stok barang',
     ],
+    contohCabang: {
+      tipeBiasa: {
+        namaTempat: 'Toko Retail & Distro Local (1 Tempat PKL)',
+        cabang: 'Toko Utama - Jl. Hayam Wuruk No. 7, Bandar Lampung',
+        penjelasan: 'Bila toko tempat kamu PKL cuma ada 1 lokasi, kosongkan saja Nama Area!',
+      },
+      tipeBesar: {
+        namaPerusahaan: 'PT Retail Mart Indonesia (Banyak Cabang)',
+        area1: { namaArea: 'Area Lampung', cabang: ['Supermarket Cabang Kedaton', 'Cabang Teluk Betung'] },
+        area2: { namaArea: 'Area Palembang', cabang: ['Supermarket Cabang Palembang'] },
+      },
+    },
     studiKasus: {
       judul: 'Analisis Efektivitas Kampanye Social Media Ads & Conversion Rate E-Commerce',
       latar_belakang:

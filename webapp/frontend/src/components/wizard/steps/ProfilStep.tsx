@@ -6,6 +6,7 @@ import type {
 import {
   emptyAreaCabang, emptyCabangPerusahaan, emptyJamKerja, emptyJobDescription
 } from '@/types/pkl'
+import { getJurusanExample, type JurusanExample } from '@/utils/jurusanExamples'
 import {
   FieldGroup, ImportanceLegend, StringArrayField, TextareaField, TextField, ImageUploadField
 } from '@/components/fields/FormFields'
@@ -88,13 +89,15 @@ function serializeSlots(slots: Slot[]): { jam: string; keterangan: string } {
 
 // ─── Sub-komponen: Area & Cabang ──────────────────────────────────────────── //
 function AreaCabangCard({
-  area, idx, onChange, onRemove, totalAreas,
+  area, idx, onChange, onRemove, totalAreas, jurusanExample,
 }: {
   area: AreaCabang; idx: number
   onChange: (patch: Partial<AreaCabang>) => void
   onRemove: () => void
   totalAreas: number
+  jurusanExample: JurusanExample
 }) {
+  const contoh = jurusanExample.contohCabang
   const updateCabang = (ci: number, patch: Partial<CabangPerusahaan>) => {
     const next = [...area.cabang]
     next[ci] = { ...next[ci], ...patch }
@@ -112,9 +115,9 @@ function AreaCabangCard({
             type="text"
             className="field__input"
             value={area.nama_area}
-            placeholder="Nama area (opsional, cth: Area I, Area Sumatera)"
+            placeholder={`cth: ${contoh.tipeBesar.area1.namaArea} (atau KOSONGKAN jika tanpa area)`}
             onChange={e => onChange({ nama_area: e.target.value })}
-            style={{ flex: 1, minWidth: '180px' }}
+            style={{ flex: 1, minWidth: '220px' }}
           />
         </div>
         {totalAreas > 1 && (
@@ -122,11 +125,15 @@ function AreaCabangCard({
         )}
       </div>
 
-      <div style={{ paddingTop: '0.5rem' }}>
+      <p style={{ margin: '0.35rem 0 0', fontSize: '0.78rem', color: '#6b7280', fontStyle: 'italic' }}>
+        💡 <strong>Nama Area (Opsional):</strong> Kosongkan saja jika tempat PKL kamu adalah toko/kantor/hotel/studio/perusahaan biasa tanpa pembagian wilayah area.
+      </p>
+
+      <div style={{ paddingTop: '0.6rem' }}>
         <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#374151', display: 'block', marginBottom: '0.4rem' }}>
-          Daftar Cabang <span style={{ color: '#ef4444' }}>*</span>
+          Daftar Cabang Tempat PKL <span style={{ color: '#ef4444' }}>*</span>
           <span style={{ fontWeight: 400, color: '#6b7280', marginLeft: '0.5rem' }}>
-            (min. 1 — termasuk cabang tempat PKL)
+            (min. 1 — tuliskan nama cabang / lokasi tempat kamu PKL)
           </span>
         </label>
         {area.cabang.map((cb, ci) => (
@@ -137,7 +144,7 @@ function AreaCabangCard({
                 type="text"
                 className="field__input"
                 value={cb.nama}
-                placeholder="cth: PT Reksa Finance Cabang Lampung"
+                placeholder={`cth: ${contoh.tipeBiasa.cabang}`}
                 onChange={e => updateCabang(ci, { nama: e.target.value })}
                 style={{ flex: 1, minWidth: 0 }}
               />
@@ -221,6 +228,9 @@ function JobDescCard({
 // ─── Main Component ───────────────────────────────────────────────────────── //
 export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Partial<PklContext>) => void }) {
   const pr = ctx.profil_perusahaan
+  const jurusanExample = getJurusanExample(ctx.siswa?.jurusan_key || ctx.siswa?.jurusan)
+  const contohCabang = jurusanExample.contohCabang
+
   const [showContohCabang, setShowContohCabang] = useState(false)
   const [showContohTataTertib, setShowContohTataTertib] = useState(false)
 
@@ -361,18 +371,52 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
         </div>
 
         {showContohCabang && (
-          <div style={{ background: '#eff6ff', border: '1px solid #93c5fd', borderRadius: 8, padding: '0.75rem', marginBottom: '0.75rem', fontSize: '0.82rem', color: '#1e40af' }}>
-            <strong>Contoh perusahaan besar (banyak cabang):</strong>
-            <div style={{ marginTop: '0.4rem' }}>
-              <em>Area I:</em> PT Reksa Finance Cabang Pangkal Pinang, PT Reksa Finance Cabang Tangerang<br />
-              <em>Area II:</em> PT Reksa Finance Cabang Lampung, PT Reksa Finance Cabang Palembang
+          <div style={{ background: '#eff6ff', border: '1px solid #93c5fd', borderRadius: 8, padding: '0.85rem 1rem', marginBottom: '0.85rem', fontSize: '0.85rem', color: '#1e40af', lineHeight: 1.5 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <strong>💡 Contoh Isian Cabang &amp; Area ({jurusanExample.label}):</strong>
+              <button
+                type="button"
+                className="btn-sm btn-outline"
+                onClick={() => {
+                  upd({
+                    area_cabang: [
+                      {
+                        nama_area: '',
+                        cabang: [{ nama: contohCabang.tipeBiasa.cabang }]
+                      }
+                    ]
+                  })
+                }}
+                style={{ fontSize: '0.78rem', padding: '0.25rem 0.6rem', color: 'var(--green-700)', borderColor: 'var(--green-600)', fontWeight: 600, background: '#ffffff' }}
+              >
+                + Isikan 1 Cabang Contoh Jurusan Ini
+              </button>
             </div>
-            <div style={{ marginTop: '0.5rem' }}>
-              <strong>Contoh perusahaan kecil (1 cabang tanpa area):</strong><br />
-              <em>Area (kosongkan):</em> Apotek Sehat Farma Bandar Lampung
+
+            {/* OPSI A: Perusahaan Biasa / 1 Tempat */}
+            <div style={{ background: '#ffffff', border: '1px solid #bfdbfe', borderRadius: 6, padding: '0.65rem 0.85rem', marginBottom: '0.6rem' }}>
+              <span style={{ fontWeight: 700, color: '#1e3a8a', display: 'block', marginBottom: '0.2rem' }}>
+                🟢 KONDISI 1: Perusahaan / Tempat PKL Biasa ({contohCabang.tipeBiasa.namaTempat})
+              </span>
+              <div style={{ fontSize: '0.82rem', color: '#1e40af' }}>
+                • <strong>Nama Area:</strong> <code style={{ background: '#fee2e2', color: '#991b1b', padding: '1px 5px', borderRadius: 4 }}>[KOSONGKAN SAJA]</code> *(Tidak perlu diisi)*<br />
+                • <strong>Daftar Cabang:</strong> <code style={{ background: '#dcfce7', color: '#166534', padding: '1px 5px', borderRadius: 4 }}>{contohCabang.tipeBiasa.cabang}</code>
+              </div>
             </div>
-            <p style={{ marginTop: '0.5rem', marginBottom: 0, color: '#1d4ed8' }}>
-              Jika perusahaan tidak punya area, biarkan nama area kosong dan isi saja daftar cabangnya.
+
+            {/* OPSI B: Perusahaan Besar Banyak Cabang */}
+            <div style={{ background: '#ffffff', border: '1px solid #bfdbfe', borderRadius: 6, padding: '0.65rem 0.85rem' }}>
+              <span style={{ fontWeight: 700, color: '#1e3a8a', display: 'block', marginBottom: '0.2rem' }}>
+                🏢 KONDISI 2: Perusahaan Besar ({contohCabang.tipeBesar.namaPerusahaan})
+              </span>
+              <div style={{ fontSize: '0.82rem', color: '#1e40af' }}>
+                • <strong>{contohCabang.tipeBesar.area1.namaArea}:</strong> {contohCabang.tipeBesar.area1.cabang.join(', ')}<br />
+                • <strong>{contohCabang.tipeBesar.area2.namaArea}:</strong> {contohCabang.tipeBesar.area2.cabang.join(', ')}
+              </div>
+            </div>
+
+            <p style={{ marginTop: '0.5rem', marginBottom: 0, color: '#1d4ed8', fontSize: '0.8rem', fontStyle: 'italic' }}>
+              * Mayoritas tempat PKL siswa (toko, studio, kantor lokal) adalah KONDISI 1. Cukup kosongkan Nama Area!
             </p>
           </div>
         )}
@@ -391,6 +435,7 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
             onChange={patch => updArea(i, patch)}
             onRemove={() => removeArea(i)}
             totalAreas={pr.area_cabang.length}
+            jurusanExample={jurusanExample}
           />
         ))}
         <button type="button" className="btn-sm btn-outline" onClick={addArea}>
@@ -439,7 +484,6 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
         />
       </FieldGroup>
 
-
       {/* ── Jam Kerja: susun slot LANGSUNG di tabel bentuk laporan ────────── */}
       <FieldGroup title="Jadwal Jam Kerja" full>
         <p className="muted" style={{ margin: '-0.5rem 0 0.75rem', fontSize: '0.85rem' }}>
@@ -448,7 +492,6 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
           Jam yang bentrok atau mundur otomatis tidak bisa dipilih.
           Menambah hari baru akan menyalin jadwal hari sebelumnya.
         </p>
-
 
         <div className="table-scroll">
           <table className="fill-table">
