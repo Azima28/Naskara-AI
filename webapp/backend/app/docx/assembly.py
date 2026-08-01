@@ -331,7 +331,17 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
     bookmark_offset_lines: dict[str, float] = {}
     bookmark_bab_key: dict[str, int | str] = {}
 
+    # Kumpulkan semua elemen paragraph yang ada di dalam w:sdt (Table of Contents)
+    # agar tidak ikut terhitung sebagai paragraf isi laporan.
+    sdt_paras = set(
+        p for sdt in builder.doc.element.body.findall(".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}sdt")
+        for p in sdt.findall(".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}p")
+    )
+
     for elem in builder.doc.element.body:
+        if elem in sdt_paras:
+            continue
+
         tag = elem.tag.split("}")[-1] if "}" in elem.tag else elem.tag
 
         if tag == "p":
