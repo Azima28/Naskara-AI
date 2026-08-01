@@ -18,6 +18,11 @@ export interface ContohCabangExample {
   }
 }
 
+export interface JobDescItemExample {
+  posisi: string
+  tugas: string[]
+}
+
 export interface JurusanExample {
   jurusan_key: string
   label: string
@@ -25,6 +30,7 @@ export interface JurusanExample {
   badge: string
   contohPelajaran: string[]
   contohCabang: ContohCabangExample
+  contohJobDesc: JobDescItemExample[]
   studiKasus: {
     judul: string
     latar_belakang: string
@@ -57,6 +63,24 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         area2: { namaArea: 'Area Sumatra', cabang: ['Cabang Bandar Lampung', 'Cabang Palembang'] },
       },
     },
+    contohJobDesc: [
+      {
+        posisi: 'Junior Software / Backend Developer',
+        tugas: [
+          'Membangun dan memelihara modul fitur web/aplikasi (REST API)',
+          'Mengelola database dan mengoptimalkan query SQL',
+          'Melakukan pengujian (testing) dan debugging fitur software',
+          'Membuat dokumentasi teknis struktur basis data & API',
+        ],
+      },
+      {
+        posisi: 'Frontend & UI Web Assistant',
+        tugas: [
+          'Merancang dan merapikan antarmuka halaman web yang responsif',
+          'Mengintegrasikan komponen antarmuka dengan API backend',
+        ],
+      },
+    ],
     studiKasus: {
       judul: 'Optimasi Speed & Performance Query Database pada Rekapitulasi Laporan Bulanan',
       latar_belakang:
@@ -95,6 +119,24 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         area2: { namaArea: 'Witel Sumsel', cabang: ['Witel Palembang Pusat'] },
       },
     },
+    contohJobDesc: [
+      {
+        posisi: 'Teknisi Jaringan & Network Support',
+        tugas: [
+          'Melakukan crimping kabel LAN UTP dan testing koneksi jaringan',
+          'Mengonfigurasi IP Address, Router MikroTik, dan Access Point WiFi',
+          'Monitoring kualitas bandwidth jaringan internet kantor',
+          'Melakukan troubleshooting gangguan koneksi jaringan lokal',
+        ],
+      },
+      {
+        posisi: 'Teknisi Komputer & Hardware Support',
+        tugas: [
+          'Perakitan, maintenance, dan pembersihan unit PC/Laptop kantor',
+          'Instalasi Sistem Operasi Windows/Linux dan aplikasi kerja',
+        ],
+      },
+    ],
     studiKasus: {
       judul: 'Konfigurasi Manajemen Bandwidth Router MikroTik & Segmentation VLAN',
       latar_belakang:
@@ -133,6 +175,24 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         area2: { namaArea: 'Area Sumatra', cabang: ['Cabang Percetakan Bandar Lampung'] },
       },
     },
+    contohJobDesc: [
+      {
+        posisi: 'Graphic Designer & Content Creator',
+        tugas: [
+          'Membuat desain poster, banner, dan feed promosi media sosial',
+          'Menyiapkan berkas cetak (spanduk, brosur, id card) sesuai standar percetakan',
+          'Editing foto produk dan retouching gambar promosi',
+          'Merancang identitas visual dan aset grafis klien',
+        ],
+      },
+      {
+        posisi: 'Junior Video Editor',
+        tugas: [
+          'Mengedit video pendek promosi untuk Reels dan TikTok',
+          'Menyusun pemotongan klip (rough cut) dan pemberian efek transisi',
+        ],
+      },
+    ],
     studiKasus: {
       judul: 'Perancangan Branding Visual & Optimasi Asset Rendering Motion Graphic',
       latar_belakang:
@@ -171,6 +231,24 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         area2: { namaArea: 'Area Sumatra', cabang: ['Cabang Bandar Lampung'] },
       },
     },
+    contohJobDesc: [
+      {
+        posisi: 'Staf Tour Planner & Ticketing',
+        tugas: [
+          'Melayani pemesanan tiket pesawat, kereta api, dan voucher hotel',
+          'Menyusun rencana perjalanan wisata (itinerary tour) rombongan',
+          'Menghitung estimasi rincian biaya paket wisata (tour costing)',
+          'Menyiapkan dokumen perjalanan dan informasi panduan ke pelanggan',
+        ],
+      },
+      {
+        posisi: 'Customer Service & Travel Consultant',
+        tugas: [
+          'Menjawab konsultasi dan pertanyaan destinasi wisata calon pelanggan',
+          'Mengelola reservasi dan konfirmasi rombongan wisata',
+        ],
+      },
+    ],
     studiKasus: {
       judul: 'Penyusunan Paket Itinerary Tour Bandung-Lembang & Optimasi Travel Costing',
       latar_belakang:
@@ -209,6 +287,24 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         area2: { namaArea: 'Area Jawa', cabang: ['Hotel Santika Jakarta'] },
       },
     },
+    contohJobDesc: [
+      {
+        posisi: 'Front Office Receptionist',
+        tugas: [
+          'Melayani proses check-in dan check-out tamu hotel secara profesional',
+          'Menerima dan mencatat reservasi kamar melalui telepon dan sistem hotel',
+          'Memberikan informasi fasilitas hotel dan destinasi sekitar kepada tamu',
+          'Menangani pertanyaan dan koordinasi kebutuhan tamu hotel',
+        ],
+      },
+      {
+        posisi: 'Housekeeping Attendant',
+        tugas: [
+          'Membersihkan dan menata kerapian kamar tamu sesuai SOP hotel',
+          'Mengatur ketersediaan linen, handuk, dan perlengkapan amenitas kamar',
+        ],
+      },
+    ],
     studiKasus: {
       judul: 'Standardisasi Housekeeping Room Inspection & Optimasi Guest Check-In Speed',
       latar_belakang:
@@ -247,6 +343,24 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         area2: { namaArea: 'Area Jawa', cabang: ['Restoran Cabang Jakarta'] },
       },
     },
+    contohJobDesc: [
+      {
+        posisi: 'Kitchen Assistant / Commis Cook',
+        tugas: [
+          'Mempersiapkan bahan makanan (chopping, washing, portioning) sebelum memasak',
+          'Memasak hidangan sesuai standar resep dan higienitas dapur (HACCP)',
+          'Menjaga kebersihan area dapur, peralatan masak, dan meja kerja (mise en place)',
+          'Menata dan menyajikan (plating) hidangan agar terlihat menarik',
+        ],
+      },
+      {
+        posisi: 'Pastry & Bakery Helper',
+        tugas: [
+          'Menimbang dan mengaduk adonan roti, kue, dan penutup (dessert)',
+          'Memanggang dan menghias kue sesuai pesanan pelanggan',
+        ],
+      },
+    ],
     studiKasus: {
       judul: 'Standardisasi Mise en Place & Efisiensi Food Cost Menu Banquet Event',
       latar_belakang:
@@ -285,6 +399,24 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         area2: { namaArea: 'Area Retail Boutique', cabang: ['Boutique Cabang Bandar Lampung'] },
       },
     },
+    contohJobDesc: [
+      {
+        posisi: 'Asisten Pembuat Pola Busana (Pattern Maker)',
+        tugas: [
+          'Membuat sketsa desain busana dan memilih sampel kain',
+          'Membuat pola busana skala besar sesuai ukuran badan pelanggan',
+          'Melakukan pemotongan bahan kain (cutting) dengan presisi',
+          'Melakukan fitting dan penyesuaian kelonggaran pakaian',
+        ],
+      },
+      {
+        posisi: 'Quality Control & Finishing Busana',
+        tugas: [
+          'Memeriksa kerapian setikan jahitan, kancing, dan sisa benang',
+          'Melakukan pengukusan (steaming/ironing) dan pengemasan pakaian',
+        ],
+      },
+    ],
     studiKasus: {
       judul: 'Pembuatan Pola Busana Custom Draping & Quality Control Presisi Jahitan',
       latar_belakang:
@@ -323,6 +455,24 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         area2: { namaArea: 'Regional II (Sumsel)', cabang: ['Kantor Pos Palembang'] },
       },
     },
+    contohJobDesc: [
+      {
+        posisi: 'Staf Administrasi Perkantoran & Resepsionis',
+        tugas: [
+          'Mengelola, mencatat, dan mendokumentasikan surat masuk & surat keluar',
+          'Menerima tamu kantor dan mengarahkan ke ruangan pimpinan/divisi yang dituju',
+          'Menyusun agenda kegiatan, jadwal rapat, dan notulensi pertemuan',
+          'Mengelola persediaan alat tulis kantor (ATK) dan kebutuhan harian kantor',
+        ],
+      },
+      {
+        posisi: 'Admin Input Data & Pengarsipan Digital',
+        tugas: [
+          'Menginput data transaksi dan dokumen ke spreadsheet/aplikasi e-Office',
+          'Menata sistem kearsipan fisik dan alih media dokumen digital',
+        ],
+      },
+    ],
     studiKasus: {
       judul: 'Digitalisasi & Digital Archiving System Surat Masuk/Keluar',
       latar_belakang:
@@ -361,6 +511,24 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         area2: { namaArea: 'Area II (Sumsel)', cabang: ['PT Reksa Finance Cabang Palembang'] },
       },
     },
+    contohJobDesc: [
+      {
+        posisi: 'Staf Akuntansi & Kasir',
+        tugas: [
+          'Mencatat transaksi penerimaan dan pengeluaran kas ke dalam jurnal',
+          'Melakukan penghitungan dan rekonsiliasi kas kecil (petty cash)',
+          'Memeriksa kelengkapan bukti transaksi (nota, invoice, kuitansi)',
+          'Menyiapkan draf rekapitulasi laporan keuangan bulanan',
+        ],
+      },
+      {
+        posisi: 'Admin Keuangan & Tagihan',
+        tugas: [
+          'Membuat invoice/faktur penjualan dan mencatat tagihan ke pelanggan',
+          'Melakukan pengecekan pembayaran dan pelaporan administrasi keuangan',
+        ],
+      },
+    ],
     studiKasus: {
       judul: 'Pendataan & Penghitungan Waive Discount Debitur Macet serta Rekonsiliasi',
       latar_belakang:
@@ -399,6 +567,24 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         area2: { namaArea: 'Area Palembang', cabang: ['Supermarket Cabang Palembang'] },
       },
     },
+    contohJobDesc: [
+      {
+        posisi: 'Staf Pemasaran Digital & Social Media Specialist',
+        tugas: [
+          'Mengelola akun media sosial toko/perusahaan dan mendesain konten promosi',
+          'Melayani obrolan (chat/DM) calon pembeli secara ramah dan responsif',
+          'Membuat teks penawaran promosi (copywriting) dan paket diskon',
+          'Mengumpulkan data penjualan harian dan analisis tren produk terlaris',
+        ],
+      },
+      {
+        posisi: 'Staf Merchandising & Display Toko',
+        tugas: [
+          'Menata dan memajang (display) produk di rak sesuai standar visual merchandising',
+          'Melakukan pengecekan fisik stok barang (stock opname) secara berkala',
+        ],
+      },
+    ],
     studiKasus: {
       judul: 'Analisis Efektivitas Kampanye Social Media Ads & Conversion Rate E-Commerce',
       latar_belakang:

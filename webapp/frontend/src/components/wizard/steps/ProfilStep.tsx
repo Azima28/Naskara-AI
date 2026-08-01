@@ -164,13 +164,15 @@ function AreaCabangCard({
 
 // ─── Sub-komponen: Job Description Row ───────────────────────────────────── //
 function JobDescCard({
-  job, idx, onChange, onRemove,
+  job, idx, onChange, onRemove, jurusanExample,
 }: {
   job: JobDescription; idx: number
   onChange: (patch: Partial<JobDescription>) => void
   onRemove: () => void
+  jurusanExample: JurusanExample
 }) {
   const [showContoh, setShowContoh] = useState(false)
+  const firstSample = jurusanExample.contohJobDesc?.[0]
 
   return (
     <div className="nested-card" style={{ marginBottom: '1rem' }}>
@@ -183,7 +185,7 @@ function JobDescCard({
         label="Nama Jabatan/Posisi"
         value={job.posisi}
         onChange={v => onChange({ posisi: v })}
-        placeholder="cth: Kasir, Branch Manager, Admin Credit, Office Boy"
+        placeholder={`cth: ${firstSample?.posisi || 'Staf Operasional'}`}
         importance="wajib"
       />
 
@@ -202,14 +204,18 @@ function JobDescCard({
         </div>
 
         {showContoh && (
-          <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 8, padding: '0.75rem', marginBottom: '0.5rem', fontSize: '0.82rem', color: '#166534' }}>
-            <strong>Contoh tugas Kasir:</strong>
-            <ul style={{ margin: '0.25rem 0 0 1rem', paddingLeft: '0.5rem' }}>
-              <li>Menerima dan mencatat pembayaran angsuran customer secara tunai</li>
-              <li>Melakukan cash opname setiap hari kerja</li>
-              <li>Menyetorkan uang angsuran ke bank setiap hari kerja</li>
-              <li>Bertanggung jawab atas dokumen kasir (bon, invoice customer)</li>
-            </ul>
+          <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 8, padding: '0.75rem', marginBottom: '0.5rem', fontSize: '0.82rem', color: '#166534', lineHeight: 1.5 }}>
+            <strong>💡 Contoh Tugas Jabatan ({jurusanExample.label}):</strong>
+            {jurusanExample.contohJobDesc.map((c, cIdx) => (
+              <div key={cIdx} style={{ marginTop: cIdx > 0 ? '0.4rem' : '0.2rem' }}>
+                <strong>• {c.posisi}:</strong>
+                <ul style={{ margin: '0.2rem 0 0 1rem', paddingLeft: '0.5rem' }}>
+                  {c.tugas.map((t, tIdx) => (
+                    <li key={tIdx}>{t}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         )}
 
@@ -218,7 +224,7 @@ function JobDescCard({
           items={job.tugas}
           onChange={tugas => onChange({ tugas })}
           addLabel="+ Tambah Tugas"
-          placeholder="cth: Menerima pembayaran angsuran customer"
+          placeholder={`cth: ${firstSample?.tugas?.[0] || 'Mengerjakan tugas harian kantor'}`}
         />
       </div>
     </div>
@@ -331,6 +337,14 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
   }
   const addJob = () => upd({ job_descriptions: [...pr.job_descriptions, emptyJobDescription()] })
   const removeJob = (i: number) => upd({ job_descriptions: pr.job_descriptions.filter((_, idx) => idx !== i) })
+
+  const handleApplySampleJobDesc = () => {
+    const sampleJobs: JobDescription[] = (jurusanExample.contohJobDesc || []).map(j => ({
+      posisi: j.posisi,
+      tugas: [...j.tugas],
+    }))
+    upd({ job_descriptions: sampleJobs })
+  }
 
   return (
     <>
@@ -892,9 +906,52 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
           Isi tugas-tugas setiap jabatan yang ada di perusahaan. Minimal isi jabatan tempat kamu ditempatkan.
           Tidak perlu hafal semua — isi yang kamu ketahui saja.
         </p>
+
+        {/* Contoh Jabatan & 1-Click Apply Button Berdasarkan Jurusan */}
+        <div
+          style={{
+            background: '#f8fafc',
+            border: '1px solid #cbd5e1',
+            borderRadius: '8px',
+            padding: '0.85rem 1rem',
+            marginBottom: '1rem',
+            fontSize: '0.85rem',
+            color: '#334155',
+            lineHeight: 1.5,
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <strong style={{ color: '#0f172a' }}>
+              💡 Contoh Jabatan &amp; Tugas ({jurusanExample.label}):
+            </strong>
+            <button
+              type="button"
+              className="btn-sm btn-outline"
+              onClick={handleApplySampleJobDesc}
+              style={{ fontSize: '0.78rem', padding: '0.25rem 0.6rem', color: 'var(--green-700)', borderColor: 'var(--green-600)', fontWeight: 600, background: '#ffffff' }}
+            >
+              + Gunakan Contoh Jabatan Jurusan Ini
+            </button>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+            {jurusanExample.contohJobDesc?.map((item, idx) => (
+              <div key={idx} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '0.5rem 0.75rem' }}>
+                <strong style={{ color: 'var(--green-800)', fontSize: '0.83rem' }}>
+                  {idx + 1}. {item.posisi}
+                </strong>
+                <ul style={{ margin: '0.2rem 0 0 1rem', paddingLeft: '0.4rem', fontSize: '0.8rem', color: '#475569' }}>
+                  {item.tugas.map((t, tIdx) => (
+                    <li key={tIdx}>{t}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {pr.job_descriptions.length === 0 && (
           <div style={{ background: '#fef3c7', border: '1px solid #fbbf24', borderRadius: 8, padding: '0.75rem', marginBottom: '0.75rem', fontSize: '0.85rem', color: '#92400e' }}>
-            Belum ada jabatan. Klik "+ Tambah Jabatan" untuk mengisi.
+            Belum ada jabatan tersimpan. Klik tombol contoh di atas atau "+ Tambah Jabatan" di bawah untuk mengisi manual.
           </div>
         )}
         {pr.job_descriptions.map((job, i) => (
@@ -902,6 +959,7 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
             key={i} job={job} idx={i}
             onChange={patch => updJob(i, patch)}
             onRemove={() => removeJob(i)}
+            jurusanExample={jurusanExample}
           />
         ))}
         <button type="button" className="btn-sm btn-outline" onClick={addJob}>+ Tambah Jabatan</button>
