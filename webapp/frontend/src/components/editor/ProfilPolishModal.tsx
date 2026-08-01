@@ -134,6 +134,28 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
     return () => cleanupStream()
   }, [isOpen])
 
+  const saveItemResult = (key: PolishItem['key'], content: string) => {
+    if (!content) return
+    if (key === 'profil_sejarah') {
+      updatedProfilRef.current.sejarah = content
+    } else if (key === 'visi_misi') {
+      const parsed = parseVisiMisi(content)
+      if (parsed.visi) updatedProfilRef.current.visi = parsed.visi
+      if (parsed.misi.length > 0) updatedProfilRef.current.misi = parsed.misi
+    } else if (key === 'tata_tertib_perusahaan') {
+      const list = parseNumberedList(content)
+      if (list.length > 0) {
+        updatedProfilRef.current.tata_tertib_perusahaan = list
+        updatedProfilRef.current.tata_tertib = list
+      }
+    } else if (key === 'job_descriptions') {
+      const parsedJobs = parseJobDescriptions(content)
+      if (parsedJobs.length > 0) {
+        updatedProfilRef.current.job_descriptions = parsedJobs
+      }
+    }
+  }
+
   const checkAllDone = (currentStatuses: Record<string, string>) => {
     const allFinished = POLISH_ITEMS.every(
       (it) => currentStatuses[it.key] === 'success' || currentStatuses[it.key] === 'failed' || currentStatuses[it.key] === 'no_response'
@@ -164,16 +186,31 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
       const timeoutLimit = hasChunkRef.current ? 25000 : 45000
 
       if (elapsed > timeoutLimit) {
-        // Jika teks sudah ter-generate cukup banyak, anggap berhasil walau koneksi diam di akhir
-        if (accumulated.trim().length > 30) return
-
-        isNoResponseTriggered = true
-        if (abortControllerRef.current) {
-          abortControllerRef.current.abort()
-        }
         if (heartbeatIntervalRef.current) {
           clearInterval(heartbeatIntervalRef.current)
           heartbeatIntervalRef.current = null
+        }
+
+        const currentText = accumulated.trim()
+        if (currentText.length > 15) {
+          // Jika teks sudah ter-generate (>15 karakter), anggap BERHASIL walau koneksi stream diam di akhir
+          setStreamTexts((prev) => ({ ...prev, [item.key]: currentText }))
+          saveItemResult(item.key, currentText)
+          setStatuses((prev) => {
+            const next = { ...prev, [item.key]: 'success' as const }
+            checkAllDone(next)
+            return next
+          })
+          if (abortControllerRef.current) {
+            abortControllerRef.current.abort()
+          }
+          return
+        }
+
+        // Teks benar-benar kosong / < 15 karakter -> Murni AI No-Response
+        isNoResponseTriggered = true
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort()
         }
         setStatuses((prev) => {
           const next = { ...prev, [item.key]: 'no_response' as const }
@@ -201,36 +238,29 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
         heartbeatIntervalRef.current = null
       }
 
-      if (isNoResponseTriggered && accumulated.trim().length <= 30) return
-
       const finalContent = (resultText || accumulated).trim()
       setStreamTexts((prev) => ({ ...prev, [item.key]: finalContent }))
 
-      // Update ref profil_perusahaan berdasarkan key
-      if (item.key === 'profil_sejarah' && finalContent) {
-        updatedProfilRef.current.sejarah = finalContent
-      } else if (item.key === 'visi_misi' && finalContent) {
-        const parsed = parseVisiMisi(finalContent)
-        if (parsed.visi) updatedProfilRef.current.visi = parsed.visi
-        if (parsed.misi.length > 0) updatedProfilRef.current.misi = parsed.misi
-      } else if (item.key === 'tata_tertib_perusahaan' && finalContent) {
-        const list = parseNumberedList(finalContent)
-        if (list.length > 0) {
-          updatedProfilRef.current.tata_tertib_perusahaan = list
-          updatedProfilRef.current.tata_tertib = list
-        }
-      } else if (item.key === 'job_descriptions' && finalContent) {
-        const parsedJobs = parseJobDescriptions(finalContent)
-        if (parsedJobs.length > 0) {
-          updatedProfilRef.current.job_descriptions = parsedJobs
-        }
+      if (finalContent.length > 15) {
+        saveItemResult(item.key, finalContent)
+        setStatuses((prev) => {
+          const next = { ...prev, [item.key]: 'success' as const }
+          checkAllDone(next)
+          return next
+        })
+      } else if (isNoResponseTriggered) {
+        setStatuses((prev) => {
+          const next = { ...prev, [item.key]: 'no_response' as const }
+          checkAllDone(next)
+          return next
+        })
+      } else {
+        setStatuses((prev) => {
+          const next = { ...prev, [item.key]: 'failed' as const }
+          checkAllDone(next)
+          return next
+        })
       }
-
-      setStatuses((prev) => {
-        const next = { ...prev, [item.key]: 'success' as const }
-        checkAllDone(next)
-        return next
-      })
     } catch (err: any) {
       if (heartbeatIntervalRef.current) {
         clearInterval(heartbeatIntervalRef.current)
@@ -238,24 +268,10 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
       }
 
       const finalContent = accumulated.trim()
-      if (finalContent.length > 30) {
-        // Meskipun koneksi abort/terputus di akhir, teks yang sudah lengkap tetap disimpan & sukses
+      if (finalContent.length > 15) {
+        // Meskipun terjadi error / disconnect di akhir, teks yang sudah ter-generate (>15 karakter) tetap DISIMPAN & SUKSES
         setStreamTexts((prev) => ({ ...prev, [item.key]: finalContent }))
-        if (item.key === 'profil_sejarah') updatedProfilRef.current.sejarah = finalContent
-        else if (item.key === 'visi_misi') {
-          const parsed = parseVisiMisi(finalContent)
-          if (parsed.visi) updatedProfilRef.current.visi = parsed.visi
-          if (parsed.misi.length > 0) updatedProfilRef.current.misi = parsed.misi
-        } else if (item.key === 'tata_tertib_perusahaan') {
-          const list = parseNumberedList(finalContent)
-          if (list.length > 0) {
-            updatedProfilRef.current.tata_tertib_perusahaan = list
-            updatedProfilRef.current.tata_tertib = list
-          }
-        } else if (item.key === 'job_descriptions') {
-          const parsedJobs = parseJobDescriptions(finalContent)
-          if (parsedJobs.length > 0) updatedProfilRef.current.job_descriptions = parsedJobs
-        }
+        saveItemResult(item.key, finalContent)
         setStatuses((prev) => {
           const next = { ...prev, [item.key]: 'success' as const }
           checkAllDone(next)
@@ -429,7 +445,7 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
                 {st === 'no_response' && (
                   <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: '8px' }}>
                     <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: '#991b1b', fontWeight: 500 }}>
-                      ⚠️ Koneksi AI tidak merespons lebih dari 15 detik. Anda dapat mencoba lagi atau melanjutkan menggunakan data asli.
+                      ⚠️ Koneksi AI tidak merespons. Anda dapat mencoba lagi atau melanjutkan menggunakan data asli.
                     </p>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <button

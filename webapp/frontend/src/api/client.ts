@@ -254,7 +254,9 @@ export async function draftSectionStream(
     })
 
     if (!response.ok || !response.body) {
+      if (signal?.aborted) throw new Error('Aborted')
       const fallback = await draftSection(sectionKey, contextData)
+      if (signal?.aborted) throw new Error('Aborted')
       onChunk(fallback.content)
       return fallback.content
     }
@@ -301,6 +303,7 @@ export async function draftSectionStream(
 
     if (!fullText && !signal?.aborted) {
       const fallback = await draftSection(sectionKey, contextData)
+      if (signal?.aborted) throw new Error('Aborted')
       onChunk(fallback.content)
       return fallback.content
     }
@@ -311,6 +314,7 @@ export async function draftSectionStream(
       throw err
     }
     const fallback = await draftSection(sectionKey, contextData)
+    if (signal?.aborted) throw new Error('Aborted')
     onChunk(fallback.content)
     return fallback.content
   }
