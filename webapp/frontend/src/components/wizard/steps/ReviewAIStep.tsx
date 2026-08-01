@@ -42,6 +42,39 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
   const addPeralatan = () => upd({ peralatan: [...(peralatan || []), emptyPeralatan()] })
   const removePeralatan = (i: number) => upd({ peralatan: (peralatan || []).filter((_, idx) => idx !== i) })
 
+  // -- Sample applicators per major --
+  const handleApplySampleKegiatan = () => {
+    const sampleList: Kegiatan[] = (jurusanExample.contohKegiatan || []).map((ck) => ({
+      bidang: ck.bidang,
+      deskripsi_umum: ck.deskripsi_umum,
+      tugas: ck.tugas.map((t) => ({ nama: t.nama, detail: t.detail, assets: [] })),
+    }))
+    if (sampleList.length > 0) {
+      upd({ kegiatan: sampleList })
+    }
+  }
+
+  const handleApplySamplePeralatan = () => {
+    const sampleList: Peralatan[] = (jurusanExample.contohPeralatan || []).map((cp) => ({
+      nama: cp.nama,
+      deskripsi: cp.deskripsi,
+      gambar: '',
+    }))
+    if (sampleList.length > 0) {
+      upd({ peralatan: sampleList })
+    }
+  }
+
+  const handleApplySampleKendala = () => {
+    const sampleList: Kendala[] = (jurusanExample.contohKendala || []).map((ck) => ({
+      masalah: ck.masalah,
+      solusi: ck.solusi,
+    }))
+    if (sampleList.length > 0) {
+      upd({ kendala: sampleList })
+    }
+  }
+
   return (
     <>
       <h2>Kegiatan, Peralatan & Kendala</h2>
@@ -71,9 +104,47 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
         <p className="muted" style={{ margin: '-0.5rem 0 1rem', fontSize: '0.88rem' }}>
           Ceritakan bagian/divisi tempat kamu bekerja dan tugas yang kamu lakukan.
         </p>
+
+        {/* Contoh Kegiatan & 1-Click Button Berdasarkan Jurusan */}
+        {jurusanExample.contohKegiatan && jurusanExample.contohKegiatan.length > 0 && (
+          <div
+            style={{
+              background: '#f8fafc',
+              border: '1px solid #cbd5e1',
+              borderRadius: '8px',
+              padding: '0.85rem 1rem',
+              marginBottom: '1rem',
+              fontSize: '0.85rem',
+              color: '#334155',
+              lineHeight: 1.5,
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.4rem' }}>
+              <strong style={{ color: '#0f172a' }}>
+                💡 Contoh Kegiatan / Divisi ({jurusanExample.label}):
+              </strong>
+              {kegiatan.length === 0 && (
+                <button
+                  type="button"
+                  className="btn-sm btn-outline"
+                  onClick={handleApplySampleKegiatan}
+                  style={{ fontSize: '0.78rem', padding: '0.25rem 0.6rem', color: 'var(--green-700)', borderColor: 'var(--green-600)', fontWeight: 600, background: '#ffffff' }}
+                >
+                  + Gunakan Contoh Kegiatan Jurusan Ini
+                </button>
+              )}
+            </div>
+            {jurusanExample.contohKegiatan.map((ck, idx) => (
+              <div key={idx} style={{ marginTop: '0.3rem' }}>
+                <strong>• {ck.bidang}:</strong> {ck.deskripsi_umum}
+              </div>
+            ))}
+          </div>
+        )}
+
         {kegiatan.length === 0 && (
           <p className="muted" style={{ fontStyle: 'italic', fontSize: '0.88rem' }}>
-            Belum ada kegiatan yang diisi. Klik "+ Tambah Kegiatan / Divisi" di bawah.
+            Belum ada kegiatan tersimpan. Klik "+ Gunakan Contoh Kegiatan Jurusan Ini" di atas atau "+ Tambah Kegiatan / Divisi" di bawah.
           </p>
         )}
         {kegiatan.map((k, i) => (
@@ -86,14 +157,14 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
               label="Kamu bekerja di bagian apa?"
               value={k.bidang}
               onChange={(v) => updKegiatan(i, { bidang: v })}
-              placeholder="Contoh: Divisi IT / Administrasi / Produksi / Marketing"
+              placeholder={`Contoh (${jurusanExample.label}): "${jurusanExample.contohKegiatan?.[0]?.bidang || 'Divisi Operasional'}"`}
               importance="wajib"
             />
             <TextareaField
               label="Apa yang biasanya kamu lakukan di bagian ini?"
               value={k.deskripsi_umum}
               onChange={(v) => updKegiatan(i, { deskripsi_umum: v })}
-              placeholder="Contoh: Membantu memperbaiki komputer, menginstal aplikasi, dan merapikan kabel LAN."
+              placeholder={`Contoh (${jurusanExample.label}): "${jurusanExample.contohKegiatan?.[0]?.deskripsi_umum || 'Melaksanakan tugas operasional harian'}"`}
               importance="wajib"
             />
 
@@ -105,7 +176,7 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
                     <input
                       type="text"
                       className="field__input"
-                      placeholder="Nama Tugas (misal: Memperbaiki Komputer / Melayani Pelanggan / Input Data)"
+                      placeholder={`Nama Tugas (cth: ${jurusanExample.contohKegiatan?.[0]?.tugas?.[0]?.nama || 'Nama Tugas'})`}
                       value={t.nama}
                       onChange={(e) => {
                         const nextTugas = [...k.tugas]
@@ -119,7 +190,7 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
                     <input
                       type="text"
                       className="field__input"
-                      placeholder="Detail (misal: Menginstal Windows, mencatat transaksi, atau melayani tamu)"
+                      placeholder={`Detail (cth: ${jurusanExample.contohKegiatan?.[0]?.tugas?.[0]?.detail || 'Rincian tugas'})`}
                       value={t.detail}
                       onChange={(e) => {
                         const nextTugas = [...k.tugas]
@@ -164,9 +235,47 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
         <p className="muted" style={{ margin: '0 0 1rem', fontSize: '0.83rem', color: '#6b7280', fontStyle: 'italic' }}>
           * Tidak perlu menambahkan alat yang hanya kamu lihat tetapi tidak kamu gunakan.
         </p>
+
+        {/* Contoh Peralatan & 1-Click Button Berdasarkan Jurusan */}
+        {jurusanExample.contohPeralatan && jurusanExample.contohPeralatan.length > 0 && (
+          <div
+            style={{
+              background: '#f8fafc',
+              border: '1px solid #cbd5e1',
+              borderRadius: '8px',
+              padding: '0.75rem 1rem',
+              marginBottom: '1rem',
+              fontSize: '0.85rem',
+              color: '#334155',
+              lineHeight: 1.5,
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.35rem' }}>
+              <strong style={{ color: '#0f172a' }}>
+                💡 Contoh Peralatan ({jurusanExample.label}):
+              </strong>
+              {(peralatan || []).length === 0 && (
+                <button
+                  type="button"
+                  className="btn-sm btn-outline"
+                  onClick={handleApplySamplePeralatan}
+                  style={{ fontSize: '0.78rem', padding: '0.25rem 0.6rem', color: 'var(--green-700)', borderColor: 'var(--green-600)', fontWeight: 600, background: '#ffffff' }}
+                >
+                  + Gunakan Contoh Peralatan Jurusan Ini
+                </button>
+              )}
+            </div>
+            {jurusanExample.contohPeralatan.map((cp, idx) => (
+              <div key={idx} style={{ marginTop: '0.25rem' }}>
+                <strong>• {cp.nama}:</strong> {cp.deskripsi}
+              </div>
+            ))}
+          </div>
+        )}
+
         {(peralatan || []).length === 0 && (
           <p className="muted" style={{ fontStyle: 'italic', fontSize: '0.88rem' }}>
-            Belum ada peralatan yang diisi. Klik "+ Tambah Peralatan" di bawah.
+            Belum ada peralatan tersimpan. Klik "+ Gunakan Contoh Peralatan Jurusan Ini" di atas atau "+ Tambah Peralatan" di bawah.
           </p>
         )}
         {(peralatan || []).map((p, i) => (
@@ -179,14 +288,14 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
               label="Nama peralatan"
               value={p.nama}
               onChange={(v) => updPeralatan(i, { nama: v })}
-              placeholder="Contoh: Laptop Lenovo / Mesin Fotokopi Canon"
+              placeholder={`Contoh (${jurusanExample.label}): "${jurusanExample.contohPeralatan?.[0]?.nama || 'Nama Peralatan'}"`}
               importance="wajib"
             />
             <TextareaField
               label="Digunakan untuk"
               value={p.deskripsi}
               onChange={(v) => updPeralatan(i, { deskripsi: v })}
-              placeholder="Contoh: Membuat laporan, mengolah data transaksi, dan mendesain banner."
+              placeholder={`Contoh (${jurusanExample.label}): "${jurusanExample.contohPeralatan?.[0]?.deskripsi || 'Penggunaan peralatan'}"`}
               importance="wajib"
             />
             <ImageUploadField
@@ -206,9 +315,47 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
         <p className="muted" style={{ margin: '-0.5rem 0 1rem', fontSize: '0.88rem' }}>
           Pernah mengalami masalah atau kesulitan selama PKL? Ceritakan masalahnya dan bagaimana kamu mengatasinya.
         </p>
+
+        {/* Contoh Kendala & 1-Click Button Berdasarkan Jurusan */}
+        {jurusanExample.contohKendala && jurusanExample.contohKendala.length > 0 && (
+          <div
+            style={{
+              background: '#f8fafc',
+              border: '1px solid #cbd5e1',
+              borderRadius: '8px',
+              padding: '0.75rem 1rem',
+              marginBottom: '1rem',
+              fontSize: '0.85rem',
+              color: '#334155',
+              lineHeight: 1.5,
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.35rem' }}>
+              <strong style={{ color: '#0f172a' }}>
+                💡 Contoh Kendala &amp; Solusi ({jurusanExample.label}):
+              </strong>
+              {kendala.length === 0 && (
+                <button
+                  type="button"
+                  className="btn-sm btn-outline"
+                  onClick={handleApplySampleKendala}
+                  style={{ fontSize: '0.78rem', padding: '0.25rem 0.6rem', color: 'var(--green-700)', borderColor: 'var(--green-600)', fontWeight: 600, background: '#ffffff' }}
+                >
+                  + Gunakan Contoh Kendala Jurusan Ini
+                </button>
+              )}
+            </div>
+            {jurusanExample.contohKendala.map((ck, idx) => (
+              <div key={idx} style={{ marginTop: '0.25rem' }}>
+                • <strong>Kendala:</strong> {ck.masalah} ➔ <strong>Solusi:</strong> {ck.solusi}
+              </div>
+            ))}
+          </div>
+        )}
+
         {kendala.length === 0 && (
           <p className="muted" style={{ fontStyle: 'italic', fontSize: '0.88rem' }}>
-            Belum ada kendala yang diisi. Klik "+ Tambah Kendala" di bawah.
+            Belum ada kendala tersimpan. Klik "+ Gunakan Contoh Kendala Jurusan Ini" di atas atau "+ Tambah Kendala" di bawah.
           </p>
         )}
         {kendala.map((k, i) => (
@@ -221,14 +368,14 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
               label="Apa kendalanya?"
               value={k.masalah}
               onChange={(v) => updKendala(i, { masalah: v })}
-              placeholder="Contoh: Koneksi internet sering lambat saat input data."
+              placeholder={`Contoh (${jurusanExample.label}): "${jurusanExample.contohKendala?.[0]?.masalah || 'Masalah kendala'}"`}
               importance="wajib"
             />
             <TextareaField
               label="Bagaimana kamu mengatasinya?"
               value={k.solusi}
               onChange={(v) => updKendala(i, { solusi: v })}
-              placeholder="Contoh: Menggunakan koneksi cadangan modem seluler."
+              placeholder={`Contoh (${jurusanExample.label}): "${jurusanExample.contohKendala?.[0]?.solusi || 'Solusi mengatasi'}"`}
               importance="wajib"
             />
           </div>

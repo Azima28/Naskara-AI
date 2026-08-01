@@ -1149,13 +1149,17 @@ input.field__input {
 }
 
 @media (max-width: 480px) {
+  .shell {
+    padding: 0.5rem 0.25rem 2.5rem !important;
+  }
+
   .card {
-    border-radius: 8px;
-    padding: 1rem;
+    border-radius: 6px !important;
+    padding: 0.75rem 0.5rem !important;
   }
 
   .nested-card {
-    padding: 0.9rem;
+    padding: 0.65rem 0.45rem !important;
   }
 
   .shell__header h1 {

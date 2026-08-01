@@ -23,6 +23,22 @@ export interface JobDescItemExample {
   tugas: string[]
 }
 
+export interface ContohKegiatanExample {
+  bidang: string
+  deskripsi_umum: string
+  tugas: { nama: string; detail: string }[]
+}
+
+export interface ContohPeralatanExample {
+  nama: string
+  deskripsi: string
+}
+
+export interface ContohKendalaExample {
+  masalah: string
+  solusi: string
+}
+
 export interface JurusanExample {
   jurusan_key: string
   label: string
@@ -31,6 +47,9 @@ export interface JurusanExample {
   contohPelajaran: string[]
   contohCabang: ContohCabangExample
   contohJobDesc: JobDescItemExample[]
+  contohKegiatan?: ContohKegiatanExample[]
+  contohPeralatan?: ContohPeralatanExample[]
+  contohKendala?: ContohKendalaExample[]
   studiKasus: {
     judul: string
     latar_belakang: string
@@ -80,6 +99,24 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
           'Mengintegrasikan komponen antarmuka dengan API backend',
         ],
       },
+    ],
+    contohKegiatan: [
+      {
+        bidang: 'Divisi Software Development / Tim Backend & Frontend',
+        deskripsi_umum: 'Membantu tim pengembang software dalam merancang modul aplikasi web, merapikan antarmuka UI, dan mengelola basis data database.',
+        tugas: [
+          { nama: 'Membuat REST API', detail: 'Membuat endpoint API transaksi kasir menggunakan Express.js / Laravel' },
+          { nama: 'Desain & Query Database', detail: 'Merancang tabel MySQL dan membuat query indexing rekap data' },
+          { nama: 'Fixing Bug & Slicing UI', detail: 'Memperbaiki bug tampilan tombol dan penyesuaian CSS responsif' },
+        ],
+      },
+    ],
+    contohPeralatan: [
+      { nama: 'Laptop / PC Workstation (RAM 16GB)', deskripsi: 'Digunakan untuk koding, running local server (Node.js/PHP), dan database manager.' },
+      { nama: 'VS Code, Postman & Git', deskripsi: 'Digunakan untuk pengkodean program, testing endpoint API, dan version control repository.' },
+    ],
+    contohKendala: [
+      { masalah: 'Query database lambat saat memuat puluhan ribu baris data transaksi.', solusi: 'Menambahkan composite index pada kolom created_at dan merapikan klausa INNER JOIN.' },
     ],
     studiKasus: {
       judul: 'Optimasi Speed & Performance Query Database pada Rekapitulasi Laporan Bulanan',
@@ -137,6 +174,24 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         ],
       },
     ],
+    contohKegiatan: [
+      {
+        bidang: 'Divisi IT Support & Network Operation Center (NOC)',
+        deskripsi_umum: 'Memastikan kelancaran jaringan lokal LAN/WiFi kantor, melakukan crimping kabel, dan menangani gangguan komputer karyawan.',
+        tugas: [
+          { nama: 'Crimping & Testing Kabel UTP', detail: 'Membuat kabel LAN RJ-45 straight & cross untuk sambungan router ke switch' },
+          { nama: 'Konfigurasi Router MikroTik', detail: 'Mengatur IP Address DHCP Pool, Bandwidth Queue Tree, dan VLAN ID' },
+          { nama: 'Troubleshooting PC Karyawan', detail: 'Memperbaiki komputer tidak bisa terhubung internet dan instalasi driver' },
+        ],
+      },
+    ],
+    contohPeralatan: [
+      { nama: 'Router MikroTik, Switch & LAN Tester', deskripsi: 'Digunakan untuk mengonfigurasi jaringan, membagi VLAN, dan menguji kelayakan sinyal kabel LAN.' },
+      { nama: 'Crimping Tool & Tang Stripper Kabel', deskripsi: 'Digunakan untuk memotong, mengupas, dan menjepit konektor RJ-45 ke kabel UTP.' },
+    ],
+    contohKendala: [
+      { masalah: 'Koneksi WiFi kantor sering lag dan bentrok IP (IP Conflict) antar komputer.', solusi: 'Mengatur pembagian IP Address otomatis via DHCP Server dan membatasi bandwidth per perangkat.' },
+    ],
     studiKasus: {
       judul: 'Konfigurasi Manajemen Bandwidth Router MikroTik & Segmentation VLAN',
       latar_belakang:
@@ -192,6 +247,24 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
           'Menyusun pemotongan klip (rough cut) dan pemberian efek transisi',
         ],
       },
+    ],
+    contohKegiatan: [
+      {
+        bidang: 'Divisi Desain Grafis & Creative Media Studio',
+        deskripsi_umum: 'Merancang materi publikasi visual, membuat konten media sosial, dan merapikan file siap cetak (pre-press layout).',
+        tugas: [
+          { nama: 'Desain Banner & Feed Sosmed', detail: 'Membuat aset promosi produk menggunakan Adobe Illustrator & Photoshop' },
+          { nama: 'Persiapan Berkas Cetak Pre-Press', detail: 'Menyesuaikan format CMYK, garis bleed, dan resolusi 300 DPI untuk spanduk' },
+          { nama: 'Editing Video Promosi', detail: 'Pemotongan klip video pendek dan pemberian motion graphics untuk Reels/TikTok' },
+        ],
+      },
+    ],
+    contohPeralatan: [
+      { nama: 'Pen Tablet Wacom & PC Desain', deskripsi: 'Digunakan untuk menggambar ilustrasi vektor, retouching foto, dan penyesuaian garis desain.' },
+      { nama: 'Adobe Creative Cloud (Illustrator, Photoshop, Premiere)', deskripsi: 'Software utama pemrosesan gambar vektor, layout cetak, dan editing video.' },
+    ],
+    contohKendala: [
+      { masalah: 'Waktu render video promosi resolusi tinggi memakan waktu sangat lama dan terkadang crash.', solusi: 'Mengonversi aset raster bitmap menjadi vektor dan mengatur profil bit-rate Media Encoder.' },
     ],
     studiKasus: {
       judul: 'Perancangan Branding Visual & Optimasi Asset Rendering Motion Graphic',
@@ -249,6 +322,24 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         ],
       },
     ],
+    contohKegiatan: [
+      {
+        bidang: 'Divisi Tour Planning & Travel Ticketing',
+        deskripsi_umum: 'Menyusun jadwal paket wisata (itinerary), menghitung estimasi biaya tur (tour costing), dan melayani reservasi tiket/hotel.',
+        tugas: [
+          { nama: 'Penyusunan Itinerary Tour', detail: 'Menyusun alur perjalanan wisata 3D2N destinasi tur beserta estimasi durasi' },
+          { nama: 'Perhitungan Tour Costing', detail: 'Menghitung rincian fixed cost bus, tiket masuk wisata, hotel, dan catering per pax' },
+          { nama: 'Reservasi Armada & Hotel', detail: 'Melakukan konfirmasi ketersediaan kamar hotel dan armada bus turis' },
+        ],
+      },
+    ],
+    contohPeralatan: [
+      { nama: 'Komputer & Sistem Reservasi Travel (E-Booking)', deskripsi: 'Digunakan untuk mencari rute perjalanan, memesan tiket, dan membandingkan harga hotel.' },
+      { nama: 'Peta Destinasi & Database Vendor Mitra', deskripsi: 'Digunakan untuk mengukur jarak tempuh dan menghubungi pengelola destinasi wisata.' },
+    ],
+    contohKendala: [
+      { masalah: 'Estimasi biaya paket wisata membengkak akibat lonjakan tarif armada bus di musim liburan.', solusi: 'Melakukan negosiasi kontrak rate jangka panjang dengan agen penyedia bus mitra.' },
+    ],
     studiKasus: {
       judul: 'Penyusunan Paket Itinerary Tour Bandung-Lembang & Optimasi Travel Costing',
       latar_belakang:
@@ -304,6 +395,24 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
           'Mengatur ketersediaan linen, handuk, dan perlengkapan amenitas kamar',
         ],
       },
+    ],
+    contohKegiatan: [
+      {
+        bidang: 'Divisi Housekeeping & Front Office Department',
+        deskripsi_umum: 'Melayani penerimaan tamu check-in di Front Desk dan melaksanakan standar pembersihan kamar tamu hotel.',
+        tugas: [
+          { nama: 'Pembersihan Kamar Guest Room', detail: 'Mengganti bed sheet, menata amenities, dan mensterilkan area kamar mandi' },
+          { nama: 'Pelayanan Front Desk Check-in', detail: 'Mencatat identitas tamu di sistem PMS hotel dan menyerahkan kartu kunci kamar' },
+          { nama: 'Room Inspection Check-list', detail: 'Memeriksa kelengkapan fasilitas kamar sebelum dinyatakan ready untuk guest' },
+        ],
+      },
+    ],
+    contohPeralatan: [
+      { nama: 'Housekeeping Trolley & Vacuum Cleaner', deskripsi: 'Digunakan untuk mengangkut linen bersih, perlengkapan mandi, dan membersihkan karpet kamar.' },
+      { nama: 'Property Management System (PMS) Hotel', deskripsi: 'Sistem software untuk melihat status kamar (Ready/Dirty/Occupied) dan reservasi tamu.' },
+    ],
+    contohKendala: [
+      { masalah: 'Antrean tamu check-in mengular akibat keterlambatan update status kesiapan kamar.', solusi: 'Melakukan inspeksi kamar secara digital via PMS dan meningkatkan koordinasi antar lantai.' },
     ],
     studiKasus: {
       judul: 'Standardisasi Housekeeping Room Inspection & Optimasi Guest Check-In Speed',
@@ -361,6 +470,24 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         ],
       },
     ],
+    contohKegiatan: [
+      {
+        bidang: 'Divisi Dapur Utama (Main Kitchen / Pastry Section)',
+        deskripsi_umum: 'Melaksanakan persiapan bahan makanan (Mise en Place), mengolah masakan sesuai standar standar resep, dan menjaga kebersihan dapur.',
+        tugas: [
+          { nama: 'Mise en Place Bahan Masakan', detail: 'Memotong sayuran, menimbang bumbu, dan menyiapkan portion control bahan daging' },
+          { nama: 'Pengolahan Menu Main Course', detail: 'Memasak hidangan sesuai standar resep dan standar higienitas HACCP' },
+          { nama: 'Plating & Presentation', detail: 'Menata hidangan di atas piring saji agar estetik dan menarik sebelum disajikan' },
+        ],
+      },
+    ],
+    contohPeralatan: [
+      { nama: 'Chef Knife, Cutting Board Color Code & Scale', deskripsi: 'Peralatan memotong dan menimbang bumbu/bahan masakan secara presisi dan higienis.' },
+      { nama: 'Combi Oven, Stove & Chiller Refrigerator', deskripsi: 'Digunakan untuk memasak, memanggang adonan, dan menyimpan bahan basah sesuai standar FIFO.' },
+    ],
+    contohKendala: [
+      { masalah: 'Persentase sisa bahan makanan (food waste) melebihi batas toleransi efisiensi.', solusi: 'Menerapkan metode penimbangan porsi ketat dan penataan rotasi bahan baku di chiller (FIFO).' },
+    ],
     studiKasus: {
       judul: 'Standardisasi Mise en Place & Efisiensi Food Cost Menu Banquet Event',
       latar_belakang:
@@ -416,6 +543,24 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
           'Melakukan pengukusan (steaming/ironing) dan pengemasan pakaian',
         ],
       },
+    ],
+    contohKegiatan: [
+      {
+        bidang: 'Divisi Workshop Produksi & Pembuatan Pola Custom',
+        deskripsi_umum: 'Membuat pola busana sesuai ukuran pelanggan, melakukan pemotongan bahan kain, dan menjahit sampel pakaian.',
+        tugas: [
+          { nama: 'Pembuatan Pola Dasar Busana', detail: 'Merancang pola baju sistem Soen/Meyneke di atas kertas pola sesuai ukuran' },
+          { nama: 'Pemotongan Kain (Cutting)', detail: 'Melakukan tata letak pola di atas kain dan memotong bahan dengan toleransi kampus jahitan' },
+          { nama: 'Jahit Sampel & Fitting', detail: 'Menjahit potongan kain dengan mesin jahit industri dan melakukan fitting kelonggaran' },
+        ],
+      },
+    ],
+    contohPeralatan: [
+      { nama: 'Mesin Jahit High-Speed Industri & Mesin Obras', deskripsi: 'Digunakan untuk menjahit setikan busana secara cepat dan merapikan tiras tepi kain.' },
+      { nama: 'Gunting Kain, Meteran Badan & Penggaris Pola', deskripsi: 'Peralatan mengukur tubuh pelanggan, membuat garis lengkung pola, dan memotong kain.' },
+    ],
+    contohKendala: [
+      { masalah: 'Pakaian mengalami kerutan pada bagian lengan akibat ketidaksesuaian ukuran lubang kerung lengan.', solusi: 'Melakukan pengecekan ulang ukuran kerung pola dasar dan menyusun sampel uji kain blaco.' },
     ],
     studiKasus: {
       judul: 'Pembuatan Pola Busana Custom Draping & Quality Control Presisi Jahitan',
@@ -473,6 +618,24 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         ],
       },
     ],
+    contohKegiatan: [
+      {
+        bidang: 'Divisi Sekretariat & Administrasi Perkantoran',
+        deskripsi_umum: 'Mengelola pengarsipan surat masuk dan keluar, melayani tamu pimpinan, serta menginput agenda kegiatan kantor.',
+        tugas: [
+          { nama: 'Pengelolaan Surat Masuk & Disposisi', detail: 'Mencatat nomor agenda surat, alih media scan PDF, dan membuat lembar disposisi' },
+          { nama: 'Penerimaan Tamu & Layanan Telepon', detail: 'Menerima tamu kantor, memberikan buku tamu, dan mengarahkan ke divisi tujuan' },
+          { nama: 'Digitalisasi Kearsipan (e-Office)', detail: 'Mengelompokkan berkas surat fisik ke dalam folder digital berdasarkan Kode Subjek' },
+        ],
+      },
+    ],
+    contohPeralatan: [
+      { nama: 'Scanner High-Speed, Printer & PC Administrasi', deskripsi: 'Digunakan untuk memindai dokumen fisik menjadi PDF dan mencetak lembar disposisi.' },
+      { nama: 'Folder Snelheker, Guide Arsip & Perforator', deskripsi: 'Digunakan untuk melubangi dan merapikan urutan dokumen surat fisik di ordner.' },
+    ],
+    contohKendala: [
+      { masalah: 'Pencarian kembali (retrieval) dokumen fisik surat masuk memakan waktu hingga 15 menit.', solusi: 'Melakukan alih media pencatatan dari buku register manual ke sistem basis data e-Office.' },
+    ],
     studiKasus: {
       judul: 'Digitalisasi & Digital Archiving System Surat Masuk/Keluar',
       latar_belakang:
@@ -529,6 +692,24 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         ],
       },
     ],
+    contohKegiatan: [
+      {
+        bidang: 'Divisi Akuntansi & Keuangan Lembaga',
+        deskripsi_umum: 'Pencatatan transaksi kas harian, rekonsiliasi kas kecil (petty cash), dan verifikasi kelengkapan bukti pembayaran.',
+        tugas: [
+          { nama: 'Pencatatan Jurnal Kas Harian', detail: 'Menginput kwitansi dan nota transaksi pengeluaran kantor ke dalam Jurnal Umum' },
+          { nama: 'Rekonsiliasi Kas Kecil (Petty Cash)', detail: 'Menghitung s fisik kas kecil dan membandingkan dengan catatan saldo kasir' },
+          { nama: 'Verifikasi Invoice & Faktur Pajak', detail: 'Memeriksa keabsahan dan kelengkapan tanda tangan nota tagihan dari supplier' },
+        ],
+      },
+    ],
+    contohPeralatan: [
+      { nama: 'Kalkulator Finansial, PC & Ms. Excel / Accurate', deskripsi: 'Software dan alat hitung utama untuk mengolah rumus jurnal, neraca, dan posting kas.' },
+      { nama: 'Buku Kas, Stempel Lunas & Ordner Faktur', deskripsi: 'Peralatan fisik untuk memberikan pengesahan bukti bayar dan pengarsipan kuitansi.' },
+    ],
+    contohKendala: [
+      { masalah: 'Selisih saldo fisik kas kecil dengan saldo laporan akibat ada nota kecil yang terlambat disetorkan.', solusi: 'Menerapkan aturan batas waktu penyerahan nota klaim maksimal 1x24 jam dari pengeluaran.' },
+    ],
     studiKasus: {
       judul: 'Pendataan & Penghitungan Waive Discount Debitur Macet serta Rekonsiliasi',
       latar_belakang:
@@ -584,6 +765,24 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
           'Melakukan pengecekan fisik stok barang (stock opname) secara berkala',
         ],
       },
+    ],
+    contohKegiatan: [
+      {
+        bidang: 'Divisi Pemasaran Digital & Merchandising Toko',
+        deskripsi_umum: 'Mengelola konten toko online, mendesain materi promosi digital, dan memajang stok barang di rak display.',
+        tugas: [
+          { nama: 'Pengelolaan Marketplace & Sosmed', detail: 'Mengunggah produk baru ke toko online, merespon chat pembeli, dan mengedit foto' },
+          { nama: 'Visual Merchandising Display Rak', detail: 'Menata produk di rak toko sesuai prinsip POP (Point of Purchase) dan grouping' },
+          { nama: 'Stock Opname & Cek Kadaluarsa', detail: 'Melakukan penghitungan fisik stok produk dan mencatat produk mendekati ED' },
+        ],
+      },
+    ],
+    contohPeralatan: [
+      { nama: 'Barcode Scanner, Mesin Kasir POS & Printer Label', deskripsi: 'Digunakan untuk memindai kode barang saat transaksi dan mencetak label harga.' },
+      { nama: 'Smartphone Promosi & Studio Mini Foto Produk', deskripsi: 'Peralatan foto produk toko online dan upload konten video promosi di Instagram/TikTok.' },
+    ],
+    contohKendala: [
+      { masalah: 'Tingkat konversi penjualan produk baru di e-commerce masih rendah di minggu pertama.', solusi: 'Membuat konten video ulasan singkat produk (Reels) dan menambahkan voucer diskon promosi.' },
     ],
     studiKasus: {
       judul: 'Analisis Efektivitas Kampanye Social Media Ads & Conversion Rate E-Commerce',
