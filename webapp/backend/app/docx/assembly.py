@@ -309,7 +309,7 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
         ("KATA PENGANTAR", "kata_pengantar", 1, "v"),
     ]
 
-    page_estimates = {1: 1, 2: 4, 3: 6, 4: 8, 5: 15, 6: 17}
+    page_estimates = {1: 1, 2: 7, 3: 8, 4: 10, 5: 13, 6: 15}
     current_page = 1
     sub_count_in_bab = 0
 
@@ -317,12 +317,12 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
         m_bab = re.search(r"BAB\s+([IVXLCDM\d]+)", text, re.IGNORECASE)
         if m_bab:
             bab_num = _roman_to_int(m_bab.group(1))
-            current_page = page_estimates.get(bab_num, max(current_page + 1, bab_num * 3))
+            current_page = page_estimates.get(bab_num, max(current_page + 1, bab_num * 2))
             sub_count_in_bab = 0
         elif "DAFTAR PUSTAKA" in text.upper():
-            current_page = max(current_page + 1, 18)
+            current_page = max(current_page + 1, 17)
         elif "LAMPIRAN" in text.upper():
-            current_page = max(current_page + 1, 19)
+            current_page = max(current_page + 1, 18)
         else:
             if level == 2:
                 sub_count_in_bab += 1
