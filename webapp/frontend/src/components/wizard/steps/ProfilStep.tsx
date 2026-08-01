@@ -704,10 +704,10 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
           <table className="fill-table">
             <thead>
               <tr>
-                <th style={{ width: 90 }}>HARI</th>
-                <th style={{ minWidth: 140 }}>JAM KERJA</th>
-                <th>KETERANGAN</th>
-                <th style={{ width: 32 }}></th>
+                <th style={{ width: 95, minWidth: 90 }}>HARI</th>
+                <th style={{ minWidth: 160 }}>JAM KERJA</th>
+                <th style={{ minWidth: 140 }}>KETERANGAN</th>
+                <th style={{ width: 40, minWidth: 35 }}></th>
               </tr>
             </thead>
             <tbody>
