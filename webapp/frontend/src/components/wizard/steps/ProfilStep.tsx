@@ -609,7 +609,12 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
                 </thead>
                 <tbody>
                   <tr>
-                    <td style={{ border: '1px solid #000000', padding: '5px 6px', fontWeight: 'bold', textAlign: 'center', verticalAlign: 'middle' }}>SENIN – JUMAT</td>
+                    <td style={{ border: '1px solid #000000', padding: '5px 6px', fontWeight: 'bold', textAlign: 'center', verticalAlign: 'middle' }}>SENIN</td>
+                    <td style={{ border: '1px solid #000000', padding: '5px 6px', textAlign: 'center' }}>08.00 – 12.00<br />12.00 – 13.00<br />13.00 – 16.00</td>
+                    <td style={{ border: '1px solid #000000', padding: '5px 6px', textAlign: 'center' }}>OPERASIONAL<br />ISTIRAHAT<br />OPERASIONAL</td>
+                  </tr>
+                  <tr>
+                    <td style={{ border: '1px solid #000000', padding: '5px 6px', fontWeight: 'bold', textAlign: 'center', verticalAlign: 'middle' }}>SELASA</td>
                     <td style={{ border: '1px solid #000000', padding: '5px 6px', textAlign: 'center' }}>08.00 – 12.00<br />12.00 – 13.00<br />13.00 – 16.00</td>
                     <td style={{ border: '1px solid #000000', padding: '5px 6px', textAlign: 'center' }}>OPERASIONAL<br />ISTIRAHAT<br />OPERASIONAL</td>
                   </tr>
@@ -623,7 +628,7 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
             </div>
 
             <p style={{ marginTop: '0.4rem', marginBottom: 0, fontSize: '0.78rem', color: '#475569', fontStyle: 'italic' }}>
-              * Di dokumen Word (.docx), jam kerja akan tercetak otomatis menjadi tabel rapi bertingkat dengan font Times New Roman seperti di atas.
+              
             </p>
           </div>
         )}
