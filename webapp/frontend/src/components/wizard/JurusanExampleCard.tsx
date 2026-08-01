@@ -5,9 +5,10 @@ import { IconDocument, IconSearch } from '@/components/common/Icons'
 
 interface JurusanExampleCardProps {
   jurusanKey?: string
+  onApplySampleData?: () => void
 }
 
-export default function JurusanExampleCard({ jurusanKey }: JurusanExampleCardProps) {
+export default function JurusanExampleCard({ jurusanKey, onApplySampleData }: JurusanExampleCardProps) {
   const [showModal, setShowModal] = useState(false)
   const example: JurusanExample = getJurusanExample(jurusanKey)
   const sk = example.studiKasus
@@ -98,15 +99,36 @@ export default function JurusanExampleCard({ jurusanKey }: JurusanExampleCardPro
         </div>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
         <button
           type="button"
           className="btn-sm btn-outline btn-mobile-full"
           onClick={() => setShowModal(true)}
-          style={{ fontSize: '0.82rem', padding: '0.4rem 0.85rem', background: '#ffffff', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
+          style={{ fontSize: '0.82rem', padding: '0.45rem 0.85rem', background: '#ffffff', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
         >
           <IconSearch size={14} /> Lihat Contoh Tampilan Laporan Jurusan Ini (.docx)
         </button>
+
+        {onApplySampleData && (
+          <button
+            type="button"
+            className="btn-sm btn-outline btn-mobile-full"
+            onClick={onApplySampleData}
+            style={{
+              fontSize: '0.82rem',
+              padding: '0.45rem 0.85rem',
+              background: '#ffffff',
+              color: 'var(--green-700, #14614a)',
+              borderColor: 'var(--green-600, #187257)',
+              fontWeight: 600,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+            }}
+          >
+            + Gunakan Contoh Perbandingan Jurusan Ini
+          </button>
+        )}
       </div>
 
       <JurusanDocxPreviewModal

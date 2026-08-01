@@ -63,11 +63,6 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
         <span style={{ opacity: 0.8, flexShrink: 0 }}>4. Hasil Akhir (Sesudah)</span>
       </div>
 
-      {/* Dynamic Major-Specific Example Card */}
-      <JurusanExampleCard
-        jurusanKey={ctx.siswa?.jurusan_key || ctx.siswa?.jurusan}
-      />
-
       <FieldGroup title="Alur Pengalaman &amp; Pelaksanaan Pekerjaan Utama">
         <TextField
           label="1. Pekerjaan / Tugas Apa yang Kamu Kerjakan?"
@@ -109,46 +104,16 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
           <span className="field__label">
             Tabel Data Angka Perbandingan <span className="field__badge field__badge--opsional">OPSIONAL</span>
           </span>
-          <p className="muted" style={{ margin: '0.25rem 0 0.75rem', fontSize: '0.88rem', lineHeight: 1.5 }}>
+          <p className="muted" style={{ margin: '0.25rem 0 0.85rem', fontSize: '0.88rem', lineHeight: 1.5 }}>
             Ada hasil pekerjaanmu yang bisa dibandingkan sebelum dan sesudah diperbaiki? (Bebas menggunakan satuan: <strong>detik, menit, jam, hari, MB, %, Rp, unit, dll.</strong>)<br />
             Jika ada, tuliskan di sini. Jika tidak ada, bagian ini boleh dikosongkan.
           </p>
 
-          {/* Contoh Perbandingan Sebelum vs Sesudah Berdasarkan Jurusan */}
-          <div
-            style={{
-              background: '#f8fafc',
-              border: '1px solid #cbd5e1',
-              borderRadius: '8px',
-              padding: '0.75rem 1rem',
-              marginBottom: '1.25rem',
-              fontSize: '0.85rem',
-              color: '#334155',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.4rem' }}>
-              <strong style={{ color: '#0f172a' }}>
-                💡 Contoh Data Perbandingan ({jurusanExample.label}):
-              </strong>
-              {sk.data_angka.length === 0 && (
-                <button
-                  type="button"
-                  className="btn-sm btn-outline"
-                  onClick={handleApplySampleData}
-                  style={{ fontSize: '0.78rem', padding: '0.25rem 0.6rem', color: 'var(--green-700)', borderColor: 'var(--green-600)', fontWeight: 600 }}
-                >
-                  + Gunakan Contoh Perbandingan Jurusan Ini
-                </button>
-              )}
-            </div>
-            <ul style={{ margin: 0, paddingLeft: '1.1rem', lineHeight: 1.6 }}>
-              {sampleData.map((s, idx) => (
-                <li key={idx}>
-                  {s.label}: Sebelum <code style={{ color: '#92610c', background: '#fef3c7', padding: '1px 5px', borderRadius: 4 }}>{s.sebelum}</code> ➔ Sesudah <code style={{ color: '#166534', background: '#dcfce7', padding: '1px 5px', borderRadius: 4 }}>{s.sesudah}</code>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* Dynamic Major-Specific Example Card with Docx Preview & 1-Click Apply */}
+          <JurusanExampleCard
+            jurusanKey={ctx.siswa?.jurusan_key || ctx.siswa?.jurusan}
+            onApplySampleData={handleApplySampleData}
+          />
 
           <div className="array">
             {sk.data_angka.map((d, i) => {
