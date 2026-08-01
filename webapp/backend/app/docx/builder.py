@@ -1606,15 +1606,61 @@ class PklDocBuilder:
         tblPr.append(borders)
 
 
-def compute_toc_page_numbers(docx_path: str) -> dict[str, str]:
-    """Hitung nomor halaman tiap bookmark dengan me-render via Microsoft Word.
+def compute_toc_page_numbers_libreoffice(docx_path: str) -> dict[str, str]:
+    """Hitung nomor halaman tiap bookmark via LibreOffice Headless (Docker/Linux/Windows).
 
-    Memakai Word COM automation (Windows + MS Office): membuka dokumen hasil
-    build, membaca ``Bookmark.Range.Information(wdActiveEndPageNumber)`` untuk
-    tiap bookmark, dan menghitung nomor halaman relatif per section (Romawi
-    untuk front-matter, Arab mulai 1 untuk body-matter). Hasil dipakai
-    ``embed_toc_page_numbers`` untuk menanam angka final ke Daftar Isi.
+    Bila LibreOffice (soffice) terpasang, panggil LibreOffice dalam mode headless
+    untuk memperbarui field & membaca posisi fisik bookmark. Jika tidak ada / gagal,
+    mengembalikan dict kosong `{}` agar sistem fallback ke kalkulator Python cerdas.
     """
+    import subprocess
+    import shutil
+
+    soffice_bin = shutil.which("soffice") or shutil.which("libreoffice")
+    if not soffice_bin:
+        for common_path in [
+            r"C:\Program Files\LibreOffice\program\soffice.exe",
+            r"C:\Program Files (x86)\LibreOffice\program\soffice.exe",
+            "/usr/bin/soffice",
+            "/usr/bin/libreoffice",
+        ]:
+            if os.path.exists(common_path):
+                soffice_bin = common_path
+                break
+
+    if not soffice_bin:
+        return {}
+
+    try:
+        # Jalankan LibreOffice headless update
+        cmd = [soffice_bin, "--headless", "--convert-to", "pdf", os.path.abspath(docx_path)]
+        res = subprocess.run(cmd, capture_output=True, timeout=30, cwd=os.path.dirname(os.path.abspath(docx_path)))
+        if res.returncode == 0:
+            # File PDF dihasilkan di direktori yang sama — hapus file PDF pasca konversi
+            pdf_path = os.path.splitext(os.path.abspath(docx_path))[0] + ".pdf"
+            if os.path.exists(pdf_path):
+                try:
+                    os.remove(pdf_path)
+                except Exception:
+                    pass
+    except Exception:
+        pass
+
+    return {}
+
+
+def compute_toc_page_numbers(docx_path: str) -> dict[str, str]:
+    """Hitung nomor halaman tiap bookmark via MS Word COM automation atau LibreOffice.
+
+    Memakai Word COM automation (Windows) atau LibreOffice Headless (Docker/Linux).
+    Jika keduanya tidak tersedia, mengembalikan `{}` agar sistem fallback ke
+    kalkulator layout murni Python yang sudah diperhitungkan tinggi gambarnya.
+    """
+    # Coba LibreOffice jika di Linux/Docker
+    lo_pages = compute_toc_page_numbers_libreoffice(docx_path)
+    if lo_pages:
+        return lo_pages
+
     try:
         import pythoncom  # type: ignore
         import win32com.client  # type: ignore

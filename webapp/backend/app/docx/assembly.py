@@ -387,8 +387,27 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
                     bookmark_offset_lines[bm] = bab_lines.get(current_bab_key, 0.0)
                     bookmark_bab_key[bm] = current_bab_key
 
-                lines = max(1.0, math.ceil(len(text_raw) / 62.0)) * 1.2
+                # Deteksi gambar (<w:drawing> / <w:pict>)
+                drawings = elem.findall(".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}drawing") + \
+                           elem.findall(".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}pict")
+                img_lines = len(drawings) * 15.0
+
+                # Deteksi indentasi list (area teks menyempit)
+                has_ind = elem.find(".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ind") is not None
+                chars_per_line = 48.0 if has_ind else 62.0
+
+                lines = max(1.0, math.ceil(len(text_raw) / chars_per_line)) * 1.2 + img_lines
                 bab_lines[current_bab_key] = bab_lines.get(current_bab_key, 0.0) + lines
+
+                # Deteksi page break (<w:br w:type="page"/>)
+                has_page_break = any(
+                    b.get("{http://schemas.openxmlformats.org/wordprocessingml/2006/main}type") == "page"
+                    or b.get("w:type") == "page"
+                    for b in elem.findall(".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}br")
+                )
+                if has_page_break:
+                    cur_l = bab_lines[current_bab_key]
+                    bab_lines[current_bab_key] = math.ceil(cur_l / 25.0) * 25.0
 
         elif tag == "tbl" and current_bab_key is not None:
             # Tabel menghitung jumlah baris fisik
