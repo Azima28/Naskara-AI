@@ -119,13 +119,13 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       { masalah: 'Query database lambat saat memuat puluhan ribu baris data transaksi.', solusi: 'Menambahkan composite index pada kolom created_at dan merapikan klausa INNER JOIN.' },
     ],
     studiKasus: {
-      judul: 'Optimasi Kecepatan & Performa Database Aplikasi Rekapitulasi Laporan Bulanan',
+      judul: 'Mempercepat Pemuatan Data Laporan pada Aplikasi Web Kasir',
       latar_belakang:
-        'Fitur rekapitulasi laporan bulanan terasa lambat (timeout) saat memuat puluhan ribu baris data transaksi karena belum ada penciptaan indeks pada tabel database.',
+        'Halaman rekap laporan transaksi terasa sangat lambat saat dibuka karena baris data yang dipanggil sangat banyak dan belum di-indeks.',
       proses_atau_formula:
-        '1. Memeriksa kodingan query SQL database yang mengalami pemuatan lambat.\n2. Menambahkan indeks (composite index) pada kolom tanggal dan status transaksi.\n3. Merapikan struktur perintah JOIN tabel database agar pencarian data lebih ringan.\n4. Menguji kembali kecepatan pemuatan halaman web aplikasi.',
+        '1. Cek perintah SQL query yang lambat.\n2. Tambahkan indeks pada kolom tanggal transaksi.\n3. Rapikan kodingan pemanggilan tabel database.\n4. Coba buka kembali aplikasi web kasir.',
       hasil:
-        'Waktu pemuatan halaman rekapitulasi berkurang drastis dari 4,5 detik menjadi 0,6 detik, dan penggunaan memori server berkurang hingga 82%.',
+        'Halaman laporan web kini terbuka sangat cepat (dari 4,5 detik menjadi 0,6 detik) dan tidak ada lag lagi.',
       data_angka: [
         { label: 'Waktu Pemuatan Aplikasi (Speed)', sebelum: '4,5 Detik', sesudah: '0,6 Detik', nilai: '0,6 Detik' },
         { label: 'Ukuran Memori & File Server', sebelum: '12 MB', sesudah: '2,1 MB (Hemat 82%)', nilai: '2,1 MB' },
@@ -193,13 +193,13 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       { masalah: 'Koneksi WiFi kantor sering lag dan bentrok IP (IP Conflict) antar komputer.', solusi: 'Mengatur pembagian IP Address otomatis via DHCP Server dan membatasi bandwidth per perangkat.' },
     ],
     studiKasus: {
-      judul: 'Konfigurasi Manajemen Bandwidth Router MikroTik & Segmentation VLAN',
+      judul: 'Setting Pembagian Kecepatan Internet MikroTik & Jalur VLAN Kantor',
       latar_belakang:
-        'Penggunaan koneksi internet di kantor sering mengalami lag akibat beberapa divisi menggunakan seluruh bandwidth tanpa pembagian kuota (queue tree) yang terorganisir.',
+        'Koneksi internet kantor sering lambat dan saling berebut karena belum ada pembagian kecepatan (bandwidth) per ruangan.',
       proses_atau_formula:
-        '1. Pembuatan VLAN ID 10 untuk Staf dan VLAN ID 20 untuk Tamu.\n2. Setting DHCP Server & IP Pool pada MikroTik RB750Gr3.\n3. Penerapan Queue Tree & PCQ (Per Connection Queue) untuk pembagian bandwidth adil.\n4. Uji kelajuan koneksi via Speedtest & iPerf.',
+        '1. Buat jalur Wi-Fi terpisah untuk Staf dan Tamu.\n2. Atur IP Address otomatis di Router MikroTik.\n3. Batasi kecepatan internet agar adil per komputer.\n4. Tes kelancaran koneksi internet dengan Speedtest.',
       hasil:
-        'Lalu lintas data antar divisi menjadi terisolasi aman, latency koneksi stabil di angka 12ms, dan kecepatan internet merata 100 Mbps di seluruh divisi.',
+        'Internet kantor jadi sangat lancar, tidak lag saat pakai barengan, dan kecepatannya terbagi merata.',
       data_angka: [
         { label: 'Latency & Respon Koneksi', sebelum: '65 ms (Sering Lag)', sesudah: '12 ms (Stabil & Lancar)', nilai: '12 ms' },
         { label: 'Pembagian Bandwidth Komputer', sebelum: 'Acak (Saling Rebut)', sesudah: 'Rata 20 Mbps / PC', nilai: '20 Mbps' },
@@ -267,13 +267,13 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       { masalah: 'Waktu render video promosi resolusi tinggi memakan waktu sangat lama dan terkadang crash.', solusi: 'Mengonversi aset raster bitmap menjadi vektor dan mengatur profil bit-rate Media Encoder.' },
     ],
     studiKasus: {
-      judul: 'Perancangan Branding Visual & Optimasi Asset Rendering Motion Graphic',
+      judul: 'Desain Banner Promo Sosmed & Hemat Waktu Render Video Iklan',
       latar_belakang:
-        'Waktu rendering video promosi resolusi 4K sering mengalami kegagalan karena ukuran aset grafis bitmap terlalu besar dan belum teroptimasi.',
+        'Ekspor (render) video promosi produk sering lama dan crash karena file gambar yang dipakai terlalu berat dan pecah.',
       proses_atau_formula:
-        '1. Mengubah aset gambar dari raster bitmap menjadi format vektor (SVG/AI).\n2. Pengaturan hierarki tipografi dan palet warna CMYK sesuai Brand Guidelines.\n3. Pengaturan Media Encoder H.264 profil target bit-rate 15 Mbps.\n4. Render final video iklan 60 FPS.',
+        '1. Ubah file gambar ke format vektor agar tidak pecah.\n2. Atur warna dan huruf banner promo sesuai produk.\n3. Setting format ekspor video ringan H.264.\n4. Render dan upload video promo ke Instagram/TikTok.',
       hasil:
-        'Waktu komputasi render berkurang dari 3 jam menjadi 45 menit tanpa penurunan kualitas visual.',
+        'Proses render video jadi 4x lebih cepat (dari 3 jam jadi 45 menit) dengan hasil gambar tetap jernih dan tajam.',
       data_angka: [
         { label: 'Ukuran File Ekspor Desain', sebelum: '450 MB', sesudah: '35 MB (Tanpa Pecah)', nilai: '35 MB' },
         { label: 'Waktu Pembuatan & Render', sebelum: '3 Jam', sesudah: '45 Menit', nilai: '45 Menit' },
@@ -341,13 +341,13 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       { masalah: 'Estimasi biaya paket wisata membengkak akibat lonjakan tarif armada bus di musim liburan.', solusi: 'Melakukan negosiasi kontrak rate jangka panjang dengan agen penyedia bus mitra.' },
     ],
     studiKasus: {
-      judul: 'Penyusunan Paket Itinerary Tour Bandung-Lembang & Optimasi Travel Costing',
+      judul: 'Membuat Jadwal & Rincian Biaya Paket Wisata 3D2N Bandung',
       latar_belakang:
-        'Pembuatan paket tur wisata rombongan instansi sering mengalami estimasi biaya membengkak karena kurang presisinya perhitungan komponen transport, tiket masuk, dan catering.',
+        'Biaya paket wisata rombongan sering terlalu mahal karena belum ada negosiasi harga khusus dengan tempat makan dan sewa bus.',
       proses_atau_formula:
-        '1. Analisis rute perjalanan dan estimasi waktu tempuh (Time Table).\n2. Negosiasi kontrak rate dengan vendor armada bus dan restoran mitra.\n3. Perhitungan komponen Variable Cost dan Fixed Cost per pax.\n4. Simulasi Margin Keuntungan 15% pada harga jual paket tour.',
+        '1. Susun rute dan jadwal jam kunjungan wisata.\n2. Kontak pengelola bus dan hotel untuk dapat harga khusus.\n3. Hitung total biaya tiket, makan, dan hotel per orang.\n4. Tentukan harga jual paket wisata yang murah & menguntungkan.',
       hasil:
-        'Paket wisata 3D2N berhasil disusun dengan efisiensi harga 21% dibanding kompetitor dan kepuasan peserta tour mencapai 98%.',
+        'Paket wisata 3 Hari 2 Malam berhasil dibuat dengan harga 21% lebih murah dan wisatawan sangat puas.',
       data_angka: [
         { label: 'Total Biaya Paket Per Pax', sebelum: 'Rp 1.850.000', sesudah: 'Rp 1.450.000 (Hemat 21%)', nilai: 'Rp 1.450.000' },
         { label: 'Waktu Penyusunan Jadwal Tour', sebelum: '2 Hari', sesudah: '3 Jam', nilai: '3 Jam' },
@@ -415,13 +415,13 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       { masalah: 'Antrean tamu check-in mengular akibat keterlambatan update status kesiapan kamar.', solusi: 'Melakukan inspeksi kamar secara digital via PMS dan meningkatkan koordinasi antar lantai.' },
     ],
     studiKasus: {
-      judul: 'Standardisasi Housekeeping Room Inspection & Optimasi Guest Check-In Speed',
+      judul: 'Pembersihan Kamar Hotel Cepat & Mengatasi Antrean Check-In Tamu',
       latar_belakang:
-        'Tingginya antrean check-in guest pada jam sibuk (peak hour) akibat keterlambatan kesiapan kamar (room status ready) dari tim Housekeeping.',
+        'Tamu hotel sering menunggu lama saat check-in di resepsionis karena kamar belum selesai dibersihkan tim Housekeeping.',
       proses_atau_formula:
-        '1. Penerapan Check-list digital Room Inspection 21 Poin via Property Management System (PMS).\n2. Pembagian zonasi penyiapan linenn dan amenities per lantai.\n3. Pelatihan koordinasi real-time antara Front Desk dan Floor Supervisor.\n4. Audit waktu rata-rata pembersihan kamar Deluxe Room.',
+        '1. Pakai daftar cek pembersihan kamar di aplikasi hotel.\n2. Bagi tim penyiapan sprei dan sabun mandi per lantai.\n3. Laporkan kesiapan kamar langsung ke bagian resepsionis.\n4. Cek ulang kerapian kamar sebelum tamu masuk.',
       hasil:
-        'Waktu pembersihan dan inspeksi kamar turun dari 40 menit menjadi 20 menit, sehingga antrean check-in terurai 50% lebih cepat.',
+        'Pembersihan kamar jadi 2x lebih cepat (dari 40 menit jadi 20 menit) dan antrean tamu di resepsionis langsung lancar.',
       data_angka: [
         { label: 'Waktu Cleaning Kamar Deluxe', sebelum: '40 Menit', sesudah: '20 Menit', nilai: '20 Menit' },
         { label: 'Waktu Tunggu Check-In Tamu', sebelum: '15 Menit / Guest', sesudah: '3 Menit / Guest', nilai: '3 Menit' },
@@ -489,13 +489,13 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       { masalah: 'Persentase sisa bahan makanan (food waste) melebihi batas toleransi efisiensi.', solusi: 'Menerapkan metode penimbangan porsi ketat dan penataan rotasi bahan baku di chiller (FIFO).' },
     ],
     studiKasus: {
-      judul: 'Standardisasi Mise en Place & Efisiensi Food Cost Menu Banquet Event',
+      judul: 'Persiapan Bahan Masakan Dapur & Menekan Sisa Bahan Makanan',
       latar_belakang:
-        'Tingginya persentase sisa bahan baku makanan (food waste) pada pengolahan menu buffet banquet menyebabkan Food Cost melebihi standar target 30%.',
+        'Banyak bahan makanan di dapur yang terbuang sia-sia saat masak menu pesta sehingga modal bahan dapur jadi boros.',
       proses_atau_formula:
-        '1. Penerapan metode FIFO (First In First Out) pada penyimpanan chiller.\n2. Penimbangan porsi bahan (portion control) presisi saat Mise en Place.\n3. Perhitungan standar resep dan yield percentage bahan baku.\n4. Audit ketaatan prosedur higienitas sanitasi HACCP.',
+        '1. Pakai bahan makanan yang lebih dulu dibeli (sistem FIFO).\n2. Timbang potongan daging dan bumbu secara pas sebelum dimasak.\n3. Masak makanan sesuai takaran resep standar.\n4. Jaga kebersihan alat dan meja dapur.',
       hasil:
-        'Persentase Food Cost berhasil ditekan dari 38% menjadi 28,5%, sesuai standar efisiensi operasional hotel dan restoran.',
+        'Sisa bahan makanan terbuang berkurang dari 38% jadi 28,5% dan modal dapur jadi jauh lebih hemat.',
       data_angka: [
         { label: 'Persentase Food Waste (Sisa Bahan)', sebelum: '38%', sesudah: '28,5% (Sesuai Standar)', nilai: '28,5%' },
         { label: 'Waktu Persiapan (Mise en Place)', sebelum: '2 Jam', sesudah: '45 Menit', nilai: '45 Menit' },
@@ -563,13 +563,13 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       { masalah: 'Pakaian mengalami kerutan pada bagian lengan akibat ketidaksesuaian ukuran lubang kerung lengan.', solusi: 'Melakukan pengecekan ulang ukuran kerung pola dasar dan menyusun sampel uji kain blaco.' },
     ],
     studiKasus: {
-      judul: 'Pembuatan Pola Busana Custom Draping & Quality Control Presisi Jahitan',
+      judul: 'Membuat Pola Baju Pas Badan & Kerapian Hasil Jahitan',
       latar_belakang:
-        'Pembuatan sampel busana kerja wanita sering mengalami retur akibat penyimpangan ukuran pola saat proses pemotongan bahan (cutting error).',
+        'Ukuran sampel pakaian sering tidak pas atau berkerut karena pemotongan bahan kain tidak sesuai garis pola.',
       proses_atau_formula:
-        '1. Pengukuran anatomi tubuh model dan pembuatan pola dasar sistem Soen/Meyneke.\n2. Pembuatan mock-up blus menggunakan kain blaco (draping sample).\n3. Pengaturan toleransi jahitan (seam allowance) 1.5 cm dan pemotongan bahan.\n4. Inspeksi kerapian setikan stik mesin las/jahit (8-10 stik per inci).',
+        '1. Ukur badan pelanggan dan gambar pola dasar di kertas.\n2. Buat contoh baju uji coba pakai kain murah dulu untuk cek ukuran.\n3. Potong kain utama sesuai pola dengan memberi sisa jahitan 1,5 cm.\n4. Jahit kain pakai mesin jahit industri dan periksa kerapian benang.',
       hasil:
-        'Presisi ukuran pakaian mencapai 99,5% tanpa kelonggaran/kesempitan, dan waste sisa bahan kain berkurang hingga 18%.',
+        'Pakaian pas sempurna di badan tanpa kerutan dan sisa kain terbuang berkurang hingga 18%.',
       data_angka: [
         { label: 'Sisa Potongan Kain (Waste Cut)', sebelum: 'Terganti 30%', sesudah: 'Hemat Sisa 12%', nilai: '12%' },
         { label: 'Presisi Ukuran Pola Baju', sebelum: 'Selisih ±1,5 cm', sesudah: 'Presisi ±0,2 cm', nilai: '±0,2 cm' },
@@ -637,13 +637,13 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       { masalah: 'Pencarian kembali (retrieval) dokumen fisik surat masuk memakan waktu hingga 15 menit.', solusi: 'Melakukan alih media pencatatan dari buku register manual ke sistem basis data e-Office.' },
     ],
     studiKasus: {
-      judul: 'Digitalisasi & Digital Archiving System Surat Masuk/Keluar',
+      judul: 'Rapikan Arsip Surat Masuk ke Komputer (Digitalisasi e-Office)',
       latar_belakang:
-        'Sistem temu kembali (retrieval) arsip fisik surat masuk sering memakan waktu lama karena pencatatan agenda masih menggunakan buku register manual.',
+        'Mencari lembaran surat lama di lemari arsip butuh waktu lama (sampai 15 menit) karena masih dicatat manual di buku agenda.',
       proses_atau_formula:
-        '1. Melakukan alih media (scanning) dokumen surat fisik ke format PDF.\n2. Mengelompokkan dokumen berdasarkan Sistem Subjek & Kode Klasifikasi.\n3. Menginput nomor disposisi dan indeks surat ke e-Office.\n4. Pengujian kecepatan pencarian dokumen (Retrieval Time Test).',
+        '1. Foto/scan surat fisik jadi file PDF di komputer.\n2. Kelompokkan file surat sesuai jenis dan kodenya.\n3. Simpan data surat ke dalam aplikasi e-Office kantor.\n4. Susun surat fisik ke dalam folder map arsip secara rapi.',
       hasil:
-        'Waktu temu kembali dokumen arsip berkurang drastis dari 15 menit menjadi kurang dari 1 menit per dokumen.',
+        'Mencari surat lama kini sangat cepat (kurang dari 1 menit) tinggal ketik nama surat di komputer.',
       data_angka: [
         { label: 'Waktu Temu Kembali Berkas Arsip', sebelum: '15 Menit', sesudah: '45 Detik (Via e-Office)', nilai: '45 Detik' },
         { label: 'Waktu Lembar Disposisi Surat', sebelum: '1 Hari', sesudah: '2 Jam', nilai: '2 Jam' },
@@ -711,13 +711,13 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       { masalah: 'Selisih saldo fisik kas kecil dengan saldo laporan akibat ada nota kecil yang terlambat disetorkan.', solusi: 'Menerapkan aturan batas waktu penyerahan nota klaim maksimal 1x24 jam dari pengeluaran.' },
     ],
     studiKasus: {
-      judul: 'Pendataan & Penghitungan Waive Discount Debitur Macet serta Rekonsiliasi',
+      judul: 'Pencatatan Jurnal Kas Harian & Pengurusan Potongan Denda Tagihan',
       latar_belakang:
-        'Proses permohonan waive discount (potongan denda) oleh debitur membutuhkan penghitungan persentase potongan yang teliti agar perusahaan tidak mengalami kerugian berlebih namun debitur tetap dapat melunasi kewajibannya.',
+        'Penghitungan potongan denda keterlambatan bayar pelanggan harus dihitung cermat agar pelanggan bisa lunas tanpa merugikan kasir.',
       proses_atau_formula:
-        '1. Mengumpulkan berkas KTP dan formulir permohonan debitur.\n2. Menhitung akumulasi denda harian (Total Angsuran x 0,5%).\n3. Melakukan negosiasi besaran diskon denda yang disetujui Head Collection.\n4. Menginput data persentase diskon ke sistem database.',
+        '1. Cek formulir dan KTP pelanggan yang mengajukan potongan denda.\n2. Hitung sisa tagihan dan jumlah potongan denda yang bisa disetujui.\n3. Minta tanda tangan persetujuan ke kepala bagian keuangan.\n4. Catat uang masuk dan bukti kuitansi ke Jurnal Kas Harian.',
       hasil:
-        'Debitur mendapatkan keringanan pembayaran denda sebesar 37,99% sehingga total tunggakan denda berkurang dari Rp 4.596.800,- menjadi Rp 2.851.000,- dan pembayaran pelunasan berhasil diproses.',
+        'Pelanggan dapat potongan denda 37,99% dan langsung lunas, serta catatan uang kasir cocok 100%.',
       data_angka: [
         { label: 'Total Denda Tagihan Debitur', sebelum: 'Rp 4.596.800', sesudah: 'Rp 2.851.000 (Diskon 37,99%)', nilai: 'Rp 2.851.000' },
         { label: 'Status Pelunasan Pembayaran', sebelum: 'Menunggak / Macet', sesudah: 'Lunas Terbayar', nilai: 'Lunas' },
@@ -785,13 +785,13 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       { masalah: 'Tingkat konversi penjualan produk baru di e-commerce masih rendah di minggu pertama.', solusi: 'Membuat konten video ulasan singkat produk (Reels) dan menambahkan voucer diskon promosi.' },
     ],
     studiKasus: {
-      judul: 'Analisis Efektivitas Kampanye Social Media Ads & Conversion Rate E-Commerce',
+      judul: 'Konten Promosi Sosmed & Pajangan Produk Menarik di Rak Toko',
       latar_belakang:
-        'Kampanye produk baru melalui iklan digital membutuhkan evaluasi berjangka untuk memastikan Return on Ad Spend (ROAS) menguntungkan perusahaan.',
+        'Produk baru di toko masih sepi pembeli karena belum ada video promosi di sosmed dan pajangan di rak kurang menarik.',
       proses_atau_formula:
-        '1. Merancang materi konten video pendek (Reels/TikTok).\n2. Memasang Meta Ads dengan target audiens usia 18-35 tahun.\n3. Melakukan tracking Meta Pixel untuk pencatatan transaksi masuk.\n4. Evaluasi mingguan pada rasio konversi (CTR & Conversion Rate).',
+        '1. Buat video singkat ulasan produk untuk Instagram Reels / TikTok.\n2. Pasang iklan digital yang mengincar calon pembeli anak muda.\n3. Tata produk di rak toko paling depan dengan lampu yang terang.\n4. Balas chat pertanyaan pembeli dengan ramah dan cepat.',
       hasil:
-        'Kampanye menghasilkan 1.250 leads prospektif dengan Conversion Rate naik sebesar 4,5% dan kenaikan total omzet bulanan sebesar Rp 18.500.000.',
+        'Pembeli harian naik dari 5 orang jadi 35 orang per hari dan hasil penjualan toko meningkat drastis.',
       data_angka: [
         { label: 'Jangkauan Iklan Promosi (Reach)', sebelum: '500 Orang / Hari', sesudah: '8.500 Orang / Hari', nilai: '8.500 Orang' },
         { label: 'Jumlah Pembeli Harian', sebelum: '5 Pembeli', sesudah: '35 Pembeli', nilai: '35 Pembeli' },
