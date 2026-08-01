@@ -236,12 +236,11 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
     startTypewriterLoop(item.key)
 
     // Inactivity heartbeat check:
-    // - Sebelum chunk pertama tiba: beri waktu hingga 45 detik (waktu persiapan/loading model AI)
-    // - Setelah chunk pertama tiba: toleransi jeda 25 detik antar token
+    // - Batas waktu persiapan/loading model AI & jeda token diset hingga 90 detik (90.000 ms)
     if (heartbeatIntervalRef.current) clearInterval(heartbeatIntervalRef.current)
     heartbeatIntervalRef.current = setInterval(() => {
       const elapsed = Date.now() - lastChunkTimeRef.current
-      const timeoutLimit = hasChunkRef.current ? 25000 : 45000
+      const timeoutLimit = hasChunkRef.current ? 60000 : 90000
 
       if (elapsed > timeoutLimit) {
         if (heartbeatIntervalRef.current) {
