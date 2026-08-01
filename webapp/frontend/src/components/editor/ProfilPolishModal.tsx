@@ -112,8 +112,64 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
   const heartbeatIntervalRef = useRef<any>(null)
   const hasChunkRef = useRef<boolean>(false)
 
+  // Typewriter Stream Queue refs
+  const charQueueRef = useRef<string[]>([])
+  const typingTimerRef = useRef<any>(null)
+  const displayedTextRef = useRef<string>('')
+  const currentItemKeyRef = useRef<string>('')
+  const boxRefs = useRef<Record<string, HTMLDivElement | null>>({})
+
+  const startTypewriterLoop = (itemKey: string) => {
+    currentItemKeyRef.current = itemKey
+    displayedTextRef.current = ''
+    charQueueRef.current = []
+
+    if (typingTimerRef.current) clearInterval(typingTimerRef.current)
+
+    typingTimerRef.current = setInterval(() => {
+      if (charQueueRef.current.length > 0) {
+        // Dynamic speed adjustment to handle burst chunks smoothly
+        const takeCount = charQueueRef.current.length > 60 ? 5 : charQueueRef.current.length > 20 ? 2 : 1
+        const chars = charQueueRef.current.splice(0, takeCount).join('')
+        displayedTextRef.current += chars
+        const currentText = displayedTextRef.current
+        setStreamTexts((prev) => ({ ...prev, [itemKey]: currentText + ' ▌' }))
+
+        // Auto-scroll box to keep typing cursor visible
+        const el = boxRefs.current[itemKey]
+        if (el) {
+          el.scrollTop = el.scrollHeight
+        }
+      }
+    }, 12)
+  }
+
+  const flushTypewriterQueue = async () => {
+    return new Promise<void>((resolve) => {
+      const checkDrain = setInterval(() => {
+        if (charQueueRef.current.length === 0) {
+          clearInterval(checkDrain)
+          resolve()
+        }
+      }, 15)
+    })
+  }
+
+  const stopTypewriterLoop = (itemKey: string, finalContent?: string) => {
+    if (typingTimerRef.current) {
+      clearInterval(typingTimerRef.current)
+      typingTimerRef.current = null
+    }
+    const textToSet = finalContent !== undefined ? finalContent : displayedTextRef.current.trim()
+    setStreamTexts((prev) => ({ ...prev, [itemKey]: textToSet }))
+  }
+
   // Clear timers & abort controller
   const cleanupStream = () => {
+    if (typingTimerRef.current) {
+      clearInterval(typingTimerRef.current)
+      typingTimerRef.current = null
+    }
     if (heartbeatIntervalRef.current) {
       clearInterval(heartbeatIntervalRef.current)
       heartbeatIntervalRef.current = null
@@ -177,6 +233,8 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
     let accumulated = ''
     let isNoResponseTriggered = false
 
+    startTypewriterLoop(item.key)
+
     // Inactivity heartbeat check:
     // - Sebelum chunk pertama tiba: beri waktu hingga 45 detik (waktu persiapan/loading model AI)
     // - Setelah chunk pertama tiba: toleransi jeda 25 detik antar token
@@ -194,7 +252,7 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
         const currentText = accumulated.trim()
         if (currentText.length > 15) {
           // Jika teks sudah ter-generate (>15 karakter), anggap BERHASIL walau koneksi stream diam di akhir
-          setStreamTexts((prev) => ({ ...prev, [item.key]: currentText }))
+          stopTypewriterLoop(item.key, currentText)
           saveItemResult(item.key, currentText)
           setStatuses((prev) => {
             const next = { ...prev, [item.key]: 'success' as const }
@@ -209,6 +267,7 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
 
         // Teks benar-benar kosong / < 15 karakter -> Murni AI No-Response
         isNoResponseTriggered = true
+        stopTypewriterLoop(item.key, '')
         if (abortControllerRef.current) {
           abortControllerRef.current.abort()
         }
@@ -228,7 +287,8 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
           hasChunkRef.current = true
           lastChunkTimeRef.current = Date.now()
           accumulated += chunk
-          setStreamTexts((prev) => ({ ...prev, [item.key]: accumulated + ' ▌' }))
+          // Enqueue characters into typewriter stream queue
+          charQueueRef.current.push(...chunk.split(''))
         },
         abortControllerRef.current.signal
       )
@@ -238,8 +298,11 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
         heartbeatIntervalRef.current = null
       }
 
+      // Tunggu hingga antrean karakter selesai diketikkan secara penuh di UI
+      await flushTypewriterQueue()
+
       const finalContent = (resultText || accumulated).trim()
-      setStreamTexts((prev) => ({ ...prev, [item.key]: finalContent }))
+      stopTypewriterLoop(item.key, finalContent)
 
       if (finalContent.length > 15) {
         saveItemResult(item.key, finalContent)
@@ -255,6 +318,7 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
           return next
         })
       } else {
+        // Jika data kosong / di-skip karena input user tidak diisi
         setStatuses((prev) => {
           const next = { ...prev, [item.key]: 'failed' as const }
           checkAllDone(next)
@@ -267,10 +331,11 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
         heartbeatIntervalRef.current = null
       }
 
+      await flushTypewriterQueue()
+
       const finalContent = accumulated.trim()
       if (finalContent.length > 15) {
-        // Meskipun terjadi error / disconnect di akhir, teks yang sudah ter-generate (>15 karakter) tetap DISIMPAN & SUKSES
-        setStreamTexts((prev) => ({ ...prev, [item.key]: finalContent }))
+        stopTypewriterLoop(item.key, finalContent)
         saveItemResult(item.key, finalContent)
         setStatuses((prev) => {
           const next = { ...prev, [item.key]: 'success' as const }
@@ -278,12 +343,14 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
           return next
         })
       } else if (err?.name === 'AbortError' || isNoResponseTriggered) {
+        stopTypewriterLoop(item.key, '')
         setStatuses((prev) => {
           const next = { ...prev, [item.key]: 'no_response' as const }
           checkAllDone(next)
           return next
         })
       } else {
+        stopTypewriterLoop(item.key, '')
         setStatuses((prev) => {
           const next = { ...prev, [item.key]: 'failed' as const }
           checkAllDone(next)
@@ -423,6 +490,9 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
                 {/* Live Streaming Content Box */}
                 {text && (
                   <div
+                    ref={(el) => {
+                      boxRefs.current[item.key] = el
+                    }}
                     style={{
                       background: '#ffffff',
                       border: '1px solid #e2e8f0',
