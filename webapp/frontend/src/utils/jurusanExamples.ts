@@ -119,11 +119,11 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       { masalah: 'Query database lambat saat memuat puluhan ribu baris data transaksi.', solusi: 'Menambahkan composite index pada kolom created_at dan merapikan klausa INNER JOIN.' },
     ],
     studiKasus: {
-      judul: 'Optimasi Speed & Performance Query Database pada Rekapitulasi Laporan Bulanan',
+      judul: 'Optimasi Kecepatan & Performa Database Aplikasi Rekapitulasi Laporan Bulanan',
       latar_belakang:
-        'Fitur rekapitulasi laporan bulanan mengalami kendala pemuatan lambat (timeout) saat memuat puluhan ribu baris data transaksi karena belum ada penciptaan indeks pada tabel database.',
+        'Fitur rekapitulasi laporan bulanan terasa lambat (timeout) saat memuat puluhan ribu baris data transaksi karena belum ada penciptaan indeks pada tabel database.',
       proses_atau_formula:
-        '1. Melakukan profiling query menggunakan EXPLAIN ANALYZE.\n2. Menambahkan composite index pada kolom created_at dan status_id.\n3. Mengubah struktur subquery JOIN menjadi INNER JOIN ber-indeks.\n4. Melakukan testing beban dengan k6 / Apache JMeter.',
+        '1. Memeriksa kodingan query SQL database yang mengalami pemuatan lambat.\n2. Menambahkan indeks (composite index) pada kolom tanggal dan status transaksi.\n3. Merapikan struktur perintah JOIN tabel database agar pencarian data lebih ringan.\n4. Menguji kembali kecepatan pemuatan halaman web aplikasi.',
       hasil:
         'Waktu pemuatan halaman rekapitulasi berkurang drastis dari 4,5 detik menjadi 0,6 detik, dan penggunaan memori server berkurang hingga 82%.',
       data_angka: [
