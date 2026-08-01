@@ -407,37 +407,6 @@ async def generate_docx(
             },
         )
 
-    # 2.5 Auto-polish dengan AI — rapikan teks mentah user sebelum assemble
-    # Dijalankan paralel (asyncio.gather), timeout 60 detik.
-    # Jika AI offline/timeout → fallback ke raw user input, generate tetap jalan.
-    data, polished = await _auto_polish_on_generate(data)
-
-    # Simpan hasil polish yang BERHASIL ke draft — jadi kalau sebagian section gagal
-    # (provider error) user tidak perlu mengulang dari awal saat download berikutnya;
-    # polish yang sudah jadi dipertahankan dan hanya sisanya yang dicoba lagi.
-    # PENTING: section yang GAGAL dipolish TIDAK menimpa data asli user — kita hanya
-    # menimpa field yang memang berhasil dirapikan AI.
-    polish_failed = data.pop("_polish_failed", [])
-    if polished:
-        try:
-            stored = draft.data_json or {}
-            if "job_descriptions" not in polish_failed and "visi_misi" not in polish_failed:
-                # profil_perusahaan hanya berubah bila visi_misi/job_descriptions sukses
-                if data.get("profil_perusahaan") is not None:
-                    stored["profil_perusahaan"] = data["profil_perusahaan"]
-            if "kegiatan" not in polish_failed and data.get("kegiatan") is not None:
-                stored["kegiatan"] = data["kegiatan"]
-            if "peralatan" not in polish_failed and data.get("peralatan") is not None:
-                stored["peralatan"] = data["peralatan"]
-            gen = data.get("generated_sections") or {}
-            if gen:
-                stored.setdefault("generated_sections", {}).update(gen)
-            draft.data_json = stored
-            db.commit()
-        except Exception as e:
-            print(f"[AutoPolish] Gagal simpan hasil polish ke draft (lanjut generate): {e}")
-            db.rollback()
-
     # 2.6 Daftar pustaka otomatis (config.auto_daftar_pustaka, default aktif):
     # coba AI dulu; kalau provider mati/dummy, penyusun standar yang mengisi.
     if not data.get("daftar_pustaka") and \
@@ -506,21 +475,5 @@ async def generate_docx(
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     )
     # Always expose Content-Disposition header so frontend can extract the exact filename
-    response.headers["Access-Control-Expose-Headers"] = (
-        "X-Polish-Partial, X-Polish-Message, Content-Disposition"
-    )
-    # Beri tahu user bila ada bagian yang gagal dipolish AI (sistem AI bermasalah).
-    # Dokumen tetap dihasilkan dari data asli; bagian yang sudah berhasil dipolish
-    # sudah tersimpan di draft sehingga download berikutnya tinggal melanjutkan.
-    if polish_failed:
-        labels = ", ".join(_POLISH_LABELS.get(k, k) for k in polish_failed)
-        msg = (
-            "Sistem AI sedang mengalami masalah, sehingga sebagian teks "
-            f"({labels}) belum dirapikan otomatis. Dokumen tetap dibuat dari "
-            "data asli. Bagian yang berhasil dirapikan sudah tersimpan — coba "
-            "download lagi nanti untuk melengkapi sisanya."
-        )
-        from urllib.parse import quote
-        response.headers["X-Polish-Partial"] = ",".join(polish_failed)
-        response.headers["X-Polish-Message"] = quote(msg)
+    response.headers["Access-Control-Expose-Headers"] = "Content-Disposition"
     return response

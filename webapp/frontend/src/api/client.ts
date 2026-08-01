@@ -316,11 +316,6 @@ export const parseFullStory = (cerita: string, jurusanKey: string) =>
     jurusan_key: jurusanKey,
   }, { timeout: 120_000 }).then((r) => r.data)
 
-export const enhanceContext = (contextData: PklContext) =>
-  api.post<{ context_data: PklContext }>('/ai/enhance-context', {
-    context_data: contextData,
-  }, { timeout: 180_000 }).then((r) => r.data)
-
 // --------------------------------------------------------------------------- //
 //  Asset Upload                                                                //
 // --------------------------------------------------------------------------- //

@@ -1,9 +1,8 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import ProtectedRoute from '@/components/ProtectedRoute'
-import { getDraft, updateDraft, generateDocx, draftSectionStream, regenerateSection, enhanceContext } from '@/api/client'
+import { getDraft, updateDraft, generateDocx, draftSectionStream, regenerateSection } from '@/api/client'
 import AntiAIHighlighter from '@/components/editor/AntiAIHighlighter'
-import EnhancementDiffModal from '@/components/editor/EnhancementDiffModal'
 import DocumentOutline from '@/components/editor/DocumentOutline'
 import RequestionPanel, { type GenerateIssue, type Requestion } from '@/components/RequestionPanel'
 import NotificationModal from '@/components/common/NotificationModal'
@@ -51,7 +50,6 @@ function EditorInner() {
   const savingPromiseRef = useRef<Promise<any> | null>(null)
 
   const [downloading, setDownloading] = useState(false)
-  const [enhancing, setEnhancing] = useState(false)
   const [genError, setGenError] = useState('')
   const [genIssues, setGenIssues] = useState<GenerateIssue[]>([])
   const [genQuestions, setGenQuestions] = useState<Requestion[]>([])
@@ -76,9 +74,6 @@ function EditorInner() {
     })
   }
 
-  // Diff Modal State
-  const [showDiffModal, setShowDiffModal] = useState(false)
-  const [pendingEnhancedCtx, setPendingEnhancedCtx] = useState<PklContext | null>(null)
   const [activeSectionKey, setActiveSectionKey] = useState<string | undefined>(undefined)
 
   const handleStartInPageBatch = async () => {
@@ -513,56 +508,6 @@ function EditorInner() {
               )}
             </button>
 
-            <div style={{ padding: '0.75rem 0.85rem', background: 'var(--paper-2, #ece8de)', borderRadius: '8px', border: '1px solid var(--line, #ddd6c8)' }}>
-              <button
-                type="button"
-                className="btn-outline"
-                style={{
-                  width: '100%',
-                  fontSize: '0.82rem',
-                  fontWeight: 600,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '0.5rem 0.75rem',
-                  opacity: !isUnlocked ? 0.5 : 1,
-                  cursor: !isUnlocked ? 'not-allowed' : 'pointer',
-                }}
-                disabled={enhancing || downloading || !isUnlocked}
-                onClick={async () => {
-                  if (!draftId) return
-                  setEnhancing(true)
-                  try {
-                    const res = await enhanceContext(ctx)
-                    setPendingEnhancedCtx(res.context_data)
-                    setShowDiffModal(true)
-                  } catch (err: any) {
-                    const detail = err?.response?.data?.detail
-                    const msg = typeof detail === 'string'
-                      ? detail
-                      : detail?.message || err?.message || 'Gagal merapikan data via AI.'
-                    showErrorModal(msg)
-                  } finally {
-                    setEnhancing(false)
-                  }
-                }}
-              >
-                {enhancing ? (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <svg className="animate-spin" style={{ width: '14px', height: '14px', marginRight: '6px' }} viewBox="0 0 24 24" fill="none">
-                      <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Merapikan Bahasa…
-                  </span>
-                ) : (
-                  <>
-                    <IconPencil size={16} style={{ marginRight: '0.4rem' }} /> Rapikan Bahasa Teks via AI (Opsional)
-                  </>
-                )}
-              </button>
-            </div>
-
             {genError && (
               genIssues.length > 0 || genQuestions.length > 0 ? (
                 <RequestionPanel
@@ -640,31 +585,6 @@ function EditorInner() {
           />
         </div>
       </div>
-
-      {/* Diff Review Modal */}
-      {showDiffModal && pendingEnhancedCtx && (
-        <EnhancementDiffModal
-          oldCtx={ctx}
-          newCtx={pendingEnhancedCtx}
-          onApply={async (finalCtx) => {
-            setCtx(finalCtx)
-            setShowDiffModal(false)
-            if (draftId) {
-              setSaveState('saving')
-              try {
-                await updateDraft(draftId, { data: finalCtx, status: 'completed' })
-                setSaveState('saved')
-                dirtyRef.current = false
-              } catch {
-                setSaveState('idle')
-              }
-            }
-          }}
-          onCancel={() => {
-            setShowDiffModal(false)
-          }}
-        />
-      )}
 
       {/* Notification Pop-up Modal */}
       <NotificationModal
