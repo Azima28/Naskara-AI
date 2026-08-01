@@ -110,6 +110,7 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
   const abortControllerRef = useRef<AbortController | null>(null)
   const lastChunkTimeRef = useRef<number>(Date.now())
   const heartbeatIntervalRef = useRef<any>(null)
+  const hasChunkRef = useRef<boolean>(false)
 
   // Clear timers & abort controller
   const cleanupStream = () => {
@@ -133,22 +134,37 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
     return () => cleanupStream()
   }, [isOpen])
 
+  const checkAllDone = (currentStatuses: Record<string, string>) => {
+    const allFinished = POLISH_ITEMS.every(
+      (it) => currentStatuses[it.key] === 'success' || currentStatuses[it.key] === 'failed' || currentStatuses[it.key] === 'no_response'
+    )
+    if (allFinished) {
+      setIsDoneAll(true)
+      onComplete(updatedProfilRef.current)
+    }
+  }
+
   const processItem = async (item: PolishItem) => {
     setStatuses((prev) => ({ ...prev, [item.key]: 'generating' }))
     setStreamTexts((prev) => ({ ...prev, [item.key]: '' }))
 
     abortControllerRef.current = new AbortController()
     lastChunkTimeRef.current = Date.now()
+    hasChunkRef.current = false
 
     let accumulated = ''
     let isNoResponseTriggered = false
 
-    // Inactivity heartbeat check: 20 seconds without receiving a chunk
+    // Inactivity heartbeat check:
+    // - Sebelum chunk pertama tiba: beri waktu hingga 45 detik (waktu persiapan/loading model AI)
+    // - Setelah chunk pertama tiba: toleransi jeda 25 detik antar token
     if (heartbeatIntervalRef.current) clearInterval(heartbeatIntervalRef.current)
     heartbeatIntervalRef.current = setInterval(() => {
-      if (Date.now() - lastChunkTimeRef.current > 20000) {
-        // Jika teks sudah berhasil ter-generate dengan cukup panjang (>30 karakter),
-        // jangan batalkan stream karena AI mungkin sedang jeda antartoken.
+      const elapsed = Date.now() - lastChunkTimeRef.current
+      const timeoutLimit = hasChunkRef.current ? 25000 : 45000
+
+      if (elapsed > timeoutLimit) {
+        // Jika teks sudah ter-generate cukup banyak, anggap berhasil walau koneksi diam di akhir
         if (accumulated.trim().length > 30) return
 
         isNoResponseTriggered = true
@@ -159,7 +175,11 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
           clearInterval(heartbeatIntervalRef.current)
           heartbeatIntervalRef.current = null
         }
-        setStatuses((prev) => ({ ...prev, [item.key]: 'no_response' }))
+        setStatuses((prev) => {
+          const next = { ...prev, [item.key]: 'no_response' as const }
+          checkAllDone(next)
+          return next
+        })
       }
     }, 1000)
 
@@ -168,6 +188,7 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
         item.key,
         ctx,
         (chunk) => {
+          hasChunkRef.current = true
           lastChunkTimeRef.current = Date.now()
           accumulated += chunk
           setStreamTexts((prev) => ({ ...prev, [item.key]: accumulated + ' ▌' }))
@@ -182,30 +203,34 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
 
       if (isNoResponseTriggered && accumulated.trim().length <= 30) return
 
-      const finalContent = resultText || accumulated
+      const finalContent = (resultText || accumulated).trim()
       setStreamTexts((prev) => ({ ...prev, [item.key]: finalContent }))
 
       // Update ref profil_perusahaan berdasarkan key
-      if (item.key === 'profil_sejarah' && finalContent.trim()) {
-        updatedProfilRef.current.sejarah = finalContent.trim()
-      } else if (item.key === 'visi_misi' && finalContent.trim()) {
+      if (item.key === 'profil_sejarah' && finalContent) {
+        updatedProfilRef.current.sejarah = finalContent
+      } else if (item.key === 'visi_misi' && finalContent) {
         const parsed = parseVisiMisi(finalContent)
         if (parsed.visi) updatedProfilRef.current.visi = parsed.visi
         if (parsed.misi.length > 0) updatedProfilRef.current.misi = parsed.misi
-      } else if (item.key === 'tata_tertib_perusahaan' && finalContent.trim()) {
+      } else if (item.key === 'tata_tertib_perusahaan' && finalContent) {
         const list = parseNumberedList(finalContent)
         if (list.length > 0) {
           updatedProfilRef.current.tata_tertib_perusahaan = list
           updatedProfilRef.current.tata_tertib = list
         }
-      } else if (item.key === 'job_descriptions' && finalContent.trim()) {
+      } else if (item.key === 'job_descriptions' && finalContent) {
         const parsedJobs = parseJobDescriptions(finalContent)
         if (parsedJobs.length > 0) {
           updatedProfilRef.current.job_descriptions = parsedJobs
         }
       }
 
-      setStatuses((prev) => ({ ...prev, [item.key]: 'success' }))
+      setStatuses((prev) => {
+        const next = { ...prev, [item.key]: 'success' as const }
+        checkAllDone(next)
+        return next
+      })
     } catch (err: any) {
       if (heartbeatIntervalRef.current) {
         clearInterval(heartbeatIntervalRef.current)
@@ -231,50 +256,52 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
           const parsedJobs = parseJobDescriptions(finalContent)
           if (parsedJobs.length > 0) updatedProfilRef.current.job_descriptions = parsedJobs
         }
-        setStatuses((prev) => ({ ...prev, [item.key]: 'success' }))
+        setStatuses((prev) => {
+          const next = { ...prev, [item.key]: 'success' as const }
+          checkAllDone(next)
+          return next
+        })
       } else if (err?.name === 'AbortError' || isNoResponseTriggered) {
-        setStatuses((prev) => ({ ...prev, [item.key]: 'no_response' }))
+        setStatuses((prev) => {
+          const next = { ...prev, [item.key]: 'no_response' as const }
+          checkAllDone(next)
+          return next
+        })
       } else {
-        setStatuses((prev) => ({ ...prev, [item.key]: 'failed' }))
+        setStatuses((prev) => {
+          const next = { ...prev, [item.key]: 'failed' as const }
+          checkAllDone(next)
+          return next
+        })
       }
     }
   }
 
   const startProcessingQueue = async () => {
     for (const item of POLISH_ITEMS) {
-      await processItem(item)
+      try {
+        await processItem(item)
+      } catch {
+        /* jamin antrean tidak terputus */
+      }
     }
     setIsDoneAll(true)
     onComplete(updatedProfilRef.current)
   }
 
   const handleRetryItem = async (item: PolishItem) => {
-    await processItem(item)
-    // Cek apakah semua item sudah berstatus akhir
-    setStatuses((latest) => {
-      const allFinished = POLISH_ITEMS.every(
-        (it) => latest[it.key] === 'success' || latest[it.key] === 'failed' || latest[it.key] === 'no_response'
-      )
-      if (allFinished) {
-        setIsDoneAll(true)
-        onComplete(updatedProfilRef.current)
-      }
-      return latest
-    })
+    try {
+      await processItem(item)
+    } catch {
+      /* jamin tidak uncaught error */
+    }
   }
 
   const handleSkipItem = (key: string) => {
-    setStatuses((prev) => ({ ...prev, [key]: 'failed' }))
-    // Lanjutkan jika item ini memblokir
-    setStatuses((latest) => {
-      const allFinished = POLISH_ITEMS.every(
-        (it) => latest[it.key] === 'success' || latest[it.key] === 'failed' || latest[it.key] === 'no_response'
-      )
-      if (allFinished) {
-        setIsDoneAll(true)
-        onComplete(updatedProfilRef.current)
-      }
-      return latest
+    setStatuses((prev) => {
+      const next = { ...prev, [key]: 'failed' as const }
+      checkAllDone(next)
+      return next
     })
   }
 
