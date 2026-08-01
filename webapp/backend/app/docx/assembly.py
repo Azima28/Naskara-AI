@@ -323,6 +323,7 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
         return re.sub(r"\s+", " ", str(s or "")).strip().upper()
 
     outline_map: dict[str, str] = {_norm(text): bm for _, text, bm in builder.outline}
+    outline_bookmarks: set[str] = {bm for _, _, bm in builder.outline if bm}
 
     bab_lines: dict[int | str, float] = {}
     current_bab_key: int | str | None = None  # None sebelum BAB I PENDAHULUAN
@@ -340,12 +341,25 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
 
             text_norm = _norm(text_raw)
 
+            # Cari bookmark ID yang tertanam di elemen paragraph XML secara langsung
+            bms_in_elem = [
+                b.get("{http://schemas.openxmlformats.org/wordprocessingml/2006/main}name") or b.get("name") or b.attrib.get("w:name")
+                for b in elem.findall(".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}bookmarkStart")
+            ]
+            bm_matched = None
+            for b_candidate in bms_in_elem:
+                if b_candidate in outline_bookmarks:
+                    bm_matched = b_candidate
+                    break
+            if not bm_matched:
+                bm_matched = outline_map.get(text_norm)
+
             m_bab = re.search(r"BAB\s+([IVXLCDM\d]+)", text_norm, re.IGNORECASE)
             if m_bab:
                 bab_num = _roman_to_int(m_bab.group(1))
                 current_bab_key = bab_num
                 bab_lines[current_bab_key] = bab_lines.get(current_bab_key, 0.0) + 4.0
-                bm = outline_map.get(text_norm)
+                bm = bm_matched or outline_map.get(text_norm)
                 if bm:
                     bookmark_offset_lines[bm] = 0.0
                     bookmark_bab_key[bm] = current_bab_key
@@ -353,7 +367,7 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
             elif "DAFTAR PUSTAKA" in text_norm:
                 current_bab_key = "DAFTAR_PUSTAKA"
                 bab_lines[current_bab_key] = bab_lines.get(current_bab_key, 0.0) + 3.0
-                bm = outline_map.get(text_norm)
+                bm = bm_matched or outline_map.get(text_norm)
                 if bm:
                     bookmark_offset_lines[bm] = 0.0
                     bookmark_bab_key[bm] = current_bab_key
@@ -361,14 +375,14 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
             elif "LAMPIRAN" in text_norm and not "DAFTAR" in text_norm:
                 current_bab_key = "LAMPIRAN"
                 bab_lines[current_bab_key] = bab_lines.get(current_bab_key, 0.0) + 3.0
-                bm = outline_map.get(text_norm)
+                bm = bm_matched or outline_map.get(text_norm)
                 if bm:
                     bookmark_offset_lines[bm] = 0.0
                     bookmark_bab_key[bm] = current_bab_key
                 continue
 
             if current_bab_key is not None:
-                bm = outline_map.get(text_norm)
+                bm = bm_matched or outline_map.get(text_norm)
                 if bm:
                     bookmark_offset_lines[bm] = bab_lines.get(current_bab_key, 0.0)
                     bookmark_bab_key[bm] = current_bab_key
