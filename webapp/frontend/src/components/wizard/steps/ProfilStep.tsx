@@ -233,6 +233,7 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
 
   const [showContohCabang, setShowContohCabang] = useState(false)
   const [showContohTataTertib, setShowContohTataTertib] = useState(false)
+  const [showContohJamKerja, setShowContohJamKerja] = useState(false)
 
   const upd = (patch: Partial<ProfilPerusahaan>) =>
     set({ profil_perusahaan: { ...pr, ...patch } })
@@ -262,6 +263,48 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
 
   /** Ubah susunan slot sebuah hari lalu simpan sebagai jam/keterangan. */
   const setSlots = (i: number, slots: Slot[]) => updJam(i, serializeSlots(slots))
+
+  const handleApplySampleJamKerja = () => {
+    const sampleJam: JamKerja[] = [
+      {
+        hari: 'SENIN',
+        jam: '08.00 - 12.00\n12.00 - 13.00\n13.00 - 16.00',
+        keterangan: 'OPERASIONAL\nISTIRAHAT\nOPERASIONAL',
+        jam_mulai: '08.00', jam_selesai: '16.00', jam_istirahat: '12.00-13.00', jam_briefing: '',
+      },
+      {
+        hari: 'SELASA',
+        jam: '08.00 - 12.00\n12.00 - 13.00\n13.00 - 16.00',
+        keterangan: 'OPERASIONAL\nISTIRAHAT\nOPERASIONAL',
+        jam_mulai: '08.00', jam_selesai: '16.00', jam_istirahat: '12.00-13.00', jam_briefing: '',
+      },
+      {
+        hari: 'RABU',
+        jam: '08.00 - 12.00\n12.00 - 13.00\n13.00 - 16.00',
+        keterangan: 'OPERASIONAL\nISTIRAHAT\nOPERASIONAL',
+        jam_mulai: '08.00', jam_selesai: '16.00', jam_istirahat: '12.00-13.00', jam_briefing: '',
+      },
+      {
+        hari: 'KAMIS',
+        jam: '08.00 - 12.00\n12.00 - 13.00\n13.00 - 16.00',
+        keterangan: 'OPERASIONAL\nISTIRAHAT\nOPERASIONAL',
+        jam_mulai: '08.00', jam_selesai: '16.00', jam_istirahat: '12.00-13.00', jam_briefing: '',
+      },
+      {
+        hari: 'JUMAT',
+        jam: '08.00 - 12.00\n12.00 - 13.00\n13.00 - 16.00',
+        keterangan: 'OPERASIONAL\nISTIRAHAT\nOPERASIONAL',
+        jam_mulai: '08.00', jam_selesai: '16.00', jam_istirahat: '12.00-13.00', jam_briefing: '',
+      },
+      {
+        hari: 'SABTU',
+        jam: '08.00 - 12.00\n12.00',
+        keterangan: 'OPERASIONAL\nTUTUP',
+        jam_mulai: '08.00', jam_selesai: '12.00', jam_istirahat: '', jam_briefing: '',
+      },
+    ]
+    upd({ jam_kerja: sampleJam })
+  }
 
   // ── Area Cabang ───────────────────────────────────────────────────────── //
   const updArea = (i: number, patch: Partial<AreaCabang>) => {
@@ -492,6 +535,67 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
           Jam yang bentrok atau mundur otomatis tidak bisa dipilih.
           Menambah hari baru akan menyalin jadwal hari sebelumnya.
         </p>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0.75rem 0 0.5rem' }}>
+          <strong style={{ fontSize: '0.88rem', color: 'var(--ink)' }}>Editor Tabel Jadwal Operasional PKL</strong>
+          <button
+            type="button"
+            onClick={() => setShowContohJamKerja(v => !v)}
+            style={{ fontSize: '0.75rem', color: 'var(--green-700)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+          >
+            {showContohJamKerja ? '↑ Sembunyikan contoh tabel (.docx)' : 'Lihat contoh tabel (.docx)'}
+          </button>
+        </div>
+
+        {showContohJamKerja && (
+          <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: 8, padding: '0.85rem 1rem', marginBottom: '1rem', fontSize: '0.85rem', color: '#334155', lineHeight: 1.5 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.6rem' }}>
+              <strong style={{ color: '#0f172a' }}>
+                📄 Pratinjau Tampilan Tabel Jam Kerja di Dokumen MS Word (.docx):
+              </strong>
+              <button
+                type="button"
+                className="btn-sm btn-outline"
+                onClick={handleApplySampleJamKerja}
+                style={{ fontSize: '0.78rem', padding: '0.25rem 0.6rem', color: 'var(--green-700)', borderColor: 'var(--green-600)', fontWeight: 600, background: '#ffffff' }}
+              >
+                + Gunakan Contoh Jadwal Ini (Senin–Sabtu)
+              </button>
+            </div>
+
+            {/* Simulated DOCX Table */}
+            <div style={{ background: '#ffffff', border: '1px solid #000000', padding: '0.6rem', margin: '0.5rem 0', fontFamily: '"Times New Roman", serif', fontSize: '10pt', color: '#000000' }}>
+              <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '0.4rem', textTransform: 'uppercase' }}>
+                Tabel 2.1 Jadwal Kerja Operasional Perusahaan
+              </div>
+              <table style={{ width: '100%', borderCollapse: 'collapse', border: '1.5px solid #000000', fontSize: '9.5pt' }}>
+                <thead>
+                  <tr style={{ background: '#f2f2f2' }}>
+                    <th style={{ border: '1px solid #000000', padding: '5px 6px', textAlign: 'center', width: '25%' }}>HARI</th>
+                    <th style={{ border: '1px solid #000000', padding: '5px 6px', textAlign: 'center', width: '35%' }}>JAM KERJA</th>
+                    <th style={{ border: '1px solid #000000', padding: '5px 6px', textAlign: 'center', width: '40%' }}>KETERANGAN</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style={{ border: '1px solid #000000', padding: '5px 6px', fontWeight: 'bold', textAlign: 'center', verticalAlign: 'middle' }}>SENIN – JUMAT</td>
+                    <td style={{ border: '1px solid #000000', padding: '5px 6px', textAlign: 'center' }}>08.00 – 12.00<br />12.00 – 13.00<br />13.00 – 16.00</td>
+                    <td style={{ border: '1px solid #000000', padding: '5px 6px', textAlign: 'center' }}>OPERASIONAL<br />ISTIRAHAT<br />OPERASIONAL</td>
+                  </tr>
+                  <tr>
+                    <td style={{ border: '1px solid #000000', padding: '5px 6px', fontWeight: 'bold', textAlign: 'center', verticalAlign: 'middle' }}>SABTU</td>
+                    <td style={{ border: '1px solid #000000', padding: '5px 6px', textAlign: 'center' }}>08.00 – 12.00<br />12.00</td>
+                    <td style={{ border: '1px solid #000000', padding: '5px 6px', textAlign: 'center' }}>OPERASIONAL<br />TUTUP</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p style={{ marginTop: '0.4rem', marginBottom: 0, fontSize: '0.78rem', color: '#475569', fontStyle: 'italic' }}>
+              * Di dokumen Word (.docx), jam kerja akan tercetak otomatis menjadi tabel rapi bertingkat dengan font Times New Roman seperti di atas.
+            </p>
+          </div>
+        )}
 
         <div className="table-scroll">
           <table className="fill-table">
