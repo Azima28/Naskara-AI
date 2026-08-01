@@ -309,7 +309,7 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
         ("KATA PENGANTAR", "kata_pengantar", 1, "v"),
     ]
 
-    page_estimates = {1: 1, 2: 4, 3: 7, 4: 10, 5: 16, 6: 20}
+    page_estimates = {1: 1, 2: 4, 3: 6, 4: 8, 5: 15, 6: 17}
     current_page = 1
     sub_count_in_bab = 0
 
@@ -320,9 +320,9 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
             current_page = page_estimates.get(bab_num, max(current_page + 1, bab_num * 3))
             sub_count_in_bab = 0
         elif "DAFTAR PUSTAKA" in text.upper():
-            current_page = max(current_page + 1, 22)
+            current_page = max(current_page + 1, 18)
         elif "LAMPIRAN" in text.upper():
-            current_page = max(current_page + 1, 23)
+            current_page = max(current_page + 1, 19)
         else:
             if level == 2:
                 sub_count_in_bab += 1
