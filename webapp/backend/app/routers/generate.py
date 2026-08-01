@@ -134,7 +134,10 @@ def _parse_numbered_list(text: Any) -> list[str]:
         if not s:
             continue
         cleaned = re.sub(r"^\d+\.\s*", "", s)
+        cleaned = cleaned.rstrip(";").strip()
         if cleaned:
+            if not cleaned.endswith("."):
+                cleaned += "."
             items.append(cleaned)
     return items
 

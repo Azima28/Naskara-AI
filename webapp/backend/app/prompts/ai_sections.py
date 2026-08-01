@@ -340,7 +340,7 @@ Instruksi:
 1. Rapikan tiap poin menjadi 1 KALIMAT ATURAN PENDEK BAHASA INDONESIA BAKU (maksimal 10-15 kata per poin).
 2. Setiap poin harus diawali kata kerja imperatif formal:
    "Mematuhi...", "Melaksanakan...", "Tidak diperkenankan...", "Wajib...", dst.
-3. Akhiri setiap poin dengan tanda titik koma (;) kecuali poin terakhir pakai titik (.).
+3. Akhiri setiap poin dengan tanda titik (.).
 4. Jika ada poin yang sama atau sangat mirip, gabungkan menjadi 1 poin.
 
 FORMAT OUTPUT WAJIB - HANYA DAFTAR POIN RINGKAS YANG SUDAH DIRAPIKAN, SATU PER BARIS:

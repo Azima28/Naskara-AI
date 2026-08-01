@@ -1262,13 +1262,13 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
     #     Sub-sub: a) Waktu Kerja, b) Tata Tertib Karyawan, c) Khusus
     # ------------------------------------------------------------------ #
     OFFICIAL_SMKN4_TATA_TERTIB = [
-        "Mematuhi aturan dan tata tertib yang berlaku di industri;",
-        "Melaksanakan kegiatan PKL sesuai jam kerja yang berlaku di industri;",
-        "Memberi tahu pembimbing jika sakit dan dibuktikan dengan surat keterangan sakit dari dokter;",
-        "Tidak mengaktifkan \"handphone/smartphone\" selama jam bekerja;",
-        "Tidak diperkenankan minta izin dengan alasan keperluan sekolah kecuali ada surat resmi dari sekolah;",
-        "Pakaian rapi, rambut tidak gondrong. Jenis pakaian sesuai dengan ketentuan industri;",
-        "Membawa alat keselamatan kerja (kecuali jika sudah disediakan oleh industri/instansi) dan senantiasa menerapkannya selama bekerja;",
+        "Mematuhi aturan dan tata tertib yang berlaku di industri.",
+        "Melaksanakan kegiatan PKL sesuai jam kerja yang berlaku di industri.",
+        "Memberi tahu pembimbing jika sakit dan dibuktikan dengan surat keterangan sakit dari dokter.",
+        "Tidak mengaktifkan \"handphone/smartphone\" selama jam bekerja.",
+        "Tidak diperkenankan minta izin dengan alasan keperluan sekolah kecuali ada surat resmi dari sekolah.",
+        "Pakaian rapi, rambut tidak gondrong. Jenis pakaian sesuai dengan ketentuan industri.",
+        "Membawa alat keselamatan kerja (kecuali jika sudah disediakan oleh industri/instansi) dan senantiasa menerapkannya selama bekerja.",
         "Menerapkan etika dalam bersosialisasi dengan lingkungan kerja."
     ]
     jam_kerja = data.get("jam_kerja") or profil.get("jam_kerja") or []
@@ -1304,8 +1304,10 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
         or f"Berikut adalah tata tertib dan kewajiban karyawan {nama_prsh}:"
     )
     for i, tt in enumerate(OFFICIAL_SMKN4_TATA_TERTIB, 1):
-        clean_tt = tt.strip()
+        clean_tt = tt.strip().rstrip(";").strip()
         if clean_tt:
+            if not clean_tt.endswith("."):
+                clean_tt += "."
             clean_tt = clean_tt[0].upper() + clean_tt[1:]
         builder.add_numbered(clean_tt, i)
 
@@ -1314,8 +1316,10 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
         tt_sub += 1
         builder.add_sub_heading_3(f"{_LETTERS[tt_sub - 1]}. Tata Tertib Khusus {nama_prsh}")
         for i, tt in enumerate(tt_perusahaan, 1):
-            clean_tt = (_ensure_str(tt) if not isinstance(tt, str) else tt).strip()
+            clean_tt = (_ensure_str(tt) if not isinstance(tt, str) else tt).strip().rstrip(";").strip()
             if clean_tt:
+                if not clean_tt.endswith("."):
+                    clean_tt += "."
                 clean_tt = clean_tt[0].upper() + clean_tt[1:]
             builder.add_numbered(clean_tt, i)
 
