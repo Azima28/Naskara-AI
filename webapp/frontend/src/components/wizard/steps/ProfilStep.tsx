@@ -231,12 +231,13 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
   const jurusanExample = getJurusanExample(ctx.siswa?.jurusan_key || ctx.siswa?.jurusan)
   const contohCabang = jurusanExample.contohCabang
 
-  const [isMultiBranch, setIsMultiBranch] = useState<boolean>(() => {
+  const [isMultiBranch, setIsMultiBranch] = useState<boolean | null>(() => {
     const ac = pr.area_cabang || []
     if (ac.length > 1) return true
     if (ac[0]?.nama_area?.trim()) return true
     if (ac[0]?.cabang && ac[0].cabang.length > 1) return true
-    return false
+    if (ac[0]?.cabang && ac[0].cabang[0]?.nama?.trim()) return false
+    return null
   })
 
   const [showContohCabang, setShowContohCabang] = useState(false)
@@ -403,52 +404,116 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
         />
 
         {/* Pertanyaan Sederhana: 1 Tempat vs Multi Cabang */}
-        <div style={{ marginTop: '1.25rem', padding: '1rem 1.1rem', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '10px' }}>
-          <label style={{ fontSize: '0.9rem', fontWeight: 600, color: '#0f172a', display: 'block', marginBottom: '0.6rem' }}>
-            Apakah tempat PKL kamu memiliki lebih dari 1 lokasi / cabang perusahaan? <span style={{ color: '#ef4444' }}>*</span>
+        <div style={{ marginTop: '1.25rem', padding: 'clamp(0.65rem, 3vw, 1rem)', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '10px', width: '100%', boxSizing: 'border-box' }}>
+          <label style={{ fontSize: '0.9rem', fontWeight: 600, color: '#0f172a', display: 'block', marginBottom: '0.65rem' }}>
+            Apakah tempat PKL kamu memiliki lebih dari 1 lokasi / cabang perusahaan? <span style={{ color: '#ef4444' }}>* (Wajib Pilih)</span>
           </label>
 
-          <div style={{ display: 'flex', gap: '1.25rem', marginBottom: '0.85rem', flexWrap: 'wrap' }}>
-            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.88rem', fontWeight: !isMultiBranch ? 600 : 400 }}>
-              <input
-                type="radio"
-                name="isMultiBranch"
-                checked={!isMultiBranch}
-                onChange={() => {
-                  setIsMultiBranch(false)
-                  const currentCabangName = pr.area_cabang?.[0]?.cabang?.[0]?.nama || ctx.perusahaan?.nama_lengkap || ctx.perusahaan?.nama || ''
-                  upd({
-                    area_cabang: [
-                      {
-                        nama_area: '',
-                        cabang: [{ nama: currentCabangName }]
-                      }
-                    ]
-                  })
-                }}
-              />
-              <span>Tidak (Hanya 1 lokasi / toko / studio / hotel / kantor)</span>
-            </label>
+          {/* Large Interactive Selection Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.75rem', marginBottom: '0.85rem' }}>
+            {/* Card 1: Tidak (1 Tempat PKL) */}
+            <div
+              onClick={() => {
+                setIsMultiBranch(false)
+                const currentCabangName = pr.area_cabang?.[0]?.cabang?.[0]?.nama || ctx.perusahaan?.nama_lengkap || ctx.perusahaan?.nama || ''
+                upd({
+                  area_cabang: [
+                    {
+                      nama_area: '',
+                      cabang: [{ nama: currentCabangName }]
+                    }
+                  ]
+                })
+              }}
+              style={{
+                padding: '0.85rem 0.95rem',
+                borderRadius: '8px',
+                border: isMultiBranch === false ? '2px solid var(--green-600, #187257)' : '1.5px solid var(--line, #cbd5e1)',
+                background: isMultiBranch === false ? 'var(--green-50, #f0fdf4)' : '#ffffff',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+                boxSizing: 'border-box',
+                width: '100%',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <input
+                    type="radio"
+                    name="isMultiBranchChoice"
+                    checked={isMultiBranch === false}
+                    onChange={() => {}}
+                    style={{ width: '18px', height: '18px', accentColor: 'var(--green-600)', cursor: 'pointer' }}
+                  />
+                  <strong style={{ fontSize: '0.88rem', color: isMultiBranch === false ? 'var(--green-800, #114e3b)' : 'var(--ink)' }}>
+                    🟢 Tidak (Hanya 1 Lokasi PKL)
+                  </strong>
+                </div>
+                {isMultiBranch === false && (
+                  <span style={{ fontSize: '0.72rem', background: 'var(--green-600)', color: '#ffffff', padding: '2px 8px', borderRadius: '999px', fontWeight: 600 }}>
+                    ✓ Terpilih
+                  </span>
+                )}
+              </div>
+              <p style={{ margin: 0, fontSize: '0.78rem', color: isMultiBranch === false ? 'var(--green-700)' : '#6b7280', lineHeight: 1.4, paddingLeft: '1.6rem' }}>
+                Toko, studio, hotel, dapur, restoran, kantor notaris, atau instansi biasa tanpa cabang/wilayah area.
+              </p>
+            </div>
 
-            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.88rem', fontWeight: isMultiBranch ? 600 : 400 }}>
-              <input
-                type="radio"
-                name="isMultiBranch"
-                checked={isMultiBranch}
-                onChange={() => {
-                  setIsMultiBranch(true)
-                  if (!pr.area_cabang || pr.area_cabang.length === 0) {
-                    upd({ area_cabang: [emptyAreaCabang()] })
-                  }
-                }}
-              />
-              <span>Ya (Punya banyak cabang / kelompok area)</span>
-            </label>
+            {/* Card 2: Ya (Banyak Cabang) */}
+            <div
+              onClick={() => {
+                setIsMultiBranch(true)
+                if (!pr.area_cabang || pr.area_cabang.length === 0) {
+                  upd({ area_cabang: [emptyAreaCabang()] })
+                }
+              }}
+              style={{
+                padding: '0.85rem 0.95rem',
+                borderRadius: '8px',
+                border: isMultiBranch === true ? '2px solid var(--green-600, #187257)' : '1.5px solid var(--line, #cbd5e1)',
+                background: isMultiBranch === true ? 'var(--green-50, #f0fdf4)' : '#ffffff',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+                boxSizing: 'border-box',
+                width: '100%',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <input
+                    type="radio"
+                    name="isMultiBranchChoice"
+                    checked={isMultiBranch === true}
+                    onChange={() => {}}
+                    style={{ width: '18px', height: '18px', accentColor: 'var(--green-600)', cursor: 'pointer' }}
+                  />
+                  <strong style={{ fontSize: '0.88rem', color: isMultiBranch === true ? 'var(--green-800, #114e3b)' : 'var(--ink)' }}>
+                    🏢 Ya (Punya Banyak Cabang / Area)
+                  </strong>
+                </div>
+                {isMultiBranch === true && (
+                  <span style={{ fontSize: '0.72rem', background: 'var(--green-600)', color: '#ffffff', padding: '2px 8px', borderRadius: '999px', fontWeight: 600 }}>
+                    ✓ Terpilih
+                  </span>
+                )}
+              </div>
+              <p style={{ margin: 0, fontSize: '0.78rem', color: isMultiBranch === true ? 'var(--green-700)' : '#6b7280', lineHeight: 1.4, paddingLeft: '1.6rem' }}>
+                Perusahaan besar dengan banyak cabang atau pembagian kelompok wilayah area (seperti Bank, BUMN, Multifinance).
+              </p>
+            </div>
           </div>
 
+          {/* NOTICE WHEN NONE IS SELECTED YET */}
+          {isMultiBranch === null && (
+            <div style={{ background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: '6px', padding: '0.65rem 0.85rem', fontSize: '0.82rem', color: '#92400e' }}>
+              💡 <strong>Pilih salah satu kondisi di atas</strong> untuk membuka formulir lokasi tempat PKL kamu.
+            </div>
+          )}
+
           {/* OPSI 1: HANYA 1 LOKASI (SINGLE INPUT - SUPER SIMPLE) */}
-          {!isMultiBranch && (
-            <div style={{ background: '#ffffff', padding: '0.85rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
+          {isMultiBranch === false && (
+            <div style={{ background: '#ffffff', padding: '0.85rem clamp(0.6rem, 2.5vw, 1rem)', borderRadius: '8px', border: '1px solid #cbd5e1', boxSizing: 'border-box', width: '100%' }}>
               <TextField
                 label="Nama / Alamat Lokasi Tempat Kamu PKL"
                 value={pr.area_cabang?.[0]?.cabang?.[0]?.nama || ''}
@@ -470,8 +535,8 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
           )}
 
           {/* OPSI 2: BANYAK CABANG / BER-AREA (MULTI CABANG ENGINE) */}
-          {isMultiBranch && (
-            <div style={{ background: '#ffffff', padding: '0.85rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', marginTop: '0.5rem' }}>
+          {isMultiBranch === true && (
+            <div style={{ background: '#ffffff', padding: '0.85rem clamp(0.6rem, 2.5vw, 1rem)', borderRadius: '8px', border: '1px solid #cbd5e1', marginTop: '0.5rem', boxSizing: 'border-box', width: '100%' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                 <span style={{ fontSize: '0.84rem', fontWeight: 600, color: 'var(--green-700)' }}>
                   Kelola Daftar Cabang &amp; Wilayah Area ({jurusanExample.label})
