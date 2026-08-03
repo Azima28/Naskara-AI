@@ -1653,8 +1653,8 @@ def compute_toc_page_numbers_libreoffice(docx_path: str, sec_list: list[tuple[st
                 txt_raw = pdf_doc[p - 1].get_text("text")
                 txt_clean = re.sub(r"\s+", " ", txt_raw).upper()
                 if "BAB I" in txt_clean and ("PENDAHULUAN" in txt_clean or "LATAR BELAKANG" in txt_clean):
-                    # Jika kata DAFTAR ISI ada di halaman ini, abaikan jika p <= 5 (halaman TOC sendiri)
-                    if "DAFTAR ISI" in txt_clean and p <= 5:
+                    # Jika kata DAFTAR ISI ada di halaman ini, abaikan (itu tabel DAFTAR ISI sendiri)
+                    if "DAFTAR ISI" in txt_clean:
                         continue
                     bab1_page = p
                     break
@@ -1810,9 +1810,9 @@ def compute_toc_page_numbers(docx_path: str, sec_list: list[tuple[str, str, int,
     # 2. Jika di Linux/Docker, panggil LibreOffice (hanya jika hasilnya wajar & presisi)
     lo_pages = compute_toc_page_numbers_libreoffice(docx_path, sec_list=sec_list)
     if lo_pages:
-        # Verifikasi bahwa hasil LibreOffice wajar (BAB II tidak melompat ke halaman 20+)
+        # Verifikasi bahwa hasil LibreOffice wajar (BAB II harus di kisaran halaman 5 s/d 9)
         bab2_pg = int(lo_pages.get("bab_2", 999))
-        if bab2_pg <= 15:
+        if 5 <= bab2_pg <= 9:
             return lo_pages
 
     # 3. Fallback ke kalkulator Python cerdas yang sudah terkalibrasi persis MS Word (35 baris/hal)
