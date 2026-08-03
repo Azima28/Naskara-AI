@@ -1635,7 +1635,7 @@ def compute_toc_page_numbers_libreoffice(docx_path: str, sec_list: list[tuple[st
     pdf_path = os.path.splitext(os.path.abspath(docx_path))[0] + ".pdf"
 
     try:
-        # Jalankan LibreOffice headless update
+        # Jalankan LibreOffice headless update & konversi PDF
         cmd = [soffice_bin, "--headless", "--convert-to", "pdf", os.path.abspath(docx_path)]
         res = subprocess.run(cmd, capture_output=True, timeout=45, cwd=os.path.dirname(os.path.abspath(docx_path)))
         if res.returncode != 0 or not os.path.exists(pdf_path):
@@ -1647,15 +1647,29 @@ def compute_toc_page_numbers_libreoffice(docx_path: str, sec_list: list[tuple[st
             pdf_doc = fitz.open(pdf_path)
             total_pdf_pages = len(pdf_doc)
 
-            # 1. Cari halaman PDF di mana BAB I PENDAHULUAN dimulai (bukan di halaman Daftar Isi)
+            # 1. Cari halaman PDF tempat BAB I PENDAHULUAN berada (halaman awal Body Matter)
             bab1_page = None
             for p in range(1, total_pdf_pages + 1):
-                txt = pdf_doc[p - 1].get_text("text")
-                if "BAB I" in txt.upper() and "PENDAHULUAN" in txt.upper() and "DAFTAR ISI" not in txt.upper():
+                txt_raw = pdf_doc[p - 1].get_text("text")
+                txt_clean = re.sub(r"\s+", " ", txt_raw).upper()
+                if "BAB I" in txt_clean and ("PENDAHULUAN" in txt_clean or "LATAR BELAKANG" in txt_clean):
+                    # Jika kata DAFTAR ISI ada di halaman ini, abaikan jika p <= 5 (halaman TOC sendiri)
+                    if "DAFTAR ISI" in txt_clean and p <= 5:
+                        continue
                     bab1_page = p
                     break
 
-            if bab1_page and sec_list:
+            if not bab1_page:
+                for p in range(1, total_pdf_pages + 1):
+                    txt_clean = re.sub(r"\s+", " ", pdf_doc[p - 1].get_text("text")).upper()
+                    if "LATAR BELAKANG" in txt_clean and p >= 4:
+                        bab1_page = p
+                        break
+
+            if not bab1_page:
+                bab1_page = 6  # Fallback default halaman BAB I
+
+            if sec_list:
                 for item in sec_list:
                     text = item[0]
                     bookmark = item[1]
@@ -1663,15 +1677,16 @@ def compute_toc_page_numbers_libreoffice(docx_path: str, sec_list: list[tuple[st
                         continue
 
                     search_key = re.sub(r"\s+", " ", text).strip()
-                    if len(search_key) > 25:
-                        search_key = search_key[:25]
+                    clean_title = re.sub(r"^\d+(\.\d+)*\s*", "", search_key).strip()
 
                     found_page = None
                     for p in range(1, total_pdf_pages + 1):
-                        p_text = re.sub(r"\s+", " ", pdf_doc[p - 1].get_text("text")).strip()
-                        if search_key.upper() in p_text.upper():
-                            # Hindari matching di halaman DAFTAR ISI sendiri
-                            if "DAFTAR ISI" in p_text.upper() and p < (bab1_page or 5):
+                        p_text = re.sub(r"\s+", " ", pdf_doc[p - 1].get_text("text")).upper()
+                        sk_up = search_key.upper()
+                        ct_up = clean_title.upper()
+
+                        if (sk_up in p_text) or (len(ct_up) >= 5 and ct_up in p_text):
+                            if "DAFTAR ISI" in p_text and p < bab1_page:
                                 continue
                             found_page = p
                             break
