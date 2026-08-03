@@ -1726,11 +1726,31 @@ def compute_toc_page_numbers_libreoffice(docx_path: str, sec_list: list[tuple[st
 
 
 def compute_toc_page_numbers(docx_path: str, sec_list: list[tuple[str, str, int, str]] | None = None) -> dict[str, str]:
-    """Tidak lagi menggunakan engine eksternal (MS Word COM / LibreOffice).
-
-    Semua kalkulasi halaman dilakukan 100% oleh Python Calculator di _generate_sections_list()
-    sehingga hasil DIJAMIN IDENTIK di Windows Laptop maupun Docker Linux.
+    """Hitung nomor halaman fisik 100% presisi menggunakan LibreOffice Headless (di Linux/Docker)
+    atau fallback ke MS Word COM (di Windows).
     """
+    # 1. Coba LibreOffice (otomatis aktif di Docker Linux di mana LibreOffice & PyMuPDF terpasang)
+    try:
+        pages = compute_toc_page_numbers_libreoffice(docx_path, sec_list)
+        if pages:
+            print(f"[TOC-ENGINE] Menggunakan LibreOffice PDF Headless Page Extractor: {pages}")
+            return pages
+    except Exception as e:
+        print(f"[TOC-ENGINE] LibreOffice extractor bypassed/failed: {e}")
+
+    # 2. Fallback jika ada MS Word COM (Windows Local)
+    try:
+        import win32com.client
+        word = win32com.client.Dispatch("Word.Application")
+        word.Visible = False
+        doc = word.Documents.Open(os.path.abspath(docx_path))
+        doc.Fields.Update()
+        doc.Save()
+        doc.Close()
+        word.Quit()
+    except Exception:
+        pass
+
     return {}
 
 
