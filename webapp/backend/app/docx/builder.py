@@ -1670,6 +1670,8 @@ def compute_toc_page_numbers_libreoffice(docx_path: str, sec_list: list[tuple[st
                 bab1_page = 6  # Fallback default halaman BAB I
 
             if sec_list:
+                # Pisahkan pencarian Front Matter (< bab1_page) & Body Matter (>= bab1_page)
+                # agar pencarian judul TIDAK pernah memicu teks di dalam tabel DAFTAR ISI sendiri!
                 for item in sec_list:
                     text = item[0]
                     bookmark = item[1]
@@ -1680,14 +1682,22 @@ def compute_toc_page_numbers_libreoffice(docx_path: str, sec_list: list[tuple[st
                     clean_title = re.sub(r"^\d+(\.\d+)*\s*", "", search_key).strip()
 
                     found_page = None
-                    for p in range(1, total_pdf_pages + 1):
+
+                    # Cek apakah bookmark ini Front Matter (Pengesahan, Identitas, Kata Pengantar)
+                    is_front = bookmark in ("peng_industri", "peng_sekolah", "id_siswa", "id_industri", "kata_pengantar") or bookmark.startswith("peng_") or bookmark.startswith("id_")
+
+                    if is_front:
+                        search_range = range(1, bab1_page)
+                    else:
+                        # Body Matter (BAB I - VI, Daftar Pustaka, Lampiran) — cari MULAI dari bab1_page!
+                        search_range = range(bab1_page, total_pdf_pages + 1)
+
+                    for p in search_range:
                         p_text = re.sub(r"\s+", " ", pdf_doc[p - 1].get_text("text")).upper()
                         sk_up = search_key.upper()
                         ct_up = clean_title.upper()
 
                         if (sk_up in p_text) or (len(ct_up) >= 5 and ct_up in p_text):
-                            if "DAFTAR ISI" in p_text and p < bab1_page:
-                                continue
                             found_page = p
                             break
 
