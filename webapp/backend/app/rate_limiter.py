@@ -16,6 +16,17 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
 
+def _is_trusted_proxy(host: str) -> bool:
+    if not host:
+        return False
+    return (
+        host in ("127.0.0.1", "::1", "localhost")
+        or host.startswith("172.")
+        or host.startswith("10.")
+        or host.startswith("192.168.")
+    )
+
+
 class RateLimiterMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, default_limit: int = 60, window_seconds: int = 60):
         super().__init__(app)
@@ -34,12 +45,14 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
         }
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
-        client_ip = request.client.host if request.client else "127.0.0.1"
+        direct_ip = request.client.host if request.client else "127.0.0.1"
 
-        # Support X-Forwarded-For jika di belakang Cloudflare / Nginx
+        # Hanya percayai X-Forwarded-For jika koneksi langsung berasal dari trusted proxy (localhost/internal net)
         forwarded_for = request.headers.get("x-forwarded-for")
-        if forwarded_for:
+        if forwarded_for and _is_trusted_proxy(direct_ip):
             client_ip = forwarded_for.split(",")[0].strip()
+        else:
+            client_ip = direct_ip
 
         now = time.time()
         path = request.url.path

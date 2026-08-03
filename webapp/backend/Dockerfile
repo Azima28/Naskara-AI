@@ -31,8 +31,12 @@ COPY examples /app/examples
 # Copy all backend application code
 COPY webapp/backend /app/webapp/backend
 
-# Ensure uploads and output directories exist
-RUN mkdir -p /app/webapp/uploads /app/webapp/output
+# Ensure uploads and output directories exist and configure non-root user
+RUN mkdir -p /app/webapp/uploads /app/webapp/output \
+    && groupadd -r appgroup && useradd -r -g appgroup -d /app appuser \
+    && chown -R appuser:appgroup /app
+
+USER appuser
 
 WORKDIR /app/webapp/backend
 

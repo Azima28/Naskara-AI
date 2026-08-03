@@ -2,10 +2,11 @@
 """
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.orm import Session
 
+from ..config import settings
 from ..db import get_db
 from ..dependencies import get_current_user
 from ..models import User
@@ -20,7 +21,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 class RegisterIn(BaseModel):
     email: EmailStr
     name: str = Field(default="", max_length=255)
-    password: str = Field(min_length=6, max_length=128)
+    password: str = Field(min_length=8, max_length=128)
 
 
 class LoginIn(BaseModel):
@@ -46,7 +47,7 @@ class TokenOut(BaseModel):
 #  Endpoints                                                                   #
 # --------------------------------------------------------------------------- #
 @router.post("/register", response_model=TokenOut, status_code=status.HTTP_201_CREATED)
-def register(payload: RegisterIn, db: Session = Depends(get_db)) -> TokenOut:
+def register(payload: RegisterIn, response: Response, db: Session = Depends(get_db)) -> TokenOut:
     existing = db.query(User).filter(User.email == payload.email.lower()).first()
     if existing:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email sudah terdaftar.")
@@ -61,16 +62,30 @@ def register(payload: RegisterIn, db: Session = Depends(get_db)) -> TokenOut:
     db.refresh(user)
 
     token = create_access_token(subject=user.id, extra={"email": user.email})
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        samesite="lax",
+        max_age=settings.access_token_expire_minutes * 60,
+    )
     return TokenOut(access_token=token, user=UserOut.model_validate(user))
 
 
 @router.post("/login", response_model=TokenOut)
-def login(payload: LoginIn, db: Session = Depends(get_db)) -> TokenOut:
+def login(payload: LoginIn, response: Response, db: Session = Depends(get_db)) -> TokenOut:
     user = db.query(User).filter(User.email == payload.email.lower()).first()
     if not user or not verify_password(payload.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Email atau password salah.")
 
     token = create_access_token(subject=user.id, extra={"email": user.email})
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        samesite="lax",
+        max_age=settings.access_token_expire_minutes * 60,
+    )
     return TokenOut(access_token=token, user=UserOut.model_validate(user))
 
 

@@ -2,7 +2,7 @@
 """
 from __future__ import annotations
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
@@ -15,21 +15,24 @@ _bearer = HTTPBearer(auto_error=False)
 
 
 def get_current_user(
+    request: Request,
     creds: HTTPAuthorizationCredentials | None = Depends(_bearer),
     db: Session = Depends(get_db),
 ) -> User:
-    """Decode JWT dari header Authorization & ambil user dari DB.
+    """Decode JWT dari header Authorization atau HttpOnly cookie access_token & ambil user dari DB.
 
     Dipakai sebagai dependency untuk semua endpoint yang butuh login.
     """
-    if creds is None or not creds.credentials:
+    token = creds.credentials if creds and creds.credentials else request.cookies.get("access_token")
+
+    if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token tidak ditemukan. Silakan login.",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    payload = decode_token(creds.credentials)
+    payload = decode_token(token)
     if payload is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

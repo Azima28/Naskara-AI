@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     # App
     app_name: str = "Naskara AI"
     debug: bool = False
+    environment: str = "development"
     frontend_origin: str = "http://localhost:5173"
 
     # Database

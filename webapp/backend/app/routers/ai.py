@@ -198,14 +198,12 @@ async def draft_section(
 
         except Exception as e:
             # Provider gagal/error (500, timeout, mati)
-            err_msg = str(e)
-            print(f"[AI Provider Error] section={key}: {err_msg}")
+            print(f"[AI Provider Error] section={key}: {type(e).__name__}")
             raise HTTPException(
                 status_code=503,
                 detail={
-                    "message": f"Sistem AI mengalami kendala ({err_msg}). Bagian lain yang telah berhasil dibuat tetap tersimpan aman — Anda dapat melanjutkan bagian ini nanti.",
+                    "message": "Sistem AI mengalami kendala. Bagian lain yang telah berhasil dibuat tetap tersimpan aman — Anda dapat melanjutkan bagian ini nanti.",
                     "section_key": key,
-                    "technical_error": err_msg,
                     "retryable": True,
                 },
             )
@@ -460,15 +458,14 @@ async def test_ai_connection(
     """Diagnostic endpoint to test connection to local AI 9router/OpenCode."""
     provider = get_ai_provider()
     try:
-        res = await provider.generate("Kamu adalah asisten tes.", "Jawab kata 'OK'.")
+        await provider.generate("Kamu adalah asisten tes.", "Jawab kata 'OK'.")
         return {
             "status": "ok",
-            "message": "Koneksi ke AI Provider 9router/OpenCode Berhasil!",
-            "response": res,
+            "message": "Koneksi ke AI Provider Berhasil!",
         }
     except Exception as e:
+        print("[AI Test Connection Error]:", type(e).__name__)
         return {
             "status": "error",
             "message": "Gagal terhubung ke AI Provider.",
-            "error_detail": str(e),
         }

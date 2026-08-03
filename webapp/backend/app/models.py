@@ -31,7 +31,7 @@ class User(Base):
     # passlib hash (bcrypt).
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     created_at: Mapped[dt.datetime] = mapped_column(
-        DateTime, default=dt.datetime.utcnow, nullable=False
+        DateTime, default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False
     )
 
     drafts: Mapped[list["Draft"]] = relationship(
@@ -51,10 +51,10 @@ class Draft(Base):
     # PklContext utuh (18-key) sebagai dict → JSON column.
     data_json: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
     created_at: Mapped[dt.datetime] = mapped_column(
-        DateTime, default=dt.datetime.utcnow, nullable=False
+        DateTime, default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False
     )
     updated_at: Mapped[dt.datetime] = mapped_column(
-        DateTime, default=dt.datetime.utcnow, onupdate=dt.datetime.utcnow, nullable=False
+        DateTime, default=lambda: dt.datetime.now(dt.timezone.utc), onupdate=lambda: dt.datetime.now(dt.timezone.utc), nullable=False
     )
 
     user: Mapped["User"] = relationship(back_populates="drafts")

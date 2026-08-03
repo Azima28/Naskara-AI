@@ -103,9 +103,9 @@ class OpenAICompatibleProvider(AIProvider):
                     break
 
                 except httpx.HTTPStatusError as e:
-                    print(f"[AI Provider Status Error {e.response.status_code}] URL: {endpoint} Text: {e.response.text}")
+                    print(f"[AI Provider Status Error {e.response.status_code}] URL: {endpoint}")
                     if e.response.status_code < 500:
-                        raise RuntimeError(f"AI Provider client error ({e.response.status_code}): {e.response.text[:200]}")
+                        raise RuntimeError(f"AI Provider client error ({e.response.status_code})")
                     last_error = e
 
                 except httpx.TimeoutException as e:

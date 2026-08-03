@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -20,7 +20,11 @@ async def lifespan(app: FastAPI):
     # Startup
     ensure_runtime_dirs()
     init_db()
-    if settings.secret_key == "ganti-saya-jadi-string-acak-panjang":
+    insecure_keys = {"ganti-saya-jadi-string-acak-panjang", "dev_secret", "secret", "change_me_in_production", "supersecret"}
+    if settings.environment.lower() in ("production", "prod"):
+        if settings.secret_key in insecure_keys:
+            raise RuntimeError("FATAL [SECURITY]: Insecure SECRET_KEY configured in production environment! Please set a strong SECRET_KEY in .env.")
+    elif settings.secret_key in insecure_keys:
         print("⚠️ WARNING [SECURITY]: secret_key menggunakan nilai default! Ubah SECRET_KEY di .env untuk lingkungan produksi.")
     yield
     # Shutdown: tidak ada yang perlu dibersihkan (SQLite file-based).
@@ -34,6 +38,16 @@ app = FastAPI(
     lifespan=lifespan,
     debug=settings.debug,
 )
+
+# Security Headers Middleware
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
 
 # Proteksi DDoS L7 & Brute Force Rate Limiter
 app.add_middleware(RateLimiterMiddleware, default_limit=60, window_seconds=60)

@@ -16,7 +16,7 @@ from ..config import UPLOADS_DIR
 
 router = APIRouter(prefix="/assets", tags=["assets"])
 
-ALLOWED_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg'}
+ALLOWED_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp'}
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 ASSETS_DIR = UPLOADS_DIR / "assets"
 

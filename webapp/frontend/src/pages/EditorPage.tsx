@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import { getDraft, updateDraft, generateDocx, draftSectionStream, regenerateSection } from '@/api/client'
-import AntiAIHighlighter from '@/components/editor/AntiAIHighlighter'
 import DocumentOutline from '@/components/editor/DocumentOutline'
 import RequestionPanel, { type GenerateIssue, type Requestion } from '@/components/RequestionPanel'
 import NotificationModal from '@/components/common/NotificationModal'
@@ -879,20 +878,7 @@ function SectionEditor({
             )}
           </div>
 
-          {/* Fitur Saran Penulisan Natural (Anti-AI) nonaktif sementara atas permintaan user */}
-          {false && !disabled && !isBatchGenerating && (
-            <AntiAIHighlighter
-              text={textValue}
-              onReplace={(newText) => {
-                if (isArrayType) {
-                  const lines = newText.split('\n').map((l) => l.replace(/^-\s*/, '').trim()).filter(Boolean)
-                  onChange(lines)
-                } else {
-                  onChange(newText)
-                }
-              }}
-            />
-          )}
+          {/* Anti-AI Highlighter Component */}
         </>
       )}
 

@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.attributes import flag_modified
 
 from ..db import get_db
 from ..dependencies import get_current_user
@@ -135,7 +136,8 @@ def update_draft(draft_id: str, payload: DraftUpdate, current: User = Depends(ge
         new_data["generated_sections"] = merged_gen
 
         draft.data_json = new_data
-        draft.updated_at = dt.datetime.utcnow()
+        flag_modified(draft, "data_json")
+        draft.updated_at = dt.datetime.now(dt.timezone.utc)
 
     db.commit()
     db.refresh(draft)

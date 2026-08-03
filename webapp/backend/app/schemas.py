@@ -456,11 +456,11 @@ class PklContext(BaseModel):
     pelajaran: list[str] = Field(default_factory=list)
     tujuan_pkl: list[str] = Field(default_factory=list)         # kosong = pakai daftar baku
     asas_pkl: list[AsasPkl] = Field(default_factory=list)       # dasar hukum PKL
-    refleksi: str = ""                                          # cerita mentah user (sumber AI)
-    refleksi_bab5: str = ""                                     # input user untuk BAB V (opsional, AI enhance)
-    kesimpulan_user: str = ""                                   # input user BAB VI kesimpulan (opsional)
-    saran_user: str = ""                                        # input user BAB VI saran (opsional)
-    saran_intro: str = ""                                       # kalimat pembuka sub-bab Saran
+    refleksi: str = Field(default="", max_length=50000)                                          # cerita mentah user (sumber AI)
+    refleksi_bab5: str = Field(default="", max_length=50000)                                     # input user untuk BAB V (opsional, AI enhance)
+    kesimpulan_user: str = Field(default="", max_length=50000)                                   # input user BAB VI kesimpulan (opsional)
+    saran_user: str = Field(default="", max_length=50000)                                        # input user BAB VI saran (opsional)
+    saran_intro: str = Field(default="", max_length=5000)                                       # kalimat pembuka sub-bab Saran
     saran_items: list[str] = Field(default_factory=list)         # saran ber-enumerasi a. b. c.
     kata_pengantar: KataPengantar = Field(default_factory=KataPengantar)
     # Entri boleh berupa objek terstruktur, string sitasi, atau dict arbitrari.
