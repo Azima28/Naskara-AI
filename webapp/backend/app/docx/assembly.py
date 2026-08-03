@@ -264,12 +264,12 @@ def assemble_report(data: dict) -> str:
 
     builder.save(output_path)
 
-    # Jika LibreOffice (Docker/Linux) atau MS Word COM (Windows) tersedia, presisikan dengan re-render fisik
+    # Jika MS Word COM tersedia di Windows, presisikan dengan re-render Word fisik
     try:
         from .builder import compute_toc_page_numbers
-        exact_pages = compute_toc_page_numbers(output_path, sec_list=sec_list)
-        if exact_pages:
-            builder.embed_toc_page_numbers(exact_pages)
+        word_pages = compute_toc_page_numbers(output_path)
+        if word_pages:
+            builder.embed_toc_page_numbers(word_pages)
             builder.save(output_path)
     except Exception:
         pass
@@ -308,8 +308,8 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
         ("KATA PENGANTAR", "kata_pengantar", 1, "v"),
     ]
 
-    # Kapasitas 1 halaman HVS / A4 (TNR 12pt, 1.5 spasi, margin 4-4-3-3cm) ≈ 35 baris
-    LINES_PER_PAGE = 35.0
+    # Kapasitas 1 halaman HVS / A4 (TNR 12pt, 1.5 spasi, margin 4-4-3-3cm) ≈ 25 baris
+    LINES_PER_PAGE = 25.0
 
     # Kelompokkan estimasi tinggi/baris elemen di builder.doc per BAB
     bab_lines: dict[int | str, float] = {}
@@ -404,9 +404,9 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
 
                 # Deteksi indentasi list (area teks menyempit)
                 has_ind = elem.find(".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ind") is not None
-                chars_per_line = 60.0 if has_ind else 78.0
+                chars_per_line = 48.0 if has_ind else 62.0
 
-                lines = max(1.0, math.ceil(len(text_raw) / chars_per_line)) + img_lines
+                lines = max(1.0, math.ceil(len(text_raw) / chars_per_line)) * 1.2 + img_lines
                 bab_lines[current_bab_key] = bab_lines.get(current_bab_key, 0.0) + lines
 
                 # Deteksi page break (<w:br w:type="page"/>)
@@ -417,7 +417,7 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
                 )
                 if has_page_break:
                     cur_l = bab_lines[current_bab_key]
-                    bab_lines[current_bab_key] = math.ceil(cur_l / LINES_PER_PAGE) * LINES_PER_PAGE
+                    bab_lines[current_bab_key] = math.ceil(cur_l / 25.0) * 25.0
 
         elif tag == "tbl" and current_bab_key is not None:
             # Tabel menghitung jumlah baris fisik
@@ -474,28 +474,14 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
         f for f in (data.get("lampiran", {}) or {}).get("foto_kegiatan", [])
         if isinstance(f, dict) and f.get("gambar")
     ]
-    if not foto_lampiran:
-        foto_lampiran = [
-            {"gambar": a.get("filename"), "keterangan": a.get("caption", "")}
-            for a in data.get("assets", [])
-            if isinstance(a, dict) and a.get("type") == "foto" and a.get("filename")
-        ]
-    for i, f in enumerate(foto_lampiran, 1):
-        ket = (f.get("keterangan") or "").strip() or f"Dokumentasi kegiatan {i}"
-        pg_lamp = pg_lamp_base + (i - 1)
-        sections.append((ket.rstrip("."), f"lamp_{i}", 1, str(pg_lamp)))
+    for i in range(1, len(foto_lampiran) + 1):
+        pg_lamp = pg_lamp_base + ((i - 1) // 2)
+        sections.append(("", f"lamp_{i}", 1, str(pg_lamp)))
 
     pg_dp_base = bab_start_pages.get(4, cur_page)
     peralatan = [p for p in data.get("peralatan", []) if p.get("gambar")]
-    bab_modules = data.get("config", {}).get("bab_modules") or list(ALL_BAB_MODULES)
-    normalized = [m for m in _normalize_modules(bab_modules) if m in ALL_BAB_MODULES]
-    bab_dp = (
-        normalized.index("DATA_PENGAMATAN") + 1
-        if "DATA_PENGAMATAN" in normalized else 4
-    )
-    for i, p in enumerate(peralatan, 1):
-        nama_p = p.get("nama", f"Peralatan {i}")
-        sections.append((f"Gambar {bab_dp}.{i} {nama_p}", f"gambar_{i}", 1, str(pg_dp_base)))
+    for i in range(1, len(peralatan) + 1):
+        sections.append(("", f"gambar_{i}", 1, str(pg_dp_base)))
 
     return sections
 
@@ -1276,13 +1262,13 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
     #     Sub-sub: a) Waktu Kerja, b) Tata Tertib Karyawan, c) Khusus
     # ------------------------------------------------------------------ #
     OFFICIAL_SMKN4_TATA_TERTIB = [
-        "Mematuhi aturan dan tata tertib yang berlaku di industri.",
-        "Melaksanakan kegiatan PKL sesuai jam kerja yang berlaku di industri.",
-        "Memberi tahu pembimbing jika sakit dan dibuktikan dengan surat keterangan sakit dari dokter.",
-        "Tidak mengaktifkan \"handphone/smartphone\" selama jam bekerja.",
-        "Tidak diperkenankan minta izin dengan alasan keperluan sekolah kecuali ada surat resmi dari sekolah.",
-        "Pakaian rapi, rambut tidak gondrong. Jenis pakaian sesuai dengan ketentuan industri.",
-        "Membawa alat keselamatan kerja (kecuali jika sudah disediakan oleh industri/instansi) dan senantiasa menerapkannya selama bekerja.",
+        "Mematuhi aturan dan tata tertib yang berlaku di industri;",
+        "Melaksanakan kegiatan PKL sesuai jam kerja yang berlaku di industri;",
+        "Memberi tahu pembimbing jika sakit dan dibuktikan dengan surat keterangan sakit dari dokter;",
+        "Tidak mengaktifkan \"handphone/smartphone\" selama jam bekerja;",
+        "Tidak diperkenankan minta izin dengan alasan keperluan sekolah kecuali ada surat resmi dari sekolah;",
+        "Pakaian rapi, rambut tidak gondrong. Jenis pakaian sesuai dengan ketentuan industri;",
+        "Membawa alat keselamatan kerja (kecuali jika sudah disediakan oleh industri/instansi) dan senantiasa menerapkannya selama bekerja;",
         "Menerapkan etika dalam bersosialisasi dengan lingkungan kerja."
     ]
     jam_kerja = data.get("jam_kerja") or profil.get("jam_kerja") or []
@@ -1315,13 +1301,11 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
     builder.add_sub_heading_3(f"{_LETTERS[tt_sub - 1]}. Tata Tertib dan Kewajiban Karyawan")
     builder.add_body(
         profil.get("tata_tertib_list_intro")
-        or "Berikut adalah tata tertib dan kewajiban umum peserta PKL di tempat kerja:"
+        or f"Berikut adalah tata tertib dan kewajiban karyawan {nama_prsh}:"
     )
     for i, tt in enumerate(OFFICIAL_SMKN4_TATA_TERTIB, 1):
-        clean_tt = tt.strip().rstrip(";").strip()
+        clean_tt = tt.strip()
         if clean_tt:
-            if not clean_tt.endswith("."):
-                clean_tt += "."
             clean_tt = clean_tt[0].upper() + clean_tt[1:]
         builder.add_numbered(clean_tt, i)
 
@@ -1330,10 +1314,8 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
         tt_sub += 1
         builder.add_sub_heading_3(f"{_LETTERS[tt_sub - 1]}. Tata Tertib Khusus {nama_prsh}")
         for i, tt in enumerate(tt_perusahaan, 1):
-            clean_tt = (_ensure_str(tt) if not isinstance(tt, str) else tt).strip().rstrip(";").strip()
+            clean_tt = (_ensure_str(tt) if not isinstance(tt, str) else tt).strip()
             if clean_tt:
-                if not clean_tt.endswith("."):
-                    clean_tt += "."
                 clean_tt = clean_tt[0].upper() + clean_tt[1:]
             builder.add_numbered(clean_tt, i)
 
