@@ -1,4 +1,4 @@
-"""Seed script: Bikin user siswa@smk.com & siswa@smk.id (Siswa Demo) dengan draft simulasi 100% LENGKAP tanpa ada field kosong."""
+"""Seed script: Bikin akun admin & siswa dengan draft simulasi 100% LENGKAP tanpa ada field kosong."""
 from __future__ import annotations
 
 import sys
@@ -11,43 +11,44 @@ from app.models import User, Draft
 from app.security import hash_password
 from data_full_complete import DATA_FULL
 
+ACCOUNTS = [
+    ("admin@pkl.com", "password123", "Admin PKL"),
+    ("siswa@smk.com", "password123", "Rizky Pratama"),
+    ("siswa@smk.id", "password123", "Siswa Demo"),
+]
+
 def seed():
     init_db()
     with session_scope() as db:
-        # 1. User siswa@smk.com
-        user1 = db.query(User).filter(User.email == "siswa@smk.com").first()
-        if not user1:
-            user1 = User(
-                email="siswa@smk.com",
-                name="Rizky Pratama",
-                password_hash=hash_password("password123"),
-            )
-            db.add(user1)
-            db.flush()
-            print("[Seed] Created user: siswa@smk.com / password123")
+        for email, password, name in ACCOUNTS:
+            user = db.query(User).filter(User.email == email).first()
+            if not user:
+                user = User(
+                    email=email,
+                    name=name,
+                    password_hash=hash_password(password),
+                )
+                db.add(user)
+                db.flush()
+                print(f"[Seed] Created user: {email} / {password}")
+            else:
+                print(f"[Seed] Existing user found: {email}")
 
-        draft1 = db.query(Draft).filter(Draft.user_id == user1.id).first()
-        if not draft1:
-            draft1 = Draft(
-                user_id=user1.id,
-                title="Laporan PKL - Rizky Pratama (Full RPL Simulation 100% Complete)",
-                status="ready",
-                data_json=DATA_FULL,
-            )
-            db.add(draft1)
-        else:
-            draft1.title = "Laporan PKL - Rizky Pratama (Full RPL Simulation 100% Complete)"
-            draft1.data_json = DATA_FULL
-            draft1.status = "ready"
-        print("[Seed] Updated draft for siswa@smk.com")
-
-        # 2. User siswa@smk.id (Siswa Demo)
-        user2 = db.query(User).filter(User.email == "siswa@smk.id").first()
-        if user2:
-            for d in user2.drafts:
-                d.data_json = DATA_FULL
-                d.status = "ready"
-            print(f"[Seed] Updated all {len(user2.drafts)} drafts for Siswa Demo (siswa@smk.id)")
+            draft = db.query(Draft).filter(Draft.user_id == user.id).first()
+            if not draft:
+                draft = Draft(
+                    user_id=user.id,
+                    title=f"Laporan PKL - {name} (Full Simulation 100% Complete)",
+                    status="ready",
+                    data_json=DATA_FULL,
+                )
+                db.add(draft)
+                print(f"[Seed] Created full draft for {email}")
+            else:
+                draft.title = f"Laporan PKL - {name} (Full Simulation 100% Complete)"
+                draft.data_json = DATA_FULL
+                draft.status = "ready"
+                print(f"[Seed] Updated full draft for {email}")
 
 if __name__ == "__main__":
     seed()
