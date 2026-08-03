@@ -279,6 +279,9 @@ class PklDocBuilder:
             page_val = str(item[3]) if len(item) > 3 and item[3] else "1"
             if not text or not bookmark:
                 continue
+            # Skip entri foto lampiran & gambar peralatan dari DAFTAR ISI (hanya untuk Daftar Gambar & Lampiran)
+            if bookmark.startswith("lamp_") or bookmark.startswith("gambar_"):
+                continue
             indent_dxa = "0" if level == 1 else ("360" if level == 2 else "720")
             p_xml = parse_xml(
                 f'<w:p {nsdecls("w")}>'
@@ -1675,6 +1678,23 @@ def compute_toc_page_numbers_libreoffice(docx_path: str, sec_list: list[tuple[st
                     if found_page:
                         arabic_pg = str(found_page - bab1_page + 1)
                         pages[bookmark] = arabic_pg
+
+                # Fallback untuk lamp_ dan gambar_ jika text search tidak menemukan
+                lampiran_base_pg = pages.get("lampiran")
+                if lampiran_base_pg and sec_list:
+                    base_pg_int = int(lampiran_base_pg)
+                    lamp_count = 0
+                    for item in sec_list:
+                        bm = item[1]
+                        if bm.startswith("lamp_"):
+                            if bm not in pages:
+                                pages[bm] = str(base_pg_int + lamp_count)
+                            lamp_count += 1
+
+                for item in sec_list:
+                    bm = item[1]
+                    if bm.startswith("gambar_") and bm not in pages:
+                        pages[bm] = pages.get("sub_12", pages.get("sub_10", pages.get("bab_4", "1")))
             pdf_doc.close()
         except Exception as e:
             print(f"[LibreOffice PDF Page Extractor Warning] {e}")

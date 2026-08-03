@@ -474,14 +474,28 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
         f for f in (data.get("lampiran", {}) or {}).get("foto_kegiatan", [])
         if isinstance(f, dict) and f.get("gambar")
     ]
-    for i in range(1, len(foto_lampiran) + 1):
-        pg_lamp = pg_lamp_base + ((i - 1) // 2)
-        sections.append(("", f"lamp_{i}", 1, str(pg_lamp)))
+    if not foto_lampiran:
+        foto_lampiran = [
+            {"gambar": a.get("filename"), "keterangan": a.get("caption", "")}
+            for a in data.get("assets", [])
+            if isinstance(a, dict) and a.get("type") == "foto" and a.get("filename")
+        ]
+    for i, f in enumerate(foto_lampiran, 1):
+        ket = (f.get("keterangan") or "").strip() or f"Dokumentasi kegiatan {i}"
+        pg_lamp = pg_lamp_base + (i - 1)
+        sections.append((ket.rstrip("."), f"lamp_{i}", 1, str(pg_lamp)))
 
     pg_dp_base = bab_start_pages.get(4, cur_page)
     peralatan = [p for p in data.get("peralatan", []) if p.get("gambar")]
-    for i in range(1, len(peralatan) + 1):
-        sections.append(("", f"gambar_{i}", 1, str(pg_dp_base)))
+    bab_modules = data.get("config", {}).get("bab_modules") or list(ALL_BAB_MODULES)
+    normalized = [m for m in _normalize_modules(bab_modules) if m in ALL_BAB_MODULES]
+    bab_dp = (
+        normalized.index("DATA_PENGAMATAN") + 1
+        if "DATA_PENGAMATAN" in normalized else 4
+    )
+    for i, p in enumerate(peralatan, 1):
+        nama_p = p.get("nama", f"Peralatan {i}")
+        sections.append((f"Gambar {bab_dp}.{i} {nama_p}", f"gambar_{i}", 1, str(pg_dp_base)))
 
     return sections
 
