@@ -7,15 +7,15 @@ services:
     container_name: naskara-backend
     restart: always
     environment:
-      - DATABASE_URL=sqlite:////app/webapp/backend/pkl_reports.db
+      - DATABASE_URL=sqlite:////app/webapp/backend/data/pkl_reports.db
       - SECRET_KEY=${SECRET_KEY:-naskara-prod-secret-key-change-this-in-production}
       - AI_ENABLED=${AI_ENABLED:-true}
       - AI_BASE_URL=${AI_BASE_URL:-http://host.docker.internal:20128/v1}
       - AI_MODEL=${AI_MODEL:-deepseek-opencode}
       - AI_API_KEY=${AI_API_KEY:-not-needed}
     volumes:
-      # Persistent sqlite DB & uploads on Windows Server disk
-      - ./webapp/backend/pkl_reports.db:/app/webapp/backend/pkl_reports.db
+      # Persistent sqlite DB volume (Linux native ext4 volume - avoids Windows bind-mount lock & permission issues)
+      - sqlite_data:/app/webapp/backend/data
       - ./webapp/uploads:/app/webapp/uploads
       - ./webapp/output:/app/webapp/output
     expose:
@@ -43,3 +43,6 @@ services:
     command: tunnel --no-autoupdate --protocol http2 run --token ${CLOUDFLARE_TUNNEL_TOKEN}
     depends_on:
       - frontend
+
+volumes:
+  sqlite_data:

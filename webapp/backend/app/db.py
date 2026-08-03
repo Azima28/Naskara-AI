@@ -59,4 +59,7 @@ def init_db() -> None:
     Base.metadata.create_all(bind=engine)
     if settings.database_url.startswith("sqlite"):
         with engine.connect() as conn:
-            conn.exec_driver_sql("PRAGMA journal_mode=WAL;")
+            try:
+                conn.exec_driver_sql("PRAGMA journal_mode=WAL;")
+            except Exception as e:
+                print(f"⚠️ Warning: Gagal set WAL mode SQLite ({e}), fallback ke mode default.")
