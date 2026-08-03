@@ -32,9 +32,9 @@ COPY examples /app/examples
 COPY webapp/backend /app/webapp/backend
 
 # Ensure uploads and output directories exist and configure non-root user
-RUN mkdir -p /app/webapp/uploads /app/webapp/output \
-    && groupadd -r appgroup && useradd -r -g appgroup -d /app appuser \
-    && chown -R appuser:appgroup /app
+RUN groupadd -r appgroup && useradd -r -g appgroup -d /app appuser \
+    && mkdir -p /app/webapp/uploads /app/webapp/output \
+    && chown -R appuser:appgroup /app/webapp
 
 USER appuser
 
