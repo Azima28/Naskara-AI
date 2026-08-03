@@ -258,13 +258,20 @@ def assemble_report(data: dict) -> str:
     builder.populate_native_toc(sec_list)
 
     # Tanam nomor halaman kalkulasi dinamis murni Python ke semua field PAGEREF
-    # (Daftar Isi, Daftar Gambar, Daftar Lampiran) agar 100% akurat di semua platform (Linux/Docker/Windows)
+    # 100% Python Calculator — identik di Windows Laptop maupun Docker Linux
     dynamic_pages = {bm: pg for _, bm, _, pg in sec_list if bm}
+
+    _toc_keys = ["bab_1","bab_2","bab_3","bab_4","bab_5","bab_6","daftar_pustaka","lampiran"]
+    print("[TOC-CALC] Nomor halaman Python Calculator:")
+    for k in _toc_keys:
+        if k in dynamic_pages:
+            print(f"  {k}: {dynamic_pages[k]}")
+
     builder.embed_toc_page_numbers(dynamic_pages)
 
     builder.save(output_path)
 
-    # Jika LibreOffice (Docker/Linux) atau MS Word COM (Windows) tersedia, presisikan dengan re-render fisik
+    # compute_toc_page_numbers sekarang selalu return {} — tidak ada engine eksternal
     try:
         from .builder import compute_toc_page_numbers
         exact_pages = compute_toc_page_numbers(output_path, sec_list=sec_list)
@@ -433,15 +440,19 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
         bab_start_pages[b_idx] = cur_page
         b_lines = bab_lines.get(b_idx, 25.0)
         p_count = max(1, math.ceil(b_lines / LINES_PER_PAGE))
+        print(f"[TOC-CALC] BAB {b_idx}: {b_lines:.1f} baris -> {p_count} halaman (mulai hal {cur_page})")
         cur_page += p_count
 
     # DAFTAR PUSTAKA
     bab_start_pages["DAFTAR_PUSTAKA"] = cur_page
     dp_lines = bab_lines.get("DAFTAR_PUSTAKA", 15.0)
-    cur_page += max(1, math.ceil(dp_lines / LINES_PER_PAGE))
+    dp_pages = max(1, math.ceil(dp_lines / LINES_PER_PAGE))
+    print(f"[TOC-CALC] DAFTAR_PUSTAKA: {dp_lines:.1f} baris -> {dp_pages} halaman (mulai hal {cur_page})")
+    cur_page += dp_pages
 
     # LAMPIRAN
     bab_start_pages["LAMPIRAN"] = cur_page
+    print(f"[TOC-CALC] LAMPIRAN: mulai hal {cur_page}")
 
     # Susun entri sections dengan nomor halaman presisi (BAB + offset sub-bab)
     active_bab_num: int | str = 1

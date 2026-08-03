@@ -1726,89 +1726,11 @@ def compute_toc_page_numbers_libreoffice(docx_path: str, sec_list: list[tuple[st
 
 
 def compute_toc_page_numbers(docx_path: str, sec_list: list[tuple[str, str, int, str]] | None = None) -> dict[str, str]:
-    """Hitung nomor halaman tiap bookmark via MS Word COM automation (Windows) atau LibreOffice (Linux).
+    """Tidak lagi menggunakan engine eksternal (MS Word COM / LibreOffice).
 
-    Di Windows, gunakan Word COM automation agar 100% presisi dengan Microsoft Word.
-    Di Linux/Docker, gunakan LibreOffice Headless atau fallback ke kalkulator Python cerdas.
+    Semua kalkulasi halaman dilakukan 100% oleh Python Calculator di _generate_sections_list()
+    sehingga hasil DIJAMIN IDENTIK di Windows Laptop maupun Docker Linux.
     """
-    # 1. Utamakan MS Word COM jika di OS Windows
-    try:
-        import pythoncom  # type: ignore
-        import win32com.client  # type: ignore
-
-        WD_ACTIVE_END_PAGE_NUMBER = 3
-        pages: dict[str, str] = {}
-        word = None
-        doc = None
-        pythoncom.CoInitialize()
-        try:
-            word = win32com.client.DispatchEx("Word.Application")
-            word.Visible = False
-            try:
-                word.DisplayAlerts = 0
-            except Exception:
-                pass
-            doc = word.Documents.Open(os.path.abspath(docx_path), ReadOnly=True, AddToRecentFiles=False)
-            doc.Repaginate()
-            doc.ComputeStatistics(2)
-
-            def _sec_index(bm) -> int:
-                try:
-                    rng = bm.Range
-                    sec = rng.Sections
-                    return sec.Item(1).Index if sec.Count else 1
-                except Exception:
-                    return 1
-
-            sec_starts: dict[int, int] = {1: 1}
-            for i in range(1, doc.Sections.Count):
-                try:
-                    end_pg = int(doc.Sections.Item(i).Range.Information(WD_ACTIVE_END_PAGE_NUMBER))
-                    sec_starts[i + 1] = end_pg + 1
-                except Exception:
-                    sec_starts[i + 1] = 1
-
-            body_sec_idx = doc.Sections.Count
-            for bm in doc.Bookmarks:
-                if bm.Name in ("bab_1", "bab_pendahuluan"):
-                    body_sec_idx = _sec_index(bm)
-                    break
-
-            for bm in doc.Bookmarks:
-                name = bm.Name
-                if not name or name.startswith("_"):
-                    continue
-                try:
-                    phys_page = int(bm.Range.Information(WD_ACTIVE_END_PAGE_NUMBER))
-                    sec_idx = _sec_index(bm)
-                    sec_start = sec_starts.get(sec_idx, 1)
-
-                    rel_page = max(1, phys_page - sec_start + 1)
-                    if sec_idx < body_sec_idx:
-                        pages[name] = _to_roman(rel_page).lower()
-                    else:
-                        pages[name] = str(rel_page)
-                except Exception:
-                    continue
-            if pages:
-                return pages
-        finally:
-            try:
-                if doc is not None:
-                    doc.Close(False)
-            except Exception:
-                pass
-            try:
-                if word is not None:
-                    word.Quit()
-            except Exception:
-                pass
-            pythoncom.CoUninitialize()
-    except Exception:
-        pass
-
-    # 2. Menggunakan Kalkulator Layout Python Murni (100% presisi MS Word 35 baris/hal)
-    # Ini memastikan hasil di Docker Linux 100% SAMA DAN IDENTIK dengan Laptop Windows!
     return {}
 
 
