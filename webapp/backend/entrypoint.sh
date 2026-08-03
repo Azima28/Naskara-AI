@@ -9,9 +9,10 @@ if [ ! -f "/app/webapp/backend/pkl_reports.db" ]; then
     touch /app/webapp/backend/pkl_reports.db
 fi
 
-# Fix permissions on runtime bind-mounted volumes from Windows host
-# (bind-mounted files inherit host UID which appuser can't write to)
-# Note: SQLite WAL mode requires write access to db, db-wal, db-shm, and backend dir
+# Ensure full read/write permissions for appuser on Windows bind-mounted database & directories
+# SQLite WAL mode requires write access to db, db-wal, db-shm, and backend dir
+chmod 777 /app/webapp/backend 2>/dev/null || true
+chmod 666 /app/webapp/backend/pkl_reports.db* 2>/dev/null || true
 chown appuser:appgroup /app/webapp/backend/pkl_reports.db* 2>/dev/null || true
 chown appuser:appgroup /app/webapp/backend 2>/dev/null || true
 chown -R appuser:appgroup /app/webapp/uploads 2>/dev/null || true
