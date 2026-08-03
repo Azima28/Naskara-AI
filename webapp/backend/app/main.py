@@ -49,8 +49,8 @@ async def add_security_headers(request: Request, call_next):
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     return response
 
-# Proteksi DDoS L7 & Brute Force Rate Limiter
-app.add_middleware(RateLimiterMiddleware, default_limit=60, window_seconds=60)
+# Proteksi DDoS L7 & Brute Force Rate Limiter (dikendurkan untuk pemakaian intensif)
+app.add_middleware(RateLimiterMiddleware, default_limit=180, window_seconds=60)
 
 app.add_middleware(
     CORSMiddleware,

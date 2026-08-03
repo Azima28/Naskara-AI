@@ -1,9 +1,9 @@
 """Rate Limiter Middleware untuk proteksi L7 DDoS & Brute Force Attack.
 
 Membatasi jumlah request per IP address berdasarkan endpoint tier:
-- General endpoints: max 60 req/menit
-- Auth / Login: max 10 req/menit
-- AI & DOCX Generate (CPU heavy): max 10 req/menit
+- General endpoints: max 180 req/menit
+- Auth / Login / Register: max 30 req/menit
+- AI & DOCX Generate: max 60 req/menit
 """
 from __future__ import annotations
 
@@ -28,20 +28,21 @@ def _is_trusted_proxy(host: str) -> bool:
 
 
 class RateLimiterMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app, default_limit: int = 60, window_seconds: int = 60):
+    def __init__(self, app, default_limit: int = 180, window_seconds: int = 60):
         super().__init__(app)
         self.default_limit = default_limit
         self.window_seconds = window_seconds
         # Storage: ip -> list of timestamps
         self.requests: dict[str, list[float]] = defaultdict(list)
 
-        # Limit per path prefix
+        # Limit per path prefix (dikendurkan agar tidak mengganggu penggunaan intensif)
         self.path_limits = {
-            "/auth/login": (10, 60),      # 10 req/menit
-            "/auth/register": (10, 60),   # 10 req/menit
-            "/generate": (10, 60),        # 10 req/menit (CPU heavy docx)
-            "/ai/": (60, 60),             # 60 req/menit (LLM API generation)
-            "/assets/upload": (15, 60),   # 15 req/menit
+            "/auth/login": (30, 60),      # 30 req/menit
+            "/auth/register": (30, 60),   # 30 req/menit
+            "/generate": (60, 60),        # 60 req/menit (DOCX generate)
+            "/ai/": (180, 60),            # 180 req/menit (LLM API generation)
+            "/assets/upload": (60, 60),   # 60 req/menit
+            "/drafts": (180, 60),         # 180 req/menit
         }
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
