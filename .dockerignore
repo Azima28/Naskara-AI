@@ -7,11 +7,13 @@
 
 # Python virtualenvs & cache
 .venv
+**/.venv
 **/__pycache__
 **/*.pyc
 **/*.pyo
 **/*.pyd
 .pytest_cache
+**/.pytest_cache
 
 # Node frontend
 **/node_modules

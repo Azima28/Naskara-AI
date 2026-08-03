@@ -19,22 +19,24 @@ RUN sed -i 's/Components: main/Components: main contrib/g' /etc/apt/sources.list
 
 WORKDIR /app
 
+# Create non-root user early
+RUN groupadd -r appgroup && useradd -r -g appgroup -d /app appuser
+
 # Copy requirements from backend and install
 COPY webapp/backend/requirements.txt /app/webapp/backend/requirements.txt
 RUN pip install --no-cache-dir -r /app/webapp/backend/requirements.txt
 
 # Copy scripts, references, and examples from root
-COPY scripts /app/scripts
-COPY references /app/references
-COPY examples /app/examples
+COPY --chown=appuser:appgroup scripts /app/scripts
+COPY --chown=appuser:appgroup references /app/references
+COPY --chown=appuser:appgroup examples /app/examples
 
 # Copy all backend application code
-COPY webapp/backend /app/webapp/backend
+COPY --chown=appuser:appgroup webapp/backend /app/webapp/backend
 
-# Ensure uploads and output directories exist and configure non-root user
-RUN groupadd -r appgroup && useradd -r -g appgroup -d /app appuser \
-    && mkdir -p /app/webapp/uploads /app/webapp/output \
-    && chown -R appuser:appgroup /app/webapp
+# Ensure uploads and output directories exist with proper ownership
+RUN mkdir -p /app/webapp/uploads /app/webapp/output \
+    && chown -R appuser:appgroup /app/webapp/uploads /app/webapp/output
 
 USER appuser
 
