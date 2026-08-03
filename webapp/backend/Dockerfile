@@ -41,8 +41,9 @@ RUN mkdir -p /app/webapp/uploads /app/webapp/output \
     && chown -R appuser:appgroup /app/webapp/uploads /app/webapp/output
 
 # Entrypoint fixes bind-mount permissions at runtime then drops to appuser via gosu
+# sed removes carriage returns (\r) in case file was checked out with CRLF on Windows host
 COPY webapp/backend/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
 
 WORKDIR /app/webapp/backend
 
