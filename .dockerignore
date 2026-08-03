@@ -1,0 +1,29 @@
+# Git & IDE
+.git
+.gitignore
+.vscode
+.idea
+.zcode
+
+# Python virtualenvs & cache
+.venv
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.pytest_cache
+
+# Node frontend
+**/node_modules
+webapp/frontend/dist
+
+# Generated databases & uploads & outputs
+*.db
+*.db-shm
+*.db-wal
+webapp/backend/*.db*
+webapp/uploads/*
+!webapp/uploads/.gitkeep
+webapp/output/*
+!webapp/output/.gitkeep
+LOCAL_WEB_API_TEST_RESULT.docx
