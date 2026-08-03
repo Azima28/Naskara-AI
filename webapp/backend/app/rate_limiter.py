@@ -45,7 +45,16 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
         }
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        from .config import settings
+
+        if not getattr(settings, "enable_rate_limit", True):
+            return await call_next(request)
+
         direct_ip = request.client.host if request.client else "127.0.0.1"
+
+        # Bypass rate limiter for localhost/127.0.0.1 in development environment
+        if settings.environment.lower() == "development" and direct_ip in ("127.0.0.1", "::1", "localhost"):
+            return await call_next(request)
 
         if _is_trusted_proxy(direct_ip):
             # CF-Connecting-IP: set by Cloudflare edge, not spoofable through tunnel
