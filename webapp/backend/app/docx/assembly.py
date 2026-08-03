@@ -264,12 +264,12 @@ def assemble_report(data: dict) -> str:
 
     builder.save(output_path)
 
-    # Jika MS Word COM tersedia di Windows, presisikan dengan re-render Word fisik
+    # Jika LibreOffice (Docker/Linux) atau MS Word COM (Windows) tersedia, presisikan dengan re-render fisik
     try:
         from .builder import compute_toc_page_numbers
-        word_pages = compute_toc_page_numbers(output_path)
-        if word_pages:
-            builder.embed_toc_page_numbers(word_pages)
+        exact_pages = compute_toc_page_numbers(output_path, sec_list=sec_list)
+        if exact_pages:
+            builder.embed_toc_page_numbers(exact_pages)
             builder.save(output_path)
     except Exception:
         pass

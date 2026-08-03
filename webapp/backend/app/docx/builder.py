@@ -1606,15 +1606,16 @@ class PklDocBuilder:
         tblPr.append(borders)
 
 
-def compute_toc_page_numbers_libreoffice(docx_path: str) -> dict[str, str]:
+def compute_toc_page_numbers_libreoffice(docx_path: str, sec_list: list[tuple[str, str, int, str]] | None = None) -> dict[str, str]:
     """Hitung nomor halaman tiap bookmark via LibreOffice Headless (Docker/Linux/Windows).
 
     Bila LibreOffice (soffice) terpasang, panggil LibreOffice dalam mode headless
-    untuk memperbarui field & membaca posisi fisik bookmark. Jika tidak ada / gagal,
-    mengembalikan dict kosong `{}` agar sistem fallback ke kalkulator Python cerdas.
+    untuk memperbarui field, lalu ekstrak posisi fisik bookmark dari PDF hasil konversi.
+    Jika tidak ada / gagal, mengembalikan dict kosong `{}` agar sistem fallback ke kalkulator Python cerdas.
     """
     import subprocess
     import shutil
+    import re
 
     soffice_bin = shutil.which("soffice") or shutil.which("libreoffice")
     if not soffice_bin:
@@ -1631,25 +1632,75 @@ def compute_toc_page_numbers_libreoffice(docx_path: str) -> dict[str, str]:
     if not soffice_bin:
         return {}
 
+    pdf_path = os.path.splitext(os.path.abspath(docx_path))[0] + ".pdf"
+
     try:
         # Jalankan LibreOffice headless update
         cmd = [soffice_bin, "--headless", "--convert-to", "pdf", os.path.abspath(docx_path)]
-        res = subprocess.run(cmd, capture_output=True, timeout=30, cwd=os.path.dirname(os.path.abspath(docx_path)))
-        if res.returncode == 0:
-            # File PDF dihasilkan di direktori yang sama — hapus file PDF pasca konversi
-            pdf_path = os.path.splitext(os.path.abspath(docx_path))[0] + ".pdf"
-            if os.path.exists(pdf_path):
-                try:
-                    os.remove(pdf_path)
-                except Exception:
-                    pass
+        res = subprocess.run(cmd, capture_output=True, timeout=45, cwd=os.path.dirname(os.path.abspath(docx_path)))
+        if res.returncode != 0 or not os.path.exists(pdf_path):
+            return {}
+
+        pages: dict[str, str] = {}
+        try:
+            import fitz  # PyMuPDF
+            pdf_doc = fitz.open(pdf_path)
+            total_pdf_pages = len(pdf_doc)
+
+            # 1. Cari halaman PDF di mana BAB I PENDAHULUAN dimulai (bukan di halaman Daftar Isi)
+            bab1_page = None
+            for p in range(1, total_pdf_pages + 1):
+                txt = pdf_doc[p - 1].get_text("text")
+                if "BAB I" in txt.upper() and "PENDAHULUAN" in txt.upper() and "DAFTAR ISI" not in txt.upper():
+                    bab1_page = p
+                    break
+
+            if bab1_page and sec_list:
+                for item in sec_list:
+                    text = item[0]
+                    bookmark = item[1]
+                    if not bookmark or not text:
+                        continue
+
+                    search_key = re.sub(r"\s+", " ", text).strip()
+                    if len(search_key) > 25:
+                        search_key = search_key[:25]
+
+                    found_page = None
+                    for p in range(1, total_pdf_pages + 1):
+                        p_text = re.sub(r"\s+", " ", pdf_doc[p - 1].get_text("text")).strip()
+                        if search_key.upper() in p_text.upper():
+                            # Hindari matching di halaman DAFTAR ISI sendiri
+                            if "DAFTAR ISI" in p_text.upper() and p < (bab1_page or 5):
+                                continue
+                            found_page = p
+                            break
+
+                    if found_page:
+                        if found_page >= bab1_page:
+                            arabic_pg = str(found_page - bab1_page + 1)
+                            pages[bookmark] = arabic_pg
+                        else:
+                            pages[bookmark] = _to_roman(found_page).lower()
+            pdf_doc.close()
+        except Exception as e:
+            print(f"[LibreOffice PDF Page Extractor Warning] {e}")
+
+        if os.path.exists(pdf_path):
+            try:
+                os.remove(pdf_path)
+            except Exception:
+                pass
+
+        return pages
+
     except Exception:
         pass
 
     return {}
 
 
-def compute_toc_page_numbers(docx_path: str) -> dict[str, str]:
+def compute_toc_page_numbers(docx_path: str, sec_list: list[tuple[str, str, int, str]] | None = None) -> dict[str, str]:
     """Hitung nomor halaman tiap bookmark via MS Word COM automation atau LibreOffice.
 
     Memakai Word COM automation (Windows) atau LibreOffice Headless (Docker/Linux).
@@ -1657,7 +1708,7 @@ def compute_toc_page_numbers(docx_path: str) -> dict[str, str]:
     kalkulator layout murni Python yang sudah diperhitungkan tinggi gambarnya.
     """
     # Coba LibreOffice jika di Linux/Docker
-    lo_pages = compute_toc_page_numbers_libreoffice(docx_path)
+    lo_pages = compute_toc_page_numbers_libreoffice(docx_path, sec_list=sec_list)
     if lo_pages:
         return lo_pages
 
