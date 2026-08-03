@@ -20,6 +20,17 @@ async def lifespan(app: FastAPI):
     # Startup
     ensure_runtime_dirs()
     init_db()
+    try:
+        import sys
+        from pathlib import Path
+        backend_dir = Path(__file__).resolve().parent.parent
+        if str(backend_dir) not in sys.path:
+            sys.path.insert(0, str(backend_dir))
+        from seed_siswa import seed
+        seed()
+    except Exception as e:
+        print(f"⚠️ Auto-seed status: {e}")
+
     insecure_keys = {"ganti-saya-jadi-string-acak-panjang", "dev_secret", "secret", "change_me_in_production", "supersecret"}
     if settings.environment.lower() in ("production", "prod"):
         if settings.secret_key in insecure_keys:
