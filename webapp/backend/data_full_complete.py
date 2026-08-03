@@ -291,5 +291,28 @@ DATA_FULL: dict = {
             {"gambar": "sim-lampiran-4.png", "keterangan": "Sesi presentasi hasil proyek PKL di hadapan tim pengembang"}
         ]
     },
-    "generated_sections": {}
+    "generated_sections": {
+        "latar_belakang": "Praktik Kerja Lapangan (PKL) merupakan salah satu bentuk penyelenggaraan pendidikan dan pelatihan keahlian kejuruan yang memadukan secara sistematik dan sinkron antara program pendidikan di sekolah dan program penguasaan keahlian yang diperoleh melalui kegiatan bekerja langsung di dunia kerja secara terarah untuk mencapai suatu tingkat keahlian profesional.\n\nSeiring dengan pesatnya perkembangan Teknologi Informasi dan Komunikasi saat ini, industri perangkat lunak menuntut tenaga kerja yang memiliki kompetensi nyata dalam pembangunan aplikasi web dan pengelolaan database modern. SMK Negeri 4 Bandar Lampung sebagai lembaga pendidikan kejuruan bertanggung jawab untuk menghasilkan lulusan yang siap pakai dan responsif terhadap kebutuhan industri.\n\nSelama melaksanakan kegiatan PKL di PT Solusi Digital Kreatif pada divisi Backend Development, Penulis mendapatkan kesempatan langsung untuk terlibat dalam pengembangan RESTful API dan optimasi database menggunakan teknologi Node.js, Express.js, dan MySQL. Pengalaman praktis ini menjadi landasan utama dalam penyusunan laporan PKL ini.",
+        "tujuan_pkl": [
+            "Memenuhi salah satu syarat akademik kelulusan di SMK Negeri 4 Bandar Lampung.",
+            "Meningkatkan dan mengembangkan pengetahuan serta keterampilan siswa di bidang Rekayasa Perangkat Lunak.",
+            "Memahami arsitektur dan alur kerja pengembangan software profesional di industri.",
+            "Melatih kedisiplinan, etika kerja, serta tanggung jawab profesional di lingkungan perusahaan.",
+            "Mengimplementasikan teori pembangunan RESTful API dan pengelolaan database MySQL dalam proyek riil.",
+            "Membangun hubungan kerja sama yang harmonis antara SMK Negeri 4 Bandar Lampung dengan PT Solusi Digital Kreatif."
+        ],
+        "profil_sejarah": "PT Solusi Digital Kreatif didirikan pada tahun 2015 di Bandar Lampung. Awalnya perusahaan ini hanya melayani pembuatan website sederhana untuk UMKM lokal. Seiring berjalannya waktu, perusahaan berkembang menjadi penyedia solusi perangkat lunak yang melayani berbagai klien mulai dari instansi pemerintah hingga perusahaan swasta di wilayah Lampung dan sekitarnya.",
+        "narasi_struktur": "Struktur organisasi PT Solusi Digital Kreatif dirancang secara rasional dan efisien untuk mendukung koordinasi antar divisi pengembangan software. Pimpinan puncak dipegang oleh Direktur Utama yang membawahi Manager HRD, Pembimbing Industri, serta tim Senior Developer dan System Analyst. Setiap divisi memiliki alur kerja yang terintegrasi untuk menjamin kualitas perangkat lunak yang dihasilkan.",
+        "landasan_teori": "Pengembangan perangkat lunak berbasis web modern mengandalkan arsitektur REST (Representational State Transfer) sebagai standar komunikasi data antar komponen. RESTful API memanfaatkan protokol HTTP dengan metode standar seperti GET, POST, PUT, dan DELETE untuk manipulasi data secara stateless dan terstruktur.\n\nDalam penyimpanan data, Relational Database Management System (RDBMS) berbasis MySQL menyediakan sarana pengelolaan tabel terstruktur dengan integritas data yang tinggi melalui mekanisme Primary Key, Foreign Key, dan perancangan indeks. Optimasi query melalui indeksasi pada kolom pencarian terbukti mampu mempercepat waktu respons aplikasi secara signifikan.",
+        "kegiatan_backend_development_intro": "Pada divisi Backend Development, kegiatan fokus pada merancang dan membangun RESTful API menggunakan Node.js dan Express.js, melakukan desain skema database MySQL, serta melakukan perbaikan bug (fixing bug) berdasarkan laporan pengujian dari tim QA.",
+        "kegiatan_dokumentasi_sistem_intro": "Pada divisi Dokumentasi Sistem, Penulis mendokumentasikan setiap spesifikasi endpoint REST API yang telah dibangun, termasuk parameter request, format response JSON, serta kode status HTTP agar dapat digunakan oleh tim Frontend Developer.",
+        "studi_kasus_proses": "Studi kasus yang diangkat adalah Optimasi Performance Query Database MySQL pada Aplikasi POS Kasir. Sebelum optimasi, query pencarian laporan transaksi membutuhkan waktu 3,8 detik saat jumlah data mencapai 50.000 record. Melalui penambahan indexing pada kolom transaksi_id dan tanggal_transaksi serta refactoring query JOIN, waktu komputasi berhasil dipangkas menjadi 0,2 detik (peningkatan efisiensi 94,7%).",
+        "pembahasan": "Berdasarkan pengalaman praktik di PT Solusi Digital Kreatif, terdapat beberapa aspek penting yang perlu diperhatikan dalam pengembangan backend aplikasi skala industri. Pertama adalah konsistensi penamaan endpoint API dan struktur response JSON. Kedua adalah aspek keamanan seperti validasi input dan penanganan error secara terpusat.\n\nSelain itu, kerja tim mengandalkan Version Control System (Git) menuntut pemahaman mendalam tentang branching strategy dan alur code review untuk mencegah terjadinya konflik kode saat penggabungan fitur.",
+        "kesimpulan_saran": [
+            "Berdasarkan hasil Praktik Kerja Lapangan di PT Solusi Digital Kreatif, dapat disimpulkan bahwa kegiatan PKL ini berhasil meningkatkan kompetensi teknis Penulis di bidang Backend Development dan pengelolaan database MySQL secara signifikan.",
+            "Kerja tim berbasis Git dan metode pengembangan Agile/Scrum sangat efektif dalam menjaga kualitas dan ketepatan waktu penyelesaian proyek software.",
+            "Disarankan bagi sekolah untuk memperbanyak latihan praktik pembangunan API dan git workflow pada kurikulum pembelajaran.",
+            "Disarankan bagi perusahaan untuk mempertahankan program bimbingan PKL yang terstruktur guna mendukung pengembangan calon tenaga kerja TI lokal."
+        ]
+    }
 }
