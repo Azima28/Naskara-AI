@@ -47,10 +47,14 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         direct_ip = request.client.host if request.client else "127.0.0.1"
 
-        # Hanya percayai X-Forwarded-For jika koneksi langsung berasal dari trusted proxy (localhost/internal net)
-        forwarded_for = request.headers.get("x-forwarded-for")
-        if forwarded_for and _is_trusted_proxy(direct_ip):
-            client_ip = forwarded_for.split(",")[0].strip()
+        if _is_trusted_proxy(direct_ip):
+            # CF-Connecting-IP: set by Cloudflare edge, not spoofable through tunnel
+            # X-Real-IP: set by nginx ($remote_addr), useful when accessed without Cloudflare
+            client_ip = (
+                request.headers.get("cf-connecting-ip")
+                or request.headers.get("x-real-ip")
+                or direct_ip
+            )
         else:
             client_ip = direct_ip
 

@@ -19,8 +19,10 @@ RUN sed -i 's/Components: main/Components: main contrib/g' /etc/apt/sources.list
 
 WORKDIR /app
 
-# Create non-root user early
-RUN groupadd -r appgroup && useradd -r -g appgroup -d /app appuser
+# Create non-root user + install gosu for entrypoint privilege dropping
+RUN groupadd -r appgroup && useradd -r -g appgroup -d /app appuser \
+    && apt-get update && apt-get install -y --no-install-recommends gosu \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements from backend and install
 COPY webapp/backend/requirements.txt /app/webapp/backend/requirements.txt
@@ -38,10 +40,13 @@ COPY --chown=appuser:appgroup webapp/backend /app/webapp/backend
 RUN mkdir -p /app/webapp/uploads /app/webapp/output \
     && chown -R appuser:appgroup /app/webapp/uploads /app/webapp/output
 
-USER appuser
+# Entrypoint fixes bind-mount permissions at runtime then drops to appuser via gosu
+COPY webapp/backend/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 WORKDIR /app/webapp/backend
 
 EXPOSE 8000
 
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
