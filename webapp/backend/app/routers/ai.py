@@ -83,8 +83,10 @@ def repair_truncated_json(text: str) -> dict:
 
     raise ValueError(f"Output AI tidak valid JSON: {text[:100]}...")
 
+from pydantic import BaseModel, Field
+
 class DraftSectionRequest(BaseModel):
-    section_key: str
+    section_key: str = Field(..., max_length=100)
     context_data: dict
 
 class DraftSectionOut(BaseModel):
@@ -92,12 +94,12 @@ class DraftSectionOut(BaseModel):
     warnings: list[str] = []
 
 class ParseFullStoryRequest(BaseModel):
-    cerita: str
-    jurusan_key: str
+    cerita: str = Field(..., max_length=100000)
+    jurusan_key: str = Field(default="", max_length=100)
 
 class RegenerateRequest(BaseModel):
-    old_text: str
-    instruction: str
+    old_text: str = Field(..., max_length=100000)
+    instruction: str = Field(..., max_length=5000)
 
 class EnhanceContextRequest(BaseModel):
     context_data: dict
@@ -108,10 +110,12 @@ async def draft_section(
     user: User = Depends(get_current_user)
 ) -> DraftSectionOut:
     """Generate draf awal untuk bagian tertentu dari laporan PKL.
-    
+
     Validasi output AI sebelum dikembalikan ke frontend.
     Auto-retry 1x jika validasi gagal dengan sistem prompt lebih ketat.
     """
+    if not isinstance(req.context_data, dict) or len(str(req.context_data)) > 500_000:
+        raise HTTPException(status_code=400, detail="Data konteks terlalu besar atau format tidak valid.")
     provider = get_ai_provider()
     
     ctx = req.context_data
@@ -225,6 +229,8 @@ async def draft_section_stream(
     user: User = Depends(get_current_user)
 ):
     """Stream token/chunk respon AI secara realtime via Server-Sent Events (SSE)."""
+    if not isinstance(req.context_data, dict) or len(str(req.context_data)) > 500_000:
+        raise HTTPException(status_code=400, detail="Data konteks terlalu besar atau format tidak valid.")
     provider = get_ai_provider()
 
     ctx = req.context_data
@@ -379,6 +385,8 @@ async def enhance_context(
     user: User = Depends(get_current_user)
 ) -> dict:
     """Merapikan data mentah PKL menggunakan AI secara global (ubah 'gatau' -> kalimat formal)."""
+    if not isinstance(req.context_data, dict) or len(str(req.context_data)) > 500_000:
+        raise HTTPException(status_code=400, detail="Data konteks terlalu besar atau format tidak valid.")
     provider = get_ai_provider()
 
     ctx = req.context_data
