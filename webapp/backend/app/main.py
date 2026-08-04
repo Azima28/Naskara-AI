@@ -11,7 +11,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from .config import UPLOADS_DIR, ensure_runtime_dirs, settings
+from .config import INSECURE_SECRET_KEYS, UPLOADS_DIR, ensure_runtime_dirs, settings
 from .db import init_db
 
 
@@ -20,23 +20,32 @@ async def lifespan(app: FastAPI):
     # Startup
     ensure_runtime_dirs()
     init_db()
-    try:
-        import sys
-        from pathlib import Path
-        backend_dir = Path(__file__).resolve().parent.parent
-        if str(backend_dir) not in sys.path:
-            sys.path.insert(0, str(backend_dir))
-        from seed_siswa import seed
-        seed()
-    except Exception as e:
-        print(f"⚠️ Auto-seed status: {e}")
 
-    insecure_keys = {"ganti-saya-jadi-string-acak-panjang", "dev_secret", "secret", "change_me_in_production", "supersecret"}
-    if settings.environment.lower() in ("production", "prod"):
-        if settings.secret_key in insecure_keys:
-            raise RuntimeError("FATAL [SECURITY]: Insecure SECRET_KEY configured in production environment! Please set a strong SECRET_KEY in .env.")
-    elif settings.secret_key in insecure_keys:
-        print("⚠️ WARNING [SECURITY]: secret_key menggunakan nilai default! Ubah SECRET_KEY di .env untuk lingkungan produksi.")
+    # Gate auto-seeding to development environments only
+    if settings.environment.lower() not in ("production", "prod"):
+        try:
+            import sys
+            from pathlib import Path
+            backend_dir = Path(__file__).resolve().parent.parent
+            if str(backend_dir) not in sys.path:
+                sys.path.insert(0, str(backend_dir))
+            from seed_siswa import seed
+            seed()
+        except Exception as e:
+            print(f"⚠️ Auto-seed status: {e}")
+    else:
+        print("ℹ️ Production environment active: auto-seeding skipped.")
+
+    is_prod = settings.environment.lower() in ("production", "prod")
+    is_weak = settings.secret_key in INSECURE_SECRET_KEYS or len(settings.secret_key) < 32
+
+    if is_prod and is_weak:
+        raise RuntimeError(
+            "FATAL [SECURITY]: Insecure or short SECRET_KEY configured in production environment! "
+            "Please set a strong SECRET_KEY (min 32 characters) in .env."
+        )
+    elif is_weak:
+        print("⚠️ WARNING [SECURITY]: secret_key menggunakan nilai default atau terlalu pendek! Ubah SECRET_KEY di .env untuk lingkungan produksi.")
     yield
     # Shutdown: tidak ada yang perlu dibersihkan (SQLite file-based).
 

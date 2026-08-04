@@ -30,7 +30,7 @@ def seed():
                 )
                 db.add(user)
                 db.flush()
-                print(f"[Seed] Created user: {email} / {password}")
+                print(f"[Seed] Created user: {email}")
             else:
                 print(f"[Seed] Existing user found: {email}")
 
@@ -44,11 +44,6 @@ def seed():
                 )
                 db.add(draft)
                 print(f"[Seed] Created full draft for {email}")
-            else:
-                draft.title = f"Laporan PKL - {name} (Full Simulation 100% Complete)"
-                draft.data_json = DATA_FULL
-                draft.status = "ready"
-                print(f"[Seed] Updated full draft for {email}")
 
 if __name__ == "__main__":
     seed()

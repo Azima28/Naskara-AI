@@ -5,9 +5,8 @@ Default formatting diambil dari references/formatting-defaults.md:
 - Margin default 4-4-3-3 (atas-bawah-kiri-kanan), left lebih lebar untuk jilid.
 """
 from pathlib import Path
-
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
 
 # Root webapp (satu tinggi di atas backend/) — dipakai untuk uploads/ & output/.
 BACKEND_DIR = Path(__file__).resolve().parent.parent          # .../webapp/backend
@@ -21,6 +20,18 @@ EXAMPLES_DIR = PROJECT_DIR / "examples"
 # Penyimpanan runtime (di-ignore git).
 UPLOADS_DIR = WEBAPP_DIR / "uploads"
 OUTPUT_DIR = WEBAPP_DIR / "output"
+
+INSECURE_SECRET_KEYS = {
+    "ganti-saya-jadi-string-acak-panjang",
+    "naskara-prod-secret-key-change-this-in-production",
+    "naskara-prod-secret-key-smkn4-bandarlampung-2026",
+    "dev_secret",
+    "secret",
+    "change_me_in_production",
+    "supersecret",
+    "naskara-secret-key",
+    "default",
+}
 
 
 class Settings(BaseSettings):
@@ -48,6 +59,16 @@ class Settings(BaseSettings):
     ai_model: str = "deepseek-opencode"
     ai_api_key: str = "not-needed"
     ai_timeout: int = 120
+
+    @model_validator(mode="after")
+    def validate_security(self) -> "Settings":
+        if self.environment.lower() in ("production", "prod"):
+            if self.secret_key in INSECURE_SECRET_KEYS or len(self.secret_key) < 32:
+                raise ValueError(
+                    "FATAL [SECURITY]: Insecure or short SECRET_KEY configured in production environment! "
+                    "Must be at least 32 characters long and not a standard default."
+                )
+        return self
 
 
 settings = Settings()

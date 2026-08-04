@@ -7,8 +7,9 @@ services:
     container_name: naskara-backend
     restart: always
     environment:
+      - ENVIRONMENT=${ENVIRONMENT:-production}
       - DATABASE_URL=sqlite:////app/webapp/backend/data/pkl_reports.db
-      - SECRET_KEY=${SECRET_KEY:-naskara-prod-secret-key-change-this-in-production}
+      - SECRET_KEY=${SECRET_KEY:-}
       - AI_ENABLED=${AI_ENABLED:-true}
       - AI_BASE_URL=${AI_BASE_URL:-http://host.docker.internal:20128/v1}
       - AI_MODEL=${AI_MODEL:-deepseek-opencode}

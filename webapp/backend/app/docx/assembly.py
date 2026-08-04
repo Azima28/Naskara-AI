@@ -506,11 +506,14 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
         f for f in (data.get("lampiran", {}) or {}).get("foto_kegiatan", [])
         if isinstance(f, dict) and f.get("gambar")
     ]
+    accumulated_lamp_pages = 0.0
     for i in range(1, len(foto_lampiran) + 1):
         f = foto_lampiran[i - 1]
         ket = (f.get("keterangan") or "").strip() or f"Dokumentasi kegiatan {i}"
-        pg_lamp = pg_lamp_base + ((i - 1) // 2)
+        pg_lamp = pg_lamp_base + int(accumulated_lamp_pages)
         sections.append((ket.rstrip("."), f"lamp_{i}", 1, str(pg_lamp)))
+        cost = _get_image_page_cost(f.get("gambar"), width_cm=14)
+        accumulated_lamp_pages += cost
 
     pg_dp_base = bab_start_pages.get(4, cur_page)
     peralatan = [p for p in data.get("peralatan", []) if p.get("gambar")]
@@ -645,6 +648,39 @@ def _write_paragraphs(builder: PklDocBuilder, text: Any) -> None:
             continue
         builder.add_body(stripped)
 
+
+
+def _get_image_page_cost(filename: str, width_cm: float = 14.0) -> float:
+    """Estimasi kontribusi halaman dari satu gambar lampiran.
+
+    Foto portrait (tinggi > lebar) mengambil ~18.67cm + caption = ~21.5cm,
+    sehingga mengisi 1 halaman penuh (1 foto per halaman).
+    Foto landscape (lebar >= tinggi) mengambil ~10.5cm + caption = ~13cm,
+    sehingga 2 foto dapat muat dalam 1 halaman (0.5 halaman per foto).
+    """
+    if not filename:
+        return 1.0
+    candidates = [
+        filename,
+        str(UPLOADS_DIR / "assets" / filename),
+        str(UPLOADS_DIR / filename),
+        os.path.join(os.path.dirname(__file__), "smkn4_assets", filename),
+        os.path.join(os.path.dirname(__file__), "smkn4_assets", f"image{abs(hash(filename)) % 15 + 1}.jpeg"),
+        os.path.join(os.path.dirname(__file__), "smkn4_assets", "image10.jpeg"),
+    ]
+    for cand in candidates:
+        if cand and os.path.exists(cand):
+            try:
+                from PIL import Image
+                with Image.open(cand) as img:
+                    w, h = img.size
+                    if h > w:
+                        return 1.0
+                    else:
+                        return 0.5
+            except Exception:
+                pass
+    return 1.0
 
 
 def _try_image(builder: PklDocBuilder, filename: str, width_cm: float = 10) -> bool:
