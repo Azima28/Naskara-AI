@@ -51,9 +51,9 @@ async def upload_asset(
     if len(contents) > MAX_FILE_SIZE:
         raise HTTPException(status_code=400, detail="Ukuran file terlalu besar (maks 10MB).")
 
-    # Generate unique filename
+    # Generate unique filename with user ID owner scoping
     asset_id = f"A-{uuid.uuid4().hex[:8]}"
-    safe_name = f"{asset_id}{ext}"
+    safe_name = f"u{user.id}_{asset_id}{ext}"
 
     # Ensure assets directory exists
     ASSETS_DIR.mkdir(parents=True, exist_ok=True)
@@ -75,21 +75,25 @@ async def upload_asset(
 async def list_assets(
     user: User = Depends(get_current_user),
 ) -> list[AssetInfo]:
-    """List all uploaded assets."""
+    """List assets uploaded by the authenticated user."""
     if not ASSETS_DIR.exists():
         return []
 
+    owner_prefix = f"u{user.id}_"
     result = []
     for fname in os.listdir(ASSETS_DIR):
-        _, ext = os.path.splitext(fname)
-        if ext.lower() in ALLOWED_EXTENSIONS:
-            name_part = os.path.splitext(fname)[0]
-            result.append(AssetInfo(
-                id=name_part,
-                filename=fname,
-                original_name=fname,
-                type="foto",
-            ))
+        if fname.startswith(owner_prefix):
+            _, ext = os.path.splitext(fname)
+            if ext.lower() in ALLOWED_EXTENSIONS:
+                # Remove owner prefix and extension to get asset_id
+                name_without_prefix = fname[len(owner_prefix):]
+                asset_id = os.path.splitext(name_without_prefix)[0]
+                result.append(AssetInfo(
+                    id=asset_id,
+                    filename=fname,
+                    original_name=fname,
+                    type="foto",
+                ))
     return result
 
 
@@ -98,7 +102,7 @@ async def delete_asset(
     asset_id: str,
     user: User = Depends(get_current_user),
 ) -> dict[str, str]:
-    """Delete an uploaded asset."""
+    """Delete an uploaded asset owned by the authenticated user."""
     if not ASSETS_DIR.exists():
         raise HTTPException(status_code=404, detail="Asset tidak ditemukan.")
 
@@ -107,12 +111,21 @@ async def delete_asset(
     if not safe_asset_id or ".." in safe_asset_id or "/" in safe_asset_id or "\\" in safe_asset_id:
         raise HTTPException(status_code=400, detail="Asset ID tidak valid.")
 
+    owner_prefix = f"u{user.id}_"
+    found_other_owner = False
+
     for fname in os.listdir(ASSETS_DIR):
-        if fname.startswith(safe_asset_id):
+        if safe_asset_id in fname:
             target_path = (ASSETS_DIR / fname).resolve()
             # Double check path stays inside ASSETS_DIR
             if ASSETS_DIR.resolve() in target_path.parents:
-                target_path.unlink()
-                return {"status": "deleted", "id": safe_asset_id}
+                if fname.startswith(owner_prefix):
+                    target_path.unlink()
+                    return {"status": "deleted", "id": safe_asset_id}
+                else:
+                    found_other_owner = True
+
+    if found_other_owner:
+        raise HTTPException(status_code=403, detail="Anda tidak memiliki akses untuk menghapus asset ini.")
 
     raise HTTPException(status_code=404, detail="Asset tidak ditemukan.")

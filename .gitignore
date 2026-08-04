@@ -1,6 +1,8 @@
 # Environment & Local Storage
 .env
 *.db
+*.db-shm
+*.db-wal
 *.zip
 
 # Python

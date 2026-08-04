@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import logging
 import os
+from pathlib import Path
 import re
 import uuid
 from typing import Any
@@ -650,6 +651,16 @@ def _write_paragraphs(builder: PklDocBuilder, text: Any) -> None:
 
 
 
+def _sanitize_image_filename(filename: str) -> str:
+    """Sanitasi nama file gambar untuk mencegah path traversal (misal ../../etc/passwd)."""
+    if not isinstance(filename, str) or not filename.strip():
+        return ""
+    safe_name = os.path.basename(filename).strip()
+    if ".." in safe_name or "/" in safe_name or "\\" in safe_name or "\0" in safe_name:
+        return ""
+    return safe_name
+
+
 def _get_image_page_cost(filename: str, width_cm: float = 14.0) -> float:
     """Estimasi kontribusi halaman dari satu gambar lampiran.
 
@@ -658,21 +669,28 @@ def _get_image_page_cost(filename: str, width_cm: float = 14.0) -> float:
     Foto landscape (lebar >= tinggi) mengambil ~10.5cm + caption = ~13cm,
     sehingga 2 foto dapat muat dalam 1 halaman (0.5 halaman per foto).
     """
-    if not filename:
+    clean_name = _sanitize_image_filename(filename)
+    if not clean_name:
         return 1.0
+
+    smkn4_dir = Path(__file__).resolve().parent / "smkn4_assets"
     candidates = [
-        filename,
-        str(UPLOADS_DIR / "assets" / filename),
-        str(UPLOADS_DIR / filename),
-        os.path.join(os.path.dirname(__file__), "smkn4_assets", filename),
-        os.path.join(os.path.dirname(__file__), "smkn4_assets", f"image{abs(hash(filename)) % 15 + 1}.jpeg"),
-        os.path.join(os.path.dirname(__file__), "smkn4_assets", "image10.jpeg"),
+        str(UPLOADS_DIR / "assets" / clean_name),
+        str(UPLOADS_DIR / clean_name),
+        str(smkn4_dir / clean_name),
+        str(smkn4_dir / f"image{abs(hash(clean_name)) % 15 + 1}.jpeg"),
+        str(smkn4_dir / "image10.jpeg"),
     ]
+    allowed_parents = [UPLOADS_DIR.resolve(), smkn4_dir.resolve()]
+
     for cand in candidates:
         if cand and os.path.exists(cand):
             try:
+                cand_path = Path(cand).resolve()
+                if not any(parent in cand_path.parents or cand_path == parent for parent in allowed_parents):
+                    continue
                 from PIL import Image
-                with Image.open(cand) as img:
+                with Image.open(cand_path) as img:
                     w, h = img.size
                     if h > w:
                         return 1.0
@@ -684,20 +702,28 @@ def _get_image_page_cost(filename: str, width_cm: float = 14.0) -> float:
 
 
 def _try_image(builder: PklDocBuilder, filename: str, width_cm: float = 10) -> bool:
-    """Sisipkan gambar dari uploads/assets atau smkn4_assets cadangan."""
-    if not filename:
+    """Sisipkan gambar dari uploads/assets atau smkn4_assets cadangan dengan proteksi path traversal."""
+    clean_name = _sanitize_image_filename(filename)
+    if not clean_name:
         return False
+
+    smkn4_dir = Path(__file__).resolve().parent / "smkn4_assets"
     candidates = [
-        filename,
-        str(UPLOADS_DIR / "assets" / filename),
-        os.path.join(os.path.dirname(__file__), "smkn4_assets", filename),
-        os.path.join(os.path.dirname(__file__), "smkn4_assets", f"image{abs(hash(filename)) % 15 + 1}.jpeg"),
-        os.path.join(os.path.dirname(__file__), "smkn4_assets", "image10.jpeg"),
+        str(UPLOADS_DIR / "assets" / clean_name),
+        str(UPLOADS_DIR / clean_name),
+        str(smkn4_dir / clean_name),
+        str(smkn4_dir / f"image{abs(hash(clean_name)) % 15 + 1}.jpeg"),
+        str(smkn4_dir / "image10.jpeg"),
     ]
+    allowed_parents = [UPLOADS_DIR.resolve(), smkn4_dir.resolve()]
+
     for cand in candidates:
         if cand and os.path.exists(cand):
             try:
-                builder.add_image(cand, width_cm=width_cm)
+                cand_path = Path(cand).resolve()
+                if not any(parent in cand_path.parents or cand_path == parent for parent in allowed_parents):
+                    continue
+                builder.add_image(str(cand_path), width_cm=width_cm)
                 return True
             except Exception:
                 pass

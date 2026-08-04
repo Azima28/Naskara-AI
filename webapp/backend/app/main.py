@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -106,6 +106,8 @@ def health() -> dict[str, object]:
 #  Validate + recommend (di-import inline agar /validate tetap jalan walau     #
 #  dependensi fase berikutnya belum lengkap).                                 #
 # --------------------------------------------------------------------------- #
+from .dependencies import get_current_user
+from .models import User
 from .validation import (  # noqa: E402
     BabRecommendation,
     ValidationResult,
@@ -115,16 +117,26 @@ from .validation import (  # noqa: E402
 
 
 @app.post("/validate", response_model=ValidationResult)
-def validate_endpoint(ctx: dict) -> ValidationResult:
+def validate_endpoint(
+    ctx: dict,
+    user: User = Depends(get_current_user),
+) -> ValidationResult:
     """Validasi kelengkapan data PKL (20-poin skor, tier WAJIB/PENTING/OPSIONAL).
 
     Menerima PklContext sebagai dict; logika sama persis dengan
     `python scripts/validate_pkl_data.py`.
     """
+    if not isinstance(ctx, dict) or len(str(ctx)) > 500_000:
+        raise HTTPException(status_code=400, detail="Payload data terlalu besar atau format tidak valid.")
     return run_validation(ctx)
 
 
 @app.post("/recommend-bab", response_model=BabRecommendation)
-def recommend_bab_endpoint(ctx: dict) -> BabRecommendation:
+def recommend_bab_endpoint(
+    ctx: dict,
+    user: User = Depends(get_current_user),
+) -> BabRecommendation:
     """Rekomendasi modul BAB berdasarkan kedalaman data."""
+    if not isinstance(ctx, dict) or len(str(ctx)) > 500_000:
+        raise HTTPException(status_code=400, detail="Payload data terlalu besar atau format tidak valid.")
     return recommend_bab(ctx)

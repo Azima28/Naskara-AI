@@ -282,7 +282,8 @@ async def draft_section_stream(
                     yield f"data: {json.dumps({'content': chunk})}\n\n"
             yield "data: [DONE]\n\n"
         except Exception as e:
-            err_payload = json.dumps({"error": str(e)})
+            print(f"[SSE AI Stream Error]: {type(e).__name__}")
+            err_payload = json.dumps({"error": "Terjadi kendala saat menghasilkan konten AI. Silakan coba beberapa saat lagi."})
             yield f"data: {err_payload}\n\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
@@ -447,7 +448,7 @@ ATURAN:
             )
         raise HTTPException(
             status_code=500,
-            detail=f"Gagal merapikan data menggunakan AI ({str(e)}). Silakan periksa koneksi AI atau coba lagi."
+            detail="Gagal merapikan data menggunakan AI. Silakan periksa koneksi AI atau coba lagi."
         )
 
 
