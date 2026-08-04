@@ -102,6 +102,11 @@ export default function PublicNavbar() {
           <div className="public-nav__desktop-actions">
             {token && user ? (
               <div className="public-nav__user-group">
+                {(user.role === 'admin' || user.role === 'guru') && (
+                  <Link to="/admin" className="btn-sm btn-outline" style={{ borderColor: 'var(--red-600, #dc2626)', color: 'var(--red-600, #dc2626)' }}>
+                    🛡️ Admin Panel
+                  </Link>
+                )}
                 <Link to="/dashboard" className="btn-sm btn-primary">
                   <IconDashboard size={16} style={{ marginRight: '0.4rem' }} /> Buka Dashboard
                 </Link>

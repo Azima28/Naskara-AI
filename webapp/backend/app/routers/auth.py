@@ -2,6 +2,7 @@
 """
 from __future__ import annotations
 
+import datetime as dt
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.exc import IntegrityError
@@ -34,6 +35,8 @@ class UserOut(BaseModel):
     id: str
     email: EmailStr
     name: str
+    role: str = "siswa"
+    is_active: bool = True
 
     model_config = {"from_attributes": True}
 
@@ -57,6 +60,8 @@ def register(payload: RegisterIn, response: Response, db: Session = Depends(get_
         email=payload.email.lower(),
         name=payload.name.strip(),
         password_hash=hash_password(payload.password),
+        role="siswa",
+        is_active=True,
     )
     try:
         db.add(user)
@@ -66,7 +71,7 @@ def register(payload: RegisterIn, response: Response, db: Session = Depends(get_
         db.rollback()
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email sudah terdaftar.")
 
-    token = create_access_token(subject=user.id, extra={"email": user.email})
+    token = create_access_token(subject=user.id, extra={"email": user.email, "role": user.role})
     is_prod = settings.environment.lower() in ("production", "prod")
     response.set_cookie(
         key="access_token",
@@ -85,7 +90,16 @@ def login(payload: LoginIn, response: Response, db: Session = Depends(get_db)) -
     if not user or not verify_password(payload.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Email atau password salah.")
 
-    token = create_access_token(subject=user.id, extra={"email": user.email})
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Akun Anda telah dinonaktifkan oleh administrator.",
+        )
+
+    user.last_login = dt.datetime.now(dt.timezone.utc)
+    db.commit()
+
+    token = create_access_token(subject=user.id, extra={"email": user.email, "role": user.role})
     is_prod = settings.environment.lower() in ("production", "prod")
     response.set_cookie(
         key="access_token",

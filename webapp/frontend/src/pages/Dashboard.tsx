@@ -16,6 +16,14 @@ import {
 } from '@/components/common/Icons'
 
 export default function DashboardPage() {
+  return (
+    <ProtectedRoute>
+      <DashboardInner />
+    </ProtectedRoute>
+  )
+}
+
+function DashboardInner() {
   const user = useAuth((s) => s.user)
   const logout = useAuth((s) => s.logout)
   const nav = useNavigate()
@@ -41,6 +49,8 @@ export default function DashboardPage() {
   const load = async () => {
     try {
       setDrafts(await listDrafts())
+    } catch {
+      /* ignore error when session expires or fails */
     } finally {
       setLoading(false)
     }
@@ -98,189 +108,192 @@ export default function DashboardPage() {
   })
 
   return (
-    <ProtectedRoute>
-      <div className="dash-layout">
-        {/* Top Header Navigation */}
-        <header className="dash-header">
-          <div className="dash-header__container">
-            <Link to="/" className="dash-header__brand">
-              <div className="dash-header__logo">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                </svg>
-              </div>
-              <div className="dash-header__brand-info">
-                <strong>Naskara AI</strong>
-                <span>Standar Panduan SMKN 4 Bandar Lampung</span>
-              </div>
-            </Link>
+    <div className="dash-layout">
+      {/* Top Header Navigation */}
+      <header className="dash-header">
+        <div className="dash-header__container">
+          <Link to="/" className="dash-header__brand">
+            <div className="dash-header__logo">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+              </svg>
+            </div>
+            <div className="dash-header__brand-info">
+              <strong>Naskara AI</strong>
+              <span>Standar Panduan SMKN 4 Bandar Lampung</span>
+            </div>
+          </Link>
 
-            <div className="dash-header__user">
-              <div className="user-profile-badge">
-                <div className="user-avatar">{user?.name ? user.name.charAt(0).toUpperCase() : 'S'}</div>
-                <div className="user-info">
-                  <span className="user-name">{user?.name || user?.email}</span>
-                  <span className="user-role">Siswa Vokasi</span>
-                </div>
+          <div className="dash-header__user">
+            {(user?.role === 'admin' || user?.role === 'guru') && (
+              <Link to="/admin" className="btn-sm btn-outline" style={{ borderColor: 'var(--red-600, #dc2626)', color: 'var(--red-600, #dc2626)', marginRight: '8px' }}>
+                🛡️ Panel Admin
+              </Link>
+            )}
+            <div className="user-profile-badge">
+              <div className="user-avatar">{user?.name ? user.name.charAt(0).toUpperCase() : 'S'}</div>
+              <div className="user-info">
+                <span className="user-name">{user?.name || user?.email}</span>
+                <span className="user-role">{user?.role === 'admin' ? 'Administrator' : user?.role === 'guru' ? 'Guru Pembimbing' : 'Siswa Vokasi'}</span>
               </div>
-              <button
-                className="btn-sm btn-outline"
-                onClick={() => { logout(); nav('/login') }}
-                title="Keluar dari akun"
-              >
-                Keluar
+            </div>
+            <button
+              className="btn-sm btn-outline"
+              onClick={() => { logout(); nav('/login') }}
+              title="Keluar dari akun"
+            >
+              Keluar
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Dashboard Main Content Shell */}
+      <main className="dash-main">
+        <div className="dash-main__container">
+          {/* User Welcome & Overview Banner */}
+          <div className="dash-welcome">
+            <div className="dash-welcome__text">
+              <h1>Selamat Datang, {user?.name || 'Siswa PKL'}!</h1>
+              <p>Kelola draf laporan PKL Anda dengan presisi standar akademik resmi. Dokumen siap diunduh dalam format <code>.docx</code> asli.</p>
+            </div>
+            <div className="dash-welcome__action">
+              <button onClick={() => handleCreate()} className="btn-primary hero-btn-lg">
+                <IconPlus size={18} style={{ marginRight: '0.4rem' }} /> Buat Draft Laporan Baru
               </button>
             </div>
           </div>
-        </header>
 
-        {/* Dashboard Main Content Shell */}
-        <main className="dash-main">
-          <div className="dash-main__container">
-            {/* User Welcome & Overview Banner */}
-            <div className="dash-welcome">
-              <div className="dash-welcome__text">
-                <h1>Selamat Datang, {user?.name || 'Siswa PKL'}!</h1>
-                <p>Kelola draf laporan PKL Anda dengan presisi standar akademik resmi. Dokumen siap diunduh dalam format <code>.docx</code> asli.</p>
-              </div>
-              <div className="dash-welcome__action">
-                <button onClick={() => handleCreate()} className="btn-primary hero-btn-lg">
-                  <IconPlus size={18} style={{ marginRight: '0.4rem' }} /> Buat Draft Laporan Baru
-                </button>
-              </div>
-            </div>
+          {/* Draft Management Section */}
+          <div className="dash-drafts-panel">
+            <div className="dash-drafts-panel__head">
+              <h2>Daftar Draft Laporan Saya</h2>
 
-            {/* Draft Management Section */}
-            <div className="dash-drafts-panel">
-              <div className="dash-drafts-panel__head">
-                <h2>Daftar Draft Laporan Saya</h2>
-
-                {/* Filter and Search Bar */}
-                <div className="dash-drafts-panel__filters">
-                  <div className="search-box">
-                    <input
-                      type="text"
-                      placeholder="Cari judul draf..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </div>
-                  <div className="filter-tabs">
-                    <button
-                      className={`filter-tab ${statusFilter === 'all' ? 'is-active' : ''}`}
-                      onClick={() => setStatusFilter('all')}
-                    >
-                      Semua ({drafts.length})
-                    </button>
-                    <button
-                      className={`filter-tab ${statusFilter === 'draft' ? 'is-active' : ''}`}
-                      onClick={() => setStatusFilter('draft')}
-                    >
-                      Sedang Diisi
-                    </button>
-                    <button
-                      className={`filter-tab ${statusFilter === 'ready' ? 'is-active' : ''}`}
-                      onClick={() => setStatusFilter('ready')}
-                    >
-                      Siap Generate
-                    </button>
-                  </div>
+              {/* Filter and Search Bar */}
+              <div className="dash-drafts-panel__filters">
+                <div className="search-box">
+                  <input
+                    type="text"
+                    placeholder="Cari judul draf..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
                 </div>
-              </div>
-
-              {loading && <p className="muted" style={{ padding: '2rem', textAlign: 'center' }}>Memuat daftar draft laporan...</p>}
-
-              {!loading && filteredDrafts.length === 0 && (
-                <div className="empty-state-dash">
-                  <div className="empty-icon"><IconDocument size={36} color="var(--green-700)" /></div>
-                  <h3>Belum Ada Draft Laporan</h3>
-                  <p className="muted">
-                    {searchQuery
-                      ? 'Tidak ada draft yang cocok dengan pencarian Anda.'
-                      : 'Klik tombol di bawah ini untuk memulai draf laporan PKL pertama Anda.'}
-                  </p>
-                  <button onClick={() => handleCreate()} className="btn-primary" style={{ marginTop: '1rem' }}>
-                    <IconPlus size={16} style={{ marginRight: '0.4rem' }} /> Buat Draft Laporan Baru
+                <div className="filter-tabs">
+                  <button
+                    className={`filter-tab ${statusFilter === 'all' ? 'is-active' : ''}`}
+                    onClick={() => setStatusFilter('all')}
+                  >
+                    Semua ({drafts.length})
+                  </button>
+                  <button
+                    className={`filter-tab ${statusFilter === 'draft' ? 'is-active' : ''}`}
+                    onClick={() => setStatusFilter('draft')}
+                  >
+                    Sedang Diisi
+                  </button>
+                  <button
+                    className={`filter-tab ${statusFilter === 'ready' ? 'is-active' : ''}`}
+                    onClick={() => setStatusFilter('ready')}
+                  >
+                    Siap Generate
                   </button>
                 </div>
-              )}
+              </div>
+            </div>
 
-              {/* Draft List Items */}
-              <div className="draft-grid">
-                {filteredDrafts.map((d) => (
-                  <div key={d.id} className="draft-card-item">
-                    <div className="draft-card-item__header">
-                      <div className="draft-card-item__title-group">
-                        <h4>{d.title}</h4>
-                        <span className="draft-card-item__date">
-                          Diperbarui: {d.updated_at ? new Date(d.updated_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
-                        </span>
-                      </div>
-                      <span className={`status-badge ${d.status === 'ready' ? 'status-badge--ready' : 'status-badge--draft'}`}>
-                        {d.status === 'ready' ? 'Siap Diunduh (.docx)' : 'Draf Diisi'}
+            {loading && <p className="muted" style={{ padding: '2rem', textAlign: 'center' }}>Memuat daftar draft laporan...</p>}
+
+            {!loading && filteredDrafts.length === 0 && (
+              <div className="empty-state-dash">
+                <div className="empty-icon"><IconDocument size={36} color="var(--green-700)" /></div>
+                <h3>Belum Ada Draft Laporan</h3>
+                <p className="muted">
+                  {searchQuery
+                    ? 'Tidak ada draft yang cocok dengan pencarian Anda.'
+                    : 'Klik tombol di bawah ini untuk memulai draf laporan PKL pertama Anda.'}
+                </p>
+                <button onClick={() => handleCreate()} className="btn-primary" style={{ marginTop: '1rem' }}>
+                  <IconPlus size={16} style={{ marginRight: '0.4rem' }} /> Buat Draft Laporan Baru
+                </button>
+              </div>
+            )}
+
+            {/* Draft List Items */}
+            <div className="draft-grid">
+              {filteredDrafts.map((d) => (
+                <div key={d.id} className="draft-card-item">
+                  <div className="draft-card-item__header">
+                    <div className="draft-card-item__title-group">
+                      <h4>{d.title}</h4>
+                      <span className="draft-card-item__date">
+                        Diperbarui: {d.updated_at ? new Date(d.updated_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
                       </span>
                     </div>
-
-                    <div className="draft-card-item__actions">
-                      <Link to={`/wizard/${d.id}`} className="btn-sm btn-primary">
-                        <IconPencil size={14} style={{ marginRight: '0.3rem' }} /> Lanjutkan Isi Form Data
-                      </Link>
-                      <Link to={`/editor/${d.id}`} className="btn-sm btn-outline">
-                        <IconDocument size={14} style={{ marginRight: '0.3rem' }} /> Edit &amp; Rapikan Teks AI
-                      </Link>
-                      <button
-                        onClick={() => handleDownload(d.id)}
-                        disabled={downloadingId === d.id}
-                        className="btn-sm btn-outline"
-                        style={{ color: 'var(--green-700)', borderColor: 'var(--green-600)' }}
-                      >
-                        <IconDownload size={14} style={{ marginRight: '0.3rem' }} /> {downloadingId === d.id ? 'Mengunduh...' : 'Unduh .docx'}
-                      </button>
-                      <button
-                        onClick={() => handleDelete(d.id)}
-                        className="btn-sm btn-danger"
-                        title="Hapus Draft"
-                      >
-                        <IconTrash size={14} />
-                      </button>
-                    </div>
+                    <span className={`status-badge ${d.status === 'ready' ? 'status-badge--ready' : 'status-badge--draft'}`}>
+                      {d.status === 'ready' ? 'Siap Diunduh (.docx)' : 'Draf Diisi'}
+                    </span>
                   </div>
-                ))}
-              </div>
-            </div>
 
-            {/* Checklist Standar Kelengkapan Laporan */}
-            <div className="academic-checklist-card">
-              <h3><IconChecklist size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Checklist Kelengkapan Laporan (Standar 20-Poin SMKN 4)</h3>
-              <p className="muted" style={{ fontSize: '0.9rem', marginBottom: '1rem' }}>
-                Pastikan draf Anda melengkapi field berikut agar dokumen .docx terisi 100% sempurna:
-              </p>
-              <div className="checklist-grid">
-                <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Identitas Siswa</strong> (Nama, NIS, NISN, Kelas, Jurusan)</div>
-                <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Identitas Perusahaan</strong> (Nama PT, Alamat, Pembimbing Industri)</div>
-                <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Identitas Sekolah</strong> (Nama Kepala Sekolah, NIP, Guru Pembimbing)</div>
-                <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Profil Perusahaan</strong> (Sejarah, Visi Misi, Bidang Usaha)</div>
-                <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Jurnal Kegiatan Harian</strong> (Minimal 3-5 kegiatan teknis)</div>
-                <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Peralatan &amp; Kendala</strong> (Perangkat kerja &amp; solusi kendala)</div>
-                <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Kesimpulan &amp; Saran</strong> (Draf AI akurat &amp; rapi)</div>
-                <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Lampiran Dokumentasi</strong> (Foto kegiatan PKL)</div>
-              </div>
+                  <div className="draft-card-item__actions">
+                    <Link to={`/wizard/${d.id}`} className="btn-sm btn-primary">
+                      <IconPencil size={14} style={{ marginRight: '0.3rem' }} /> Lanjutkan Isi Form Data
+                    </Link>
+                    <Link to={`/editor/${d.id}`} className="btn-sm btn-outline">
+                      <IconDocument size={14} style={{ marginRight: '0.3rem' }} /> Edit &amp; Rapikan Teks AI
+                    </Link>
+                    <button
+                      onClick={() => handleDownload(d.id)}
+                      disabled={downloadingId === d.id}
+                      className="btn-sm btn-outline"
+                      style={{ color: 'var(--green-700)', borderColor: 'var(--green-600)' }}
+                    >
+                      <IconDownload size={14} style={{ marginRight: '0.3rem' }} /> {downloadingId === d.id ? 'Mengunduh...' : 'Unduh .docx'}
+                    </button>
+                    <button
+                      onClick={() => handleDelete(d.id)}
+                      className="btn-sm btn-danger"
+                      title="Hapus Draft"
+                    >
+                      <IconTrash size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
-
           </div>
-        </main>
 
-        <NotificationModal
-          isOpen={modal.isOpen}
-          title={modal.title}
-          message={modal.message}
-          type={modal.type}
-          confirmLabel={modal.confirmLabel}
-          onConfirm={modal.onConfirm}
-          onClose={() => setModal((prev) => ({ ...prev, isOpen: false, onConfirm: undefined, confirmLabel: undefined }))}
-        />
-      </div>
-    </ProtectedRoute>
+          {/* Checklist Standar Kelengkapan Laporan */}
+          <div className="academic-checklist-card">
+            <h3><IconChecklist size={20} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} /> Checklist Kelengkapan Laporan (Standar 20-Poin SMKN 4)</h3>
+            <p className="muted" style={{ fontSize: '0.9rem', marginBottom: '1rem' }}>
+              Pastikan draf Anda melengkapi field berikut agar dokumen .docx terisi 100% sempurna:
+            </p>
+            <div className="checklist-grid">
+              <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Identitas Siswa</strong> (Nama, NIS, NISN, Kelas, Jurusan)</div>
+              <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Identitas Perusahaan</strong> (Nama PT, Alamat, Pembimbing Industri)</div>
+              <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Identitas Sekolah</strong> (Nama Kepala Sekolah, NIP, Guru Pembimbing)</div>
+              <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Profil Perusahaan</strong> (Sejarah, Visi Misi, Bidang Usaha)</div>
+              <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Jurnal Kegiatan Harian</strong> (Minimal 3-5 kegiatan teknis)</div>
+              <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Peralatan &amp; Kendala</strong> (Perangkat kerja &amp; solusi kendala)</div>
+              <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Kesimpulan &amp; Saran</strong> (Draf AI akurat &amp; rapi)</div>
+              <div className="checklist-item"><IconCheck size={14} color="var(--green-700)" style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> <strong>Lampiran Dokumentasi</strong> (Foto kegiatan PKL)</div>
+            </div>
+          </div>
+
+        </div>
+      </main>
+
+      <NotificationModal
+        isOpen={modal.isOpen}
+        title={modal.title}
+        message={modal.message}
+        type={modal.type}
+        confirmLabel={modal.confirmLabel}
+        onConfirm={modal.onConfirm}
+        onClose={() => setModal((prev) => ({ ...prev, isOpen: false, onConfirm: undefined, confirmLabel: undefined }))}
+      />
+    </div>
   )
 }

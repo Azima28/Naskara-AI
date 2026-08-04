@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+import { StrictMode, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { useAuth } from './store/auth'
@@ -6,9 +6,12 @@ import App from './App.tsx'
 import './index.css'
 
 function Shell() {
-  // Restore auth dari localStorage saat app pertama load.
+  // Restore auth dari localStorage saat app pertama load (dalam useEffect agar tidak re-trigger tiap render)
   const restore = useAuth((s) => s.restore)
-  restore()
+
+  useEffect(() => {
+    restore()
+  }, [restore])
 
   return <App />
 }

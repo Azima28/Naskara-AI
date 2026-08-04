@@ -94,8 +94,8 @@ api.interceptors.response.use(
   (error) => {
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('pkl-auth')
-      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/register')) {
-        window.location.href = '/login'
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('auth-unauthorized'))
       }
     }
     return Promise.reject(error)
@@ -354,3 +354,63 @@ export const uploadAsset = async (file: File, type: string = 'foto'): Promise<As
   })
   return res.data
 }
+
+// --------------------------------------------------------------------------- //
+//  Admin Router Endpoints                                                     //
+// --------------------------------------------------------------------------- //
+import type {
+  AdminDraftItem,
+  AdminStats,
+  AssetAuditItem,
+  AuditLogItem,
+  HealthDetailResponse,
+  SystemConfigData,
+  UserManagementItem,
+} from '@/types/api'
+
+export const getAdminStats = () => api.get<AdminStats>('/admin/stats').then((r) => r.data)
+
+export const listAdminUsers = (params?: { search?: string; role?: string; skip?: number; limit?: number }) =>
+  api.get<{ total: number; items: UserManagementItem[] }>('/admin/users', { params }).then((r) => r.data)
+
+export const createAdminUser = (payload: { email: string; name: string; password: string; role: string }) =>
+  api.post<{ status: string; message: string; user_id: string }>('/admin/users', payload).then((r) => r.data)
+
+export const updateUserRole = (userId: string, role: string) =>
+  api.put<{ status: string; message: string }>(`/admin/users/${userId}/role`, { role }).then((r) => r.data)
+
+export const toggleUserStatus = (userId: string, isActive: boolean) =>
+  api.put<{ status: string; message: string }>(`/admin/users/${userId}/status`, { is_active: isActive }).then((r) => r.data)
+
+export const resetUserPassword = (userId: string, newPassword: string) =>
+  api.post<{ status: string; message: string }>(`/admin/users/${userId}/reset-password`, { new_password: newPassword }).then((r) => r.data)
+
+export const deleteUser = (userId: string) =>
+  api.delete<{ status: string; message: string }>(`/admin/users/${userId}`).then((r) => r.data)
+
+export const listAdminDrafts = (params?: { status_filter?: string; search?: string; skip?: number; limit?: number }) =>
+  api.get<{ total: number; items: AdminDraftItem[] }>('/admin/drafts', { params }).then((r) => r.data)
+
+export const inspectAdminDraft = (draftId: string) =>
+  api.get<any>(`/admin/drafts/${draftId}`).then((r) => r.data)
+
+export const forceDeleteDraft = (draftId: string) =>
+  api.delete<{ status: string; message: string }>(`/admin/drafts/${draftId}`).then((r) => r.data)
+
+export const auditAssets = () =>
+  api.get<{ total_files: number; total_bytes: number; total_mb: number; orphaned_count: number; items: AssetAuditItem[] }>('/admin/assets').then((r) => r.data)
+
+export const cleanupOrphanedAssets = () =>
+  api.post<{ status: string; message: string; cleaned_count: number; freed_bytes: number }>('/admin/assets/cleanup').then((r) => r.data)
+
+export const getSystemSettings = () =>
+  api.get<{ key: string; data: SystemConfigData }>('/admin/settings').then((r) => r.data)
+
+export const updateSystemSettings = (data: SystemConfigData) =>
+  api.put<{ status: string; message: string }>('/admin/settings', data).then((r) => r.data)
+
+export const listAuditLogs = (params?: { skip?: number; limit?: number }) =>
+  api.get<{ total: number; items: AuditLogItem[] }>('/admin/logs', { params }).then((r) => r.data)
+
+export const getHealthDetail = () =>
+  api.get<HealthDetailResponse>('/admin/health-detail').then((r) => r.data)

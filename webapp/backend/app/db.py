@@ -53,7 +53,7 @@ def get_db() -> Iterator[Session]:
 
 
 def init_db() -> None:
-    """Bikin semua tabel. Dipanggil saat startup (idempotent). Set WAL mode untuk SQLite."""
+    """Bikin semua tabel. Dipanggil saat startup (idempotent). Set WAL mode untuk SQLite & jalankan auto-migrasi kolom."""
     from . import models  # noqa: F401  (register models di metadata)
 
     Base.metadata.create_all(bind=engine)
@@ -63,3 +63,19 @@ def init_db() -> None:
                 conn.exec_driver_sql("PRAGMA journal_mode=WAL;")
             except Exception as e:
                 print(f"⚠️ Warning: Gagal set WAL mode SQLite ({e}), fallback ke mode default.")
+
+            try:
+                result = conn.exec_driver_sql("PRAGMA table_info(users);").fetchall()
+                columns = [row[1] for row in result]
+                if "role" not in columns:
+                    conn.exec_driver_sql("ALTER TABLE users ADD COLUMN role VARCHAR(50) DEFAULT 'siswa' NOT NULL;")
+                    print("✅ Migrasi SQLite: Kolom 'role' berhasil ditambahkan ke tabel users.")
+                if "is_active" not in columns:
+                    conn.exec_driver_sql("ALTER TABLE users ADD COLUMN is_active BOOLEAN DEFAULT 1 NOT NULL;")
+                    print("✅ Migrasi SQLite: Kolom 'is_active' berhasil ditambahkan ke tabel users.")
+                if "last_login" not in columns:
+                    conn.exec_driver_sql("ALTER TABLE users ADD COLUMN last_login DATETIME;")
+                    print("✅ Migrasi SQLite: Kolom 'last_login' berhasil ditambahkan ke tabel users.")
+                conn.commit()
+            except Exception as e:
+                print(f"⚠️ Warning: Auto-migration SQLite error: {e}")

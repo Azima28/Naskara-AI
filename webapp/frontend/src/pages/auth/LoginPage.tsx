@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from 'react'
+import { type FormEvent, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/store/auth'
 import AuthLayout from '@/components/layout/AuthLayout'
@@ -7,18 +7,31 @@ import { IconAlert, IconEye, IconEyeOff } from '@/components/common/Icons'
 export default function LoginPage() {
   const login = useAuth((s) => s.login)
   const loading = useAuth((s) => s.loading)
+  const user = useAuth((s) => s.user)
+  const token = useAuth((s) => s.token)
   const nav = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [err, setErr] = useState('')
 
+  useEffect(() => {
+    if (token && user) {
+      const role = user.role || 'siswa'
+      if (role === 'admin' || role === 'guru') {
+        nav('/admin', { replace: true })
+      } else {
+        nav('/dashboard', { replace: true })
+      }
+    }
+  }, [token, user?.role])
+
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setErr('')
     try {
       await login(email, password)
-      nav('/dashboard')
+      // Navigation is automatically handled by the useEffect above once token & user state are set
     } catch (r: any) {
       const detail = r?.response?.data?.detail
       let msg = typeof detail === 'string'

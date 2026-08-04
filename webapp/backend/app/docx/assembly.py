@@ -1004,7 +1004,113 @@ def _scrub_vague(node):
                 _scrub_vague(item)
 
 
+def _merge_system_config(data: dict, sys_cfg: dict | None = None) -> None:
+    """Suntikkan konfigurasi terpusat (Kop Surat, Kepala Sekolah, Waka Humas, Pembimbing Sekolah, Ketua KK Jurusan)
+    ke dalam PklContext dict sebelum perakitan dokumen .docx.
+    """
+    if sys_cfg is None:
+        try:
+            from ..db import SessionLocal
+            from ..models import SystemConfig
+            with SessionLocal() as db:
+                cfg_obj = db.get(SystemConfig, "global_settings")
+                if cfg_obj and cfg_obj.value_json:
+                    sys_cfg = cfg_obj.value_json
+        except Exception:
+            pass
+
+    if sys_cfg is None:
+        try:
+            from ..routers.admin import SystemConfigIn
+            sys_cfg = SystemConfigIn().model_dump()
+        except Exception:
+            sys_cfg = {}
+
+    if not sys_cfg:
+        return
+
+    sekolah = data.setdefault("sekolah", {})
+    kop = sekolah.setdefault("kop", {})
+
+    # Isi identitas sekolah jika kosong atau bernilai default
+    if not sekolah.get("nama") or sekolah.get("nama") == "SMK Negeri 4 Bandar Lampung":
+        sekolah["nama"] = sys_cfg.get("school_name", sekolah.get("nama", "SMK Negeri 4 Bandar Lampung"))
+    if not sekolah.get("nama_lengkap") or sekolah.get("nama_lengkap") == "SMK Negeri 4 Bandar Lampung":
+        sekolah["nama_lengkap"] = sys_cfg.get("school_name_full", sekolah.get("nama_lengkap", "SMK Negeri 4 Bandar Lampung"))
+    if not sekolah.get("alamat"):
+        sekolah["alamat"] = sys_cfg.get("alamat", "Jl. HOS Cokroaminoto No. 102, Enggal, Bandar Lampung")
+    if not sekolah.get("kota"):
+        sekolah["kota"] = sys_cfg.get("kota", "Bandar Lampung")
+    if not sekolah.get("telp"):
+        sekolah["telp"] = sys_cfg.get("telp", "(0721) 262637")
+    if not sekolah.get("email"):
+        sekolah["email"] = sys_cfg.get("email", "smkn4bl@yahoo.co.id")
+    if not sekolah.get("website"):
+        sekolah["website"] = sys_cfg.get("website", "https://smkn4-bdl.sch.id")
+
+    # Kop Surat
+    if not kop.get("baris_1") or kop.get("baris_1") == "PEMERINTAH PROVINSI LAMPUNG":
+        kop["baris_1"] = sys_cfg.get("kop_baris_1", "PEMERINTAH PROVINSI LAMPUNG")
+    if not kop.get("baris_2") or kop.get("baris_2") == "DINAS PENDIDIKAN DAN KEBUDAYAAN":
+        kop["baris_2"] = sys_cfg.get("kop_baris_2", "DINAS PENDIDIKAN DAN KEBUDAYAAN")
+    if not kop.get("baris_3") or kop.get("baris_3") == "SMK NEGERI 4 BANDAR LAMPUNG":
+        kop["baris_3"] = sys_cfg.get("kop_baris_3", "SMK NEGERI 4 BANDAR LAMPUNG")
+    if not kop.get("npsn") or kop.get("npsn") in ("10807066", "10807215"):
+        kop["npsn"] = sys_cfg.get("npsn", "10807215")
+    if not kop.get("nss"):
+        kop["nss"] = sys_cfg.get("nss", "401126003028")
+
+    # Pejabat Utama
+    kepsek = sekolah.setdefault("kepala_sekolah", {})
+    if not kepsek.get("nama") or "Alex Kuchel" in kepsek.get("nama", ""):
+        kepsek["nama"] = sys_cfg.get("kepala_sekolah", "HJ. Dewi Ningsih, S.Pd., M.Pd.")
+    if not kepsek.get("nip") or "19720315" in kepsek.get("nip", ""):
+        kepsek["nip"] = sys_cfg.get("nip_kepala_sekolah", "19750312 200312 2 004")
+
+    waka = sekolah.setdefault("waka_humas", {})
+    if not waka.get("nama") or "Budi Santoso" in waka.get("nama", ""):
+        waka["nama"] = sys_cfg.get("waka_humas", "Mas Azizah, M.Pd")
+    if not waka.get("nip") or "19680512" in waka.get("nip", ""):
+        waka["nip"] = sys_cfg.get("nip_waka_humas", "19781015 200902 2 001")
+
+    pemb = sekolah.setdefault("pembimbing_sekolah", {})
+    if not pemb.get("nama"):
+        pemb["nama"] = sys_cfg.get("pembimbing_sekolah", "Siti Rahma, S.Pd.")
+    if not pemb.get("nip"):
+        pemb["nip"] = sys_cfg.get("nip_pembimbing_sekolah", "19820101 200701 2 011")
+
+    # Ketua KK Jurusan
+    siswa = data.get("siswa", {})
+    jurusan_key = (siswa.get("jurusan_key") or "").lower().strip()
+    if not jurusan_key:
+        j_str = (siswa.get("jurusan") or "").lower()
+        if "rekayasa" in j_str or "rpl" in j_str:
+            jurusan_key = "rpl"
+        elif "komputer" in j_str or "tkj" in j_str:
+            jurusan_key = "tkj"
+        elif "pemasaran" in j_str or "bdp" in j_str or "bisnis" in j_str:
+            jurusan_key = "bdp"
+        elif "akuntansi" in j_str or "akl" in j_str:
+            jurusan_key = "akl"
+        elif "perkantoran" in j_str or "mp" in j_str or "mplb" in j_str:
+            jurusan_key = "mp"
+        elif "boga" in j_str or "tb" in j_str:
+            jurusan_key = "tb"
+
+    pejabat_j = sys_cfg.get("pejabat_jurusan", {})
+    if jurusan_key and jurusan_key in pejabat_j:
+        ketua = sekolah.setdefault("ketua_kk", {})
+        info = pejabat_j[jurusan_key]
+        if not ketua.get("nama") or ketua.get("nama") in ("Ketua RPL", "Ketua KK", "Nama Ketua KK"):
+            ketua["nama"] = info.get("nama", "")
+        if not ketua.get("nip") or ketua.get("nip") in ("12345", "NIP Ketua KK"):
+            ketua["nip"] = info.get("nip", "")
+
+
 def _sanitize_data(data: dict) -> None:
+    # Suntikkan / selaraskan konfigurasi terpusat (Kop & Pejabat) dari Admin
+    _merge_system_config(data)
+
     # Buang jawaban vague & rapikan spasi di semua field.
     _scrub_vague(data)
 

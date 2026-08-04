@@ -48,4 +48,26 @@ def get_current_user(
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User tidak ditemukan.")
 
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Akun Anda telah dinonaktifkan oleh administrator.",
+        )
+
     return user
+
+
+def require_roles(*allowed_roles: str):
+    """Dependency factory untuk otorisasi berbasis role (RBAC)."""
+    def role_checker(current_user: User = Depends(get_current_user)) -> User:
+        if current_user.role not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Anda tidak memiliki hak akses untuk melakukan aksi ini.",
+            )
+        return current_user
+    return role_checker
+
+
+require_admin = require_roles("admin")
+require_staff = require_roles("admin", "guru")
