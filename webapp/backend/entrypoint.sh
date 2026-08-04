@@ -21,4 +21,8 @@ chown -R appuser:appgroup /app/webapp/backend/pkl_reports.db* 2>/dev/null || tru
 chown -R appuser:appgroup /app/webapp/uploads 2>/dev/null || true
 chown -R appuser:appgroup /app/webapp/output 2>/dev/null || true
 
+# LibreOffice needs writable cache/config dirs under HOME (/app)
+mkdir -p /app/.cache /app/.config 2>/dev/null || true
+chown -R appuser:appgroup /app/.cache /app/.config 2>/dev/null || true
+
 exec gosu appuser "$@"

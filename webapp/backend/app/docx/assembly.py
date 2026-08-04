@@ -255,7 +255,9 @@ def assemble_report(data: dict) -> str:
 
     # Populate native TOC in docx dengan nomor halaman kalkulasi dinamis
     sec_list = _generate_sections_list(builder, data)
-    builder.populate_native_toc(sec_list)
+    # DAFTAR ISI hanya berisi entri utama — gambar & lampiran punya halaman sendiri
+    toc_only = [s for s in sec_list if not s[1].startswith(("lamp_", "gambar_"))]
+    builder.populate_native_toc(toc_only)
 
     # Tanam nomor halaman kalkulasi dinamis murni Python ke semua field PAGEREF
     # 100% Python Calculator — identik di Windows Laptop maupun Docker Linux
@@ -267,19 +269,23 @@ def assemble_report(data: dict) -> str:
         if k in dynamic_pages:
             print(f"  {k}: {dynamic_pages[k]}")
 
-    builder.embed_toc_page_numbers(dynamic_pages)
-
+    # Simpan draft docx pertama (dengan fldSimple utuh) agar LibreOffice bisa mengekstrak halaman fisik
     builder.save(output_path)
 
-    # compute_toc_page_numbers sekarang selalu return {} — tidak ada engine eksternal
+    # Dapatkan exact_pages dari LibreOffice PDF Extractor (jika ada LibreOffice)
+    final_pages = dict(dynamic_pages)
     try:
         from .builder import compute_toc_page_numbers
         exact_pages = compute_toc_page_numbers(output_path, sec_list=sec_list)
         if exact_pages:
-            builder.embed_toc_page_numbers(exact_pages)
-            builder.save(output_path)
-    except Exception:
-        pass
+            print(f"[TOC-SYNC] Merging {len(exact_pages)} exact LibreOffice page numbers into final TOC")
+            final_pages.update(exact_pages)
+    except Exception as e:
+        logger.warning("[TOC-ENGINE] LibreOffice extractor failed: %s", e)
+
+    # Tanam final_pages HANYA SATU KALI ke builder.doc
+    builder.embed_toc_page_numbers(final_pages)
+    builder.save(output_path)
 
     return output_path
 
@@ -455,8 +461,23 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
     print(f"[TOC-CALC] LAMPIRAN: mulai hal {cur_page}")
 
     # Susun entri sections dengan nomor halaman presisi (BAB + offset sub-bab)
+    front_roman_map = {
+        "peng_industri": "i",
+        "peng_sekolah": "ii",
+        "id_siswa": "iii",
+        "id_industri": "iv",
+        "kata_pengantar": "v",
+    }
+
     active_bab_num: int | str = 1
     for level, text, bookmark in builder.outline:
+        if bookmark in front_roman_map:
+            sections.append((text, bookmark, level, front_roman_map[bookmark]))
+            continue
+        elif bookmark and (bookmark.startswith("peng_") or bookmark.startswith("id_")):
+            sections.append((text, bookmark, level, "i"))
+            continue
+
         b_key = bookmark_bab_key.get(bookmark)
         if b_key is None:
             m_bab = re.search(r"BAB\s+([IVXLCDM\d]+)", text, re.IGNORECASE)
@@ -486,13 +507,23 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
         if isinstance(f, dict) and f.get("gambar")
     ]
     for i in range(1, len(foto_lampiran) + 1):
+        f = foto_lampiran[i - 1]
+        ket = (f.get("keterangan") or "").strip() or f"Dokumentasi kegiatan {i}"
         pg_lamp = pg_lamp_base + ((i - 1) // 2)
-        sections.append(("", f"lamp_{i}", 1, str(pg_lamp)))
+        sections.append((ket.rstrip("."), f"lamp_{i}", 1, str(pg_lamp)))
 
     pg_dp_base = bab_start_pages.get(4, cur_page)
     peralatan = [p for p in data.get("peralatan", []) if p.get("gambar")]
+    bab_modules = data.get("config", {}).get("bab_modules") or list(ALL_BAB_MODULES)
+    normalized = [m for m in _normalize_modules(bab_modules) if m in ALL_BAB_MODULES]
+    bab_dp = (
+        normalized.index("DATA_PENGAMATAN") + 1
+        if "DATA_PENGAMATAN" in normalized else 4
+    )
     for i in range(1, len(peralatan) + 1):
-        sections.append(("", f"gambar_{i}", 1, str(pg_dp_base)))
+        p = peralatan[i - 1]
+        nama_p = p.get("nama", f"Peralatan {i}")
+        sections.append((f"Gambar {bab_dp}.{i} {nama_p}", f"gambar_{i}", 1, str(pg_dp_base)))
 
     return sections
 
@@ -1574,9 +1605,9 @@ def _write_data_pengamatan(builder: PklDocBuilder, data: dict, bab_num: int) -> 
             gambar_p = p.get("gambar", "")
             builder.add_numbered(nama_p, idx)
             if gambar_p and _try_image(builder, gambar_p, width_cm=10):
-                # Nomor gambar mengikuti BAB: "Gambar 4. 1", "Gambar 4. 2", ...
+                # Nomor gambar mengikuti BAB: "Gambar 4.1", "Gambar 4.2", ...
                 # Bookmark = target PAGEREF di Daftar Gambar (preset pedoman).
-                builder.add_caption(f"Gambar {bab_num}. {idx}", bookmark=f"gambar_{idx}")
+                builder.add_caption(f"Gambar {bab_num}.{idx} {nama_p}", bookmark=f"gambar_{idx}")
             if deskripsi_p:
                 for para in deskripsi_p.split("\n"):
                     p_clean = para.strip()
@@ -1647,23 +1678,46 @@ def _write_kesimpulan_saran(builder: PklDocBuilder, data: dict, bab_num: int) ->
 
     sub = 1
 
-    # Kesimpulan & Saran from AI (format bertanda [KESIMPULAN] / [SARAN])
+    # Kesimpulan & Saran from AI (format bertanda [KESIMPULAN] / [SARAN] atau list/string)
     gen_kesimpulan = data.get("generated_sections", {}).get("kesimpulan_saran")
     if gen_kesimpulan:
         gen_kesimpulan_str = _ensure_str(gen_kesimpulan)
-        for para in gen_kesimpulan_str.split("\n"):
-            para_str = para.strip()
-            if not para_str:
-                continue
-            if para_str == "[KESIMPULAN]":
-                builder.add_sub_heading(bab_num, sub, judul.get("kesimpulan", "Kesimpulan"))
-                sub += 1
-            elif para_str == "[SARAN]":
-                builder.add_sub_heading(bab_num, sub, judul.get("saran", "Saran"))
-                sub += 1
-            else:
-                builder.add_body(para_str)
-        return
+        if "[KESIMPULAN]" in gen_kesimpulan_str or "[SARAN]" in gen_kesimpulan_str:
+            for para in gen_kesimpulan_str.split("\n"):
+                para_str = para.strip()
+                if not para_str:
+                    continue
+                if para_str == "[KESIMPULAN]":
+                    builder.add_sub_heading(bab_num, sub, judul.get("kesimpulan", "Kesimpulan"))
+                    sub += 1
+                elif para_str == "[SARAN]":
+                    builder.add_sub_heading(bab_num, sub, judul.get("saran", "Saran"))
+                    sub += 1
+                else:
+                    builder.add_body(para_str)
+            return
+        elif isinstance(gen_kesimpulan, list):
+            builder.add_sub_heading(bab_num, sub, judul.get("kesimpulan", "Kesimpulan"))
+            sub += 1
+            # 2 item pertama = kesimpulan, sisanya = saran
+            kes_items = [x for x in gen_kesimpulan if "disarankan" not in str(x).lower() and "saran" not in str(x).lower()]
+            sar_items = [x for x in gen_kesimpulan if "disarankan" in str(x).lower() or "saran" in str(x).lower()]
+            if not kes_items:
+                kes_items = gen_kesimpulan[:2]
+                sar_items = gen_kesimpulan[2:]
+
+            for i, k in enumerate(kes_items, 1):
+                clean_k = _sanitize_ai_output(k)
+                if clean_k:
+                    builder.add_numbered(clean_k, i)
+
+            builder.add_sub_heading(bab_num, sub, judul.get("saran", "Saran"))
+            sub += 1
+            for i, s in enumerate(sar_items or gen_kesimpulan[2:], 1):
+                clean_s = _sanitize_ai_output(s)
+                if clean_s:
+                    builder.add_lettered(clean_s, _LETTERS[(i - 1) % 26] + ".")
+            return
 
     # --- Kesimpulan ---
     builder.add_sub_heading(bab_num, sub, judul.get("kesimpulan", "Kesimpulan"))

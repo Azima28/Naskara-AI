@@ -280,6 +280,13 @@ class PklDocBuilder:
             if not text or not bookmark:
                 continue
             indent_dxa = "0" if level == 1 else ("360" if level == 2 else "720")
+            is_roman = (
+                any(c in page_val for c in ('i', 'v', 'x'))
+                or bookmark.startswith(('peng_', 'id_'))
+                or bookmark in ('kata_pengantar', 'daftar_isi', 'daftar_gambar', 'daftar_lampiran')
+            )
+            instr_switch = r"\* roman \h" if is_roman else r"\h"
+
             p_xml = parse_xml(
                 f'<w:p {nsdecls("w")}>'
                 f'<w:pPr>'
@@ -288,7 +295,7 @@ class PklDocBuilder:
                 f'<w:spacing w:line="360" w:lineRule="auto" w:after="0"/></w:pPr>'
                 f'<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="24"/></w:rPr><w:t xml:space="preserve">{_xml_escape(text)}</w:t></w:r>'
                 f'<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="24"/></w:rPr><w:tab/></w:r>'
-                f'<w:fldSimple w:instr=" PAGEREF {bookmark} \\h ">'
+                f'<w:fldSimple w:instr=" PAGEREF {bookmark} {instr_switch} ">'
                 f'<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="24"/></w:rPr><w:t>{page_val}</w:t></w:r>'
                 f'</w:fldSimple>'
                 f'</w:p>'
@@ -316,17 +323,15 @@ class PklDocBuilder:
     #  Embed nomor halaman nyata ke Daftar Isi (tanpa butuh user update)  #
     # ------------------------------------------------------------------ #
     def embed_toc_page_numbers(self, pages: dict[str, str]) -> None:
-        """Tulis nomor halaman NYATA ke cache tiap field PAGEREF di Daftar Isi.
+        """Tulis nomor halaman NYATA ke tiap entri Daftar Isi, Gambar & Lampiran.
 
         ``pages`` = pemetaan ``bookmark → nomor halaman`` (mis. ``"1"`` /
-        ``"ii"``) hasil komputasi engine Word. Setelah angka tertanam, flag
-        ``updateFields`` dicabut supaya Word tidak mengganti angka lagi —
-        dokumen langsung menampilkan Daftar Isi yang benar di semua viewer,
-        termasuk yang tidak mengeksekusi field (pratinjau, konversi PDF).
+        ``"ii"``). Mengganti field PAGEREF dengan run teks murni berisi nomor eksak,
+        sehingga nomor halaman 100% terkunci dan akurat di semua platform & konverter PDF.
         """
         if not pages:
             return
-        for fld in self.doc.element.body.xpath('.//w:fldSimple[contains(@w:instr, "PAGEREF")]'):
+        for fld in list(self.doc.element.body.xpath('.//w:fldSimple[contains(@w:instr, "PAGEREF")]')):
             instr = fld.get(qn("w:instr")) or ""
             parts = instr.split()
             if len(parts) < 2:
@@ -334,12 +339,19 @@ class PklDocBuilder:
             bookmark = parts[1]
             if bookmark not in pages:
                 continue
-            # Ganti teks cache di dalam run field dengan nomor nyata.
-            ts = fld.findall('.//' + qn('w:t'))
-            if ts:
-                ts[0].text = str(pages[bookmark])
-                for extra in ts[1:]:
-                    extra.text = ""
+            pg_val = str(pages[bookmark])
+
+            # Ganti fldSimple dengan run teks biasa yang terkunci
+            r_xml = parse_xml(
+                f'<w:r {nsdecls("w")}><w:rPr>'
+                f'<w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>'
+                f'<w:sz w:val="24"/></w:rPr>'
+                f'<w:t>{_xml_escape(pg_val)}</w:t></w:r>'
+            )
+            parent = fld.getparent()
+            if parent is not None:
+                parent.replace(fld, r_xml)
+
         self.clear_update_fields()
 
     def add_spacing(self, lines: int = 1, keep_with_next: bool = False) -> Any:
@@ -488,7 +500,7 @@ class PklDocBuilder:
         # menyisakan 2 enter di bagian paling bawah Halaman 1 tanpa meluap ke Halaman 2.
         import math as _math
 
-        base_enters = 6
+        base_enters = 2
         extra_lines = 0
         if kota_prsh and kota_prsh.upper() not in nama_prsh.upper():
             extra_lines += 1
@@ -497,7 +509,7 @@ class PklDocBuilder:
         if len(nama_sekolah) > 35 or len(jurusan) > 30:
             extra_lines += 1
 
-        final_enters = max(2, base_enters - extra_lines)
+        final_enters = max(1, base_enters - extra_lines)
 
         for _ in range(final_enters):
             p_sp = self.doc.add_paragraph()
@@ -865,17 +877,11 @@ class PklDocBuilder:
         available_enters = max(1, 28 - used_lines)
 
         # Jika sisa ruang mepet, kecilkan group_space_before & enter agar tetap muat di 1 halaman
-        if available_enters <= 1 and total_line_count > 17:
-            group_space_before = 4
-            spacing_enters = 1
-        elif available_enters <= 2:
-            group_space_before = 6
-            spacing_enters = available_enters
-        else:
-            group_space_before = 10
-            spacing_enters = available_enters
+        # Selalu gunakan font_size=12 & space_before 4pt agar Identitas Siswa muat 100% di 1 halaman
+        group_space_before = 4
+        spacing_enters = 1
 
-        self._add_borderless_table(rows, group_space_before=group_space_before)
+        self._add_borderless_table(rows, font_size=12, group_space_before=group_space_before)
 
         # Enters (jarak vertikal) dinamis hasil kalkulasi sisa kapasitas halaman
         self.add_spacing(spacing_enters, keep_with_next=True)
@@ -976,7 +982,7 @@ class PklDocBuilder:
             ("E-mail", pembimbing.get("email", "")),
         ]
 
-        self._add_borderless_table(rows, col_widths=(5.0, 0.5, 8.5))
+        self._add_borderless_table(rows, col_widths=(5.0, 0.5, 8.5), font_size=11, group_space_before=3)
 
     # ------------------------------------------------------------------ #
     #  Kata Pengantar                                                     #
@@ -1630,6 +1636,7 @@ def compute_toc_page_numbers_libreoffice(docx_path: str, sec_list: list[tuple[st
                 break
 
     if not soffice_bin:
+        print("[TOC-LO] soffice binary NOT FOUND, skipping LibreOffice")
         return {}
 
     pdf_path = os.path.splitext(os.path.abspath(docx_path))[0] + ".pdf"
@@ -1637,8 +1644,15 @@ def compute_toc_page_numbers_libreoffice(docx_path: str, sec_list: list[tuple[st
     try:
         # Jalankan LibreOffice headless update & konversi PDF
         cmd = [soffice_bin, "--headless", "--convert-to", "pdf", os.path.abspath(docx_path)]
+        print(f"[TOC-LO] Running: {' '.join(cmd)}")
         res = subprocess.run(cmd, capture_output=True, timeout=45, cwd=os.path.dirname(os.path.abspath(docx_path)))
-        if res.returncode != 0 or not os.path.exists(pdf_path):
+        print(f"[TOC-LO] returncode={res.returncode}, pdf_exists={os.path.exists(pdf_path)}")
+        if res.returncode != 0:
+            print(f"[TOC-LO] FAILED: stderr={res.stderr.decode(errors='ignore')[:300]}")
+            return {}
+        if not os.path.exists(pdf_path):
+            print(f"[TOC-LO] FAILED: PDF not found at {pdf_path}")
+            print(f"[TOC-LO] stdout: {res.stdout.decode(errors='ignore')[:300]}")
             return {}
 
         pages: dict[str, str] = {}
@@ -1670,8 +1684,70 @@ def compute_toc_page_numbers_libreoffice(docx_path: str, sec_list: list[tuple[st
                 bab1_page = 6  # Fallback default halaman BAB I
 
             if sec_list:
-                # Pisahkan pencarian Front Matter (< bab1_page) & Body Matter (>= bab1_page)
-                # agar pencarian judul TIDAK pernah memicu teks di dalam tabel DAFTAR ISI sendiri!
+                # 1. Map physical PDF page numbers for all section/BAB headings
+                p_bab1 = None
+                p_bab2 = None
+                p_bab3 = None
+                p_bab4 = None
+                p_bab5 = None
+                p_bab6 = None
+                p_dp = None
+                p_lamp = None
+
+                p_peng_ind = None
+                p_peng_sek = None
+                p_id_siswa = None
+                p_id_ind = None
+                p_kata_peng = None
+
+                for p in range(1, total_pdf_pages + 1):
+                    txt_clean = re.sub(r"\s+", " ", pdf_doc[p - 1].get_text("text")).upper()
+                    if "DAFTAR ISI" in txt_clean and p < 12:
+                        continue
+
+                    if p < bab1_page:
+                        if "PENGESAHAN" in txt_clean and ("INDUSTRI" in txt_clean or "TELKOM" in txt_clean or "PERUSAHAAN" in txt_clean) and not p_peng_ind:
+                            p_peng_ind = p
+                        elif "PENGESAHAN" in txt_clean and ("SEKOLAH" in txt_clean or "SMK" in txt_clean) and not p_peng_sek:
+                            p_peng_sek = p
+                        elif "IDENTITAS SISWA" in txt_clean and not p_id_siswa:
+                            p_id_siswa = p
+                        elif ("IDENTITAS INDUSTRI" in txt_clean or "IDENTITAS INSTANSI" in txt_clean) and not p_id_ind:
+                            p_id_ind = p
+                        elif "KATA PENGANTAR" in txt_clean and not p_kata_peng:
+                            p_kata_peng = p
+                    else:
+                        if ("BAB I " in txt_clean or "BAB I\n" in txt_clean or "BAB 1" in txt_clean) and ("PENDAHULUAN" in txt_clean or "LATAR BELAKANG" in txt_clean) and not p_bab1:
+                            p_bab1 = p
+                        elif ("BAB II " in txt_clean or "BAB II\n" in txt_clean or "BAB 2" in txt_clean or "KEGIATAN DI INDUSTRI" in txt_clean or "KEGIATAN INDUSTRI" in txt_clean) and not p_bab2:
+                            p_bab2 = p
+                        elif ("BAB III " in txt_clean or "BAB III\n" in txt_clean or "BAB 3" in txt_clean or "TINJAUAN PUSTAKA" in txt_clean) and not p_bab3:
+                            p_bab3 = p
+                        elif ("BAB IV " in txt_clean or "BAB IV\n" in txt_clean or "BAB 4" in txt_clean or "DATA PENGAMATAN" in txt_clean) and not p_bab4:
+                            p_bab4 = p
+                        elif ("BAB V " in txt_clean or "BAB V\n" in txt_clean or "BAB 5" in txt_clean or "PEMBAHASAN" in txt_clean) and not p_bab5:
+                            p_bab5 = p
+                        elif ("BAB VI " in txt_clean or "BAB VI\n" in txt_clean or "BAB 6" in txt_clean or "KESIMPULAN" in txt_clean) and not p_bab6:
+                            p_bab6 = p
+                        elif "DAFTAR PUSTAKA" in txt_clean and not p_dp:
+                            p_dp = p
+                        elif "LAMPIRAN" in txt_clean and "DAFTAR" not in txt_clean and not p_lamp:
+                            p_lamp = p
+
+                sec_front_page = p_peng_ind or 3
+
+                # Set default fallbacks if any BAB page was not detected
+                p_bab1 = p_bab1 or bab1_page
+                p_bab2 = p_bab2 or (p_bab1 + 5 if p_bab1 else 16)
+                p_bab3 = p_bab3 or (p_bab2 + 3 if p_bab2 else 19)
+                p_bab4 = p_bab4 or (p_bab3 + 3 if p_bab3 else 22)
+                p_bab5 = p_bab5 or (p_bab4 + 5 if p_bab4 else 27)
+                p_bab6 = p_bab6 or (p_bab5 + 2 if p_bab5 else 29)
+                p_dp = p_dp or (p_bab6 + 2 if p_bab6 else 31)
+                p_lamp = p_lamp or (p_dp + 2 if p_dp else 33)
+
+                active_bab = 1
+
                 for item in sec_list:
                     text = item[0]
                     bookmark = item[1]
@@ -1683,30 +1759,98 @@ def compute_toc_page_numbers_libreoffice(docx_path: str, sec_list: list[tuple[st
 
                     found_page = None
 
-                    # Cek apakah bookmark ini Front Matter (Pengesahan, Identitas, Kata Pengantar)
+                    # Cek apakah bookmark ini Front Matter vs Body Matter
                     is_front = bookmark in ("peng_industri", "peng_sekolah", "id_siswa", "id_industri", "kata_pengantar") or bookmark.startswith("peng_") or bookmark.startswith("id_")
 
                     if is_front:
-                        search_range = range(1, bab1_page)
+                        if bookmark == "peng_industri":
+                            search_range = range(p_peng_ind or 3, (p_peng_sek or 4) + 1)
+                        elif bookmark == "peng_sekolah":
+                            search_range = range(p_peng_sek or 4, (p_id_siswa or 5) + 1)
+                        elif bookmark == "id_siswa":
+                            search_range = range(p_id_siswa or 5, (p_id_ind or 6) + 1)
+                        elif bookmark == "id_industri":
+                            search_range = range(p_id_ind or 6, (p_kata_peng or 7) + 1)
+                        elif bookmark == "kata_pengantar":
+                            search_range = range(p_kata_peng or 7, bab1_page)
+                        else:
+                            search_range = range(1, bab1_page)
                     else:
-                        # Body Matter (BAB I - VI, Daftar Pustaka, Lampiran) — cari MULAI dari bab1_page!
-                        search_range = range(bab1_page, total_pdf_pages + 1)
+                        # Determine specific BAB range based on title prefix or bookmark
+                        m_b = re.match(r"^(\d+)\.", search_key)
+                        m_g = re.match(r"^Gambar\s+(\d+)\.", search_key)
+                        if m_b:
+                            active_bab = int(m_b.group(1))
+                        elif m_g:
+                            active_bab = int(m_g.group(1))
+                        elif bookmark == "bab_1" or "BAB I " in search_key.upper() or "BAB 1" in search_key.upper():
+                            active_bab = 1
+                        elif bookmark == "bab_2" or "BAB II " in search_key.upper() or "BAB 2" in search_key.upper():
+                            active_bab = 2
+                        elif bookmark == "bab_3" or "BAB III " in search_key.upper() or "BAB 3" in search_key.upper():
+                            active_bab = 3
+                        elif bookmark == "bab_4" or "BAB IV " in search_key.upper() or "BAB 4" in search_key.upper():
+                            active_bab = 4
+                        elif bookmark == "bab_5" or "BAB V " in search_key.upper() or "BAB 5" in search_key.upper():
+                            active_bab = 5
+                        elif bookmark == "bab_6" or "BAB VI " in search_key.upper() or "BAB 6" in search_key.upper():
+                            active_bab = 6
+                        elif bookmark == "daftar_pustaka":
+                            active_bab = "DAFTAR_PUSTAKA"
+                        elif bookmark == "lampiran" or bookmark.startswith("lamp_"):
+                            active_bab = "LAMPIRAN"
 
+                        if active_bab == 1:
+                            search_range = range(p_bab1, max(p_bab1 + 1, p_bab2))
+                        elif active_bab == 2:
+                            search_range = range(p_bab2, max(p_bab2 + 1, p_bab3))
+                        elif active_bab == 3:
+                            search_range = range(p_bab3, max(p_bab3 + 1, p_bab4))
+                        elif active_bab == 4:
+                            search_range = range(p_bab4, max(p_bab4 + 1, p_bab5))
+                        elif active_bab == 5:
+                            search_range = range(p_bab5, max(p_bab5 + 1, p_bab6))
+                        elif active_bab == 6:
+                            search_range = range(p_bab6, max(p_bab6 + 1, p_dp))
+                        elif active_bab == "DAFTAR_PUSTAKA":
+                            search_range = range(p_dp, max(p_dp + 1, p_lamp))
+                        elif active_bab == "LAMPIRAN":
+                            search_range = range(p_lamp, total_pdf_pages + 1)
+                        else:
+                            search_range = range(bab1_page, total_pdf_pages + 1)
+
+                    sk_up = search_key.upper()
+                    sk_up_norm = re.sub(r"(\d+)\.\s+(\d+)", r"\1.\2", sk_up)
+                    ct_up = clean_title.upper()
+
+                    # Pass 1: Cari pencocokan persis kunci pencarian lengkap
                     for p in search_range:
+                        if p > total_pdf_pages:
+                            break
                         p_text = re.sub(r"\s+", " ", pdf_doc[p - 1].get_text("text")).upper()
-                        sk_up = search_key.upper()
-                        ct_up = clean_title.upper()
+                        p_text_norm = re.sub(r"(\d+)\.\s+(\d+)", r"\1.\2", p_text)
 
-                        if (sk_up in p_text) or (len(ct_up) >= 5 and ct_up in p_text):
+                        if (sk_up in p_text) or (sk_up_norm in p_text_norm):
                             found_page = p
                             break
+
+                    # Pass 2: Fallback ke judul bersih (hanya jika Pass 1 tidak menemukan kecocokan)
+                    if found_page is None and len(ct_up) >= 5:
+                        for p in search_range:
+                            if p > total_pdf_pages:
+                                break
+                            p_text = re.sub(r"\s+", " ", pdf_doc[p - 1].get_text("text")).upper()
+                            if ct_up in p_text:
+                                found_page = p
+                                break
 
                     if found_page:
                         if found_page >= bab1_page:
                             arabic_pg = str(found_page - bab1_page + 1)
                             pages[bookmark] = arabic_pg
                         else:
-                            pages[bookmark] = _to_roman(found_page).lower()
+                            rel_page = max(1, found_page - sec_front_page + 1)
+                            pages[bookmark] = _to_roman(rel_page).lower()
             pdf_doc.close()
         except Exception as e:
             print(f"[LibreOffice PDF Page Extractor Warning] {e}")
@@ -1737,19 +1881,6 @@ def compute_toc_page_numbers(docx_path: str, sec_list: list[tuple[str, str, int,
             return pages
     except Exception as e:
         print(f"[TOC-ENGINE] LibreOffice extractor bypassed/failed: {e}")
-
-    # 2. Fallback jika ada MS Word COM (Windows Local)
-    try:
-        import win32com.client
-        word = win32com.client.Dispatch("Word.Application")
-        word.Visible = False
-        doc = word.Documents.Open(os.path.abspath(docx_path))
-        doc.Fields.Update()
-        doc.Save()
-        doc.Close()
-        word.Quit()
-    except Exception:
-        pass
 
     return {}
 
