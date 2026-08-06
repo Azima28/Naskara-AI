@@ -1,8 +1,10 @@
 export interface DataAngkaExample {
   label: string
-  sebelum: string
-  sesudah: string
+  sebelum?: string
+  sesudah?: string
   nilai?: string
+  nilai_awal?: string
+  nilai_akhir?: string
 }
 
 export interface ContohCabangExample {
@@ -128,8 +130,8 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         'Halaman laporan web kini terbuka sangat cepat (dari 4,5 detik menjadi 0,6 detik) dan tidak ada lag lagi.',
       data_angka: [
         { label: 'Waktu Pemuatan Aplikasi (Speed)', sebelum: '4,5 Detik', sesudah: '0,6 Detik', nilai: '0,6 Detik' },
-        { label: 'Ukuran Memori & File Server', sebelum: '12 MB', sesudah: '2,1 MB (Hemat 82%)', nilai: '2,1 MB' },
-        { label: 'Kapasitas Pengunjung Bersamaan', sebelum: '20 User', sesudah: '250 User', nilai: '250 User' },
+        { label: 'Ukuran Bundle Website', sebelum: '12 MB', sesudah: '3,2 MB (Hemat 73%)', nilai: '3,2 MB' },
+        { label: 'Kapasitas Pengunjung Bersamaan', sebelum: '20 User', sesudah: '60 User', nilai: '60 User' },
       ],
     },
   },
@@ -277,7 +279,7 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       data_angka: [
         { label: 'Ukuran File Ekspor Desain', sebelum: '450 MB', sesudah: '35 MB (Tanpa Pecah)', nilai: '35 MB' },
         { label: 'Waktu Pembuatan & Render', sebelum: '3 Jam', sesudah: '45 Menit', nilai: '45 Menit' },
-        { label: 'Jangkauan Penonton Konten (Reach)', sebelum: '1.200 Orang', sesudah: '15.500 Orang', nilai: '15.500 Orang' },
+        { label: 'Jangkauan Penonton Konten (Reach)', sebelum: '1.200 Orang', sesudah: '3.500 Orang', nilai: '3.500 Orang' },
       ],
     },
   },
@@ -473,9 +475,9 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
     contohKegiatan: [
       {
         bidang: 'Divisi Dapur Utama (Main Kitchen / Pastry Section)',
-        deskripsi_umum: 'Melaksanakan persiapan bahan makanan (Mise en Place), mengolah masakan sesuai standar standar resep, dan menjaga kebersihan dapur.',
+        deskripsi_umum: 'Melaksanakan persiapan bahan makanan (Mise en Place), mengolah masakan sesuai standar resep, dan menjaga kebersihan dapur.',
         tugas: [
-          { nama: 'Mise en Place Bahan Masakan', detail: 'Memotong sayuran, menimbang bumbu, dan menyiapkan portion control bahan daging' },
+          { nama: 'Persiapan Bahan (Mise en Place)', detail: 'Memotong sayuran, menimbang bumbu, dan menyiapkan portion control bahan daging' },
           { nama: 'Pengolahan Menu Main Course', detail: 'Memasak hidangan sesuai standar resep dan standar higienitas HACCP' },
           { nama: 'Plating & Presentation', detail: 'Menata hidangan di atas piring saji agar estetik dan menarik sebelum disajikan' },
         ],
@@ -498,7 +500,7 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         'Sisa bahan makanan terbuang berkurang dari 38% jadi 28,5% dan modal dapur jadi jauh lebih hemat.',
       data_angka: [
         { label: 'Persentase Food Waste (Sisa Bahan)', sebelum: '38%', sesudah: '28,5% (Sesuai Standar)', nilai: '28,5%' },
-        { label: 'Waktu Persiapan (Mise en Place)', sebelum: '2 Jam', sesudah: '45 Menit', nilai: '45 Menit' },
+        { label: 'Waktu Persiapan Bahan (Mise en Place)', sebelum: '2 Jam', sesudah: '45 Menit', nilai: '45 Menit' },
         { label: 'Daya Tahan Bahan Chiller', sebelum: '1 Hari', sesudah: '4 Hari (Chiller FIFO)', nilai: '4 Hari' },
       ],
     },
@@ -560,7 +562,7 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       { nama: 'Gunting Kain, Meteran Badan & Penggaris Pola', deskripsi: 'Peralatan mengukur tubuh pelanggan, membuat garis lengkung pola, dan memotong kain.' },
     ],
     contohKendala: [
-      { masalah: 'Pakaian mengalami kerutan pada bagian lengan akibat ketidaksesuaian ukuran lubang kerung lengan.', solusi: 'Melakukan pengecekan ulang ukuran kerung pola dasar dan menyusun sampel uji kain blaco.' },
+      { masalah: 'Pakaian mengalami kerutan pada bagian lengan akibat ketidaksesuaian ukuran lubang kerung lengan.', solusi: 'Melakukan pengecekan ulang ukuran kerung pola dasar dan menyusun sampel uji kain blacu (kain uji coba).' },
     ],
     studiKasus: {
       judul: 'Membuat Pola Baju Pas Badan & Kerapian Hasil Jahitan',
@@ -711,17 +713,17 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       { masalah: 'Selisih saldo fisik kas kecil dengan saldo laporan akibat ada nota kecil yang terlambat disetorkan.', solusi: 'Menerapkan aturan batas waktu penyerahan nota klaim maksimal 1x24 jam dari pengeluaran.' },
     ],
     studiKasus: {
-      judul: 'Pencatatan Jurnal Kas Harian & Pengurusan Potongan Denda Tagihan',
+      judul: 'Pencatatan Jurnal Kas Harian & Rekonsiliasi Saldo Kas Kecil',
       latar_belakang:
-        'Penghitungan potongan denda keterlambatan bayar pelanggan harus dihitung cermat agar pelanggan bisa lunas tanpa merugikan kasir.',
+        'Pencatatan transaksi kas harian dan verifikasi kuitansi sering membutuhkan waktu lama jika dilakukan secara manual tanpa rekap otomatis.',
       proses_atau_formula:
-        '1. Cek formulir dan KTP pelanggan yang mengajukan potongan denda.\n2. Hitung sisa tagihan dan jumlah potongan denda yang bisa disetujui.\n3. Minta tanda tangan persetujuan ke kepala bagian keuangan.\n4. Catat uang masuk dan bukti kuitansi ke Jurnal Kas Harian.',
+        '1. Cek formulir dan kuitansi transaksi pengeluaran harian.\n2. Verifikasi kelengkapan stempel lunas dan tanda tangan bukti transaksi.\n3. Catat uang masuk dan keluar ke Jurnal Kas Harian.\n4. Lakukan rekonsiliasi saldo kas kecil (petty cash) dengan fisik uang.',
       hasil:
-        'Pelanggan dapat potongan denda 37,99% dan langsung lunas, serta catatan uang kasir cocok 100%.',
+        'Pencatatan jurnal kas harian selesai jauh lebih cepat (dari 2 hari menjadi 4 jam) dan saldo kasir cocok 100% balance.',
       data_angka: [
-        { label: 'Total Denda Tagihan Debitur', sebelum: 'Rp 4.596.800', sesudah: 'Rp 2.851.000 (Diskon 37,99%)', nilai: 'Rp 2.851.000' },
-        { label: 'Status Pelunasan Pembayaran', sebelum: 'Menunggak / Macet', sesudah: 'Lunas Terbayar', nilai: 'Lunas' },
-        { label: 'Waktu Rekonsiliasi Kas & Denda', sebelum: '2 Hari', sesudah: '3 Jam', nilai: '3 Jam' },
+        { label: 'Waktu Pembuatan Jurnal & Rekonsiliasi Kas', sebelum: '2 Hari', sesudah: '4 Jam', nilai: '4 Jam' },
+        { label: 'Ketelitian & Akurasi Pencatatan Kas', sebelum: 'Ada Selisih Nota', sesudah: '100% Balance Sesuai Bukti', nilai: 'Balance' },
+        { label: 'Waktu Verifikasi Invoice & Kuitansi', sebelum: '1 Hari', sesudah: '2 Jam', nilai: '2 Jam' },
       ],
     },
   },
@@ -793,9 +795,9 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
       hasil:
         'Pembeli harian naik dari 5 orang jadi 35 orang per hari dan hasil penjualan toko meningkat drastis.',
       data_angka: [
-        { label: 'Jangkauan Iklan Promosi (Reach)', sebelum: '500 Orang / Hari', sesudah: '8.500 Orang / Hari', nilai: '8.500 Orang' },
-        { label: 'Jumlah Pembeli Harian', sebelum: '5 Pembeli', sesudah: '35 Pembeli', nilai: '35 Pembeli' },
-        { label: 'Total Omzet Penjualan Bulanan', sebelum: 'Rp 4.500.000', sesudah: 'Rp 18.500.000', nilai: 'Rp 18.500.000' },
+        { label: 'Jangkauan Iklan Promosi (Reach)', sebelum: '500 Orang / Hari', sesudah: '1.800 Orang / Hari', nilai: '1.800 Orang' },
+        { label: 'Jumlah Pembeli Harian', sebelum: '5 Pembeli', sesudah: '22 Pembeli', nilai: '22 Pembeli' },
+        { label: 'Total Omzet Penjualan Bulanan', sebelum: 'Rp 4.500.000', sesudah: 'Rp 7.200.000', nilai: 'Rp 7.200.000' },
       ],
     },
   },

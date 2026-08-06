@@ -400,21 +400,24 @@ export function StringArrayField({
   const fk = name || fieldKey
   const elemId = id || (fk ? `field-${fk}` : undefined)
 
+  const effectiveItems = items && items.length > 0 ? items : ['']
+
   const update = (i: number, v: string) => {
-    const next = [...items]
+    const next = [...effectiveItems]
     next[i] = v
     onChange(next)
   }
-  const add = () => onChange([...items, ''])
+  const add = () => onChange([...effectiveItems, ''])
 
   /**
    * Konfirmasi hanya saat baris sudah berisi teks. Menghapus baris kosong tidak
    * merugikan siapa pun, jadi tidak perlu diganggu dengan dialog.
    */
   const remove = (i: number) => {
-    const isi = items[i]?.trim()
+    const isi = effectiveItems[i]?.trim()
     if (isi && !confirm(`Hapus ${itemNoun} ini?\n\n"${isi}"`)) return
-    onChange(items.filter((_, idx) => idx !== i))
+    const next = effectiveItems.filter((_, idx) => idx !== i)
+    onChange(next.length === 0 ? [''] : next)
   }
 
   return (
@@ -424,7 +427,7 @@ export function StringArrayField({
       </span>
       {hint && <span className="field__hint" style={{ marginBottom: '0.5rem' }}>{hint}</span>}
       <div className="array">
-        {items.map((item, i) => (
+        {effectiveItems.map((item, i) => (
           <div key={i} className="array__row">
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flex: 1, minWidth: 0, width: '100%' }}>
               <span className="array__num" aria-hidden="true" style={{ flexShrink: 0 }}>{i + 1}.</span>

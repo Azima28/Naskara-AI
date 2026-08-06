@@ -332,17 +332,25 @@ class AsasPkl(BaseModel):
 # --------------------------------------------------------------------------- #
 #  studi_kasus / peralatan / kendala                                          #
 # --------------------------------------------------------------------------- #
+JenisTabel = Literal["optimasi", "pencapaian", "kesesuaian", "troubleshooting"]
+
+
 class DataAngka(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
     label: str = ""
     nilai: str = ""
+    nilai_awal: Optional[str] = ""
+    nilai_akhir: Optional[str] = ""
+    sebelum: Optional[str] = ""
+    sesudah: Optional[str] = ""
 
 
 class StudiKasus(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
     judul: str = ""
     latar_belakang: str = ""
     proses_atau_formula: str = ""
+    jenis_tabel: Optional[JenisTabel] = "optimasi"
     data_angka: list[DataAngka] = Field(default_factory=list)
     hasil: str = ""
     assets: list[str] = Field(default_factory=list)

@@ -1,15 +1,54 @@
-import { useState } from 'react'
-import type { DataAngka, PklContext, StudiKasus } from '@/types/pkl'
+import { useState, useEffect } from 'react'
+import type { DataAngka, JenisTabel, PklContext, StudiKasus } from '@/types/pkl'
 import { emptyDataAngka } from '@/types/pkl'
 import { FieldGroup, TextareaField, TextField, ImageArrayUploadField } from '@/components/fields/FormFields'
 import JurusanExampleCard from '@/components/wizard/JurusanExampleCard'
 import { getJurusanExample } from '@/utils/jurusanExamples'
 import { IconDocument } from '@/components/common/Icons'
 
+const TABEL_OPTIONS: {
+  id: JenisTabel
+  icon: string
+  titleOnly: string
+  desc: string
+}[] = [
+  {
+    id: 'optimasi',
+    icon: '⚙️',
+    titleOnly: 'Optimasi & Perbaikan Performance',
+    desc: 'Untuk pekerjaan yang memiliki kondisi sebelum dan sesudah.',
+  },
+  {
+    id: 'pencapaian',
+    icon: '🎯',
+    titleOnly: 'Pencapaian Target Kerja',
+    desc: 'Untuk pekerjaan yang memiliki target dan hasil.',
+  },
+  {
+    id: 'kesesuaian',
+    icon: '✅',
+    titleOnly: 'Kesesuaian SOP',
+    desc: 'Untuk membandingkan SOP dengan praktik di lapangan.',
+  },
+  {
+    id: 'troubleshooting',
+    icon: '🔧',
+    titleOnly: 'Troubleshooting',
+    desc: 'Untuk menjelaskan masalah dan cara penyelesaiannya.',
+  },
+]
+
 export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p: Partial<PklContext>) => void }) {
   const [showAlurExample, setShowAlurExample] = useState(false)
   const sk = ctx.studi_kasus
   const upd = (patch: Partial<StudiKasus>) => set({ studi_kasus: { ...sk, ...patch } })
+
+  // Auto-initialize 1 default row if empty
+  useEffect(() => {
+    if (!sk.data_angka || sk.data_angka.length === 0) {
+      upd({ data_angka: [emptyDataAngka()] })
+    }
+  }, [])
 
   const jurusanExample = getJurusanExample(ctx.siswa?.jurusan_key || ctx.siswa?.jurusan)
   const sampleData = jurusanExample.studiKasus.data_angka
@@ -149,9 +188,64 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
         />
       </FieldGroup>
 
-      {/* Data Angka / Perbandingan Sebelum vs Sesudah (OPSIONAL) */}
-      <FieldGroup title="Hasil yang Bisa Diukur &amp; Perbandingan (Sebelum vs Sesudah)" full>
+      {/* Data Angka / Perbandingan (OPSIONAL) */}
+      <FieldGroup title="Hasil yang Bisa Diukur &amp; Perbandingan" full>
         <div className="field field--full">
+          <div style={{ marginBottom: '1.25rem', padding: '1.1rem', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.85rem' }}>
+              <label style={{ fontWeight: 600, fontSize: '0.92rem', color: '#0f172a' }}>
+                💡 Pilih jenis analisis yang paling sesuai dengan pekerjaanmu: <span style={{ color: '#ef4444' }}>*</span>
+              </label>
+              {!sk.jenis_tabel && (
+                <span style={{ fontSize: '0.75rem', color: '#ef4444', fontWeight: 600, background: '#fef2f2', padding: '2px 8px', borderRadius: '4px', border: '1px solid #fca5a5' }}>
+                  WAJIB DIPILIH
+                </span>
+              )}
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.6rem' }}>
+              {TABEL_OPTIONS.map((opt) => {
+                const isSelected = sk.jenis_tabel === opt.id
+                return (
+                  <div
+                    key={opt.id}
+                    onClick={() => upd({ jenis_tabel: opt.id })}
+                    style={{
+                      padding: '0.75rem 0.85rem',
+                      borderRadius: '8px',
+                      border: isSelected ? '2px solid var(--green-600, #187257)' : '1px solid #cbd5e1',
+                      background: isSelected ? '#f0fdf4' : '#ffffff',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease-in-out',
+                      boxShadow: isSelected ? '0 2px 8px rgba(24, 114, 87, 0.15)' : '0 1px 3px rgba(0, 0, 0, 0.05)',
+                      position: 'relative',
+                      minWidth: 0,
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.35rem', marginBottom: '0.35rem' }}>
+                      <span style={{ fontSize: '1.2rem', lineHeight: 1 }}>{opt.icon}</span>
+                      {isSelected ? (
+                        <span style={{ fontSize: '0.68rem', color: '#ffffff', background: 'var(--green-600, #187257)', padding: '1px 6px', borderRadius: '999px', fontWeight: 700, flexShrink: 0 }}>
+                          ✓ Terpilih
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: '0.68rem', color: '#94a3b8', border: '1px solid #cbd5e1', padding: '1px 6px', borderRadius: '999px', fontWeight: 500, flexShrink: 0 }}>
+                          Pilih
+                        </span>
+                      )}
+                    </div>
+                    <strong style={{ display: 'block', fontSize: '0.84rem', color: isSelected ? 'var(--green-800, #166534)' : '#0f172a', fontWeight: 700, lineHeight: 1.3, marginBottom: '0.3rem' }}>
+                      {opt.titleOnly}
+                    </strong>
+                    <p style={{ margin: 0, fontSize: '0.78rem', color: isSelected ? '#15803d' : '#64748b', lineHeight: 1.4 }}>
+                      {opt.desc}
+                    </p>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
           <span className="field__label">
             Tabel Data Angka Perbandingan <span className="field__badge field__badge--opsional">OPSIONAL</span>
           </span>
@@ -163,6 +257,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
           {/* Dynamic Major-Specific Example Card with Docx Preview */}
           <JurusanExampleCard
             jurusanKey={ctx.siswa?.jurusan_key || ctx.siswa?.jurusan}
+            jenisTabel={sk.jenis_tabel || 'optimasi'}
           />
 
           <div className="array">
@@ -189,7 +284,10 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
                   <button
                     type="button"
                     className="btn-sm btn-danger array__remove"
-                    onClick={() => upd({ data_angka: sk.data_angka.filter((_, idx) => idx !== i) })}
+                    onClick={() => {
+                      const next = sk.data_angka.filter((_, idx) => idx !== i)
+                      upd({ data_angka: next.length === 0 ? [emptyDataAngka()] : next })
+                    }}
                     aria-label="Hapus baris data angka"
                     title="Hapus baris ini"
                     style={{ marginTop: '1.8rem' }}

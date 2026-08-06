@@ -209,15 +209,22 @@ export interface Kegiatan {
   tugas: Tugas[]
 }
 
+export type JenisTabel = 'optimasi' | 'pencapaian' | 'kesesuaian' | 'troubleshooting'
+
 export interface DataAngka {
   label: string
   nilai: string
+  nilai_awal?: string
+  nilai_akhir?: string
+  sebelum?: string
+  sesudah?: string
 }
 
 export interface StudiKasus {
   judul: string
   latar_belakang: string
   proses_atau_formula: string
+  jenis_tabel?: JenisTabel
   data_angka: DataAngka[]
   hasil: string
   assets: string[]
@@ -417,11 +424,11 @@ export const emptyProfilPerusahaan = (): ProfilPerusahaan => ({
 })
 
 export const emptyTugas = (): Tugas => ({ nama: '', detail: '', assets: [] })
-export const emptyKegiatan = (): Kegiatan => ({ bidang: '', deskripsi_umum: '', tugas: [] })
+export const emptyKegiatan = (): Kegiatan => ({ bidang: '', deskripsi_umum: '', tugas: [emptyTugas()] })
 
-export const emptyDataAngka = (): DataAngka => ({ label: '', nilai: '' })
+export const emptyDataAngka = (): DataAngka => ({ label: '', nilai: '', nilai_awal: '', nilai_akhir: '' })
 export const emptyStudiKasus = (): StudiKasus => ({
-  judul: '', latar_belakang: '', proses_atau_formula: '', data_angka: [], hasil: '', assets: [],
+  judul: '', latar_belakang: '', proses_atau_formula: '', jenis_tabel: undefined, data_angka: [], hasil: '', assets: [],
 })
 
 export const emptyPeralatan = (): Peralatan => ({ nama: '', deskripsi: '', gambar: '' })

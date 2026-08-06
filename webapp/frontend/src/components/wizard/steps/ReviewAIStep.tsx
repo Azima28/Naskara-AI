@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import type { PklContext, Kegiatan, Kendala, Peralatan } from '@/types/pkl'
 import { emptyKegiatan, emptyKendala, emptyPeralatan, emptyTugas } from '@/types/pkl'
 import { getJurusanExample } from '@/utils/jurusanExamples'
@@ -15,10 +16,49 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
 
   const upd = (patch: Partial<PklContext>) => set(patch)
 
+  // Auto-initialize 1 default item if empty
+  useEffect(() => {
+    let hasChanges = false
+    const patch: Partial<PklContext> = {}
+
+    if (!kegiatan || kegiatan.length === 0) {
+      patch.kegiatan = [emptyKegiatan()]
+      hasChanges = true
+    } else {
+      // Pastikan setiap kegiatan yang ada memiliki minimal 1 tugas
+      const fixKegiatan = kegiatan.map(k => {
+        if (!k.tugas || k.tugas.length === 0) {
+          hasChanges = true
+          return { ...k, tugas: [emptyTugas()] }
+        }
+        return k
+      })
+      if (hasChanges) patch.kegiatan = fixKegiatan
+    }
+
+    if (!peralatan || peralatan.length === 0) {
+      patch.peralatan = [emptyPeralatan()]
+      hasChanges = true
+    }
+    if (!kendala || kendala.length === 0) {
+      patch.kendala = [emptyKendala()]
+      hasChanges = true
+    }
+    if (!pelajaran || pelajaran.length === 0) {
+      patch.pelajaran = ['']
+      hasChanges = true
+    }
+
+    if (hasChanges) {
+      upd(patch)
+    }
+  }, [kegiatan, peralatan, kendala, pelajaran])
+
   // -- Helpers for Kegiatan --
   const updKegiatan = (i: number, patch: Partial<Kegiatan>) => {
     const next = [...kegiatan]
-    next[i] = { ...next[i], ...patch }
+    const currentTugas = patch.tugas !== undefined ? patch.tugas : (next[i]?.tugas || [])
+    next[i] = { ...next[i], ...patch, tugas: currentTugas.length === 0 ? [emptyTugas()] : currentTugas }
     upd({ kegiatan: next })
   }
   const addKegiatan = () => upd({ kegiatan: [...kegiatan, emptyKegiatan()] })
@@ -41,39 +81,6 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
   }
   const addPeralatan = () => upd({ peralatan: [...(peralatan || []), emptyPeralatan()] })
   const removePeralatan = (i: number) => upd({ peralatan: (peralatan || []).filter((_, idx) => idx !== i) })
-
-  // -- Sample applicators per major --
-  const handleApplySampleKegiatan = () => {
-    const sampleList: Kegiatan[] = (jurusanExample.contohKegiatan || []).map((ck) => ({
-      bidang: ck.bidang,
-      deskripsi_umum: ck.deskripsi_umum,
-      tugas: ck.tugas.map((t) => ({ nama: t.nama, detail: t.detail, assets: [] })),
-    }))
-    if (sampleList.length > 0) {
-      upd({ kegiatan: sampleList })
-    }
-  }
-
-  const handleApplySamplePeralatan = () => {
-    const sampleList: Peralatan[] = (jurusanExample.contohPeralatan || []).map((cp) => ({
-      nama: cp.nama,
-      deskripsi: cp.deskripsi,
-      gambar: '',
-    }))
-    if (sampleList.length > 0) {
-      upd({ peralatan: sampleList })
-    }
-  }
-
-  const handleApplySampleKendala = () => {
-    const sampleList: Kendala[] = (jurusanExample.contohKendala || []).map((ck) => ({
-      masalah: ck.masalah,
-      solusi: ck.solusi,
-    }))
-    if (sampleList.length > 0) {
-      upd({ kendala: sampleList })
-    }
-  }
 
   return (
     <>
@@ -119,20 +126,10 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
               lineHeight: 1.5,
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.4rem' }}>
+            <div style={{ marginBottom: '0.4rem' }}>
               <strong style={{ color: '#0f172a' }}>
                 💡 Contoh Kegiatan / Divisi ({jurusanExample.label}):
               </strong>
-              {kegiatan.length === 0 && (
-                <button
-                  type="button"
-                  className="btn-sm btn-outline"
-                  onClick={handleApplySampleKegiatan}
-                  style={{ fontSize: '0.78rem', padding: '0.25rem 0.6rem', color: 'var(--green-700)', borderColor: 'var(--green-600)', fontWeight: 600, background: '#ffffff' }}
-                >
-                  + Gunakan Contoh Kegiatan Jurusan Ini
-                </button>
-              )}
             </div>
             {jurusanExample.contohKegiatan.map((ck, idx) => (
               <div key={idx} style={{ marginTop: '0.3rem' }}>
@@ -147,83 +144,89 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
             Belum ada kegiatan tersimpan. Klik "+ Gunakan Contoh Kegiatan Jurusan Ini" di atas atau "+ Tambah Kegiatan / Divisi" di bawah.
           </p>
         )}
-        {kegiatan.map((k, i) => (
-          <div key={i} className="nested-card" style={{ marginBottom: '1.25rem' }}>
-            <div className="nested-card__head">
-              <strong>Kegiatan / Divisi {i + 1}</strong>
-              <button type="button" className="btn-sm btn-danger" onClick={() => removeKegiatan(i)}>✕</button>
-            </div>
-            <TextField
-              label="Kamu bekerja di bagian apa?"
-              value={k.bidang}
-              onChange={(v) => updKegiatan(i, { bidang: v })}
-              placeholder={`Contoh (${jurusanExample.label}): "${jurusanExample.contohKegiatan?.[0]?.bidang || 'Divisi Operasional'}"`}
-              importance="wajib"
-            />
-            <TextareaField
-              label="Apa yang biasanya kamu lakukan di bagian ini?"
-              value={k.deskripsi_umum}
-              onChange={(v) => updKegiatan(i, { deskripsi_umum: v })}
-              placeholder={`Contoh (${jurusanExample.label}): "${jurusanExample.contohKegiatan?.[0]?.deskripsi_umum || 'Melaksanakan tugas operasional harian'}"`}
-              importance="wajib"
-            />
+        {kegiatan.map((k, i) => {
+          const sampleKegiatan = jurusanExample.contohKegiatan?.[i % (jurusanExample.contohKegiatan.length || 1)] || jurusanExample.contohKegiatan?.[0]
+          return (
+            <div key={i} className="nested-card" style={{ marginBottom: '1.25rem' }}>
+              <div className="nested-card__head">
+                <strong>Kegiatan / Divisi {i + 1}</strong>
+                <button type="button" className="btn-sm btn-danger" onClick={() => removeKegiatan(i)}>✕</button>
+              </div>
+              <TextField
+                label="Di divisi atau bagian mana kamu ditempatkan selama PKL?"
+                value={k.bidang}
+                onChange={(v) => updKegiatan(i, { bidang: v })}
+                placeholder={`Contoh (${jurusanExample.label}): "${sampleKegiatan?.bidang || 'Divisi Operasional'}"`}
+                importance="wajib"
+              />
+              <TextareaField
+                label="Ceritakan secara singkat apa yang biasanya kamu kerjakan di divisi ini."
+                value={k.deskripsi_umum}
+                onChange={(v) => updKegiatan(i, { deskripsi_umum: v })}
+                placeholder={`Contoh (${jurusanExample.label}): "${sampleKegiatan?.deskripsi_umum || 'Melaksanakan tugas operasional harian'}"`}
+                importance="wajib"
+              />
 
-            <div style={{ marginTop: '1.25rem' }}>
-              <strong style={{ fontSize: '0.88rem', color: 'var(--ink)' }}>Tugas yang kamu lakukan:</strong>
-              {k.tugas.map((t, j) => (
-                <div key={j} className="array__row" style={{ marginTop: '0.5rem' }}>
-                  <div style={{ flex: 1, minWidth: 0, width: '100%' }}>
-                    <input
-                      type="text"
-                      className="field__input"
-                      placeholder={`Nama Tugas (cth: ${jurusanExample.contohKegiatan?.[0]?.tugas?.[0]?.nama || 'Nama Tugas'})`}
-                      value={t.nama}
-                      onChange={(e) => {
-                        const nextTugas = [...k.tugas]
-                        nextTugas[j] = { ...t, nama: e.target.value }
-                        updKegiatan(i, { tugas: nextTugas })
-                      }}
-                      style={{ width: '100%' }}
-                    />
-                  </div>
-                  <div style={{ flex: 2, minWidth: 0, width: '100%' }}>
-                    <input
-                      type="text"
-                      className="field__input"
-                      placeholder={`Detail (cth: ${jurusanExample.contohKegiatan?.[0]?.tugas?.[0]?.detail || 'Rincian tugas'})`}
-                      value={t.detail}
-                      onChange={(e) => {
-                        const nextTugas = [...k.tugas]
-                        nextTugas[j] = { ...t, detail: e.target.value }
-                        updKegiatan(i, { tugas: nextTugas })
-                      }}
-                      style={{ width: '100%' }}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    className="btn-sm btn-danger array__remove"
-                    onClick={() => {
-                      const nextTugas = k.tugas.filter((_, idx) => idx !== j)
-                      updKegiatan(i, { tugas: nextTugas })
-                    }}
-                    title="Hapus tugas ini"
-                  >
-                    ✕ Hapus
-                  </button>
-                </div>
-              ))}
-              <button
-                type="button"
-                className="btn-sm btn-outline"
-                style={{ marginTop: '0.5rem' }}
-                onClick={() => updKegiatan(i, { tugas: [...k.tugas, emptyTugas()] })}
-              >
-                + Tambah Tugas
-              </button>
+              <div style={{ marginTop: '1.25rem' }}>
+                <strong style={{ fontSize: '0.88rem', color: 'var(--ink)' }}>Tugas yang kamu lakukan:</strong>
+                {k.tugas.map((t, j) => {
+                  const sampleTugas = sampleKegiatan?.tugas?.[j % (sampleKegiatan.tugas.length || 1)] || sampleKegiatan?.tugas?.[0]
+                  return (
+                    <div key={j} className="array__row" style={{ marginTop: '0.5rem' }}>
+                      <div style={{ flex: 1, minWidth: 0, width: '100%' }}>
+                        <input
+                          type="text"
+                          className="field__input"
+                          placeholder={`Nama Tugas (cth: ${sampleTugas?.nama || 'Nama Tugas'})`}
+                          value={t.nama}
+                          onChange={(e) => {
+                            const nextTugas = [...k.tugas]
+                            nextTugas[j] = { ...t, nama: e.target.value }
+                            updKegiatan(i, { tugas: nextTugas })
+                          }}
+                          style={{ width: '100%' }}
+                        />
+                      </div>
+                      <div style={{ flex: 2, minWidth: 0, width: '100%' }}>
+                        <input
+                          type="text"
+                          className="field__input"
+                          placeholder={`Detail (cth: ${sampleTugas?.detail || 'Rincian tugas'})`}
+                          value={t.detail}
+                          onChange={(e) => {
+                            const nextTugas = [...k.tugas]
+                            nextTugas[j] = { ...t, detail: e.target.value }
+                            updKegiatan(i, { tugas: nextTugas })
+                          }}
+                          style={{ width: '100%' }}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        className="btn-sm btn-danger array__remove"
+                        onClick={() => {
+                          const nextTugas = k.tugas.filter((_, idx) => idx !== j)
+                          updKegiatan(i, { tugas: nextTugas })
+                        }}
+                        title="Hapus tugas ini"
+                      >
+                        ✕ Hapus
+                      </button>
+                    </div>
+                  )
+                })}
+                <button
+                  type="button"
+                  className="btn-sm btn-outline"
+                  style={{ marginTop: '0.5rem' }}
+                  onClick={() => updKegiatan(i, { tugas: [...k.tugas, emptyTugas()] })}
+                >
+                  + Tambah Tugas Lain di Divisi Ini
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
         <button type="button" className="btn-sm btn-outline" onClick={addKegiatan}>+ Tambah Kegiatan / Divisi</button>
       </FieldGroup>
 
@@ -236,7 +239,7 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
           * Tidak perlu menambahkan alat yang hanya kamu lihat tetapi tidak kamu gunakan.
         </p>
 
-        {/* Contoh Peralatan & 1-Click Button Berdasarkan Jurusan */}
+        {/* Contoh Peralatan Berdasarkan Jurusan */}
         {jurusanExample.contohPeralatan && jurusanExample.contohPeralatan.length > 0 && (
           <div
             style={{
@@ -250,20 +253,10 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
               lineHeight: 1.5,
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.35rem' }}>
+            <div style={{ marginBottom: '0.35rem' }}>
               <strong style={{ color: '#0f172a' }}>
                 💡 Contoh Peralatan ({jurusanExample.label}):
               </strong>
-              {(peralatan || []).length === 0 && (
-                <button
-                  type="button"
-                  className="btn-sm btn-outline"
-                  onClick={handleApplySamplePeralatan}
-                  style={{ fontSize: '0.78rem', padding: '0.25rem 0.6rem', color: 'var(--green-700)', borderColor: 'var(--green-600)', fontWeight: 600, background: '#ffffff' }}
-                >
-                  + Gunakan Contoh Peralatan Jurusan Ini
-                </button>
-              )}
             </div>
             {jurusanExample.contohPeralatan.map((cp, idx) => (
               <div key={idx} style={{ marginTop: '0.25rem' }}>
@@ -275,38 +268,41 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
 
         {(peralatan || []).length === 0 && (
           <p className="muted" style={{ fontStyle: 'italic', fontSize: '0.88rem' }}>
-            Belum ada peralatan tersimpan. Klik "+ Gunakan Contoh Peralatan Jurusan Ini" di atas atau "+ Tambah Peralatan" di bawah.
+            Belum ada peralatan tersimpan. Klik "+ Tambah Peralatan" di bawah.
           </p>
         )}
-        {(peralatan || []).map((p, i) => (
-          <div key={i} className="nested-card" style={{ marginBottom: '1.25rem' }}>
-            <div className="nested-card__head">
-              <strong>Peralatan {i + 1}</strong>
-              <button type="button" className="btn-sm btn-danger" onClick={() => removePeralatan(i)}>✕</button>
+        {(peralatan || []).map((p, i) => {
+          const samplePeralatan = jurusanExample.contohPeralatan?.[i % (jurusanExample.contohPeralatan?.length || 1)] || jurusanExample.contohPeralatan?.[0]
+          return (
+            <div key={i} className="nested-card" style={{ marginBottom: '1.25rem' }}>
+              <div className="nested-card__head">
+                <strong>Peralatan {i + 1}</strong>
+                <button type="button" className="btn-sm btn-danger" onClick={() => removePeralatan(i)}>✕</button>
+              </div>
+              <TextField
+                label="Nama peralatan"
+                value={p.nama}
+                onChange={(v) => updPeralatan(i, { nama: v })}
+                placeholder={`Contoh (${jurusanExample.label}): "${samplePeralatan?.nama || 'Nama Peralatan'}"`}
+                importance="wajib"
+              />
+              <TextareaField
+                label="Digunakan untuk"
+                value={p.deskripsi}
+                onChange={(v) => updPeralatan(i, { deskripsi: v })}
+                placeholder={`Contoh (${jurusanExample.label}): "${samplePeralatan?.deskripsi || 'Penggunaan peralatan'}"`}
+                importance="wajib"
+              />
+              <ImageUploadField
+                label="Foto peralatan"
+                value={p.gambar}
+                onChange={(v) => updPeralatan(i, { gambar: v })}
+                importance="wajib"
+                hint="Unggah foto alat yang kamu gunakan (JPG/PNG)."
+              />
             </div>
-            <TextField
-              label="Nama peralatan"
-              value={p.nama}
-              onChange={(v) => updPeralatan(i, { nama: v })}
-              placeholder={`Contoh (${jurusanExample.label}): "${jurusanExample.contohPeralatan?.[0]?.nama || 'Nama Peralatan'}"`}
-              importance="wajib"
-            />
-            <TextareaField
-              label="Digunakan untuk"
-              value={p.deskripsi}
-              onChange={(v) => updPeralatan(i, { deskripsi: v })}
-              placeholder={`Contoh (${jurusanExample.label}): "${jurusanExample.contohPeralatan?.[0]?.deskripsi || 'Penggunaan peralatan'}"`}
-              importance="wajib"
-            />
-            <ImageUploadField
-              label="Foto peralatan"
-              value={p.gambar}
-              onChange={(v) => updPeralatan(i, { gambar: v })}
-              importance="wajib"
-              hint="Unggah foto alat yang kamu gunakan (JPG/PNG)."
-            />
-          </div>
-        ))}
+          )
+        })}
         <button type="button" className="btn-sm btn-outline" onClick={addPeralatan}>+ Tambah Peralatan</button>
       </FieldGroup>
 
@@ -316,7 +312,7 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
           Pernah mengalami masalah atau kesulitan selama PKL? Ceritakan masalahnya dan bagaimana kamu mengatasinya.
         </p>
 
-        {/* Contoh Kendala & 1-Click Button Berdasarkan Jurusan */}
+        {/* Contoh Kendala Berdasarkan Jurusan */}
         {jurusanExample.contohKendala && jurusanExample.contohKendala.length > 0 && (
           <div
             style={{
@@ -330,20 +326,10 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
               lineHeight: 1.5,
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.35rem' }}>
+            <div style={{ marginBottom: '0.35rem' }}>
               <strong style={{ color: '#0f172a' }}>
                 💡 Contoh Kendala &amp; Solusi ({jurusanExample.label}):
               </strong>
-              {kendala.length === 0 && (
-                <button
-                  type="button"
-                  className="btn-sm btn-outline"
-                  onClick={handleApplySampleKendala}
-                  style={{ fontSize: '0.78rem', padding: '0.25rem 0.6rem', color: 'var(--green-700)', borderColor: 'var(--green-600)', fontWeight: 600, background: '#ffffff' }}
-                >
-                  + Gunakan Contoh Kendala Jurusan Ini
-                </button>
-              )}
             </div>
             {jurusanExample.contohKendala.map((ck, idx) => (
               <div key={idx} style={{ marginTop: '0.25rem' }}>
@@ -355,32 +341,35 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
 
         {kendala.length === 0 && (
           <p className="muted" style={{ fontStyle: 'italic', fontSize: '0.88rem' }}>
-            Belum ada kendala tersimpan. Klik "+ Gunakan Contoh Kendala Jurusan Ini" di atas atau "+ Tambah Kendala" di bawah.
+            Belum ada kendala tersimpan. Klik "+ Tambah Kendala Lain" di bawah.
           </p>
         )}
-        {kendala.map((k, i) => (
-          <div key={i} className="nested-card" style={{ marginBottom: '1.25rem' }}>
-            <div className="nested-card__head">
-              <strong>Kendala {i + 1}</strong>
-              <button type="button" className="btn-sm btn-danger" onClick={() => removeKendala(i)}>✕</button>
+        {kendala.map((k, i) => {
+          const sampleKendala = jurusanExample.contohKendala?.[i % (jurusanExample.contohKendala?.length || 1)] || jurusanExample.contohKendala?.[0]
+          return (
+            <div key={i} className="nested-card" style={{ marginBottom: '1.25rem' }}>
+              <div className="nested-card__head">
+                <strong>Kendala {i + 1}</strong>
+                <button type="button" className="btn-sm btn-danger" onClick={() => removeKendala(i)}>✕</button>
+              </div>
+              <TextField
+                label="Apa kendalanya?"
+                value={k.masalah}
+                onChange={(v) => updKendala(i, { masalah: v })}
+                placeholder={`Contoh (${jurusanExample.label}): "${sampleKendala?.masalah || 'Masalah kendala'}"`}
+                importance="wajib"
+              />
+              <TextareaField
+                label="Bagaimana kamu mengatasinya?"
+                value={k.solusi}
+                onChange={(v) => updKendala(i, { solusi: v })}
+                placeholder={`Contoh (${jurusanExample.label}): "${sampleKendala?.solusi || 'Solusi mengatasi'}"`}
+                importance="wajib"
+              />
             </div>
-            <TextField
-              label="Apa kendalanya?"
-              value={k.masalah}
-              onChange={(v) => updKendala(i, { masalah: v })}
-              placeholder={`Contoh (${jurusanExample.label}): "${jurusanExample.contohKendala?.[0]?.masalah || 'Masalah kendala'}"`}
-              importance="wajib"
-            />
-            <TextareaField
-              label="Bagaimana kamu mengatasinya?"
-              value={k.solusi}
-              onChange={(v) => updKendala(i, { solusi: v })}
-              placeholder={`Contoh (${jurusanExample.label}): "${jurusanExample.contohKendala?.[0]?.solusi || 'Solusi mengatasi'}"`}
-              importance="wajib"
-            />
-          </div>
-        ))}
-        <button type="button" className="btn-sm btn-outline" onClick={addKendala}>+ Tambah Kendala</button>
+          )
+        })}
+        <button type="button" className="btn-sm btn-outline" onClick={addKendala}>+ Tambah Kendala Lain</button>
       </FieldGroup>
 
       {/* ── 4. Pengalaman & Hal yang Kamu Pelajari ─────────────────────────── */}
@@ -393,20 +382,10 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
         <div style={{ marginBottom: '1.25rem' }}>
           {/* Contoh Pelajaran Khusus Jurusan */}
           <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '0.75rem 1rem', marginBottom: '0.85rem', fontSize: '0.85rem', color: '#334155' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <div style={{ marginBottom: '0.35rem' }}>
               <strong style={{ color: '#0f172a' }}>
                 💡 Contoh Poin Pelajaran ({jurusanExample.label}):
               </strong>
-              {pelajaran.length === 0 && (
-                <button
-                  type="button"
-                  className="btn-sm btn-outline"
-                  onClick={() => upd({ pelajaran: [...(jurusanExample.contohPelajaran || [])] })}
-                  style={{ fontSize: '0.78rem', padding: '0.25rem 0.6rem', color: 'var(--green-700)', borderColor: 'var(--green-600)', fontWeight: 600 }}
-                >
-                  + Gunakan Contoh Jurusan Ini
-                </button>
-              )}
             </div>
             <ul style={{ margin: '0.35rem 0 0', paddingLeft: '1.1rem', lineHeight: 1.5 }}>
               {(jurusanExample.contohPelajaran || []).map((cp, idx) => (
@@ -420,7 +399,7 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
             items={pelajaran}
             onChange={(items) => upd({ pelajaran: items })}
             importance="wajib"
-            placeholder="Contoh: Meningkatkan kedisiplinan dan keterampilan kerja."
+            placeholder={`Contoh (${jurusanExample.label}): "${jurusanExample.contohPelajaran?.[0] || 'Meningkatkan kedisiplinan dan keterampilan kerja.'}"`}
             addLabel="+ Tambah Poin Pelajaran"
           />
         </div>
@@ -440,7 +419,7 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
               <li>Pengalaman atau kejadian apa yang paling berkesan bagimu?</li>
             </ul>
             <div style={{ marginTop: '0.5rem', fontStyle: 'italic', color: '#475569', borderTop: '1px dashed #cbd5e1', paddingTop: '0.4rem' }}>
-              <strong>Contoh:</strong> "Awalnya saya merasa canggung dan kesulitan saat pertama kali bertugas. Namun setelah beberapa kali mencoba dan bertanya kepada pembimbing, saya akhirnya bisa melakukannya sendiri dengan lancar."
+              <strong>Contoh ({jurusanExample.label}):</strong> "Awalnya saya merasa canggung dan kesulitan saat pertama kali bertugas. Namun setelah beberapa kali mencoba dan bertanya kepada pembimbing di bidang {jurusanExample.label}, saya akhirnya bisa melakukannya sendiri dengan lancar."
             </div>
           </div>
 
@@ -449,7 +428,7 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
             value={ctx.refleksi_bab5 || ''}
             onChange={(v) => upd({ refleksi_bab5: v })}
             importance="wajib"
-            placeholder="Tuliskan pengalamanmu dengan bahasa sehari-hari..."
+            placeholder={`Contoh (${jurusanExample.label}): "Selama PKL di bidang ${jurusanExample.label}, saya belajar banyak hal baru mulai dari kedisiplinan kerja, cara berkomunikasi dengan tim, hingga menangani tugas harian..."`}
             hint="🤖 AI akan membantu merapikan ceritamu menjadi paragraf laporan akademik."
             rows={5}
           />
@@ -467,7 +446,7 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
           value={ctx.kesimpulan_user || ''}
           onChange={(v) => upd({ kesimpulan_user: v })}
           importance="wajib"
-          placeholder="Contoh: Selama PKL saya belajar bekerja sama, lebih disiplin, dan memahami bagaimana pekerjaan di bidang IT dilakukan di dunia kerja."
+          placeholder={`Contoh (${jurusanExample.label}): "Selama PKL saya belajar bekerja sama, lebih disiplin, dan memahami bagaimana pekerjaan di bidang ${jurusanExample.label} dilakukan di dunia kerja nyata."`}
           rows={3}
         />
         <TextareaField
@@ -475,7 +454,7 @@ export default function ReviewAIStep({ ctx, set }: { ctx: PklContext; set: (p: P
           value={ctx.saran_user || ''}
           onChange={(v) => upd({ saran_user: v })}
           importance="wajib"
-          placeholder="Contoh: Sekolah dapat menambah kegiatan praktik agar siswa lebih siap menghadapi dunia kerja."
+          placeholder={`Contoh (${jurusanExample.label}): "Sekolah dapat menambah jam kegiatan praktik ${jurusanExample.label} agar siswa lebih siap menghadapi dunia kerja."`}
           rows={3}
         />
       </FieldGroup>

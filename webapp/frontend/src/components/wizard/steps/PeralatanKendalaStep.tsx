@@ -53,7 +53,7 @@ export default function PeralatanKendalaStep({ ctx, set }: { ctx: PklContext; se
             <TextareaField label="Solusi" value={k.solusi} onChange={(v) => updKendala(i, { solusi: v })} rows={2} />
           </div>
         ))}
-        <button type="button" className="btn-sm btn-outline" onClick={addKendala}>+ Tambah Kendala</button>
+        <button type="button" className="btn-sm btn-outline" onClick={addKendala}>+ Tambah Kendala Lain</button>
       </FieldGroup>
 
       <FieldGroup title="Pelajaran">

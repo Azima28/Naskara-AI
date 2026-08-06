@@ -55,6 +55,16 @@ def validate(data):
             score += 1
         else:
             issues.append(f"❌ WAJIB: {field_name} kosong — dibutuhkan untuk BAB I")
+
+    # Foto Dokumentasi Kegiatan (Minimal 1 Foto)
+    assets = data.get("assets", [])
+    foto_kegiatan = data.get("lampiran", {}).get("foto_kegiatan", [])
+    has_foto = bool(assets or foto_kegiatan)
+    max_score += 1
+    if has_foto:
+        score += 1
+    else:
+        issues.append("❌ WAJIB: foto_kegiatan / assets kosong — dibutuhkan minimal 1 foto dokumentasi untuk Lampiran")
     
     # Kegiatan (jika tidak diisi, otomatis di-fallback ke kegiatan sesuai jurusan)
     kegiatan = data.get("kegiatan", [])

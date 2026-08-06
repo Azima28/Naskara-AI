@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type {
   AreaCabang, CabangPerusahaan, JamKerja, JobDescription,
   PklContext, ProfilPerusahaan
@@ -253,6 +253,13 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
   const upd = (patch: Partial<ProfilPerusahaan>) =>
     set({ profil_perusahaan: { ...pr, ...patch } })
 
+  // Auto-initialize 1 default job description if empty
+  useEffect(() => {
+    if (!pr.job_descriptions || pr.job_descriptions.length === 0) {
+      upd({ job_descriptions: [emptyJobDescription()] })
+    }
+  }, [])
+
   // ── Jam Kerja ─────────────────────────────────────────────────────────── //
   const updJam = (i: number, patch: Partial<JamKerja>) => {
     const next = [...pr.jam_kerja]
@@ -337,14 +344,6 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
   }
   const addJob = () => upd({ job_descriptions: [...pr.job_descriptions, emptyJobDescription()] })
   const removeJob = (i: number) => upd({ job_descriptions: pr.job_descriptions.filter((_, idx) => idx !== i) })
-
-  const handleApplySampleJobDesc = () => {
-    const sampleJobs: JobDescription[] = (jurusanExample.contohJobDesc || []).map(j => ({
-      posisi: j.posisi,
-      tugas: [...j.tugas],
-    }))
-    upd({ job_descriptions: sampleJobs })
-  }
 
   return (
     <>
@@ -907,7 +906,7 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
           Tidak perlu hafal semua — isi yang kamu ketahui saja.
         </p>
 
-        {/* Contoh Jabatan & 1-Click Apply Button Berdasarkan Jurusan */}
+        {/* Contoh Jabatan Berdasarkan Jurusan */}
         <div
           style={{
             background: '#f8fafc',
@@ -920,18 +919,10 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
             lineHeight: 1.5,
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.5rem' }}>
+          <div style={{ marginBottom: '0.5rem' }}>
             <strong style={{ color: '#0f172a' }}>
               💡 Contoh Jabatan &amp; Tugas ({jurusanExample.label}):
             </strong>
-            <button
-              type="button"
-              className="btn-sm btn-outline"
-              onClick={handleApplySampleJobDesc}
-              style={{ fontSize: '0.78rem', padding: '0.25rem 0.6rem', color: 'var(--green-700)', borderColor: 'var(--green-600)', fontWeight: 600, background: '#ffffff' }}
-            >
-              + Gunakan Contoh Jabatan Jurusan Ini
-            </button>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
             {jurusanExample.contohJobDesc?.map((item, idx) => (
