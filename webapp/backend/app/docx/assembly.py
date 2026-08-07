@@ -533,6 +533,42 @@ def _clean_markdown(text: str) -> str:
     return _sanitize_ai_output(text)
 
 
+def _polish_task_detail(text: str) -> str:
+    """Merasionalkan dan merapikan detail tugas harian siswa ke dalam kalimat akademis KBBI/EYD."""
+    if not isinstance(text, str) or not text.strip():
+        return ""
+
+    t = text.strip()
+
+    # Map istilah informal/slang ke Bahasa Indonesia akademis formal
+    replacements = [
+        (r'\bbikin\b', 'Membuat'),
+        (r'\bpakai\b', 'menggunakan'),
+        (r'\bngoding\b', 'melakukan pemrograman'),
+        (r'\bngetes\b', 'melakukan pengujian'),
+        (r'\bngedit\b', 'melakukan penyuntingan'),
+        (r'\bbantu\b', 'membantu'),
+        (r'\bfixing\b', 'memperbaiki'),
+        (r'\bfix\b', 'memperbaiki'),
+        (r'\bsetup\b', 'menyiapkan'),
+        (r'\bhandling\b', 'penanganan'),
+        (r'\bmasukkin\b', 'memasukkan'),
+        (r"\bi'm\b", 'Penulis'),
+    ]
+    for pattern, replacement in replacements:
+        t = re.sub(pattern, replacement, t, flags=re.IGNORECASE)
+
+    # Kapitalisasi huruf pertama
+    if t and t[0].islower():
+        t = t[0].upper() + t[1:]
+
+    # Pastikan diakhiri titik jika merupakan kalimat utuh
+    if t and not t.endswith(('.', '!', '?')):
+        t += '.'
+
+    return t
+
+
 def _strip_markdown_formatting(text: str) -> str:
     """Strip bold/italic/backtick formatting symbols (*, **, `, _) from string."""
     if not isinstance(text, str) or not text:
@@ -1882,7 +1918,7 @@ def _write_data_pengamatan(builder: PklDocBuilder, data: dict, bab_num: int) -> 
 
             desk = k.get("deskripsi_umum", "").strip()
             if desk:
-                desk_clean = desk[0].upper() + desk[1:]
+                desk_clean = _polish_task_detail(desk)
                 builder.add_body(desk_clean)
 
             tugas = k.get("tugas", [])
@@ -1890,9 +1926,9 @@ def _write_data_pengamatan(builder: PklDocBuilder, data: dict, bab_num: int) -> 
                 for j, t in enumerate(tugas):
                     nama_raw = t.get("nama_tugas") or t.get("nama") or f"Tugas {j+1}"
                     clean_nama = re.sub(r"^[□▪•\-\d+\.\)\s]+", "", str(nama_raw)).strip()
-                    nama = clean_nama or str(nama_raw).strip()
-                    if nama:
-                        nama = nama[0].upper() + nama[1:]
+                    nama = _polish_task_detail(clean_nama or str(nama_raw).strip())
+                    if nama.endswith('.'):
+                        nama = nama[:-1]  # Judul sub-poin bold tanpa titik di akhir
                     detail = (t.get("detail") or "").strip()
                     letter = _LETTERS[j % 26]
 
@@ -1901,9 +1937,8 @@ def _write_data_pengamatan(builder: PklDocBuilder, data: dict, bab_num: int) -> 
                     if detail:
                         # Detail narasi sejajar di bawah huruf awal judul sub-poin (Indent 1.27 cm)
                         for para in detail.split("\n"):
-                            p_clean = para.strip()
+                            p_clean = _polish_task_detail(para.strip())
                             if p_clean:
-                                p_clean = p_clean[0].upper() + p_clean[1:]
                                 builder.add_sub_item(p_clean, indent_level=0)
             sub += 1
 
