@@ -1880,9 +1880,10 @@ def _write_data_pengamatan(builder: PklDocBuilder, data: dict, bab_num: int) -> 
             bidang = (k.get("bidang") or f"Kegiatan {i}").title()
             builder.add_sub_heading(bab_num, sub, bidang)
 
-            desk = k.get("deskripsi_umum", "")
+            desk = k.get("deskripsi_umum", "").strip()
             if desk:
-                builder.add_body(desk)
+                desk_clean = desk[0].upper() + desk[1:]
+                builder.add_body(desk_clean)
 
             tugas = k.get("tugas", [])
             if tugas:
@@ -1890,6 +1891,8 @@ def _write_data_pengamatan(builder: PklDocBuilder, data: dict, bab_num: int) -> 
                     nama_raw = t.get("nama_tugas") or t.get("nama") or f"Tugas {j+1}"
                     clean_nama = re.sub(r"^[□▪•\-\d+\.\)\s]+", "", str(nama_raw)).strip()
                     nama = clean_nama or str(nama_raw).strip()
+                    if nama:
+                        nama = nama[0].upper() + nama[1:]
                     detail = (t.get("detail") or "").strip()
                     letter = _LETTERS[j % 26]
 
@@ -1900,6 +1903,7 @@ def _write_data_pengamatan(builder: PklDocBuilder, data: dict, bab_num: int) -> 
                         for para in detail.split("\n"):
                             p_clean = para.strip()
                             if p_clean:
+                                p_clean = p_clean[0].upper() + p_clean[1:]
                                 builder.add_sub_item(p_clean, indent_level=0)
             sub += 1
 
