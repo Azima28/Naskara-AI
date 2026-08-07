@@ -130,6 +130,8 @@ async def draft_section(
         user_prompt = ai_sections.prompt_tujuan_pkl(ctx)
     elif key == "narasi_struktur":
         user_prompt = ai_sections.prompt_narasi_struktur(ctx)
+    elif key == "data_pengamatan_intro":
+        user_prompt = ai_sections.prompt_data_pengamatan_intro(ctx, jurusan_context)
     elif key == "landasan_teori":
         user_prompt = ai_sections.prompt_landasan_teori_paraphrase()
     elif key == "pembahasan":
@@ -245,6 +247,8 @@ async def draft_section_stream(
         user_prompt = ai_sections.prompt_tujuan_pkl(ctx)
     elif key == "narasi_struktur":
         user_prompt = ai_sections.prompt_narasi_struktur(ctx)
+    elif key == "data_pengamatan_intro":
+        user_prompt = ai_sections.prompt_data_pengamatan_intro(ctx, jurusan_context)
     elif key == "landasan_teori":
         user_prompt = ai_sections.prompt_landasan_teori_paraphrase()
     elif key == "pembahasan":

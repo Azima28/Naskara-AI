@@ -1830,11 +1830,31 @@ def _write_data_pengamatan(builder: PklDocBuilder, data: dict, bab_num: int) -> 
     )
     builder.add_spacing(1)
 
+    siswa = data.get("siswa", {})
+    perusahaan = data.get("perusahaan", {})
     kegiatan = data.get("kegiatan", [])
     detail_kegiatan = data.get("detail_kegiatan", [])
     peralatan = data.get("peralatan", [])
     gen = data.get("generated_sections", {})
     judul = data.get("judul_override", {})
+
+    # Paragraf Pengantar BAB IV DATA PENGAMATAN (Dinamis per Jurusan & Tempat PKL)
+    intro_bab4 = gen.get("data_pengamatan_intro")
+    if not intro_bab4:
+        nama_prsh_full = perusahaan.get("nama_lengkap") or perusahaan.get("nama") or "perusahaan"
+        jurusan_str = (siswa.get("jurusan") or "").strip()
+        bidang_list = [k.get("bidang", "").strip() for k in kegiatan if isinstance(k, dict) and k.get("bidang")]
+        aktivitas_str = ", ".join(bidang_list[:3]) if bidang_list else "aktivitas operasional harian"
+        jurusan_phrase = f"bidang {jurusan_str}" if jurusan_str else "kompetensi keahlian kejuruan"
+        intro_bab4 = (
+            f"Bab ini menjelaskan hasil pengamatan dan pengalaman kerja yang diperoleh Penulis "
+            f"selama pelaksanaan Praktik Kerja Lapangan (PKL) di {nama_prsh_full}. "
+            f"Data pengamatan disusun berdasarkan seluruh aktivitas dan tugas kerja nyata yang dilaksanakan Penulis "
+            f"dalam {jurusan_phrase}, meliputi {aktivitas_str}. "
+            f"Seluruh temuan dan rincian pekerjaan tersebut menjadi dasar utama dalam penyusunan laporan ini."
+        )
+    _write_paragraphs(builder, intro_bab4)
+    builder.add_spacing(1)
 
     sub = 1
 

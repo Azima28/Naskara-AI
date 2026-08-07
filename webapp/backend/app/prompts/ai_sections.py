@@ -208,6 +208,35 @@ ATURAN KERAS:
 """
 
 
+# ── GAP 13: BAB IV Data Pengamatan Intro — paragraf pembuka dinamis per jurusan ─ #
+def prompt_data_pengamatan_intro(ctx: dict, jurusan_context: str) -> str:
+    siswa = ctx.get("siswa", {})
+    perusahaan = ctx.get("perusahaan", {})
+    kegiatan = ctx.get("kegiatan", [])
+
+    nama_prsh = perusahaan.get("nama_lengkap") or perusahaan.get("nama") or "perusahaan"
+    jurusan_str = siswa.get("jurusan", "") or "kompetensi keahlian"
+    bidang_list = [k.get("bidang", "") for k in kegiatan if isinstance(k, dict) and k.get("bidang")]
+    bidang_str = ", ".join(bidang_list[:3]) if bidang_list else "aktivitas operasional harian"
+
+    return f"""Buat 1 paragraf naratif pengantar untuk halaman awal "BAB IV DATA PENGAMATAN" dalam laporan PKL.
+
+DATA NYATA (ground truth — SATU-SATUNYA sumber fakta):
+- Nama Perusahaan : {nama_prsh}
+- Jurusan Siswa   : {jurusan_str}
+- Bidang Aktivitas: {bidang_str}
+
+Konteks Jurusan (gunakan istilah teknis relevan):
+{jurusan_context}
+
+Instruksi WAJIB:
+1. Tulis 1 paragraf pengantar akademis yang menjelaskan bahwa BAB IV ini memuat hasil pengamatan dan pengalaman kerja nyata siswa selama PKL di {nama_prsh}.
+2. Hubungkan secara alami dengan jurusan {jurusan_str} dan aktivitas {bidang_str}.
+3. DILARANG mengarang fakta fiktif. DILARANG menggunakan bullet point atau heading.
+4. OUTPUT HANYA 1 paragraf narasi.
+"""
+
+
 # ── Helper: Default Daftar Pustaka ────────────────────────────────────────── #
 def generate_default_daftar_pustaka(ctx: dict) -> list[dict]:
     """Generate daftar pustaka default berdasarkan data konteks."""
