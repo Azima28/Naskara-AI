@@ -40,7 +40,7 @@ export default function PklStep({ ctx, set }: { ctx: PklContext; set: (p: Partia
       </FieldGroup>
 
       <FieldGroup title="Penempatan Siswa">
-        <TextField label="Bagian / Divisi Penempatan Kamu (Siswa)" value={p.bagian_ditempatkan} onChange={(v) => upd({ bagian_ditempatkan: v })} importance="wajib" placeholder="Contoh: Divisi IT, Bagian Keuangan" hint="Tuliskan nama bagian atau divisi tempat kamu (siswa) ditempatkan selama PKL. Kosongkan jika pindah-pindah divisi." />
+        <TextField name="pkl.bagian_ditempatkan" fieldKey="pkl.bagian_ditempatkan" label="Bagian / Divisi Penempatan Kamu (Siswa)" value={p.bagian_ditempatkan} onChange={(v) => upd({ bagian_ditempatkan: v })} importance="wajib" placeholder="Contoh: Divisi IT, Bagian Keuangan" hint="Tuliskan nama bagian atau divisi tempat kamu (siswa) ditempatkan selama PKL. Kosongkan jika pindah-pindah divisi." />
         <TextField label="Tahun Ajaran" value={p.tahun_ajaran} onChange={(v) => upd({ tahun_ajaran: v })} importance="opsional" hint="Terhitung otomatis berdasarkan tanggal mulai." readOnly />
       </FieldGroup>
     </>

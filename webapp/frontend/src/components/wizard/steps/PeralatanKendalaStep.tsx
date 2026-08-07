@@ -26,14 +26,14 @@ export default function PeralatanKendalaStep({ ctx, set }: { ctx: PklContext; se
     <>
       <h2>Peralatan &amp; Kendala</h2>
 
-      <FieldGroup title="Peralatan yang Digunakan">
+      <FieldGroup title="Peralatan yang Digunakan" name="peralatan" fieldKey="peralatan">
         {peralatan.map((p, i) => (
           <div key={i} className="nested-card">
             <div className="nested-card__head">
               <strong>{p.nama || `Peralatan ${i + 1}`}</strong>
               <button type="button" className="btn-sm btn-danger" onClick={() => removePeralatan(i)}>✕</button>
             </div>
-            <TextField label="Nama Peralatan" value={p.nama} onChange={(v) => updPeralatan(i, { nama: v })} placeholder="Printer" />
+            <TextField name="peralatan.nama" fieldKey="peralatan.nama" label="Nama Peralatan" value={p.nama} onChange={(v) => updPeralatan(i, { nama: v })} placeholder="Printer" />
             <TextareaField label="Deskripsi" value={p.deskripsi} onChange={(v) => updPeralatan(i, { deskripsi: v })} rows={2} />
             <TextField label="Nama File Gambar" value={p.gambar} onChange={(v) => updPeralatan(i, { gambar: v })} placeholder="printer.jpg" />
           </div>
@@ -41,7 +41,7 @@ export default function PeralatanKendalaStep({ ctx, set }: { ctx: PklContext; se
         <button type="button" className="btn-sm btn-outline" onClick={addPeralatan}>+ Tambah Peralatan</button>
       </FieldGroup>
 
-      <FieldGroup title="Kendala &amp; Solusi">
+      <FieldGroup title="Kendala &amp; Solusi" name="kendala" fieldKey="kendala">
         <p className="muted" style={{ marginTop: 0 }}>Minimal 1 kendala direkomendasikan.</p>
         {kendala.map((k, i) => (
           <div key={i} className="nested-card">
@@ -56,7 +56,7 @@ export default function PeralatanKendalaStep({ ctx, set }: { ctx: PklContext; se
         <button type="button" className="btn-sm btn-outline" onClick={addKendala}>+ Tambah Kendala Lain</button>
       </FieldGroup>
 
-      <FieldGroup title="Pelajaran">
+      <FieldGroup title="Pelajaran" name="pelajaran" fieldKey="pelajaran">
         <StringArrayField label="Yang Dipelajari" items={ctx.pelajaran} onChange={(pelajaran) => set({ pelajaran })} addLabel="+ Tambah Pelajaran" placeholder="Pentingnya kedisiplinan..." />
       </FieldGroup>
 

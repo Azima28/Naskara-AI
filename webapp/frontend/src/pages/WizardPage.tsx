@@ -188,7 +188,7 @@ function WizardInner() {
         document.getElementById(`field-${fieldKey}`) ||
         document.querySelector(`[data-field="${fieldKey}"]`) ||
         document.querySelector(`[name="${fieldKey}"]`) ||
-        document.querySelector('.field')
+        (fieldKey.includes('.') ? document.querySelector(`[data-field*="${fieldKey.split('.').pop()}"]`) : null)
 
       if (target) {
         target.scrollIntoView({ behavior: 'smooth', block: 'center' })

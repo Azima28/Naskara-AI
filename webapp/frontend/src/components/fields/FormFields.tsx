@@ -268,14 +268,23 @@ export function FieldGroup({
   title,
   children,
   full,
+  name,
+  fieldKey,
+  id,
 }: {
   title: string
   children: ReactNode
   /** Saat true, body memakai satu kolom penuh (untuk tabel / repeater lebar). */
   full?: boolean
+  name?: string
+  fieldKey?: string
+  id?: string
 }) {
+  const fk = name || fieldKey
+  const elemId = id || (fk ? `field-${fk}` : undefined)
+
   return (
-    <div className="field-group">
+    <div id={elemId} data-field={fk} className="field-group">
       <h3 className="field-group__title">{title}</h3>
       <div className={`field-group__body${full ? ' field-group__body--full' : ''}`}>{children}</div>
     </div>

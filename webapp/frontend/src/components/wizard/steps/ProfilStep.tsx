@@ -420,6 +420,8 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
           value={pr.head_office}
           onChange={v => upd({ head_office: v })}
           importance="wajib"
+          name="profil_perusahaan.head_office"
+          fieldKey="profil_perusahaan.head_office"
           hint="Kantor utama perusahaan (bisa sama atau beda kota dengan lokasi tempat kamu PKL)."
           placeholder="cth: Jalan Tentara Pelajar Blok B No. 3&5, Kebayoran Lama, Jakarta Selatan"
         />
@@ -645,7 +647,7 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
       </FieldGroup>
 
       {/* ── Jam Kerja: susun slot LANGSUNG di tabel bentuk laporan ────────── */}
-      <FieldGroup title="Jadwal Jam Kerja" full>
+      <FieldGroup title="Jadwal Jam Kerja" name="profil_perusahaan.jam_kerja" fieldKey="profil_perusahaan.jam_kerja" full>
         <p className="muted" style={{ margin: '-0.5rem 0 0.75rem', fontSize: '0.85rem' }}>
           Tabel ini persis seperti yang tercetak di laporan. Pilih hari, lalu
           susun slot jamnya (BRIEFING / OPERASIONAL / ISTIRAHAT / TUTUP).
@@ -883,7 +885,7 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
       </FieldGroup>
 
       {/* ── Bagan Struktur Organisasi ─────────────────────────────────────── */}
-      <FieldGroup title="Bagan Struktur Organisasi" full>
+      <FieldGroup title="Bagan Struktur Organisasi" name="profil_perusahaan.struktur_organisasi" fieldKey="profil_perusahaan.struktur_organisasi" full>
         <p className="muted" style={{ margin: '-0.5rem 0 0.75rem', fontSize: '0.85rem' }}>
           Upload foto/screenshot bagan struktur perusahaan. Bisa minta ke HRD atau foto dari papan pengumuman kantor.
           Jika tidak ada, sub-bab ini akan dilewati di laporan.
@@ -893,6 +895,8 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
           value={pr.struktur_organisasi}
           onChange={v => upd({ struktur_organisasi: v })}
           importance="wajib"
+          name="profil_perusahaan.struktur_organisasi"
+          fieldKey="profil_perusahaan.struktur_organisasi"
           hint="Format JPG/PNG. Ukuran ideal: landscape, min. 800×600px"
         />
         {pr.struktur_organisasi && (
@@ -901,6 +905,8 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
             value={pr.narasi_struktur}
             onChange={v => upd({ narasi_struktur: v })}
             importance="wajib"
+            name="profil_perusahaan.narasi_struktur"
+            fieldKey="profil_perusahaan.narasi_struktur"
             hint="Kalimat pembuka yang menjelaskan gunanya bagan di atas."
             placeholder="cth: Manfaat Struktur organisasi adalah mempermudah proses pencapaian tujuan dari suatu lembaga..."
           />
@@ -908,7 +914,7 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
       </FieldGroup>
 
       {/* ── Job Descriptions ─────────────────────────────────────────────── */}
-      <FieldGroup title="Job Description (Tugas per Jabatan)" full>
+      <FieldGroup title="Job Description (Tugas per Jabatan)" name="profil_perusahaan.job_descriptions" fieldKey="profil_perusahaan.job_descriptions" full>
         <p className="muted" style={{ margin: '-0.5rem 0 0.75rem', fontSize: '0.85rem' }}>
           Isi tugas-tugas setiap jabatan yang ada di perusahaan. Minimal isi jabatan tempat kamu ditempatkan.
           Tidak perlu hafal semua — isi yang kamu ketahui saja.

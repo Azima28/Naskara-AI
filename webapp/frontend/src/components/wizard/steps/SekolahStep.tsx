@@ -75,10 +75,10 @@ export default function SekolahStep({ ctx, set }: { ctx: PklContext; set: (p: Pa
       >
         {(locked) => (
           <>
-            <TextField label="Baris 1 (Instansi)" value={s.kop?.baris_1} onChange={(v) => updKop({ baris_1: v })} importance="wajib" hint="Contoh: PEMERINTAH PROVINSI LAMPUNG" readOnly={locked} />
-            <TextField label="Baris 2 (Dinas)" value={s.kop?.baris_2} onChange={(v) => updKop({ baris_2: v })} importance="wajib" hint="Contoh: DINAS PENDIDIKAN DAN KEBUDAYAAN" readOnly={locked} />
-            <TextField label="Baris 3 (Nama)" value={s.kop?.baris_3} onChange={(v) => updKop({ baris_3: v })} importance="wajib" hint="Contoh: SMK NEGERI 4 BANDAR LAMPUNG" readOnly={locked} />
-            <TextField label="NPSN" value={s.kop?.npsn} onChange={(v) => updKop({ npsn: v })} importance="wajib" hint="Nomor Pokok Sekolah Nasional" readOnly={locked} />
+            <TextField name="sekolah.kop.baris_1" fieldKey="sekolah.kop.baris_1" label="Baris 1 (Instansi)" value={s.kop?.baris_1} onChange={(v) => updKop({ baris_1: v })} importance="wajib" hint="Contoh: PEMERINTAH PROVINSI LAMPUNG" readOnly={locked} />
+            <TextField name="sekolah.kop.baris_2" fieldKey="sekolah.kop.baris_2" label="Baris 2 (Dinas)" value={s.kop?.baris_2} onChange={(v) => updKop({ baris_2: v })} importance="wajib" hint="Contoh: DINAS PENDIDIKAN DAN KEBUDAYAAN" readOnly={locked} />
+            <TextField name="sekolah.kop.baris_3" fieldKey="sekolah.kop.baris_3" label="Baris 3 (Nama)" value={s.kop?.baris_3} onChange={(v) => updKop({ baris_3: v })} importance="wajib" hint="Contoh: SMK NEGERI 4 BANDAR LAMPUNG" readOnly={locked} />
+            <TextField name="sekolah.kop.npsn" fieldKey="sekolah.kop.npsn" label="NPSN" value={s.kop?.npsn} onChange={(v) => updKop({ npsn: v })} importance="wajib" hint="Nomor Pokok Sekolah Nasional" readOnly={locked} />
             <TextField label="NSS (Nomor Statistik Sekolah - Opsional)" value={s.kop?.nss} onChange={(v) => updKop({ nss: v })} importance="opsional" hint="Kosongkan jika sekolah tidak menggunakan NSS" readOnly={locked} />
           </>
         )}

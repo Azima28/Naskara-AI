@@ -1728,7 +1728,7 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
                 for i, t in enumerate([_ensure_str(x).strip() for x in tugas_list if _ensure_str(x).strip()], 1):
                     clean_t = _ensure_str(t).strip()
                     if clean_t:
-                        clean_t = clean_t[0].upper() + clean_t[1:]
+                        clean_t = _polish_task_detail(clean_t)
                     builder.add_numbered(clean_t, i, indent_level=1)
         sub += 1
 
@@ -1790,7 +1790,7 @@ def _write_kegiatan_industri(builder: PklDocBuilder, data: dict, bab_num: int) -
             nama_tugas = t.get("nama_tugas") or t.get("nama") or ""
             clean_t = nama_tugas.strip()
             if clean_t:
-                clean_t = clean_t[0].upper() + clean_t[1:]
+                clean_t = _polish_task_detail(clean_t)
                 n += 1
                 builder.add_numbered(clean_t, n, indent_level=1)
 
@@ -1962,6 +1962,7 @@ def _write_data_pengamatan(builder: PklDocBuilder, data: dict, bab_num: int) -> 
                 for para in deskripsi_p.split("\n"):
                     p_clean = para.strip()
                     if p_clean:
+                        p_clean = _polish_task_detail(p_clean)
                         builder.add_sub_item(p_clean, indent_level=0)
         sub += 1
 
