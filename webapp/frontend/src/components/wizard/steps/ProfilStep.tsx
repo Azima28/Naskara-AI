@@ -366,6 +366,8 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
           value={pr.logo_perusahaan}
           onChange={v => upd({ logo_perusahaan: v })}
           importance="wajib"
+          name="profil_perusahaan.logo_perusahaan"
+          fieldKey="profil_perusahaan.logo_perusahaan"
           hint="Format JPG/PNG. Cari logo di website resmi perusahaan atau minta ke HRD."
         />
       </FieldGroup>
@@ -377,6 +379,8 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
           value={pr.sejarah}
           onChange={v => upd({ sejarah: v })}
           importance="wajib"
+          name="profil_perusahaan.sejarah"
+          fieldKey="profil_perusahaan.sejarah"
           hint="Kapan perusahaan didirikan? Bagaimana berkembangnya? 2-3 paragraf."
           placeholder="cth: PT Reksa Finance didirikan pada tanggal 24 Oktober 1984 dengan nama PT Reksa Semesta Leasing. Pada tahun 2006 berganti nama menjadi PT Reksa Finance..."
         />
@@ -385,6 +389,8 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
           value={pr.visi}
           onChange={v => upd({ visi: v })}
           importance="wajib"
+          name="profil_perusahaan.visi"
+          fieldKey="profil_perusahaan.visi"
           hint="Cita-cita jangka panjang perusahaan. Biasanya satu kalimat, ada di website atau dipajang di dinding kantor."
           placeholder="cth: Menjadi perusahaan pembiayaan yang memiliki kualifikasi aset terbaik..."
         />
@@ -394,6 +400,8 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
           items={pr.misi}
           onChange={v => upd({ misi: v })}
           importance="wajib"
+          name="profil_perusahaan.misi"
+          fieldKey="profil_perusahaan.misi"
           itemNoun="misi"
           addLabel="+ Tambah poin misi"
           hint="Langkah-langkah nyata untuk mencapai visi. Tambahkan satu poin per baris — biasanya ada 3–5 poin."

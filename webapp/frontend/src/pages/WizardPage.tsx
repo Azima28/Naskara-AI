@@ -99,11 +99,6 @@ export function findFirstInvalidField(ctx: PklContext): InvalidFieldResult | nul
   if (!ctx.profil_perusahaan?.misi || ctx.profil_perusahaan.misi.length === 0 || !filled(ctx.profil_perusahaan.misi[0])) {
     return { stepIdx: 4, fieldKey: 'profil_perusahaan.misi', fieldLabel: 'Misi Perusahaan', stepTitle: 'Profil Perusahaan (BAB II)' }
   }
-  if (!filled(ctx.profil_perusahaan?.head_office)) return { stepIdx: 4, fieldKey: 'profil_perusahaan.head_office', fieldLabel: 'Alamat Kantor Pusat', stepTitle: 'Profil Perusahaan (BAB II)' }
-
-  const ac = ctx.profil_perusahaan?.area_cabang || []
-  const hasBranch = ac.some(a => (a.cabang || []).some(c => filled(c.nama)))
-  if (!hasBranch) return { stepIdx: 4, fieldKey: 'profil_perusahaan.area_cabang', fieldLabel: 'Lokasi Tempat PKL', stepTitle: 'Profil Perusahaan (BAB II)' }
 
   const tt = ctx.profil_perusahaan?.tata_tertib_perusahaan || ctx.profil_perusahaan?.tata_tertib || []
   if (!tt || tt.length === 0 || !filled(tt[0])) {
@@ -112,15 +107,6 @@ export function findFirstInvalidField(ctx: PklContext): InvalidFieldResult | nul
   if (!ctx.profil_perusahaan?.jam_kerja || ctx.profil_perusahaan.jam_kerja.length === 0) {
     return { stepIdx: 4, fieldKey: 'profil_perusahaan.jam_kerja', fieldLabel: 'Jadwal Jam Kerja', stepTitle: 'Profil Perusahaan (BAB II)' }
   }
-  if (!filled(ctx.profil_perusahaan?.struktur_organisasi)) {
-    return { stepIdx: 4, fieldKey: 'profil_perusahaan.struktur_organisasi', fieldLabel: 'Gambar Bagan Struktur Organisasi', stepTitle: 'Profil Perusahaan (BAB II)' }
-  }
-  if (ctx.profil_perusahaan?.struktur_organisasi && !filled(ctx.profil_perusahaan?.narasi_struktur)) {
-    return { stepIdx: 4, fieldKey: 'profil_perusahaan.narasi_struktur', fieldLabel: 'Penjelasan Struktur Organisasi', stepTitle: 'Profil Perusahaan (BAB II)' }
-  }
-  const jobs = ctx.profil_perusahaan?.job_descriptions || []
-  const hasValidJob = jobs.some(j => filled(j.posisi) && (j.tugas || []).some(t => filled(t)))
-  if (!hasValidJob) return { stepIdx: 4, fieldKey: 'profil_perusahaan.job_descriptions', fieldLabel: 'Job Description (Posisi & Tugas)', stepTitle: 'Profil Perusahaan (BAB II)' }
 
   // 5. Kegiatan, Peralatan & Kendala
   const kegs = ctx.kegiatan || []
