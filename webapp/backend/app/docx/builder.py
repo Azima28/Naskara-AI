@@ -372,7 +372,7 @@ class PklDocBuilder:
     # ------------------------------------------------------------------ #
     #  Cover                                                              #
     # ------------------------------------------------------------------ #
-    def add_cover(self, data: dict, is_cover_dalam: bool = False) -> None:
+    def add_cover(self, data: dict, is_cover_dalam: bool = False, cover_spacing_enters: int | None = None) -> None:
         sekolah = data.get("sekolah", {})
         siswa = data.get("siswa", {})
         perusahaan = data.get("perusahaan", {})
@@ -495,21 +495,31 @@ class PklDocBuilder:
             run_logo = p_logo.add_run()
             run_logo.add_picture(logo_sekolah_path, width=Cm(6.05))  # Diperbesar 10% lagi (dari 5.5cm ke 6.05cm)
 
-        # Perhitungan spasi vertikal presisi tinggi (Empirically Verified MS Word Dynamic Cover Spacing)
-        # Menghitung spasi enter presisi agar Kop Footer terdorong mentok hingga
-        # menyisakan 2 enter di bagian paling bawah Halaman 1 tanpa meluap ke Halaman 2.
-        import math as _math
+        # Perhitungan spasi vertikal dinamis (Dynamic Cover Spacing Fallback - commit 1cd65c0)
+        # Menghitung perkiraan tinggi baris paragraf yang terpakai di atas logo
+        title_lines = 3  # "LAPORAN", "PRAKTIK KERJA LAPANGAN (PKL)", "DI [PERUSAHAAN]"
+        if len(judul_pkl) > 35:
+            title_lines += 1
+        if len(nama_prsh) > 30:
+            title_lines += 1
+        if pedoman and kota_prsh and kota_prsh.upper() not in nama_prsh.upper():
+            title_lines += 1
 
-        base_enters = 2
-        extra_lines = 0
-        if kota_prsh and kota_prsh.upper() not in nama_prsh.upper():
-            extra_lines += 1
-        if len(nama_prsh) > 28:
-            extra_lines += _math.ceil(len(nama_prsh) / 28.0) - 1
-        if len(nama_sekolah) > 35 or len(jurusan) > 30:
-            extra_lines += 1
+        subtitle_lines = 3  # "Disusun untuk memenuhi...", "Ujian...", "Tahun..."
+        if len(nama_sekolah) > 35:
+            subtitle_lines += 1
 
-        final_enters = max(1, base_enters - extra_lines)
+        author_lines = 3  # "disusun oleh :", "Nama", "NISN / NIS"
+        if len(nama) > 30:
+            author_lines += 1
+
+        logo_lines = 6.0 if (logo_sekolah_path and os.path.exists(logo_sekolah_path)) else 0
+        total_top_lines = title_lines + subtitle_lines + author_lines + logo_lines
+
+        # Target kapasitas baris Halaman Cover sebelum Kop Footer (mentok sampai bawah, tersisa 1-2 enter sebelum page break)
+        target_lines_before_kop = 20.0
+        needed_enters = int(round(target_lines_before_kop - total_top_lines))
+        final_enters = max(0, min(5, needed_enters))
 
         for _ in range(final_enters):
             p_sp = self.doc.add_paragraph()
@@ -533,7 +543,7 @@ class PklDocBuilder:
             (kop.get("baris_2", "DINAS PENDIDIKAN DAN KEBUDAYAAN"), 14, False),
             (sekolah.get("nama_lengkap") or nama_sekolah.upper(), 14, True),
         ]
-        alamat_sekolah = (sekolah.get("alamat") or "JL. HOST COKROAMINOTO NO. 102 BANDAR LAMPUNG").strip()
+        alamat_sekolah = (sekolah.get("alamat") or "").strip()
         if alamat_sekolah:
             kop_lines.append((alamat_sekolah, 12, False))
         alamat_2 = kop.get("baris_alamat_2", "")
@@ -557,7 +567,7 @@ class PklDocBuilder:
         cell_left = table.cell(0, 0)
         cell_right = table.cell(0, 1)
         cell_left.width = Cm(3.2)
-        cell_right.width = Cm(14.61)
+        cell_right.width = Cm(14.6)
 
         # Hapus border tabel
         for cell in (cell_left, cell_right):
@@ -587,10 +597,9 @@ class PklDocBuilder:
             r_prov.add_picture(logo_prov_path, width=Cm(3.2))
 
         # 2. Teks Kop Sekolah di cell_right (Top Aligned Centered, simetris dengan halaman)
-        # Indent kanan 3.2cm menyamai lebar Logo Lampung (3.2cm) di kiri agar teks Kop presisi di tengah halaman
         p_right_first = cell_right.paragraphs[0]
         p_right_first.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p_right_first.paragraph_format.right_indent = Cm(3.2)
+        p_right_first.paragraph_format.right_indent = Cm(1.0)
 
         for idx, (text, size, bold) in enumerate(kop_lines):
             if idx == 0:
@@ -598,7 +607,7 @@ class PklDocBuilder:
             else:
                 p = cell_right.add_paragraph()
                 p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                p.paragraph_format.right_indent = Cm(3.2)
+                p.paragraph_format.right_indent = Cm(1.0)
             p.paragraph_format.line_spacing = 1.15
             p.paragraph_format.space_before = Pt(0)
             p.paragraph_format.space_after = Pt(1)
@@ -610,7 +619,7 @@ class PklDocBuilder:
         if email or website:
             p = cell_right.add_paragraph()
             p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            p.paragraph_format.right_indent = Cm(3.2)
+            p.paragraph_format.right_indent = Cm(1.0)
             p.paragraph_format.line_spacing = 1.15
             p.paragraph_format.space_before = Pt(0)
             p.paragraph_format.space_after = Pt(1)
@@ -876,10 +885,9 @@ class PklDocBuilder:
         used_lines = 2 + total_line_count + 7
         available_enters = max(1, 28 - used_lines)
 
-        # Jika sisa ruang mepet, kecilkan group_space_before & enter agar tetap muat di 1 halaman
         # Selalu gunakan font_size=12 & space_before 4pt agar Identitas Siswa muat 100% di 1 halaman
         group_space_before = 4
-        spacing_enters = 1
+        spacing_enters = available_enters
 
         self._add_borderless_table(rows, font_size=12, group_space_before=group_space_before)
 
