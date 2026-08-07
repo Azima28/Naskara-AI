@@ -784,7 +784,7 @@ def _try_image(builder: PklDocBuilder, filename: str, width_cm: float = 10) -> b
 
 
 def _clean_caption_title(title: str) -> str:
-    """Bersihkan & tingkatkan judul gambar secara akademis (hapus prefix 'Asset 1', rapikan nama software/tool)."""
+    """Bersihkan & tingkatkan judul gambar secara akademis (hapus prefix 'Asset 1', rapikan nama software/tool, persingkat judul panjang)."""
     if not title:
         return ""
     t = str(title).strip()
@@ -802,6 +802,18 @@ def _clean_caption_title(title: str) -> str:
         return "Tampilan Postman Client"
     elif t_lower in ("komputer pc", "pc", "komputer"):
         return "Perangkat Komputer PC"
+
+    # 3. Jika judul terlalu panjang (> 45 karakter / frasa topik studi kasus), ringkas ke format judul gambar akademis yang rapi
+    if len(t) > 45:
+        m_opt = re.search(r'\b(optimasi|pembuatan|perancangan|pengujian|desain|implementasi|analisis)\b.*', t, re.IGNORECASE)
+        if m_opt:
+            core = m_opt.group(0)
+            core = re.sub(r'\s+(?:pada|di|untuk)\s+aplikasi.*$', '', core, flags=re.IGNORECASE).strip()
+            t = f"Hasil {core[0].upper() + core[1:]}"
+        else:
+            words = t.split()
+            if len(words) > 6:
+                t = "Hasil " + " ".join(words[:5])
 
     # Capitalize first letter cleanly if title is not empty
     if t and t[0].islower():
