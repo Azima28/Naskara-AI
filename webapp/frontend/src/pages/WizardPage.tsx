@@ -184,11 +184,15 @@ function WizardInner() {
 
   const highlightField = useCallback((fieldKey: string) => {
     setTimeout(() => {
+      const cleanKey = fieldKey.includes('.') ? fieldKey.split('.').pop()! : fieldKey
       const target =
         document.getElementById(`field-${fieldKey}`) ||
         document.querySelector(`[data-field="${fieldKey}"]`) ||
         document.querySelector(`[name="${fieldKey}"]`) ||
-        (fieldKey.includes('.') ? document.querySelector(`[data-field*="${fieldKey.split('.').pop()}"]`) : null)
+        document.getElementById(`field-${cleanKey}`) ||
+        document.querySelector(`[data-field="${cleanKey}"]`) ||
+        document.querySelector(`[data-field*="${cleanKey}"]`) ||
+        document.querySelector(`[name="${cleanKey}"]`)
 
       if (target) {
         target.scrollIntoView({ behavior: 'smooth', block: 'center' })

@@ -606,7 +606,7 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
       </FieldGroup>
 
       {/* ── Tata Tertib ──────────────────────────────────────────────────── */}
-      <FieldGroup title="Tata Tertib Perusahaan" full>
+      <FieldGroup title="Tata Tertib Perusahaan" name="profil_perusahaan.tata_tertib_perusahaan" fieldKey="profil_perusahaan.tata_tertib_perusahaan" full>
         <p className="muted" style={{ margin: '-0.5rem 0 0.75rem', fontSize: '0.85rem' }}>
           Isi tata tertib <strong>khusus dari perusahaanmu</strong> — aturan unik yang tidak ada di sekolah.
           AI akan membantu merapikan bahasanya saat kamu download laporan.
@@ -643,6 +643,8 @@ export default function ProfilStep({ ctx, set }: { ctx: PklContext; set: (p: Par
           addLabel="+ Tambah Aturan"
           placeholder="cth: datang tepat waktu jam 08.00"
           importance="wajib"
+          name="profil_perusahaan.tata_tertib_perusahaan"
+          fieldKey="profil_perusahaan.tata_tertib_perusahaan"
         />
       </FieldGroup>
 
