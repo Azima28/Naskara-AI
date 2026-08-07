@@ -9,6 +9,7 @@ import MasterGenModal from '@/components/editor/MasterGenModal'
 import type { PklContext } from '@/types/pkl'
 import { emptyContext } from '@/types/pkl'
 import { IconDocument, IconDownload, IconAlert, IconPencil, IconCheck } from '@/components/common/Icons'
+import { polishAcademicText, polishAcademicList } from '@/utils/textPolish'
 
 const ARRAY_SECTION_KEYS = [
   'tujuan',
@@ -2090,9 +2091,9 @@ function SectionEditor({
           .split('\n')
           .map((s: string) => s.replace(/^[0-9]+\.\s*/, '').replace(/^-\s*/, '').replace(/^[a-z]\.\s*/, '').trim())
           .filter(Boolean)
-        onChange(arr)
+        onChange(polishAcademicList(arr))
       } else {
-        onChange(resContent)
+        onChange(polishAcademicText(resContent))
       }
     } catch (err: any) {
       const d = err?.response?.data?.detail
@@ -2117,9 +2118,9 @@ function SectionEditor({
           .split('\n')
           .map((s) => s.replace(/^[0-9]+\.\s*/, '').replace(/^-\s*/, '').replace(/^[a-z]\.\s*/, '').trim())
           .filter(Boolean)
-        onChange(arr)
+        onChange(polishAcademicList(arr))
       } else {
-        onChange(res.content)
+        onChange(polishAcademicText(res.content))
       }
       setInstruction('')
       setRegen(false)

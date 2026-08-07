@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { PklContext } from '@/types/pkl'
 import { draftSectionStream, updateDraft } from '@/api/client'
 import { IconCheck, IconAlert, IconSparkles, IconLightning } from '@/components/common/Icons'
+import { polishAcademicText, polishAcademicList } from '@/utils/textPolish'
 
 export interface MasterGenModalProps {
   isOpen: boolean
@@ -229,10 +230,13 @@ export default function MasterGenModal({
 
         let parsedContent: string | string[] = rawContent || accumulated
         if (ARRAY_SECTION_KEYS.includes(sec.key)) {
-          parsedContent = (typeof parsedContent === 'string' ? parsedContent : '')
+          const list = (typeof parsedContent === 'string' ? parsedContent : '')
             .split('\n')
             .map((s: string) => s.replace(/^[0-9]+\.\s*/, '').replace(/^-\s*/, '').replace(/^[a-z]\.\s*/, '').trim())
             .filter(Boolean)
+          parsedContent = polishAcademicList(list)
+        } else if (typeof parsedContent === 'string') {
+          parsedContent = polishAcademicText(parsedContent)
         }
 
         currentCtxRef.current = {
@@ -293,21 +297,25 @@ export default function MasterGenModal({
           const gen = { ...(currentCtxRef.current.generated_sections || {}) }
 
           if (p.key === 'profil_sejarah') {
-            pr.sejarah = finalContent
-            gen.profil_sejarah = finalContent
+            const polished = polishAcademicText(finalContent)
+            pr.sejarah = polished
+            gen.profil_sejarah = polished
           } else if (p.key === 'visi_misi') {
             const parsed = parseVisiMisi(finalContent)
-            if (parsed.visi) pr.visi = parsed.visi
-            if (parsed.misi.length > 0) pr.misi = parsed.misi
+            if (parsed.visi) pr.visi = polishAcademicText(parsed.visi)
+            if (parsed.misi.length > 0) pr.misi = polishAcademicList(parsed.misi)
           } else if (p.key === 'tata_tertib_perusahaan') {
-            const list = parseNumberedList(finalContent)
+            const list = polishAcademicList(parseNumberedList(finalContent))
             if (list.length > 0) {
               pr.tata_tertib_perusahaan = list
               pr.tata_tertib = list
               gen.tata_tertib = list
             }
           } else if (p.key === 'job_descriptions') {
-            const parsedJobs = parseJobDescriptions(finalContent)
+            const parsedJobs = parseJobDescriptions(finalContent).map((j) => ({
+              posisi: polishAcademicText(j.posisi),
+              tugas: polishAcademicList(j.tugas),
+            }))
             if (parsedJobs.length > 0) pr.job_descriptions = parsedJobs
           }
 
@@ -369,10 +377,13 @@ export default function MasterGenModal({
 
         let parsedContent: string | string[] = rawContent || accumulated
         if (ARRAY_SECTION_KEYS.includes(item.key)) {
-          parsedContent = (typeof parsedContent === 'string' ? parsedContent : '')
+          const list = (typeof parsedContent === 'string' ? parsedContent : '')
             .split('\n')
             .map((s: string) => s.replace(/^[0-9]+\.\s*/, '').replace(/^-\s*/, '').replace(/^[a-z]\.\s*/, '').trim())
             .filter(Boolean)
+          parsedContent = polishAcademicList(list)
+        } else if (typeof parsedContent === 'string') {
+          parsedContent = polishAcademicText(parsedContent)
         }
 
         currentCtxRef.current = {
@@ -405,21 +416,25 @@ export default function MasterGenModal({
           const gen = { ...(currentCtxRef.current.generated_sections || {}) }
 
           if (item.key === 'profil_sejarah') {
-            pr.sejarah = finalContent
-            gen.profil_sejarah = finalContent
+            const polished = polishAcademicText(finalContent)
+            pr.sejarah = polished
+            gen.profil_sejarah = polished
           } else if (item.key === 'visi_misi') {
             const parsed = parseVisiMisi(finalContent)
-            if (parsed.visi) pr.visi = parsed.visi
-            if (parsed.misi.length > 0) pr.misi = parsed.misi
+            if (parsed.visi) pr.visi = polishAcademicText(parsed.visi)
+            if (parsed.misi.length > 0) pr.misi = polishAcademicList(parsed.misi)
           } else if (item.key === 'tata_tertib_perusahaan') {
-            const list = parseNumberedList(finalContent)
+            const list = polishAcademicList(parseNumberedList(finalContent))
             if (list.length > 0) {
               pr.tata_tertib_perusahaan = list
               pr.tata_tertib = list
               gen.tata_tertib = list
             }
           } else if (item.key === 'job_descriptions') {
-            const parsedJobs = parseJobDescriptions(finalContent)
+            const parsedJobs = parseJobDescriptions(finalContent).map((j) => ({
+              posisi: polishAcademicText(j.posisi),
+              tugas: polishAcademicList(j.tugas),
+            }))
             if (parsedJobs.length > 0) pr.job_descriptions = parsedJobs
           }
 
