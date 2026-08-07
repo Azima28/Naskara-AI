@@ -1025,7 +1025,7 @@ function ReaderSectionItem({
 
 // ── Special Reader Cards for Integrated Profile & Document Parts ────────── //
 
-function SpecialVisiMisiCard({ ctx, nav }: { ctx: PklContext; nav: any }) {
+function SpecialVisiMisiCard({ ctx, nav }: { ctx: PklContext; nav: NavigateFunction }) {
   const { draftId } = useParams()
   const [expanded, setExpanded] = useState(false)
   const visi = ctx.profil_perusahaan?.visi || ''
@@ -1108,7 +1108,7 @@ function SpecialVisiMisiCard({ ctx, nav }: { ctx: PklContext; nav: any }) {
   )
 }
 
-function SpecialJobDescCard({ ctx, nav }: { ctx: PklContext; nav: any }) {
+function SpecialJobDescCard({ ctx, nav }: { ctx: PklContext; nav: NavigateFunction }) {
   const { draftId } = useParams()
   const [expanded, setExpanded] = useState(false)
   const jobs = ctx.profil_perusahaan?.job_descriptions || []
@@ -1350,9 +1350,9 @@ function ChapterAccordionGroup({
   chapter: ParentChapter
   ctx: PklContext
   onEditSection: (key: string) => void
-  nav: any
+  nav: NavigateFunction
   mode?: 'reader' | 'editor'
-  updateSection?: (key: string, val: any) => void
+  updateSection?: (key: string, val: string | string[]) => void
   showErrorModal?: (msg: string) => void
   isLocked?: boolean
   expandedSections?: Record<string, boolean>
@@ -1510,7 +1510,7 @@ function DocumentReaderView({
   ctx: PklContext
   onEditSection: (key: string) => void
   mode?: 'reader' | 'editor'
-  updateSection?: (key: string, val: any) => void
+  updateSection?: (key: string, val: string | string[]) => void
   showErrorModal?: (msg: string) => void
   isUnlocked?: boolean
   expandedSections?: Record<string, boolean>
@@ -1724,7 +1724,7 @@ function SectionEditor({
   title: string
   ctx: PklContext
   value: string | string[]
-  onChange: (val: any) => void
+  onChange: (val: string | string[]) => void
   onError?: (msg: string) => void
   disabled?: boolean
   isExpanded?: boolean

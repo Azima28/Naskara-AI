@@ -1302,11 +1302,16 @@ class PklDocBuilder:
         return table
 
     def add_caption(self, text: str, bookmark: str | None = None) -> None:
-        """Caption gambar (Gambar 4. 1) — Times New Roman 10pt Italic, center."""
+        """Caption gambar (Format 2: Gambar X.Y Judul Gambar) — Times New Roman 10pt Italic, center."""
         p = self.doc.add_paragraph()
-        p.style = self.doc.styles["Caption"]
+        try:
+            p.style = self.doc.styles["Caption"]
+        except Exception:
+            p.style = self.doc.styles["Normal"]
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p.paragraph_format.line_spacing = 1.0
+        p.paragraph_format.line_spacing = 1.15
+        p.paragraph_format.space_before = Pt(4)
+        p.paragraph_format.space_after = Pt(6)
         run = p.add_run(text)
         run.font.name = "Times New Roman"
         run.font.size = Pt(10)

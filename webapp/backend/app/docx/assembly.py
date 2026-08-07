@@ -136,6 +136,7 @@ def assemble_report(data: dict) -> str:
         Path absolut ke file .docx yang dihasilkan.
     """
     _sanitize_data(data)
+    data["__all_gambar_list__"] = _scan_all_gambar(data)
 
     config = data.get("config", {})
     margin = config.get("margin", {})
@@ -501,7 +502,7 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
 
         sections.append((text, bookmark, level, str(pg)))
 
-    # Tambahkan kalkulasi halaman dinamis untuk bookmark Foto Lampiran & Gambar Peralatan
+    # Tambahkan kalkulasi halaman dinamis untuk bookmark Foto Lampiran & Gambar
     pg_lamp_base = bab_start_pages.get("LAMPIRAN", cur_page)
     foto_lampiran = [
         f for f in (data.get("lampiran", {}) or {}).get("foto_kegiatan", [])
@@ -516,18 +517,11 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
         cost = _get_image_page_cost(f.get("gambar"), width_cm=14)
         accumulated_lamp_pages += cost
 
-    pg_dp_base = bab_start_pages.get(4, cur_page)
-    peralatan = [p for p in data.get("peralatan", []) if p.get("gambar")]
-    bab_modules = data.get("config", {}).get("bab_modules") or list(ALL_BAB_MODULES)
-    normalized = [m for m in _normalize_modules(bab_modules) if m in ALL_BAB_MODULES]
-    bab_dp = (
-        normalized.index("DATA_PENGAMATAN") + 1
-        if "DATA_PENGAMATAN" in normalized else 4
-    )
-    for i in range(1, len(peralatan) + 1):
-        p = peralatan[i - 1]
-        nama_p = p.get("nama", f"Peralatan {i}")
-        sections.append((f"Gambar {bab_dp}.{i} {nama_p}", f"gambar_{i}", 1, str(pg_dp_base)))
+    gambar_list = data.get("__all_gambar_list__", [])
+    for item in gambar_list:
+        b_num = item["bab_num"]
+        pg_base = bab_start_pages.get(b_num, cur_page)
+        sections.append((item["text"], item["bookmark"], 1, str(pg_base)))
 
     return sections
 
@@ -728,6 +722,116 @@ def _try_image(builder: PklDocBuilder, filename: str, width_cm: float = 10) -> b
             except Exception:
                 pass
     return False
+
+
+def _scan_all_gambar(data: dict) -> list[dict]:
+    """Pre-scan seluruh gambar di dokumen untuk penomoran Gambar X.Y (Format 2 Berdasarkan Bab) & DAFTAR GAMBAR."""
+    gambar_list: list[dict] = []
+    bab_modules = data.get("config", {}).get("bab_modules") or list(ALL_BAB_MODULES)
+    normalized = [m for m in _normalize_modules(bab_modules) if m in ALL_BAB_MODULES]
+
+    def get_bab_num(module_name: str, default_num: int) -> int:
+        return normalized.index(module_name) + 1 if module_name in normalized else default_num
+
+    bab1_num = get_bab_num("PENDAHULUAN", 1)
+    bab4_num = get_bab_num("DATA_PENGAMATAN", 4)
+
+    perusahaan = data.get("perusahaan", {})
+    nama_prsh = perusahaan.get("nama_lengkap") or perusahaan.get("nama") or "Perusahaan"
+    profil = data.get("profil_perusahaan", {})
+
+    # 1. BAB I: Logo Perusahaan
+    logo = profil.get("logo_perusahaan")
+    if logo and _sanitize_image_filename(logo):
+        img_idx = len([g for g in gambar_list if g["bab_num"] == bab1_num]) + 1
+        bm = f"gambar_{bab1_num}_{img_idx}"
+        label = f"Gambar {bab1_num}.{img_idx} Logo {nama_prsh}"
+        gambar_list.append({
+            "key": "logo_perusahaan",
+            "filename": logo,
+            "bab_num": bab1_num,
+            "img_idx": img_idx,
+            "bookmark": bm,
+            "text": label,
+            "title": f"Logo {nama_prsh}",
+            "width_cm": 6,
+        })
+
+    # 2. BAB I: Struktur Organisasi
+    struktur = profil.get("struktur_organisasi")
+    if struktur and _sanitize_image_filename(struktur):
+        img_idx = len([g for g in gambar_list if g["bab_num"] == bab1_num]) + 1
+        bm = f"gambar_{bab1_num}_{img_idx}"
+        label = f"Gambar {bab1_num}.{img_idx} Struktur Organisasi {nama_prsh}"
+        gambar_list.append({
+            "key": "struktur_organisasi",
+            "filename": struktur,
+            "bab_num": bab1_num,
+            "img_idx": img_idx,
+            "bookmark": bm,
+            "text": label,
+            "title": f"Struktur Organisasi {nama_prsh}",
+            "width_cm": 14,
+        })
+
+    # 3. BAB IV: Peralatan
+    peralatan = data.get("peralatan", [])
+    for idx, p in enumerate(peralatan, 1):
+        g_file = p.get("gambar")
+        if g_file and _sanitize_image_filename(g_file):
+            nama_p = p.get("nama", f"Peralatan {idx}")
+            img_idx = len([g for g in gambar_list if g["bab_num"] == bab4_num]) + 1
+            bm = f"gambar_{bab4_num}_{img_idx}"
+            label = f"Gambar {bab4_num}.{img_idx} {nama_p}"
+            gambar_list.append({
+                "key": f"peralatan_{idx}",
+                "filename": g_file,
+                "bab_num": bab4_num,
+                "img_idx": img_idx,
+                "bookmark": bm,
+                "text": label,
+                "title": nama_p,
+                "width_cm": 10,
+            })
+
+    # 4. BAB IV: Studi Kasus / Assets
+    studi_kasus = data.get("studi_kasus", {})
+    sk_assets = studi_kasus.get("assets", []) if isinstance(studi_kasus, dict) else []
+    for idx, a_file in enumerate(sk_assets, 1):
+        if isinstance(a_file, str) and a_file and _sanitize_image_filename(a_file):
+            img_idx = len([g for g in gambar_list if g["bab_num"] == bab4_num]) + 1
+            bm = f"gambar_{bab4_num}_{img_idx}"
+            title_asset = f"Asset {idx} {studi_kasus.get('judul', '')}".strip() or f"Studi Kasus Asset {idx}"
+            label = f"Gambar {bab4_num}.{img_idx} {title_asset}"
+            gambar_list.append({
+                "key": f"studi_kasus_{idx}",
+                "filename": a_file,
+                "bab_num": bab4_num,
+                "img_idx": img_idx,
+                "bookmark": bm,
+                "text": label,
+                "title": title_asset,
+                "width_cm": 12,
+            })
+
+    return gambar_list
+
+
+def _render_image_with_caption(builder: PklDocBuilder, data: dict, key_or_filename: str) -> bool:
+    """Render gambar beserta caption-nya (Gambar X.Y Judul Gambar) yang telah diregistrasi."""
+    gambar_list = data.get("__all_gambar_list__", [])
+    item = next(
+        (g for g in gambar_list if g.get("key") == key_or_filename or g.get("filename") == key_or_filename),
+        None,
+    )
+    if item:
+        inserted = _try_image(builder, item["filename"], width_cm=item.get("width_cm", 10))
+        if inserted:
+            builder.add_caption(item["text"], bookmark=item["bookmark"])
+            return True
+        return False
+    else:
+        return _try_image(builder, key_or_filename, width_cm=10)
 
 
 def _write_blocks(builder: PklDocBuilder, blocks: list) -> None:
@@ -1262,26 +1366,19 @@ def _build_daftar_gambar_lampiran(builder: PklDocBuilder, data: dict) -> None:
     Nomor halaman memakai field PAGEREF ke bookmark caption/keterangan,
     diisi Word bersamaan dengan update field TOC.
     """
-    peralatan = [p for p in data.get("peralatan", []) if p.get("gambar")]
+    gambar_list = data.get("__all_gambar_list__", [])
     foto_lampiran = [
         f for f in (data.get("lampiran", {}) or {}).get("foto_kegiatan", [])
         if isinstance(f, dict) and f.get("gambar")
     ]
 
-    # Daftar Gambar — merujuk caption "Gambar <bab>. <n>" pada peralatan.
-    if peralatan:
-        bab_modules = data.get("config", {}).get("bab_modules") or list(ALL_BAB_MODULES)
-        normalized = [m for m in _normalize_modules(bab_modules) if m in ALL_BAB_MODULES]
-        bab_dp = (
-            normalized.index("DATA_PENGAMATAN") + 1
-            if "DATA_PENGAMATAN" in normalized else 4
-        )
+    # Daftar Gambar — merujuk caption "Gambar <bab>.<n> <judul>" pada seluruh gambar.
+    if gambar_list:
         builder.add_page_break()
         builder._heading("DAFTAR GAMBAR", bookmark="daftar_gambar")
         builder.add_spacing(1)
-        for i, p in enumerate(peralatan, 1):
-            nama_p = p.get("nama", f"Peralatan {i}")
-            builder.add_toc_entry(f"Gambar {bab_dp}.{i} {nama_p}", f"gambar_{i}", 1)
+        for item in gambar_list:
+            builder.add_toc_entry(item["text"], item["bookmark"], 1)
 
     # Daftar Lampiran — merujuk keterangan foto dokumentasi.
     if foto_lampiran:
@@ -1419,7 +1516,7 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
         if sejarah:
             _write_paragraphs(builder, sejarah)
         if logo:
-            _try_image(builder, logo, width_cm=6)
+            _render_image_with_caption(builder, data, "logo_perusahaan")
 
         sub3 = 0
 
@@ -1540,7 +1637,7 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
         builder.add_body(
             profil.get("bagan_intro") or f"Berikut adalah struktur organisasi {nama_prsh}:"
         )
-        if not _try_image(builder, struktur, width_cm=14):
+        if not _render_image_with_caption(builder, data, "struktur_organisasi"):
             builder.add_body(f"[GAMBAR STRUKTUR ORGANISASI: {struktur}]")
         narasi = profil.get("narasi_struktur") or gen.get("narasi_struktur")
         if narasi:
@@ -1772,10 +1869,8 @@ def _write_data_pengamatan(builder: PklDocBuilder, data: dict, bab_num: int) -> 
             deskripsi_p = p.get("deskripsi", "")
             gambar_p = p.get("gambar", "")
             builder.add_numbered(nama_p, idx)
-            if gambar_p and _try_image(builder, gambar_p, width_cm=10):
-                # Nomor gambar mengikuti BAB: "Gambar 4.1", "Gambar 4.2", ...
-                # Bookmark = target PAGEREF di Daftar Gambar (preset pedoman).
-                builder.add_caption(f"Gambar {bab_num}.{idx} {nama_p}", bookmark=f"gambar_{idx}")
+            if gambar_p:
+                _render_image_with_caption(builder, data, f"peralatan_{idx}")
             if deskripsi_p:
                 for para in deskripsi_p.split("\n"):
                     p_clean = para.strip()

@@ -61,7 +61,7 @@ function parseVisiMisi(text: string): { visi: string; misi: string[] } {
     if (mode === 'visi' && !visi) {
       visi = trimmed
     } else if (mode === 'misi') {
-      const cleaned = trimmed.replace(/^\d+[\.\)]\s*/, '').replace(/^[-*•]\s*/, '').trim()
+      const cleaned = trimmed.replace(/^\d+[.)]\s*/, '').replace(/^[-*•]\s*/, '').trim()
       if (cleaned) misi.push(cleaned)
     }
   }
@@ -79,7 +79,7 @@ function parseVisiMisi(text: string): { visi: string; misi: string[] } {
 function parseNumberedList(text: string): string[] {
   const lines = text
     .split('\n')
-    .map((line) => line.trim().replace(/^\d+[\.\)]\s*/, '').replace(/^[-*•]\s*/, '').trim())
+    .map((line) => line.trim().replace(/^\d+[.)]\s*/, '').replace(/^[-*•]\s*/, '').trim())
     .filter((line) => {
       if (!line || line.startsWith('[') || line.startsWith('#')) return false
       if (line.toLowerCase().includes('berikut adalah') || line.toLowerCase().includes('tata tertib perusahaan')) return false
@@ -107,12 +107,12 @@ function parseJobDescriptions(text: string): Array<{ posisi: string; tugas: stri
     const trimmed = line.trim()
     if (!trimmed) continue
 
-    const posMatch = trimmed.match(/^(?:\[POSISI:\s*|Jabatan:\s*|Posisi:\s*|\*\*)(.+?)[\]\*:]*$/i)
+    const posMatch = trimmed.match(/^(?:\[POSISI:\s*|Jabatan:\s*|Posisi:\s*|\*\*)(.+?)[\]*:]*$/i)
     if (posMatch && posMatch[1].length < 60) {
       if (currentJob) jobs.push(currentJob)
       currentJob = { posisi: posMatch[1].trim(), tugas: [] }
     } else if (currentJob) {
-      const task = trimmed.replace(/^[-•*]\s*/, '').replace(/^\d+[\.\)]\s*/, '').trim()
+      const task = trimmed.replace(/^[-•*]\s*/, '').replace(/^\d+[.)]\s*/, '').trim()
       if (task) currentJob.tugas.push(task)
     } else {
       // Fallback first job position header
@@ -183,6 +183,7 @@ export default function MasterGenModal({
         abortControllerRef.current.abort()
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen])
 
   const startMasterGeneration = async () => {
@@ -426,11 +427,6 @@ export default function MasterGenModal({
             ...currentCtxRef.current,
             profil_perusahaan: pr,
             generated_sections: gen,
-          }
-
-          currentCtxRef.current = {
-            ...currentCtxRef.current,
-            profil_perusahaan: pr,
           }
         }
       }
