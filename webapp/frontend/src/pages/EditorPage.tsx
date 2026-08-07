@@ -1323,7 +1323,7 @@ function SpecialJobDescCard({
         >
           <h4 style={{ margin: 0, fontSize: 'clamp(0.88rem, 2.8vw, 1.02rem)', color: 'var(--green-800, #114e3b)', fontFamily: 'var(--font-serif)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
             <span style={{ fontSize: '0.78rem', color: 'var(--green-700, #14614a)' }}>{isOpen ? '▼' : '▶'}</span>
-            1.6 Job Description / Deskripsi Pekerjaan per Posisi
+            1.6 Job Description (Profil Jabatan Perusahaan — BAB I)
           </h4>
           <span style={{ fontSize: '0.74rem', background: 'var(--green-50, #f0fdf4)', color: 'var(--green-700, #14614a)', border: '1px solid #86efac', padding: '0.15rem 0.5rem', borderRadius: '12px', fontWeight: 600 }}>
             Mode Edit Langsung
@@ -1861,7 +1861,7 @@ function DocumentReaderView({
         { key: 'visi_misi', title: '1.3.a Visi & Misi Perusahaan', type: 'visi_misi' },
         { key: 'tata_tertib', title: '1.4 Tata Tertib & Keselamatan Kerja (K3)' },
         { key: 'narasi_struktur', title: '1.5 Bagan & Narasi Struktur Organisasi' },
-        { key: 'job_descriptions', title: '1.6 Job Description (Deskripsi Pekerjaan per Posisi)', type: 'job_descriptions' },
+        { key: 'job_descriptions', title: '1.6 Job Description (Profil Jabatan Perusahaan)', type: 'job_descriptions' },
       ],
     },
     {
@@ -1890,7 +1890,7 @@ function DocumentReaderView({
       items: sections.filter((s) => s.key === 'studi_kasus_proses' || s.key.startsWith('detail_kegiatan')).length > 0
         ? sections.filter((s) => s.key === 'studi_kasus_proses' || s.key.startsWith('detail_kegiatan'))
         : [
-            { key: 'pelaksanaan_kegiatan', title: '4.1 Pelaksanaan Kegiatan & Detail Pekerjaan' },
+            { key: 'pelaksanaan_kegiatan', title: '4.1 Pelaksanaan Kegiatan & Rincian Tugas Harian Siswa' },
             ...(sections.some((s) => s.key === 'studi_kasus_proses') ? [{ key: 'studi_kasus_proses', title: '4.2 Proses Penyelesaian Studi Kasus' }] : []),
           ],
     },
