@@ -237,12 +237,10 @@ def assemble_report(data: dict) -> str:
 
     if foto_kegiatan:
         for idx, foto in enumerate(foto_kegiatan, 1):
-            _try_image(builder, foto["gambar"], width_cm=14)
-            keterangan = (foto.get("keterangan") or "").strip()
-            p = builder.add_body(keterangan or f"Dokumentasi kegiatan {idx}.")
-            # Target PAGEREF untuk Daftar Lampiran (preset pedoman).
-            builder.attach_bookmark(p, f"lamp_{idx}")
-            builder.add_spacing(1)
+            if _try_image(builder, foto["gambar"], width_cm=14):
+                keterangan = (foto.get("keterangan") or "").strip() or f"Dokumentasi kegiatan {idx}"
+                builder.add_caption(f"Lampiran {idx}. {keterangan.rstrip('.')}", bookmark=f"lamp_{idx}")
+                builder.add_spacing(1)
     else:
         builder.add_body(
             "Dokumentasi kegiatan Praktik Kerja Lapangan terlampir pada halaman berikut."
@@ -724,6 +722,32 @@ def _try_image(builder: PklDocBuilder, filename: str, width_cm: float = 10) -> b
     return False
 
 
+def _clean_caption_title(title: str) -> str:
+    """Bersihkan & tingkatkan judul gambar secara akademis (hapus prefix 'Asset 1', rapikan nama software/tool)."""
+    if not title:
+        return ""
+    t = str(title).strip()
+
+    # 1. Hapus prefix nama file/asset mentah seperti "Asset 1 ", "asset_1 ", "image 1 ", "foto_1 "
+    t = re.sub(r'^(?:asset|image|foto|gambar)[\s_]*\d*[\s_\-]*', '', t, flags=re.IGNORECASE).strip()
+
+    # 2. Rapikan ejaan judul software pendek ke versi akademis deskriptif
+    t_lower = t.lower()
+    if t_lower in ("vs code", "vscode", "visual studio code"):
+        return "Tampilan Visual Studio Code"
+    elif t_lower in ("xampp", "xampp control panel"):
+        return "Tampilan XAMPP Control Panel"
+    elif t_lower in ("postman", "postman client"):
+        return "Tampilan Postman Client"
+    elif t_lower in ("komputer pc", "pc", "komputer"):
+        return "Perangkat Komputer PC"
+
+    # Capitalize first letter cleanly if title is not empty
+    if t and t[0].islower():
+        t = t[0].upper() + t[1:]
+    return t or str(title).strip()
+
+
 def _scan_all_gambar(data: dict) -> list[dict]:
     """Pre-scan seluruh gambar di dokumen untuk penomoran Gambar X.Y (Format 2 Berdasarkan Bab) & DAFTAR GAMBAR."""
     gambar_list: list[dict] = []
@@ -745,7 +769,8 @@ def _scan_all_gambar(data: dict) -> list[dict]:
     if logo and _sanitize_image_filename(logo):
         img_idx = len([g for g in gambar_list if g["bab_num"] == bab1_num]) + 1
         bm = f"gambar_{bab1_num}_{img_idx}"
-        label = f"Gambar {bab1_num}.{img_idx} Logo {nama_prsh}"
+        title_clean = f"Logo {nama_prsh}"
+        label = f"Gambar {bab1_num}.{img_idx} {title_clean}"
         gambar_list.append({
             "key": "logo_perusahaan",
             "filename": logo,
@@ -753,7 +778,7 @@ def _scan_all_gambar(data: dict) -> list[dict]:
             "img_idx": img_idx,
             "bookmark": bm,
             "text": label,
-            "title": f"Logo {nama_prsh}",
+            "title": title_clean,
             "width_cm": 6,
         })
 
@@ -762,7 +787,8 @@ def _scan_all_gambar(data: dict) -> list[dict]:
     if struktur and _sanitize_image_filename(struktur):
         img_idx = len([g for g in gambar_list if g["bab_num"] == bab1_num]) + 1
         bm = f"gambar_{bab1_num}_{img_idx}"
-        label = f"Gambar {bab1_num}.{img_idx} Struktur Organisasi {nama_prsh}"
+        title_clean = f"Struktur Organisasi {nama_prsh}"
+        label = f"Gambar {bab1_num}.{img_idx} {title_clean}"
         gambar_list.append({
             "key": "struktur_organisasi",
             "filename": struktur,
@@ -770,7 +796,7 @@ def _scan_all_gambar(data: dict) -> list[dict]:
             "img_idx": img_idx,
             "bookmark": bm,
             "text": label,
-            "title": f"Struktur Organisasi {nama_prsh}",
+            "title": title_clean,
             "width_cm": 14,
         })
 
@@ -779,10 +805,11 @@ def _scan_all_gambar(data: dict) -> list[dict]:
     for idx, p in enumerate(peralatan, 1):
         g_file = p.get("gambar")
         if g_file and _sanitize_image_filename(g_file):
-            nama_p = p.get("nama", f"Peralatan {idx}")
+            nama_raw = p.get("nama", f"Peralatan {idx}")
+            title_clean = _clean_caption_title(nama_raw) or f"Peralatan {idx}"
             img_idx = len([g for g in gambar_list if g["bab_num"] == bab4_num]) + 1
             bm = f"gambar_{bab4_num}_{img_idx}"
-            label = f"Gambar {bab4_num}.{img_idx} {nama_p}"
+            label = f"Gambar {bab4_num}.{img_idx} {title_clean}"
             gambar_list.append({
                 "key": f"peralatan_{idx}",
                 "filename": g_file,
@@ -790,7 +817,7 @@ def _scan_all_gambar(data: dict) -> list[dict]:
                 "img_idx": img_idx,
                 "bookmark": bm,
                 "text": label,
-                "title": nama_p,
+                "title": title_clean,
                 "width_cm": 10,
             })
 
@@ -799,10 +826,11 @@ def _scan_all_gambar(data: dict) -> list[dict]:
     sk_assets = studi_kasus.get("assets", []) if isinstance(studi_kasus, dict) else []
     for idx, a_file in enumerate(sk_assets, 1):
         if isinstance(a_file, str) and a_file and _sanitize_image_filename(a_file):
+            raw_title = studi_kasus.get("judul", "") or f"Studi Kasus Asset {idx}"
+            title_clean = _clean_caption_title(raw_title) or f"Hasil Studi Kasus {idx}"
             img_idx = len([g for g in gambar_list if g["bab_num"] == bab4_num]) + 1
             bm = f"gambar_{bab4_num}_{img_idx}"
-            title_asset = f"Asset {idx} {studi_kasus.get('judul', '')}".strip() or f"Studi Kasus Asset {idx}"
-            label = f"Gambar {bab4_num}.{img_idx} {title_asset}"
+            label = f"Gambar {bab4_num}.{img_idx} {title_clean}"
             gambar_list.append({
                 "key": f"studi_kasus_{idx}",
                 "filename": a_file,
@@ -810,7 +838,7 @@ def _scan_all_gambar(data: dict) -> list[dict]:
                 "img_idx": img_idx,
                 "bookmark": bm,
                 "text": label,
-                "title": title_asset,
+                "title": title_clean,
                 "width_cm": 12,
             })
 

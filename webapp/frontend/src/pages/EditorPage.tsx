@@ -232,9 +232,33 @@ function EditorInner() {
 
   const updateSection = useCallback((key: string, content: string | string[]) => {
     setCtx((prev) => {
-      const gen = prev.generated_sections || {}
-      return { ...prev, generated_sections: { ...gen, [key]: content } }
+      const gen = { ...(prev.generated_sections || {}), [key]: content }
+      let pr = { ...(prev.profil_perusahaan || {}) }
+      if (key === 'profil_sejarah') {
+        pr.sejarah = typeof content === 'string' ? content : content.join('\n')
+      } else if (key === 'tata_tertib') {
+        const list = Array.isArray(content)
+          ? content
+          : (content ? content.split('\n').filter(Boolean) : [])
+        pr.tata_tertib_perusahaan = list
+        pr.tata_tertib = list
+      }
+      return { ...prev, generated_sections: gen, profil_perusahaan: pr as any }
     })
+    dirtyRef.current = true
+    setGenError('')
+    setGenIssues([])
+    setGenQuestions([])
+  }, [])
+
+  const updateProfilPerusahaan = useCallback((patch: Partial<import('@/types/pkl').ProfilPerusahaan>) => {
+    setCtx((prev) => ({
+      ...prev,
+      profil_perusahaan: {
+        ...(prev.profil_perusahaan || {}),
+        ...patch,
+      },
+    }))
     dirtyRef.current = true
     setGenError('')
     setGenIssues([])
@@ -531,6 +555,7 @@ function EditorInner() {
                 ctx={ctx}
                 onEditSection={handleEditSectionFromReader}
                 mode="reader"
+                onUpdateProfil={updateProfilPerusahaan}
               />
             </>
           )}
@@ -567,6 +592,7 @@ function EditorInner() {
                 onEditSection={handleEditSectionFromReader}
                 mode="editor"
                 updateSection={updateSection}
+                onUpdateProfil={updateProfilPerusahaan}
                 showErrorModal={showErrorModal}
                 isUnlocked={isUnlocked}
                 expandedSections={expandedSections}
@@ -755,9 +781,9 @@ function EditorInner() {
 }
 
 function getSectionValue(ctx: PklContext, key: string): string | string[] {
-  const genVal = (ctx.generated_sections || {})[key]
-  if (Array.isArray(genVal) ? genVal.length > 0 : !!(typeof genVal === 'string' && genVal.trim())) {
-    return genVal
+  const gen = ctx.generated_sections || {}
+  if (key in gen) {
+    return gen[key] ?? ''
   }
   if (key === 'profil_sejarah' && ctx.profil_perusahaan?.sejarah) {
     return ctx.profil_perusahaan.sejarah
@@ -765,7 +791,7 @@ function getSectionValue(ctx: PklContext, key: string): string | string[] {
   if (key === 'tata_tertib' && (ctx.profil_perusahaan?.tata_tertib_perusahaan?.length || ctx.profil_perusahaan?.tata_tertib?.length)) {
     return ctx.profil_perusahaan.tata_tertib_perusahaan || ctx.profil_perusahaan.tata_tertib || ''
   }
-  return genVal || ''
+  return ''
 }
 
 function buildSectionList(ctx: PklContext) {
@@ -1025,12 +1051,108 @@ function ReaderSectionItem({
 
 // ── Special Reader Cards for Integrated Profile & Document Parts ────────── //
 
-function SpecialVisiMisiCard({ ctx, nav }: { ctx: PklContext; nav: NavigateFunction }) {
+function SpecialVisiMisiCard({
+  ctx,
+  nav,
+  mode = 'reader',
+  onUpdateProfil,
+  onSwitchToEdit,
+}: {
+  ctx: PklContext
+  nav: NavigateFunction
+  mode?: 'reader' | 'editor'
+  onUpdateProfil?: (patch: Partial<import('@/types/pkl').ProfilPerusahaan>) => void
+  onSwitchToEdit?: () => void
+}) {
   const { draftId } = useParams()
   const [expanded, setExpanded] = useState(false)
   const visi = ctx.profil_perusahaan?.visi || ''
   const misi = ctx.profil_perusahaan?.misi || []
   const hasContent = !!visi || misi.length > 0
+
+  const handleVisiChange = (val: string) => {
+    if (onUpdateProfil) {
+      onUpdateProfil({ visi: val })
+    }
+  }
+
+  const handleMisiChange = (text: string) => {
+    if (onUpdateProfil) {
+      const list = text.split('\n').map((s) => s.trim()).filter(Boolean)
+      onUpdateProfil({ misi: list })
+    }
+  }
+
+  if (mode === 'editor') {
+    return (
+      <div
+        id="section-visi_misi"
+        style={{
+          background: '#ffffff',
+          border: '1px solid var(--green-600, #187257)',
+          borderLeft: '4px solid var(--green-600, #187257)',
+          borderRadius: '10px',
+          padding: '0.85rem 1.2rem',
+          marginBottom: '0.5rem',
+          boxShadow: '0 2px 8px rgba(24, 114, 87, 0.08)',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', borderBottom: '1px solid var(--line, #e2e8f0)', paddingBottom: '0.45rem', gap: '0.5rem' }}>
+          <h4 style={{ margin: 0, fontSize: 'clamp(0.88rem, 2.8vw, 1.02rem)', color: 'var(--green-800, #114e3b)', fontFamily: 'var(--font-serif)', fontWeight: 700 }}>
+            1.3.a Penyuntingan Visi &amp; Misi Perusahaan
+          </h4>
+          <span style={{ fontSize: '0.74rem', background: 'var(--green-50, #f0fdf4)', color: 'var(--green-700, #14614a)', border: '1px solid #86efac', padding: '0.15rem 0.5rem', borderRadius: '12px', fontWeight: 600 }}>
+            Mode Edit Langsung
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--ink, #262521)', marginBottom: '0.25rem' }}>
+              Visi Perusahaan:
+            </label>
+            <textarea
+              value={visi}
+              onChange={(e) => handleVisiChange(e.target.value)}
+              placeholder="Masukkan visi perusahaan (misal: Menjadi perusahaan teknologi terdepan...)"
+              rows={2}
+              style={{
+                width: '100%',
+                padding: '0.5rem 0.65rem',
+                fontSize: '0.85rem',
+                borderRadius: '6px',
+                border: '1px solid #cbd5e1',
+                fontFamily: 'inherit',
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--ink, #262521)', marginBottom: '0.25rem' }}>
+              Misi Perusahaan (1 poin per baris):
+            </label>
+            <textarea
+              value={misi.join('\n')}
+              onChange={(e) => handleMisiChange(e.target.value)}
+              placeholder="Tekan Enter untuk membuat poin misi baru&#10;1. Memberikan layanan terbaik&#10;2. Mengembangkan inovasi teknologi"
+              rows={4}
+              style={{
+                width: '100%',
+                padding: '0.5rem 0.65rem',
+                fontSize: '0.85rem',
+                borderRadius: '6px',
+                border: '1px solid #cbd5e1',
+                fontFamily: 'inherit',
+                lineHeight: 1.5,
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div
@@ -1050,11 +1172,11 @@ function SpecialVisiMisiCard({ ctx, nav }: { ctx: PklContext; nav: NavigateFunct
         </h4>
         <button
           type="button"
-          onClick={() => nav(`/wizard/${draftId || ''}`)}
+          onClick={() => onSwitchToEdit ? onSwitchToEdit() : nav(`/wizard/${draftId || ''}`)}
           className="btn-sm btn-outline"
           style={{ fontSize: '0.78rem', padding: '0.2rem 0.55rem', background: '#ffffff', color: 'var(--green-700)', fontWeight: 600 }}
         >
-          <IconPencil size={13} style={{ marginRight: '0.2rem' }} /> Form Data
+          <IconPencil size={13} style={{ marginRight: '0.2rem' }} /> Edit
         </button>
       </div>
 
@@ -1108,11 +1230,155 @@ function SpecialVisiMisiCard({ ctx, nav }: { ctx: PklContext; nav: NavigateFunct
   )
 }
 
-function SpecialJobDescCard({ ctx, nav }: { ctx: PklContext; nav: NavigateFunction }) {
+function SpecialJobDescCard({
+  ctx,
+  nav,
+  mode = 'reader',
+  onUpdateProfil,
+  onSwitchToEdit,
+}: {
+  ctx: PklContext
+  nav: NavigateFunction
+  mode?: 'reader' | 'editor'
+  onUpdateProfil?: (patch: Partial<import('@/types/pkl').ProfilPerusahaan>) => void
+  onSwitchToEdit?: () => void
+}) {
   const { draftId } = useParams()
   const [expanded, setExpanded] = useState(false)
   const jobs = ctx.profil_perusahaan?.job_descriptions || []
   const hasContent = jobs.length > 0
+
+  const handleUpdateJobPosisi = (index: number, newPosisi: string) => {
+    if (!onUpdateProfil) return
+    const updated = [...jobs]
+    updated[index] = { ...updated[index], posisi: newPosisi }
+    onUpdateProfil({ job_descriptions: updated })
+  }
+
+  const handleUpdateJobTugas = (index: number, textTugas: string) => {
+    if (!onUpdateProfil) return
+    const list = textTugas.split('\n').map((s) => s.trim()).filter(Boolean)
+    const updated = [...jobs]
+    updated[index] = { ...updated[index], tugas: list }
+    onUpdateProfil({ job_descriptions: updated })
+  }
+
+  const handleAddJob = () => {
+    if (!onUpdateProfil) return
+    const updated = [...jobs, { posisi: 'Posisi / Jabatan Baru', tugas: [] }]
+    onUpdateProfil({ job_descriptions: updated })
+  }
+
+  const handleRemoveJob = (index: number) => {
+    if (!onUpdateProfil) return
+    const updated = jobs.filter((_, i) => i !== index)
+    onUpdateProfil({ job_descriptions: updated })
+  }
+
+  if (mode === 'editor') {
+    return (
+      <div
+        id="section-job_descriptions"
+        style={{
+          background: '#ffffff',
+          border: '1px solid var(--green-600, #187257)',
+          borderLeft: '4px solid var(--green-600, #187257)',
+          borderRadius: '10px',
+          padding: '0.85rem 1.2rem',
+          marginBottom: '0.5rem',
+          boxShadow: '0 2px 8px rgba(24, 114, 87, 0.08)',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', borderBottom: '1px solid var(--line, #e2e8f0)', paddingBottom: '0.45rem', gap: '0.5rem' }}>
+          <h4 style={{ margin: 0, fontSize: 'clamp(0.88rem, 2.8vw, 1.02rem)', color: 'var(--green-800, #114e3b)', fontFamily: 'var(--font-serif)', fontWeight: 700 }}>
+            1.6 Penyuntingan Job Description per Posisi
+          </h4>
+          <span style={{ fontSize: '0.74rem', background: 'var(--green-50, #f0fdf4)', color: 'var(--green-700, #14614a)', border: '1px solid #86efac', padding: '0.15rem 0.5rem', borderRadius: '12px', fontWeight: 600 }}>
+            Mode Edit Langsung
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+          {jobs.length === 0 && (
+            <p style={{ margin: 0, fontSize: '0.82rem', color: '#64748b' }}>
+              Belum ada deskripsi posisi pekerjaan. Klik tombol di bawah untuk menambah jabatan.
+            </p>
+          )}
+
+          {jobs.map((job, idx) => (
+            <div key={idx} style={{ background: '#f8fafc', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem', gap: '0.5rem' }}>
+                <input
+                  type="text"
+                  value={job.posisi}
+                  onChange={(e) => handleUpdateJobPosisi(idx, e.target.value)}
+                  placeholder={`Nama Jabatan ${idx + 1}`}
+                  style={{
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    color: 'var(--green-800, #114e3b)',
+                    padding: '0.3rem 0.5rem',
+                    borderRadius: '4px',
+                    border: '1px solid #cbd5e1',
+                    flex: 1,
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemoveJob(idx)}
+                  style={{
+                    background: '#fef2f2',
+                    border: '1px solid #fca5a5',
+                    color: '#dc2626',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    borderRadius: '4px',
+                    padding: '0.2rem 0.5rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Hapus
+                </button>
+              </div>
+              <textarea
+                value={(Array.isArray(job.tugas) ? job.tugas : [job.tugas]).join('\n')}
+                onChange={(e) => handleUpdateJobTugas(idx, e.target.value)}
+                placeholder="Rincian tugas per baris (Tekan Enter untuk poin baru)"
+                rows={3}
+                style={{
+                  width: '100%',
+                  padding: '0.45rem 0.6rem',
+                  fontSize: '0.82rem',
+                  borderRadius: '4px',
+                  border: '1px solid #cbd5e1',
+                  fontFamily: 'inherit',
+                  boxSizing: 'border-box',
+                }}
+              />
+            </div>
+          ))}
+
+          <button
+            type="button"
+            onClick={handleAddJob}
+            style={{
+              background: '#ffffff',
+              border: '1px dashed var(--green-600, #187257)',
+              color: 'var(--green-700, #14614a)',
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              padding: '0.4rem 0.8rem',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              alignSelf: 'flex-start',
+            }}
+          >
+            + Tambah Posisi / Jabatan Pekerjaan
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div
@@ -1132,11 +1398,11 @@ function SpecialJobDescCard({ ctx, nav }: { ctx: PklContext; nav: NavigateFuncti
         </h4>
         <button
           type="button"
-          onClick={() => nav(`/wizard/${draftId || ''}`)}
+          onClick={() => onSwitchToEdit ? onSwitchToEdit() : nav(`/wizard/${draftId || ''}`)}
           className="btn-sm btn-outline"
           style={{ fontSize: '0.78rem', padding: '0.2rem 0.55rem', background: '#ffffff', color: 'var(--green-700)', fontWeight: 600 }}
         >
-          <IconPencil size={13} style={{ marginRight: '0.2rem' }} /> Form Data
+          <IconPencil size={13} style={{ marginRight: '0.2rem' }} /> Edit
         </button>
       </div>
 
@@ -1341,6 +1607,7 @@ function ChapterAccordionGroup({
   nav,
   mode = 'reader',
   updateSection,
+  onUpdateProfil,
   showErrorModal,
   isLocked = false,
   expandedSections = {},
@@ -1353,6 +1620,7 @@ function ChapterAccordionGroup({
   nav: NavigateFunction
   mode?: 'reader' | 'editor'
   updateSection?: (key: string, val: string | string[]) => void
+  onUpdateProfil?: (patch: Partial<import('@/types/pkl').ProfilPerusahaan>) => void
   showErrorModal?: (msg: string) => void
   isLocked?: boolean
   expandedSections?: Record<string, boolean>
@@ -1455,10 +1723,28 @@ function ChapterAccordionGroup({
               return <SpecialLampiranCard key={item.key} ctx={ctx} />
             }
             if (item.type === 'visi_misi') {
-              return <SpecialVisiMisiCard key={item.key} ctx={ctx} nav={nav} />
+              return (
+                <SpecialVisiMisiCard
+                  key={item.key}
+                  ctx={ctx}
+                  nav={nav}
+                  mode={mode}
+                  onUpdateProfil={onUpdateProfil}
+                  onSwitchToEdit={() => onEditSection(item.key)}
+                />
+              )
             }
             if (item.type === 'job_descriptions') {
-              return <SpecialJobDescCard key={item.key} ctx={ctx} nav={nav} />
+              return (
+                <SpecialJobDescCard
+                  key={item.key}
+                  ctx={ctx}
+                  nav={nav}
+                  mode={mode}
+                  onUpdateProfil={onUpdateProfil}
+                  onSwitchToEdit={() => onEditSection(item.key)}
+                />
+              )
             }
 
             if (mode === 'editor') {
@@ -1501,6 +1787,7 @@ function DocumentReaderView({
   onEditSection,
   mode = 'reader',
   updateSection,
+  onUpdateProfil,
   showErrorModal,
   isUnlocked = true,
   expandedSections = {},
@@ -1511,6 +1798,7 @@ function DocumentReaderView({
   onEditSection: (key: string) => void
   mode?: 'reader' | 'editor'
   updateSection?: (key: string, val: string | string[]) => void
+  onUpdateProfil?: (patch: Partial<import('@/types/pkl').ProfilPerusahaan>) => void
   showErrorModal?: (msg: string) => void
   isUnlocked?: boolean
   expandedSections?: Record<string, boolean>
@@ -1694,6 +1982,7 @@ function DocumentReaderView({
             nav={nav}
             mode={mode}
             updateSection={updateSection}
+            onUpdateProfil={onUpdateProfil}
             showErrorModal={showErrorModal}
             isLocked={isReaderLocked}
             expandedSections={expandedSections}
