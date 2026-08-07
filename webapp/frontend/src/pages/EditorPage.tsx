@@ -1,11 +1,11 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams, type NavigateFunction } from 'react-router-dom'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import { getDraft, updateDraft, generateDocx, draftSectionStream, regenerateSection } from '@/api/client'
 import DocumentOutline from '@/components/editor/DocumentOutline'
 import RequestionPanel, { type GenerateIssue, type Requestion } from '@/components/RequestionPanel'
 import NotificationModal from '@/components/common/NotificationModal'
-import ProfilPolishModal from '@/components/editor/ProfilPolishModal'
+import MasterGenModal from '@/components/editor/MasterGenModal'
 import type { PklContext } from '@/types/pkl'
 import { emptyContext } from '@/types/pkl'
 import { IconDocument, IconDownload, IconAlert, IconPencil, IconCheck } from '@/components/common/Icons'
@@ -19,6 +19,21 @@ const ARRAY_SECTION_KEYS = [
   'rumusan_masalah',
   'kesimpulan_saran',
 ]
+
+const MAIN_NARRATIVE_KEYS = [
+  'latar_belakang',
+  'tujuan_pkl',
+  'profil_sejarah',
+  'tata_tertib',
+  'narasi_struktur',
+  'landasan_teori',
+  'pembahasan',
+  'kesimpulan_saran',
+]
+
+function isMainNarrativeSection(key: string): boolean {
+  return MAIN_NARRATIVE_KEYS.includes(key) || key.startsWith('kegiatan_')
+}
 
 export default function EditorPage() {
   return (
@@ -47,7 +62,7 @@ function EditorInner() {
   const loadingRef = useRef(loading)
   loadingRef.current = loading
 
-  const savingPromiseRef = useRef<Promise<any> | null>(null)
+  const savingPromiseRef = useRef<Promise<void> | null>(null)
 
   const [downloading, setDownloading] = useState(false)
   const [genError, setGenError] = useState('')
@@ -55,10 +70,25 @@ function EditorInner() {
   const [genQuestions, setGenQuestions] = useState<Requestion[]>([])
   const [polishNotice, setPolishNotice] = useState('')
 
-  // In-Page Batch Generation State
-  const [isBatchGenerating, setIsBatchGenerating] = useState(false)
-  const [batchStatuses, setBatchStatuses] = useState<Record<string, 'pending' | 'generating' | 'success' | 'failed'>>({})
-  const [showProfilPolishModal, setShowProfilPolishModal] = useState(false)
+  // Master Unified AI Generation Modal State
+  const [showMasterModal, setShowMasterModal] = useState(false)
+
+  // Hybrid Editor View Mode State (Default: 'reader' agar siswa disambut bacaan yang bersih & nyaman)
+  const [editorViewMode, setEditorViewMode] = useState<'reader' | 'editor'>('reader')
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({})
+
+  const toggleSectionExpand = (key: string) => {
+    setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  const handleEditSectionFromReader = (key: string) => {
+    setEditorViewMode('editor')
+    setExpandedSections((prev) => ({ ...prev, [key]: true }))
+    setTimeout(() => {
+      const el = document.getElementById(`section-${key}`)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 200)
+  }
 
   // Notification Modal State
   const [modal, setModal] = useState<{ isOpen: boolean; title?: string; message: string; type?: 'error' | 'warning' | 'info' | 'success' }>({
@@ -77,124 +107,14 @@ function EditorInner() {
 
   const [activeSectionKey, setActiveSectionKey] = useState<string | undefined>(undefined)
 
-  const handleStartInPageBatch = async () => {
-    if (isBatchGenerating || !draftIdRef.current) return
-
-    setIsBatchGenerating(true)
-    const allSections = buildSectionList(ctxRef.current)
-    const initialStatuses: Record<string, 'pending' | 'generating' | 'success' | 'failed'> = {}
-
-    allSections.forEach((sec) => {
-      const existing = ctxRef.current.generated_sections?.[sec.key]
-      if (existing && (Array.isArray(existing) ? existing.length > 0 : !!(typeof existing === 'string' && existing.trim()))) {
-        initialStatuses[sec.key] = 'success'
-      } else {
-        initialStatuses[sec.key] = 'pending'
-      }
-    })
-
-    setBatchStatuses(initialStatuses)
-
-    let currentCtx = { ...ctxRef.current }
-    const failedList: string[] = []
-
-    for (let i = 0; i < allSections.length; i++) {
-      const sec = allSections[i]
-
-      // Scroll smoothly to active section on screen
-      const el = document.getElementById(`section-${sec.key}`)
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      }
-
-      setBatchStatuses((prev) => ({ ...prev, [sec.key]: 'generating' }))
-
-      try {
-        let accumulatedStream = ''
-
-        // 2-minute maximum timeout promise for generation
-        const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('AI tidak merespon (Timeout)')), 120000)
-        )
-
-        const rawContent: string = await Promise.race([
-          draftSectionStream(sec.key, currentCtx, (chunk) => {
-            accumulatedStream += chunk
-            setCtx((prev) => ({
-              ...prev,
-              generated_sections: {
-                ...(prev.generated_sections || {}),
-                [sec.key]: accumulatedStream + ' ▌',
-              },
-            }))
-          }),
-          timeoutPromise,
-        ])
-
-        let parsedContent: string | string[] = rawContent
-        if (ARRAY_SECTION_KEYS.includes(sec.key)) {
-          parsedContent = rawContent
-            .split('\n')
-            .map((s: string) => s.replace(/^[0-9]+\.\s*/, '').replace(/^-\s*/, '').replace(/^[a-z]\.\s*/, '').trim())
-            .filter(Boolean)
-        }
-
-        currentCtx = {
-          ...currentCtx,
-          generated_sections: {
-            ...(currentCtx.generated_sections || {}),
-            [sec.key]: parsedContent,
-          },
-        }
-
-        setCtx(currentCtx)
-        dirtyRef.current = true
-        setBatchStatuses((prev) => ({ ...prev, [sec.key]: 'success' }))
-
-        try {
-          await updateDraft(draftIdRef.current, { data: currentCtx })
-        } catch (saveErr) {
-          console.warn('[InPageBatch] Intermediate save error:', saveErr)
-        }
-
-      } catch (err: any) {
-        failedList.push(sec.title)
-        setBatchStatuses((prev) => ({ ...prev, [sec.key]: 'failed' }))
-      }
-    }
-
-    setIsBatchGenerating(false)
-
-    // Calculate total successful sections in context
-    const totalGenCount = Object.keys(currentCtx.generated_sections || {}).filter((k) => {
-      const v = currentCtx.generated_sections?.[k]
-      return Array.isArray(v) ? v.length > 0 : !!(typeof v === 'string' && v.trim())
-    }).length
-
-    if (totalGenCount < 3) {
-      setModal({
-        isOpen: true,
-        title: 'Penyusunan Sub-bab Belum Memenuhi Syarat Minimal',
-        message: `Hanya ${totalGenCount} sub-bab yang berhasil disusun. Minimal 3 sub-bab harus berhasil diselesaikan agar editor terbuka. Silakan periksa server AI Anda dan klik tombol 'Generate Semua Sub-bab Laporan' kembali.`,
-        type: 'error',
-      })
-    } else {
-      setShowProfilPolishModal(true)
-      if (failedList.length > 0) {
-        setModal({
-          isOpen: true,
-          title: 'Penyusunan Sub-bab Selesai',
-          message: `Sebanyak ${totalGenCount} sub-bab berhasil disusun. Terdapat ${failedList.length} sub-bab yang gagal/timeout 15 detik (${failedList.join(', ')}). Pintu editor telah terbuka dan Anda dapat mencoba bagian yang gagal tersebut secara individu.`,
-          type: 'warning',
-        })
-      }
-    }
+  const handleStartMasterBatch = () => {
+    setShowMasterModal(true)
   }
 
-  // Auto-trigger batch generation on mount if ?batch=true parameter is present
+  // Auto-trigger Master Generation Modal on mount if ?batch=true parameter is present
   useEffect(() => {
     if (searchParams.get('batch') === 'true' && !loading) {
-      handleStartInPageBatch()
+      setShowMasterModal(true)
     }
   }, [searchParams, loading])
 
@@ -276,6 +196,35 @@ function EditorInner() {
     await flushSave('completed')
   }
 
+  const handleDownloadDocx = async () => {
+    if (!draftId) return
+    setDownloading(true)
+    setGenError('')
+    setGenIssues([])
+    setGenQuestions([])
+    try {
+      await flushSave('completed')
+      const notice = await generateDocx(draftId)
+      setPolishNotice(notice || '')
+    } catch (err: any) {
+      const detail = err?.detail || err?.response?.data?.detail
+      if (detail && typeof detail === 'object' && ((detail.issues && detail.issues.length > 0) || (detail.requestions && detail.requestions.length > 0))) {
+        setGenError(detail.message || 'Data belum lengkap. Isi field WAJIB terlebih dahulu.')
+        setGenIssues(detail.issues || [])
+        setGenQuestions(detail.requestions || [])
+      } else {
+        const msg = typeof detail === 'string'
+          ? detail
+          : detail?.message || err?.message || 'Terjadi kendala saat menyusun dokumen.'
+        setGenError(msg)
+        setGenIssues([])
+        setGenQuestions([])
+      }
+    } finally {
+      setDownloading(false)
+    }
+  }
+
   const handleBackToWizard = async () => {
     await flushSave('completed')
     nav(`/wizard/${draftId}`)
@@ -311,64 +260,211 @@ function EditorInner() {
   // Determine section list
   const sections = buildSectionList(ctx)
 
-  // Count sections that have non-empty content
-  const generatedCount = Object.keys(ctx.generated_sections || {}).filter((k) => {
-    const v = ctx.generated_sections?.[k]
+  // Count BAB 1 core sections specifically
+  const bab1Count = ['latar_belakang', 'tujuan_pkl', 'profil_sejarah', 'tata_tertib', 'narasi_struktur'].filter((k) => {
+    const v = getSectionValue(ctx, k)
     return Array.isArray(v) ? v.length > 0 : !!(typeof v === 'string' && v.trim())
   }).length
 
-  // Lock gate: at least 3 sections must be generated to unlock individual section editors and document download
-  const isUnlocked = generatedCount >= 3
+  // Count main narrative sections that have non-empty content
+  const mainNarrativeCount = Object.entries(ctx.generated_sections || {}).filter(([key, val]) => {
+    if (!isMainNarrativeSection(key)) return false
+    return Array.isArray(val) ? val.length > 0 : !!(typeof val === 'string' && val.trim())
+  }).length
+
+  // Lock gate: BAB I must have at least 2 sections generated AND main narrative count >= 3 to unlock Mode Baca
+  const isUnlocked = bab1Count >= 2 && mainNarrativeCount >= 3
 
   return (
     <div className="shell">
-      <header className="shell__header">
-        <div className="shell__row">
-          <h1>
-            <button
-              type="button"
-              onClick={handleBackToWizard}
+      {/* Unified Header & Action Bar Card */}
+      <div
+        className="card editor-header-card"
+        style={{
+          marginTop: 0,
+          marginBottom: '0.75rem',
+          padding: 'clamp(0.65rem, 2vw, 1.1rem)',
+          borderTop: '4px solid var(--green-600, #187257)',
+          background: 'var(--surface, #ffffff)',
+          borderRadius: '16px',
+          boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
+          borderLeft: '1px solid var(--line, #cbd5e1)',
+          borderRight: '1px solid var(--line, #cbd5e1)',
+          borderBottom: '1px solid var(--line, #cbd5e1)',
+          width: '100%',
+          minWidth: 0,
+          boxSizing: 'border-box',
+        }}
+      >
+        {/* Row 1: Back Navigation (Left) + Save Indicator Badge (Right) */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.45rem', width: '100%', boxSizing: 'border-box' }}>
+          <button
+            type="button"
+            onClick={handleBackToWizard}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--green-700, #14614a)',
+              fontWeight: 600,
+              cursor: 'pointer',
+              padding: 0,
+              fontSize: 'clamp(0.8rem, 2.5vw, 0.88rem)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.25rem',
+            }}
+          >
+            ← Kembali ke Form Data
+          </button>
+
+          {saveState && saveState !== 'idle' && (
+            <span
+              className="save-indicator"
               style={{
-                background: 'none',
-                border: 'none',
-                color: 'inherit',
-                font: 'inherit',
-                cursor: 'pointer',
-                textDecoration: 'underline',
-                padding: 0,
+                fontSize: 'clamp(0.72rem, 2.2vw, 0.8rem)',
+                padding: '0.15rem 0.6rem',
+                borderRadius: '20px',
+                background: saveState === 'error' ? '#fee2e2' : 'var(--paper-2, #ece8de)',
+                color: saveState === 'error' ? '#dc2626' : 'var(--ink-soft, #555)',
+                fontWeight: 600,
+                display: 'inline-flex',
+                alignItems: 'center',
+                whiteSpace: 'nowrap',
               }}
             >
-              ← Kembali ke Form Data
-            </button>{' '}
-            &nbsp;|&nbsp; Review &amp; Edit: {title}
-          </h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <button
-              type="button"
-              className="btn-sm btn-outline"
-              onClick={handleManualSave}
-              disabled={saveState === 'saving' || isBatchGenerating}
-              style={{ fontSize: '0.82rem', padding: '0.35rem 0.7rem' }}
-            >
-              <IconDocument size={14} style={{ marginRight: '0.3rem' }} /> Simpan Draf
-            </button>
-            <span className="save-indicator">
-              {saveState === 'saving' && 'menyimpan draf…'}
+              {saveState === 'saving' && 'menyimpan…'}
               {saveState === 'saved' && 'tersimpan ✓'}
-              {saveState === 'error' && (
-                <span style={{ color: '#dc2626', fontWeight: 'bold' }}>
-                  Gagal menyimpan - Cek Koneksi Internet! ⚠
-                </span>
-              )}
+              {saveState === 'error' && 'Gagal ⚠'}
             </span>
-          </div>
+          )}
         </div>
-        <p className="muted" style={{ marginTop: '0.5rem' }}>
-          Gunakan AI untuk menyusun draf naratif tiap bagian laporan secara akademis (KBBI). Kamu bisa menyunting hasilnya secara langsung.
-        </p>
-      </header>
 
-      <div className="editor-grid">
+        {/* Row 2: Document Title */}
+        <div style={{ marginBottom: '0.65rem', width: '100%', minWidth: 0, boxSizing: 'border-box' }}>
+          <h1 style={{ fontSize: 'clamp(0.95rem, 3.6vw, 1.28rem)', margin: 0, fontWeight: 700, color: 'var(--ink, #262521)', lineHeight: 1.35, wordBreak: 'break-word', width: '100%', minWidth: 0, boxSizing: 'border-box' }}>
+            {title || 'Review & Edit Laporan PKL'}
+          </h1>
+        </div>
+
+        {/* Row 3: Simpan Draf Button */}
+        <div style={{ marginBottom: '0.45rem', width: '100%', boxSizing: 'border-box' }}>
+          <button
+            type="button"
+            className="btn-sm btn-outline"
+            onClick={handleManualSave}
+            disabled={saveState === 'saving'}
+            style={{
+              width: '100%',
+              fontSize: 'clamp(0.78rem, 2.4vw, 0.84rem)',
+              padding: '0.42rem 0.8rem',
+              background: '#ffffff',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.3rem',
+              boxSizing: 'border-box',
+            }}
+          >
+            <IconDocument size={14} style={{ flexShrink: 0 }} /> Simpan Draf
+          </button>
+        </div>
+
+        {/* Row 4: Download .docx Button (Full Width) */}
+        <div style={{ marginBottom: '0.55rem', width: '100%', boxSizing: 'border-box' }}>
+          <button
+            type="button"
+            className="btn-primary"
+            disabled={downloading || !isUnlocked}
+            onClick={handleDownloadDocx}
+            style={{
+              width: '100%',
+              fontSize: 'clamp(0.82rem, 2.5vw, 0.9rem)',
+              padding: '0.5rem 1rem',
+              background: 'var(--green-600, #187257)',
+              color: '#ffffff',
+              fontWeight: 700,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.35rem',
+              border: '1px solid var(--green-700, #14614a)',
+              borderRadius: '8px',
+              cursor: downloading || !isUnlocked ? 'not-allowed' : 'pointer',
+              opacity: !isUnlocked ? 0.6 : 1,
+              boxShadow: '0 2px 8px rgba(24, 114, 87, 0.25)',
+              boxSizing: 'border-box',
+            }}
+          >
+            {downloading ? (
+              'Menyusun dokumen Word…'
+            ) : (
+              <>
+                <IconDownload size={16} style={{ flexShrink: 0 }} /> Download .docx (Siap Cetak)
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Row 5: View Mode Switcher Pills (Full Width 50%-50%) */}
+        <div
+          style={{
+            display: 'flex',
+            background: 'var(--paper-2, #ece8de)',
+            borderRadius: '8px',
+            padding: '3px',
+            border: '1px solid var(--line, #cbd5e1)',
+            width: '100%',
+            boxSizing: 'border-box',
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => setEditorViewMode('reader')}
+            style={{
+              flex: 1,
+              padding: '0.4rem 0.5rem',
+              borderRadius: '6px',
+              fontSize: 'clamp(0.78rem, 2.4vw, 0.84rem)',
+              fontWeight: 700,
+              border: 'none',
+              cursor: 'pointer',
+              background: editorViewMode === 'reader' ? 'var(--green-600, #187257)' : 'transparent',
+              color: editorViewMode === 'reader' ? '#ffffff' : 'var(--ink-soft, #555)',
+              transition: 'all 0.15s ease',
+              textAlign: 'center',
+              justifyContent: 'center',
+              display: 'inline-flex',
+              alignItems: 'center',
+            }}
+          >
+            <IconDocument size={14} style={{ marginRight: '0.3rem', flexShrink: 0 }} /> Mode Baca
+          </button>
+          <button
+            type="button"
+            onClick={() => setEditorViewMode('editor')}
+            style={{
+              flex: 1,
+              padding: '0.4rem 0.5rem',
+              borderRadius: '6px',
+              fontSize: 'clamp(0.78rem, 2.4vw, 0.84rem)',
+              fontWeight: 700,
+              border: 'none',
+              cursor: 'pointer',
+              background: editorViewMode === 'editor' ? 'var(--green-600, #187257)' : 'transparent',
+              color: editorViewMode === 'editor' ? '#ffffff' : 'var(--ink-soft, #555)',
+              transition: 'all 0.15s ease',
+              textAlign: 'center',
+              justifyContent: 'center',
+              display: 'inline-flex',
+              alignItems: 'center',
+            }}
+          >
+            <IconPencil size={14} style={{ marginRight: '0.3rem', flexShrink: 0 }} /> Mode Edit
+          </button>
+        </div>
+      </div>
+
+      <div className="editor-grid" style={{ marginTop: 0 }}>
         {/* Editor Main Content */}
         <div className="editor-sections">
           {/* Lock Banner when generated_sections count is less than 3 */}
@@ -395,31 +491,90 @@ function EditorInner() {
               <button
                 type="button"
                 className="btn-primary editor-lock-banner__btn"
-                onClick={handleStartInPageBatch}
-                disabled={isBatchGenerating}
-                style={{ opacity: isBatchGenerating ? 0.6 : 1, cursor: isBatchGenerating ? 'wait' : 'pointer' }}
+                onClick={handleStartMasterBatch}
+                style={{ cursor: 'pointer' }}
               >
                 <IconDocument size={16} style={{ marginRight: '0.4rem' }} />
-                {isBatchGenerating ? 'Sedang Menyusun Sub-bab...' : 'Generate Semua Sub-bab Laporan'}
+                Generate Semua Sub-bab Laporan
               </button>
             </div>
           )}
 
-          {sections.map((sec) => (
-            <div id={`section-${sec.key}`} key={sec.key}>
-              <SectionEditor
-                sectionKey={sec.key}
-                title={sec.title}
+          {/* READER VIEW (Mode Baca Laporan Berkelanjutan) */}
+          {editorViewMode === 'reader' && (
+            <>
+              <div
+                style={{
+                  background: '#f0fdf4',
+                  border: '1px solid #86efac',
+                  borderRadius: '10px',
+                  padding: '0.55rem 0.85rem',
+                  marginBottom: '0.65rem',
+                  fontSize: 'clamp(0.76rem, 2.2vw, 0.83rem)',
+                  color: '#166534',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  boxShadow: '0 2px 6px rgba(22, 101, 52, 0.05)',
+                  width: '100%',
+                  boxSizing: 'border-box',
+                }}
+              >
+                <IconDocument size={16} color="#166534" style={{ flexShrink: 0 }} />
+                <span>
+                  <strong>Mode Baca (Pratinjau Cetak):</strong> Tampilan bersih laporan PKL kamu seperti cetakan Word. Klik tombol "Edit" di kanan sub-bab untuk mengubah isi draf.
+                </span>
+              </div>
+              <DocumentReaderView
+                sections={sections}
                 ctx={ctx}
-                value={(ctx.generated_sections || {})[sec.key] || ''}
-                onChange={(val) => updateSection(sec.key, val)}
-                onError={showErrorModal}
-                disabled={!isUnlocked || isBatchGenerating}
-                batchStatus={batchStatuses[sec.key]}
-                isBatchGenerating={isBatchGenerating}
+                onEditSection={handleEditSectionFromReader}
+                mode="reader"
               />
-            </div>
-          ))}
+            </>
+          )}
+
+          {/* ACCORDION EDITOR VIEW (Mode Edit Sub-bab Kartu Ringkas) */}
+          {editorViewMode === 'editor' && (
+            <>
+              <div
+                style={{
+                  background: '#f8fafc',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '10px',
+                  padding: '0.55rem 0.85rem',
+                  marginBottom: '0.65rem',
+                  fontSize: 'clamp(0.76rem, 2.2vw, 0.83rem)',
+                  color: '#334155',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.03)',
+                  width: '100%',
+                  boxSizing: 'border-box',
+                }}
+              >
+                <IconPencil size={16} color="#334155" style={{ flexShrink: 0 }} />
+                <span>
+                  <strong>Mode Edit (Penyuntingan Sub-bab):</strong> Ketik draf teks secara langsung atau gunakan tombol "Generate AI" untuk bantuan menulis per sub-bab.
+                </span>
+              </div>
+              <DocumentReaderView
+                sections={sections}
+                ctx={ctx}
+                onEditSection={handleEditSectionFromReader}
+                mode="editor"
+                updateSection={updateSection}
+                showErrorModal={showErrorModal}
+                isUnlocked={isUnlocked}
+                expandedSections={expandedSections}
+                toggleSectionExpand={toggleSectionExpand}
+              />
+            </>
+          )}
+
           {sections.length === 0 && (
             <div className="card">
               <p className="muted">Belum ada bagian yang dikonfigurasi untuk laporan ini.</p>
@@ -428,17 +583,17 @@ function EditorInner() {
         </div>
 
         {/* Sidebar: Finalisasi & Structure Outline */}
-        <div className="editor-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <div className="editor-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', width: '100%', minWidth: 0, boxSizing: 'border-box' }}>
           {/* Panel Finalisasi */}
-          <div className="card" style={{ margin: 0 }}>
-            <h3 style={{ margin: '0 0 0.5rem' }}>Finalisasi Laporan</h3>
+          <div className="card" style={{ margin: 0, width: '100%', minWidth: 0, boxSizing: 'border-box' }}>
+            <h3 style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.98rem, 3vw, 1.15rem)', wordBreak: 'break-word', width: '100%', minWidth: 0, boxSizing: 'border-box' }}>Finalisasi Laporan</h3>
 
-            <div style={{ marginBottom: '1rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.25rem' }}>
+            <div style={{ marginBottom: '1rem', width: '100%', minWidth: 0, boxSizing: 'border-box' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'clamp(0.78rem, 2.4vw, 0.85rem)', marginBottom: '0.25rem', flexWrap: 'wrap', gap: '0.25rem', width: '100%', minWidth: 0, boxSizing: 'border-box' }}>
                 <span>Kemajuan Draf Sub-bab</span>
                 <strong>{Object.keys(ctx.generated_sections || {}).length} / {sections.length}</strong>
               </div>
-              <div className="completeness__bar">
+              <div className="completeness__bar" style={{ width: '100%', minWidth: 0, boxSizing: 'border-box' }}>
                 <div
                   className="completeness__fill is-ready"
                   style={{ width: `${sections.length > 0 ? (Object.keys(ctx.generated_sections || {}).length / sections.length) * 100 : 0}%` }}
@@ -451,13 +606,17 @@ function EditorInner() {
               className="btn-primary"
               style={{
                 width: '100%',
+                minWidth: 0,
+                boxSizing: 'border-box',
                 padding: '0.8rem 1rem',
-                fontSize: '0.98rem',
+                fontSize: 'clamp(0.82rem, 2.6vw, 0.98rem)',
                 fontWeight: 600,
                 borderRadius: '8px',
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                flexWrap: 'wrap',
+                whiteSpace: 'normal',
                 transition: 'all 0.2s ease',
                 background: 'var(--green-600, #187257)',
                 color: '#ffffff',
@@ -468,34 +627,7 @@ function EditorInner() {
                 marginBottom: '1rem',
               }}
               disabled={downloading || !isUnlocked}
-              onClick={async () => {
-                if (!draftId) return
-                setDownloading(true)
-                setGenError('')
-                setGenIssues([])
-                setGenQuestions([])
-                try {
-                  await flushSave('completed')
-                  const notice = await generateDocx(draftId)
-                  setPolishNotice(notice || '')
-                } catch (err: any) {
-                  const detail = err?.detail || err?.response?.data?.detail
-                  if (detail && typeof detail === 'object' && ((detail.issues && detail.issues.length > 0) || (detail.requestions && detail.requestions.length > 0))) {
-                    setGenError(detail.message || 'Data belum lengkap. Isi field WAJIB terlebih dahulu.')
-                    setGenIssues(detail.issues || [])
-                    setGenQuestions(detail.requestions || [])
-                  } else {
-                    const msg = typeof detail === 'string'
-                      ? detail
-                      : detail?.message || err?.message || 'Terjadi kendala saat menyusun dokumen.'
-                    setGenError(msg)
-                    setGenIssues([])
-                    setGenQuestions([])
-                  }
-                } finally {
-                  setDownloading(false)
-                }
-              }}
+              onClick={handleDownloadDocx}
             >
               {downloading ? (
                 <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -599,28 +731,44 @@ function EditorInner() {
         onClose={() => setModal((prev) => ({ ...prev, isOpen: false }))}
       />
 
-      {/* Profil Perusahaan Polish Modal */}
-      <ProfilPolishModal
-        isOpen={showProfilPolishModal}
+      {/* Master Unified AI Generation Modal */}
+      <MasterGenModal
+        isOpen={showMasterModal}
         ctx={ctx}
-        onComplete={(updatedProfil) => {
-          const updated = {
-            ...ctxRef.current,
-            profil_perusahaan: { ...ctxRef.current.profil_perusahaan, ...updatedProfil },
-          }
-          setCtx(updated)
+        draftId={draftId || ''}
+        allSections={sections}
+        onComplete={(updatedCtx) => {
+          setCtx(updatedCtx)
           dirtyRef.current = true
           if (draftIdRef.current) {
-            updateDraft(draftIdRef.current, { data: updated }).catch(() => {})
+            updateDraft(draftIdRef.current, { data: updatedCtx, status: 'completed' }).catch(() => {})
+          }
+          // Remove ?batch=true query parameter cleanly from URL
+          if (searchParams.get('batch')) {
+            nav(`/editor/${draftId}`, { replace: true })
           }
         }}
-        onClose={() => setShowProfilPolishModal(false)}
+        onClose={() => setShowMasterModal(false)}
       />
     </div>
   )
 }
 
-export function buildSectionList(ctx: PklContext) {
+function getSectionValue(ctx: PklContext, key: string): string | string[] {
+  const genVal = (ctx.generated_sections || {})[key]
+  if (Array.isArray(genVal) ? genVal.length > 0 : !!(typeof genVal === 'string' && genVal.trim())) {
+    return genVal
+  }
+  if (key === 'profil_sejarah' && ctx.profil_perusahaan?.sejarah) {
+    return ctx.profil_perusahaan.sejarah
+  }
+  if (key === 'tata_tertib' && (ctx.profil_perusahaan?.tata_tertib_perusahaan?.length || ctx.profil_perusahaan?.tata_tertib?.length)) {
+    return ctx.profil_perusahaan.tata_tertib_perusahaan || ctx.profil_perusahaan.tata_tertib || ''
+  }
+  return genVal || ''
+}
+
+function buildSectionList(ctx: PklContext) {
   const bab = ctx.config?.bab_modules || []
   const list: { key: string; title: string }[] = []
 
@@ -629,6 +777,7 @@ export function buildSectionList(ctx: PklContext) {
     list.push({ key: 'latar_belakang', title: 'Latar Belakang (1.1)' })
     list.push({ key: 'tujuan_pkl', title: 'Tujuan PKL (1.2)' })
     list.push({ key: 'profil_sejarah', title: 'Sejarah Singkat Perusahaan (1.3)' })
+    list.push({ key: 'tata_tertib', title: 'Tata Tertib & Keselamatan Kerja (1.4)' })
     list.push({ key: 'narasi_struktur', title: 'Narasi Struktur Organisasi (1.5)' })
   }
   if (bab.length === 0 || bab.includes('LANDASAN_TEORI') || bab.includes('TINJAUAN_PUSTAKA')) {
@@ -660,6 +809,7 @@ export function buildSectionList(ctx: PklContext) {
       { key: 'latar_belakang', title: 'Latar Belakang (1.1)' },
       { key: 'tujuan_pkl', title: 'Tujuan PKL (1.2)' },
       { key: 'profil_sejarah', title: 'Sejarah Singkat Perusahaan (1.3)' },
+      { key: 'tata_tertib', title: 'Tata Tertib & Keselamatan Kerja (1.4)' },
       { key: 'narasi_struktur', title: 'Narasi Struktur Organisasi (1.5)' },
       { key: 'landasan_teori', title: 'Landasan Teori (BAB III)' },
       { key: 'pembahasan', title: 'Pembahasan & Analisis (BAB V)' },
@@ -667,11 +817,897 @@ export function buildSectionList(ctx: PklContext) {
     )
   }
 
-  return list
+  // Deduplicate entries by key to guarantee 100% unique React keys
+  const seenKeys = new Set<string>()
+  const uniqueList: { key: string; title: string }[] = []
+  for (const item of list) {
+    if (!seenKeys.has(item.key)) {
+      seenKeys.add(item.key)
+      uniqueList.push(item)
+    }
+  }
+
+  // Include any extra AI-generated sections from ctx.generated_sections
+  if (ctx.generated_sections) {
+    Object.keys(ctx.generated_sections).forEach((k) => {
+      if (!seenKeys.has(k) && !['visi_misi', 'tata_tertib', 'job_descriptions'].includes(k)) {
+        const val = ctx.generated_sections?.[k]
+        const hasContent = Array.isArray(val) ? val.length > 0 : !!(typeof val === 'string' && val.trim())
+        if (hasContent) {
+          seenKeys.add(k)
+          const titleFormatted = k.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
+          uniqueList.push({ key: k, title: titleFormatted })
+        }
+      }
+    })
+  }
+
+  return uniqueList
 }
 
 // --------------------------------------------------------------------------- //
-//  Section Editor Component
+//  Document Reader View Component (Pratinjau Dokumen Cetak Clean & Akademis)
+// --------------------------------------------------------------------------- //
+function ReaderSectionItem({
+  sec,
+  val,
+  onEditSection,
+}: {
+  sec: { key: string; title: string }
+  val: string | string[]
+  onEditSection: (key: string) => void
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const isArray = Array.isArray(val)
+  const hasText = isArray ? val.length > 0 : !!(typeof val === 'string' && val.trim())
+
+  let previewText = ''
+  let isLong = false
+
+  if (hasText && !isArray && typeof val === 'string') {
+    const trimmed = val.trim()
+    const sentences = trimmed.split(/(?<=[.!?])\s+/)
+    const firstSentence = sentences[0] || trimmed
+    if (sentences.length > 1 || trimmed.length > 130) {
+      isLong = true
+      previewText = firstSentence.length > 130 ? firstSentence.slice(0, 130) + '…' : firstSentence
+    } else {
+      previewText = trimmed
+    }
+  } else if (hasText && isArray) {
+    const arr = val as string[]
+    const first = arr[0] || ''
+    if (arr.length > 1 || first.length > 120) {
+      isLong = true
+    }
+  }
+
+  const handleToggle = () => {
+    if (expanded) {
+      // Smoothly keep/lock scroll position at top of section when collapsing
+      const el = document.getElementById(`reader-sec-${sec.key}`)
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+      setExpanded(false)
+    } else {
+      setExpanded(true)
+    }
+  }
+
+  return (
+    <div
+      id={`reader-sec-${sec.key}`}
+      style={{
+        scrollMarginTop: '100px',
+        width: '100%',
+        minWidth: 0,
+        boxSizing: 'border-box',
+        background: hasText ? '#ffffff' : '#f8fafc',
+        border: hasText ? '1px solid var(--line, #cbd5e1)' : '1px solid #cbd5e1',
+        borderLeft: hasText ? '4px solid var(--green-600, #187257)' : '4px solid #94a3b8',
+        borderRadius: '10px',
+        padding: '0.75rem 1rem',
+        marginBottom: '0.35rem',
+        boxShadow: hasText ? '0 2px 6px rgba(0, 0, 0, 0.03)' : 'none',
+        opacity: hasText ? 1 : 0.65,
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem', borderBottom: '1px dashed var(--line, #e2e8f0)', paddingBottom: '0.4rem', gap: '0.5rem', width: '100%', minWidth: 0, boxSizing: 'border-box' }}>
+        <h4 style={{ margin: 0, fontSize: 'clamp(0.88rem, 2.8vw, 1.05rem)', color: hasText ? 'var(--green-800, #114e3b)' : '#64748b', fontFamily: 'var(--font-serif)', fontWeight: 700, wordBreak: 'break-word', flex: 1, minWidth: 0 }}>
+          {sec.title}
+        </h4>
+        {hasText ? (
+          <button
+            type="button"
+            onClick={() => onEditSection(sec.key)}
+            className="btn-sm btn-outline"
+            style={{ fontSize: 'clamp(0.72rem, 2.2vw, 0.78rem)', padding: '0.2rem 0.55rem', background: '#ffffff', color: 'var(--green-700, #14614a)', fontWeight: 600, flexShrink: 0, whiteSpace: 'nowrap', boxSizing: 'border-box' }}
+          >
+            <IconPencil size={13} style={{ marginRight: '0.2rem', flexShrink: 0 }} /> Edit
+          </button>
+        ) : (
+          <span
+            style={{
+              fontSize: '0.75rem',
+              padding: '0.2rem 0.55rem',
+              background: '#e2e8f0',
+              color: '#475569',
+              borderRadius: '6px',
+              fontWeight: 600,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.25rem',
+              cursor: 'not-allowed',
+            }}
+          >
+            <IconAlert size={13} style={{ flexShrink: 0 }} /> Belum Di-generate AI
+          </span>
+        )}
+      </div>
+
+      {hasText ? (
+        <div style={{ fontSize: 'clamp(0.82rem, 2.5vw, 0.93rem)', lineHeight: 1.7, color: 'var(--ink, #262521)', wordBreak: 'break-word', overflowWrap: 'break-word', width: '100%', minWidth: 0, boxSizing: 'border-box' }}>
+          {isArray ? (
+            <>
+              <ul style={{ margin: '0.4rem 0 0 1.25rem', paddingLeft: '0.5rem' }}>
+                {(expanded || !isLong
+                  ? (val as string[])
+                  : [(val as string[])[0]?.length > 120 ? (val as string[])[0].slice(0, 120) + '…' : (val as string[])[0]]
+                ).map((item, idx) => (
+                  <li key={idx} style={{ marginBottom: '0.35rem' }}>{item}</li>
+                ))}
+              </ul>
+              {isLong && (
+                <button
+                  type="button"
+                  onClick={handleToggle}
+                  style={{
+                    background: 'var(--paper-2, #ece8de)',
+                    border: '1px solid var(--line-strong, #b9b09c)',
+                    borderRadius: '6px',
+                    padding: '0.3rem 0.75rem',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    color: 'var(--green-700, #14614a)',
+                    cursor: 'pointer',
+                    marginTop: '0.5rem',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  {expanded ? '▼ Sembunyikan Detail' : `▶ Baca Selengkapnya (${(val as string[]).length - 1} poin lagi)`}
+                </button>
+              )}
+            </>
+          ) : (
+            <>
+              <p style={{ margin: 0, whiteSpace: 'pre-line' }}>
+                {expanded || !isLong ? (val as string) : previewText}
+                {!expanded && isLong && '…'}
+              </p>
+              {isLong && (
+                <button
+                  type="button"
+                  onClick={handleToggle}
+                  style={{
+                    background: 'var(--paper-2, #ece8de)',
+                    border: '1px solid var(--line-strong, #b9b09c)',
+                    borderRadius: '6px',
+                    padding: '0.3rem 0.75rem',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    color: 'var(--green-700, #14614a)',
+                    cursor: 'pointer',
+                    marginTop: '0.55rem',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  {expanded ? '▼ Sembunyikan Detail Teks' : '▶ Baca Selengkapnya'}
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      ) : (
+        <div style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '8px', padding: '0.75rem 1rem', fontSize: 'clamp(0.78rem, 2.3vw, 0.85rem)', color: '#64748b' }}>
+          <span style={{ wordBreak: 'break-word' }}>Sub-bab ini belum di-generate oleh AI. Klik tombol "Generate Semua Sub-bab Laporan" di atas untuk membuat drafnya.</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Special Reader Cards for Integrated Profile & Document Parts ────────── //
+
+function SpecialVisiMisiCard({ ctx, nav }: { ctx: PklContext; nav: any }) {
+  const { draftId } = useParams()
+  const [expanded, setExpanded] = useState(false)
+  const visi = ctx.profil_perusahaan?.visi || ''
+  const misi = ctx.profil_perusahaan?.misi || []
+  const hasContent = !!visi || misi.length > 0
+
+  return (
+    <div
+      style={{
+        background: '#ffffff',
+        border: '1px solid var(--line, #cbd5e1)',
+        borderLeft: '4px solid var(--green-600, #187257)',
+        borderRadius: '10px',
+        padding: '0.85rem 1.35rem',
+        marginBottom: '0.5rem',
+        boxShadow: '0 2px 6px rgba(0, 0, 0, 0.03)',
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem', borderBottom: '1px dashed var(--line, #e2e8f0)', paddingBottom: '0.4rem', gap: '0.5rem' }}>
+        <h4 style={{ margin: 0, fontSize: 'clamp(0.88rem, 2.8vw, 1.05rem)', color: 'var(--green-800, #114e3b)', fontFamily: 'var(--font-serif)', fontWeight: 700 }}>
+          1.3.a Visi &amp; Misi Perusahaan (Dipoles AI KBBI)
+        </h4>
+        <button
+          type="button"
+          onClick={() => nav(`/wizard/${draftId || ''}`)}
+          className="btn-sm btn-outline"
+          style={{ fontSize: '0.78rem', padding: '0.2rem 0.55rem', background: '#ffffff', color: 'var(--green-700)', fontWeight: 600 }}
+        >
+          <IconPencil size={13} style={{ marginRight: '0.2rem' }} /> Form Data
+        </button>
+      </div>
+
+      {hasContent ? (
+        <div style={{ fontSize: '0.88rem', lineHeight: 1.6, color: 'var(--ink, #262521)' }}>
+          {visi && (
+            <p style={{ margin: '0 0 0.4rem', fontWeight: 600 }}>
+              <strong>Visi:</strong> {expanded || visi.length <= 110 ? visi : `${visi.slice(0, 110)}…`}
+            </p>
+          )}
+          {misi.length > 0 && (
+            <div style={{ marginTop: '0.35rem' }}>
+              <strong>Misi Perusahaan:</strong>
+              <ul style={{ margin: '0.3rem 0 0 1.25rem', paddingLeft: '0.5rem' }}>
+                {(expanded ? misi : misi.slice(0, 1)).map((m, idx) => (
+                  <li key={idx} style={{ marginBottom: '0.25rem' }}>{m}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {(misi.length > 1 || visi.length > 110) && (
+            <button
+              type="button"
+              onClick={() => setExpanded(!expanded)}
+              style={{
+                background: 'var(--paper-2, #ece8de)',
+                border: '1px solid var(--line-strong, #b9b09c)',
+                borderRadius: '6px',
+                padding: '0.28rem 0.7rem',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                color: 'var(--green-700, #14614a)',
+                cursor: 'pointer',
+                marginTop: '0.5rem',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.3rem',
+              }}
+            >
+              {expanded ? '▼ Sembunyikan Detail Visi-Misi' : `▶ Baca Selengkapnya Visi & Misi (${misi.length} poin)`}
+            </button>
+          )}
+        </div>
+      ) : (
+        <div style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '8px', padding: '0.75rem 1rem', fontSize: '0.85rem', color: '#64748b' }}>
+          Visi dan Misi perusahaan otomatis dipoles oleh AI pada Phase 2 saat dokumen dibuat.
+        </div>
+      )}
+    </div>
+  )
+}
+
+function SpecialJobDescCard({ ctx, nav }: { ctx: PklContext; nav: any }) {
+  const { draftId } = useParams()
+  const [expanded, setExpanded] = useState(false)
+  const jobs = ctx.profil_perusahaan?.job_descriptions || []
+  const hasContent = jobs.length > 0
+
+  return (
+    <div
+      style={{
+        background: '#ffffff',
+        border: '1px solid var(--line, #cbd5e1)',
+        borderLeft: '4px solid var(--green-600, #187257)',
+        borderRadius: '10px',
+        padding: '0.85rem 1.35rem',
+        marginBottom: '0.5rem',
+        boxShadow: '0 2px 6px rgba(0, 0, 0, 0.03)',
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem', borderBottom: '1px dashed var(--line, #e2e8f0)', paddingBottom: '0.4rem', gap: '0.5rem' }}>
+        <h4 style={{ margin: 0, fontSize: 'clamp(0.88rem, 2.8vw, 1.05rem)', color: 'var(--green-800, #114e3b)', fontFamily: 'var(--font-serif)', fontWeight: 700 }}>
+          1.6 Job Description / Deskripsi Pekerjaan per Posisi (Dipoles AI)
+        </h4>
+        <button
+          type="button"
+          onClick={() => nav(`/wizard/${draftId || ''}`)}
+          className="btn-sm btn-outline"
+          style={{ fontSize: '0.78rem', padding: '0.2rem 0.55rem', background: '#ffffff', color: 'var(--green-700)', fontWeight: 600 }}
+        >
+          <IconPencil size={13} style={{ marginRight: '0.2rem' }} /> Form Data
+        </button>
+      </div>
+
+      {hasContent ? (
+        <div style={{ fontSize: '0.88rem', lineHeight: 1.6, color: 'var(--ink, #262521)' }}>
+          {(expanded ? jobs : jobs.slice(0, 1)).map((job, idx) => (
+            <div key={idx} style={{ marginBottom: '0.6rem', padding: '0.5rem 0.75rem', background: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+              <strong style={{ color: 'var(--green-800, #114e3b)' }}>{job.posisi || `Jabatan ${idx + 1}`}:</strong>
+              <ul style={{ margin: '0.25rem 0 0 1.1rem', paddingLeft: '0.4rem' }}>
+                {(Array.isArray(job.tugas) ? job.tugas : [job.tugas]).map((t, i) => (
+                  <li key={i} style={{ fontSize: '0.83rem', marginBottom: '0.2rem' }}>{t}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+
+          {jobs.length > 1 && (
+            <button
+              type="button"
+              onClick={() => setExpanded(!expanded)}
+              style={{
+                background: 'var(--paper-2, #ece8de)',
+                border: '1px solid var(--line-strong, #b9b09c)',
+                borderRadius: '6px',
+                padding: '0.28rem 0.7rem',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                color: 'var(--green-700, #14614a)',
+                cursor: 'pointer',
+                marginTop: '0.4rem',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.3rem',
+              }}
+            >
+              {expanded ? '▼ Sembunyikan Job Description' : `▶ Baca Selengkapnya Job Description (${jobs.length - 1} jabatan lagi)`}
+            </button>
+          )}
+        </div>
+      ) : (
+        <div style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '8px', padding: '0.75rem 1rem', fontSize: '0.85rem', color: '#64748b' }}>
+          Deskripsi pekerjaan per posisi otomatis dipoles oleh AI pada Phase 2 saat dokumen dibuat.
+        </div>
+      )}
+    </div>
+  )
+}
+
+function SpecialFrontMatterCard({ ctx }: { ctx: PklContext }) {
+  const [expanded, setExpanded] = useState(false)
+  const namaSiswa = ctx.siswa?.nama?.trim()
+  const kelasSiswa = ctx.siswa?.kelas?.trim()
+  const nisnSiswa = ctx.siswa?.nisn?.trim()
+  const namaPerusahaan = ctx.perusahaan?.nama_lengkap?.trim() || ctx.perusahaan?.nama?.trim()
+  const pembimbing = (ctx.perusahaan as any)?.pembimbing?.trim() || (ctx.perusahaan as any)?.pembimbing_nama?.trim()
+  const kota = ctx.kata_pengantar?.kota?.trim()
+  const tanggal = ctx.kata_pengantar?.tanggal?.trim()
+
+  return (
+    <div
+      style={{
+        background: '#ffffff',
+        border: '1px solid var(--line, #cbd5e1)',
+        borderLeft: '4px solid var(--green-600, #187257)',
+        borderRadius: '10px',
+        padding: '0.85rem 1.35rem',
+        marginBottom: '0.5rem',
+        boxShadow: '0 2px 6px rgba(0, 0, 0, 0.03)',
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem', borderBottom: '1px dashed var(--line, #e2e8f0)', paddingBottom: '0.4rem' }}>
+        <h4 style={{ margin: 0, fontSize: 'clamp(0.88rem, 2.8vw, 1.05rem)', color: 'var(--green-800, #114e3b)', fontFamily: 'var(--font-serif)', fontWeight: 700 }}>
+          Informasi Kelengkapan Halaman Depan (Front Matter)
+        </h4>
+        <span style={{ fontSize: '0.75rem', background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0', padding: '0.15rem 0.5rem', borderRadius: '12px', fontWeight: 600 }}>
+          Otomatis / Siap Cetak
+        </span>
+      </div>
+
+      <p style={{ margin: '0 0 0.4rem', fontSize: '0.85rem', color: 'var(--ink, #262521)', lineHeight: 1.6 }}>
+        Halaman depan disusun otomatis sesuai format standar SMKN 4 Bandar Lampung (Cover, Halaman Pengesahan Pembimbing Industri &amp; Sekolah, Identitas Siswa, Identitas Perusahaan, Kata Pengantar, serta Daftar Isi).
+      </p>
+
+      {expanded && (
+        <div style={{ marginTop: '0.6rem', padding: '0.65rem 0.85rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.83rem', lineHeight: 1.6, color: '#334155' }}>
+          <div style={{ marginBottom: '0.35rem' }}>
+            • <strong>Siswa:</strong> {namaSiswa || <span style={{ color: '#94a3b8' }}>[Belum Diisi]</span>} {kelasSiswa ? `(${kelasSiswa})` : ''} — NISN: {nisnSiswa || <span style={{ color: '#94a3b8' }}>-</span>}
+          </div>
+          <div style={{ marginBottom: '0.35rem' }}>
+            • <strong>Perusahaan:</strong> {namaPerusahaan || <span style={{ color: '#94a3b8' }}>[Belum Diisi]</span>}
+          </div>
+          <div style={{ marginBottom: '0.35rem' }}>
+            • <strong>Pembimbing Industri:</strong> {pembimbing || <span style={{ color: '#94a3b8' }}>[Belum Diisi]</span>}
+          </div>
+          <div>
+            • <strong>Tempat &amp; Tanggal TTD Kata Pengantar:</strong> {kota || 'Bandar Lampung'}, {tanggal || 'Juli 2026'}
+          </div>
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        style={{
+          background: 'var(--paper-2, #ece8de)',
+          border: '1px solid var(--line-strong, #b9b09c)',
+          borderRadius: '6px',
+          padding: '0.28rem 0.7rem',
+          fontSize: '0.78rem',
+          fontWeight: 700,
+          color: 'var(--green-700, #14614a)',
+          cursor: 'pointer',
+          marginTop: '0.45rem',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.3rem',
+        }}
+      >
+        {expanded ? '▼ Sembunyikan Rincian Front Matter' : '▶ Rincian Halaman Depan (Cover, Pengesahan & Identitas)'}
+      </button>
+    </div>
+  )
+}
+
+function SpecialLampiranCard({ ctx }: { ctx: PklContext }) {
+  const [expanded, setExpanded] = useState(false)
+  const countJurnal = (ctx.kegiatan || []).length
+  const countFoto = (ctx.assets || []).length
+  const countRef = (ctx.daftar_pustaka || []).length
+
+  return (
+    <div
+      style={{
+        background: '#ffffff',
+        border: '1px solid var(--line, #cbd5e1)',
+        borderLeft: '4px solid var(--green-600, #187257)',
+        borderRadius: '10px',
+        padding: '0.85rem 1.35rem',
+        marginBottom: '0.5rem',
+        boxShadow: '0 2px 6px rgba(0, 0, 0, 0.03)',
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem', borderBottom: '1px dashed var(--line, #e2e8f0)', paddingBottom: '0.4rem' }}>
+        <h4 style={{ margin: 0, fontSize: 'clamp(0.88rem, 2.8vw, 1.05rem)', color: 'var(--green-800, #114e3b)', fontFamily: 'var(--font-serif)', fontWeight: 700 }}>
+          Halaman Belakang &amp; Lampiran Dokumentasi
+        </h4>
+        <span style={{ fontSize: '0.75rem', background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0', padding: '0.15rem 0.5rem', borderRadius: '12px', fontWeight: 600 }}>
+          Siap Diterbitkan
+        </span>
+      </div>
+
+      <p style={{ margin: '0 0 0.4rem', fontSize: '0.85rem', color: 'var(--ink, #262521)', lineHeight: 1.6 }}>
+        Terdiri dari Daftar Pustaka resmi (disusun otomatis/manual) serta Lampiran Jurnal Kegiatan ({countJurnal} entri), Foto Dokumentasi ({countFoto} berkas), Lembar Absensi, dan Sertifikat Penilaian Industri.
+      </p>
+
+      {expanded && (
+        <div style={{ marginTop: '0.6rem', padding: '0.65rem 0.85rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.83rem', lineHeight: 1.6, color: '#334155' }}>
+          <div style={{ marginBottom: '0.35rem' }}>• <strong>Daftar Pustaka:</strong> {countRef > 0 ? `${countRef} referensi tersusun` : 'Disusun otomatis dari datamu & buku publik'}</div>
+          <div style={{ marginBottom: '0.35rem' }}>• <strong>Jurnal &amp; Absensi:</strong> {countJurnal} entri bidang kerja terdaftar</div>
+          <div>• <strong>Foto Dokumentasi &amp; Penilaian:</strong> {countFoto} foto terlampir siap cetak</div>
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        style={{
+          background: 'var(--paper-2, #ece8de)',
+          border: '1px solid var(--line-strong, #b9b09c)',
+          borderRadius: '6px',
+          padding: '0.28rem 0.7rem',
+          fontSize: '0.78rem',
+          fontWeight: 700,
+          color: 'var(--green-700, #14614a)',
+          cursor: 'pointer',
+          marginTop: '0.45rem',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.3rem',
+        }}
+      >
+        {expanded ? '▼ Sembunyikan Rincian Lampiran' : '▶ Rincian Halaman Belakang & Lampiran'}
+      </button>
+    </div>
+  )
+}
+
+// ── Parent Chapter Accordion Component ───────────────────────────────────── //
+
+interface ParentChapter {
+  id: string
+  title: string
+  subtitle: string
+  icon: string
+  items: { key: string; title: string; type?: 'standard' | 'visi_misi' | 'job_descriptions' | 'front_matter' | 'lampiran' }[]
+}
+
+function ChapterAccordionGroup({
+  chapter,
+  ctx,
+  onEditSection,
+  nav,
+  mode = 'reader',
+  updateSection,
+  showErrorModal,
+  isLocked = false,
+  expandedSections = {},
+  toggleSectionExpand,
+  defaultExpanded = false,
+}: {
+  chapter: ParentChapter
+  ctx: PklContext
+  onEditSection: (key: string) => void
+  nav: any
+  mode?: 'reader' | 'editor'
+  updateSection?: (key: string, val: any) => void
+  showErrorModal?: (msg: string) => void
+  isLocked?: boolean
+  expandedSections?: Record<string, boolean>
+  toggleSectionExpand?: (key: string) => void
+  defaultExpanded?: boolean
+}) {
+  // Count filled items in this chapter
+  const filledCount = chapter.items.filter((item) => {
+    if (item.type === 'front_matter' || item.type === 'lampiran') return true
+    if (item.type === 'visi_misi') return !!(ctx.profil_perusahaan?.visi || (ctx.profil_perusahaan?.misi || []).length > 0)
+    if (item.type === 'job_descriptions') return (ctx.profil_perusahaan?.job_descriptions || []).length > 0
+    const val = getSectionValue(ctx, item.key)
+    return Array.isArray(val) ? val.length > 0 : !!(typeof val === 'string' && val.trim())
+  }).length
+
+  const chapterIsLocked = isLocked || (mode === 'reader' && filledCount === 0)
+
+  const [isOpen, setIsOpen] = useState(!chapterIsLocked && (defaultExpanded || mode === 'editor'))
+
+  useEffect(() => {
+    if (chapterIsLocked) {
+      setIsOpen(false)
+    } else if (mode === 'editor') {
+      setIsOpen(true)
+    } else {
+      setIsOpen(defaultExpanded)
+    }
+  }, [mode, defaultExpanded, chapterIsLocked])
+
+  return (
+    <div
+      style={{
+        background: chapterIsLocked ? 'var(--paper-2, #ece8de)' : '#ffffff',
+        border: chapterIsLocked ? '1px dashed var(--line-strong, #b9b09c)' : '1.5px solid var(--line-strong, #b9b09c)',
+        borderRadius: '12px',
+        marginBottom: '0.45rem',
+        overflow: 'hidden',
+        boxShadow: chapterIsLocked ? 'none' : '0 3px 12px rgba(0, 0, 0, 0.04)',
+        opacity: chapterIsLocked ? 0.55 : 1,
+        pointerEvents: chapterIsLocked ? 'none' : 'auto',
+      }}
+    >
+      {/* Chapter Parent Header */}
+      <div
+        onClick={() => !chapterIsLocked && setIsOpen(!isOpen)}
+        style={{
+          padding: 'clamp(0.65rem, 2vw, 0.85rem) clamp(0.7rem, 2.5vw, 1.25rem)',
+          background: chapterIsLocked ? 'var(--paper-2, #ece8de)' : isOpen ? 'var(--paper-2, #ece8de)' : '#ffffff',
+          borderBottom: !chapterIsLocked && isOpen ? '1px solid var(--line-strong, #b9b09c)' : 'none',
+          cursor: chapterIsLocked ? 'not-allowed' : 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '0.45rem',
+          userSelect: 'none',
+          transition: 'all 0.2s ease',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1, minWidth: 0 }}>
+          <span style={{ fontSize: '1.05rem', flexShrink: 0, opacity: chapterIsLocked ? 0.5 : 1 }}>{chapter.icon}</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h3
+              style={{
+                margin: 0,
+                fontSize: 'clamp(0.82rem, 2.7vw, 1.08rem)',
+                color: chapterIsLocked ? 'var(--ink-soft, #64748b)' : 'var(--green-800, #114e3b)',
+                fontWeight: 700,
+                fontFamily: 'var(--font-serif)',
+                wordBreak: 'normal',
+                overflowWrap: 'break-word',
+                lineHeight: 1.25,
+              }}
+            >
+              {chapter.title}
+            </h3>
+            <p style={{ margin: '0.15rem 0 0', fontSize: 'clamp(0.72rem, 2.1vw, 0.8rem)', color: chapterIsLocked ? '#94a3b8' : 'var(--ink-soft, #64748b)', lineHeight: 1.3 }}>
+              {chapter.subtitle}
+            </p>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexShrink: 0 }}>
+          <span style={{ fontSize: 'clamp(0.68rem, 2vw, 0.75rem)', background: chapterIsLocked ? '#ece8de' : '#ffffff', border: '1px solid var(--line-strong, #b9b09c)', padding: '0.15rem 0.5rem', borderRadius: '14px', fontWeight: 700, color: chapterIsLocked ? '#64748b' : 'var(--green-700, #14614a)', whiteSpace: 'nowrap' }}>
+            {filledCount} / {chapter.items.length} Bagian
+          </span>
+          <span style={{ fontSize: '0.85rem', color: chapterIsLocked ? '#94a3b8' : 'var(--green-700, #14614a)', fontWeight: 700, flexShrink: 0 }}>
+            {isOpen ? '▼' : '▶'}
+          </span>
+        </div>
+      </div>
+
+      {/* Chapter Child Body */}
+      {isOpen && (
+        <div style={{ padding: '0.85rem 1rem', background: '#faf8f5', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          {chapter.items.map((item) => {
+            if (item.type === 'front_matter') {
+              return <SpecialFrontMatterCard key={item.key} ctx={ctx} />
+            }
+            if (item.type === 'lampiran') {
+              return <SpecialLampiranCard key={item.key} ctx={ctx} />
+            }
+            if (item.type === 'visi_misi') {
+              return <SpecialVisiMisiCard key={item.key} ctx={ctx} nav={nav} />
+            }
+            if (item.type === 'job_descriptions') {
+              return <SpecialJobDescCard key={item.key} ctx={ctx} nav={nav} />
+            }
+
+            if (mode === 'editor') {
+              return (
+                <div id={`section-${item.key}`} key={item.key}>
+                  <SectionEditor
+                    sectionKey={item.key}
+                    title={item.title}
+                    ctx={ctx}
+                    value={getSectionValue(ctx, item.key)}
+                    onChange={(val) => updateSection && updateSection(item.key, val)}
+                    onError={showErrorModal}
+                    disabled={false}
+                    isExpanded={expandedSections?.[item.key] !== false}
+                    onToggleExpand={() => toggleSectionExpand && toggleSectionExpand(item.key)}
+                  />
+                </div>
+              )
+            }
+
+            const val = getSectionValue(ctx, item.key)
+            return (
+              <ReaderSectionItem
+                key={item.key}
+                sec={{ key: item.key, title: item.title }}
+                val={val}
+                onEditSection={onEditSection}
+              />
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function DocumentReaderView({
+  sections,
+  ctx,
+  onEditSection,
+  mode = 'reader',
+  updateSection,
+  showErrorModal,
+  isUnlocked = true,
+  expandedSections = {},
+  toggleSectionExpand,
+}: {
+  sections: { key: string; title: string }[]
+  ctx: PklContext
+  onEditSection: (key: string) => void
+  mode?: 'reader' | 'editor'
+  updateSection?: (key: string, val: any) => void
+  showErrorModal?: (msg: string) => void
+  isUnlocked?: boolean
+  expandedSections?: Record<string, boolean>
+  toggleSectionExpand?: (key: string) => void
+}) {
+  const nav = useNavigate()
+
+  // Build the 8 Hierarchical Parent Chapters
+  const chapters: ParentChapter[] = [
+    {
+      id: 'front_matter',
+      title: 'HALAMAN DEPAN (FRONT MATTER)',
+      subtitle: 'Cover, Halaman Pengesahan, Identitas Siswa/Industri & Kata Pengantar',
+      icon: '📘',
+      items: [{ key: 'front_matter_summary', title: 'Halaman Depan Dokumen', type: 'front_matter' }],
+    },
+    {
+      id: 'bab_1',
+      title: 'BAB I: PENDAHULUAN',
+      subtitle: 'Latar Belakang, Tujuan PKL, Sejarah & Profil Perusahaan, Tata Tertib, Struktur, Job Desc',
+      icon: '📗',
+      items: [
+        { key: 'latar_belakang', title: '1.1 Latar Belakang' },
+        { key: 'tujuan_pkl', title: '1.2 Tujuan Kegiatan PKL' },
+        { key: 'profil_sejarah', title: '1.3 Sejarah Singkat Perusahaan' },
+        { key: 'visi_misi', title: '1.3.a Visi & Misi Perusahaan', type: 'visi_misi' },
+        { key: 'tata_tertib', title: '1.4 Tata Tertib & Keselamatan Kerja (K3)' },
+        { key: 'narasi_struktur', title: '1.5 Bagan & Narasi Struktur Organisasi' },
+        { key: 'job_descriptions', title: '1.6 Job Description (Deskripsi Pekerjaan per Posisi)', type: 'job_descriptions' },
+      ],
+    },
+    {
+      id: 'bab_2',
+      title: 'BAB II: KEGIATAN DI INDUSTRI',
+      subtitle: 'Proses & Ringkasan Kegiatan Operasional Industri Per Seksi/Divisi',
+      icon: '📙',
+      items: sections.filter((s) => s.key.startsWith('kegiatan_') && s.key.endsWith('_intro')).length > 0
+        ? sections.filter((s) => s.key.startsWith('kegiatan_') && s.key.endsWith('_intro'))
+        : [{ key: 'proses_kegiatan', title: '2.1 Ringkasan Proses Kegiatan Industri' }],
+    },
+    {
+      id: 'bab_3',
+      title: 'BAB III: TINJAUAN PUSTAKA',
+      subtitle: 'Landasan Teori Akademis Paraphrased AI, Asas PKL & Sejarah Sekolah',
+      icon: '📕',
+      items: [
+        { key: 'landasan_teori', title: '3.1 Landasan Teori Akademis' },
+      ],
+    },
+    {
+      id: 'bab_4',
+      title: 'BAB IV: DATA PENGAMATAN',
+      subtitle: 'Pelaksanaan Pekerjaan, Studi Kasus Problem Solving & Rincian Peralatan',
+      icon: '📒',
+      items: sections.filter((s) => s.key === 'studi_kasus_proses' || s.key.startsWith('detail_kegiatan')).length > 0
+        ? sections.filter((s) => s.key === 'studi_kasus_proses' || s.key.startsWith('detail_kegiatan'))
+        : [
+            { key: 'pelaksanaan_kegiatan', title: '4.1 Pelaksanaan Kegiatan & Detail Pekerjaan' },
+            ...(sections.some((s) => s.key === 'studi_kasus_proses') ? [{ key: 'studi_kasus_proses', title: '4.2 Proses Penyelesaian Studi Kasus' }] : []),
+          ],
+    },
+    {
+      id: 'bab_5',
+      title: 'BAB V: PEMBAHASAN',
+      subtitle: 'Hal-hal yang Perlu Diperhatikan & Analisis Peningkatan Kompetensi Industri',
+      icon: '📔',
+      items: [{ key: 'pembahasan', title: '5.1 Pembahasan & Analisis Peningkatan Kompetensi' }],
+    },
+    {
+      id: 'bab_6',
+      title: 'BAB VI: KESIMPULAN DAN SARAN',
+      subtitle: 'Kesimpulan Laporan PKL & Saran Konstruktif untuk Sekolah / Industri',
+      icon: '📑',
+      items: [{ key: 'kesimpulan_saran', title: '6.1 Kesimpulan & 6.2 Saran' }],
+    },
+    {
+      id: 'back_matter',
+      title: 'HALAMAN BELAKANG & LAMPIRAN',
+      subtitle: 'Daftar Pustaka, Jurnal Kegiatan, Absensi, Penilaian & Foto Dokumentasi',
+      icon: '📂',
+      items: [{ key: 'lampiran_summary', title: 'Daftar Pustaka & Lampiran Dokumentasi', type: 'lampiran' }],
+    },
+  ]
+
+  const bab1Count = ['latar_belakang', 'tujuan_pkl', 'profil_sejarah', 'tata_tertib', 'narasi_struktur'].filter((k) => {
+    const v = ctx.generated_sections?.[k]
+    return Array.isArray(v) ? v.length > 0 : !!(typeof v === 'string' && v.trim())
+  }).length
+
+  const isReaderLocked = mode === 'reader' && (!isUnlocked || bab1Count < 2)
+
+  return (
+    <div
+      className="document-reader-view"
+      style={{
+        background: isReaderLocked ? '#faf9f6' : '#ffffff',
+        border: isReaderLocked ? '2px dashed var(--line-strong, #b9b09c)' : '1px solid var(--line-strong, #b9b09c)',
+        borderRadius: '12px',
+        padding: 'clamp(1rem, 2.5vw, 1.8rem) clamp(0.5rem, 1.8vw, 1.5rem)',
+        boxShadow: isReaderLocked ? 'none' : '0 4px 16px rgba(0,0,0,0.06)',
+        marginTop: 0,
+        marginBottom: '0.4rem',
+        width: '100%',
+        minWidth: 0,
+        boxSizing: 'border-box',
+        overflowWrap: 'break-word',
+        wordBreak: 'break-word',
+        position: 'relative',
+        opacity: isReaderLocked ? 0.55 : 1,
+        filter: 'none',
+        pointerEvents: isReaderLocked ? 'none' : 'auto',
+        userSelect: isReaderLocked ? 'none' : 'auto',
+      }}
+    >
+      {isReaderLocked && (
+        <div
+          style={{
+            position: 'relative',
+            marginBottom: '1.25rem',
+            padding: '0.65rem 1.25rem',
+            background: '#f0fdf4',
+            border: '1px solid #86efac',
+            borderRadius: '30px',
+            color: '#166534',
+            fontSize: 'clamp(0.78rem, 2.3vw, 0.85rem)',
+            fontWeight: 700,
+            textAlign: 'center',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.4rem',
+            boxShadow: '0 2px 8px rgba(22, 101, 52, 0.08)',
+            pointerEvents: 'auto',
+            opacity: 1,
+          }}
+        >
+          <IconAlert size={16} color="#166534" style={{ flexShrink: 0 }} />
+          Pratinjau Mode Baca Terkunci — Lengkapi draf di Mode Edit atau klik "Generate Semua Sub-bab Laporan"
+        </div>
+      )}
+      <div
+        style={{
+          textAlign: 'center',
+          marginBottom: '1.5rem',
+          paddingTop: '0.85rem',
+          paddingBottom: '0.75rem',
+          position: 'relative',
+        }}
+      >
+        <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.05rem, 3.5vw, 1.4rem)', color: 'var(--ink, #262521)', margin: '0 0 0.4rem', textTransform: 'uppercase', wordBreak: 'break-word' }}>
+          LAPORAN PRAKTIK KERJA LAPANGAN
+        </h2>
+        <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(0.9rem, 2.8vw, 1.1rem)', color: 'var(--green-700, #14614a)', margin: 0, fontWeight: 600, wordBreak: 'break-word' }}>
+          {ctx.perusahaan?.nama_lengkap || ctx.perusahaan?.nama || 'PERUSAHAAN'}
+        </h3>
+        <p style={{ fontSize: 'clamp(0.78rem, 2.4vw, 0.85rem)', color: 'var(--ink-soft, #555)', margin: '0.4rem 0 0', wordBreak: 'break-word' }}>
+          Oleh: <strong>{ctx.siswa?.nama || 'Siswa'}</strong> ({ctx.siswa?.kelas || 'XII'}) — {ctx.siswa?.jurusan || 'SMK'}
+        </p>
+        <div
+          style={{
+            height: '4.5px',
+            backgroundColor: 'var(--ink-soft, #475569)',
+            borderRadius: '9999px',
+            marginTop: '1.25rem',
+            marginLeft: 'auto',
+            marginRight: 'auto',
+            width: '98%',
+            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+          }}
+        />
+      </div>
+
+      {/* Parent Chapter Accordion Groups */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%', minWidth: 0, boxSizing: 'border-box' }}>
+        {chapters.map((chap) => (
+          <ChapterAccordionGroup
+            key={chap.id}
+            chapter={chap}
+            ctx={ctx}
+            onEditSection={onEditSection}
+            nav={nav}
+            mode={mode}
+            updateSection={updateSection}
+            showErrorModal={showErrorModal}
+            isLocked={isReaderLocked}
+            expandedSections={expandedSections}
+            toggleSectionExpand={toggleSectionExpand}
+            defaultExpanded={false}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// --------------------------------------------------------------------------- //
+//  Section Editor Component (Accordion Card View)
 // --------------------------------------------------------------------------- //
 function SectionEditor({
   sectionKey,
@@ -681,8 +1717,8 @@ function SectionEditor({
   onChange,
   onError,
   disabled = false,
-  batchStatus,
-  isBatchGenerating = false,
+  isExpanded = false,
+  onToggleExpand,
 }: {
   sectionKey: string
   title: string
@@ -691,8 +1727,8 @@ function SectionEditor({
   onChange: (val: any) => void
   onError?: (msg: string) => void
   disabled?: boolean
-  batchStatus?: 'pending' | 'generating' | 'success' | 'failed'
-  isBatchGenerating?: boolean
+  isExpanded?: boolean
+  onToggleExpand?: () => void
 }) {
   const [loading, setLoading] = useState(false)
   const [regen, setRegen] = useState(false)
@@ -705,8 +1741,11 @@ function SectionEditor({
     ? value.map((v) => `- ${v}`).join('\n')
     : (value as string)
 
+  // 1-line snippet for collapsed view
+  const snippet = textValue.split('\n').map(s => s.trim()).filter(Boolean)[0] || ''
+
   const handleGenerate = async () => {
-    if (disabled || isBatchGenerating) return
+    if (disabled) return
     setLoading(true)
     try {
       let accumulated = ''
@@ -743,7 +1782,7 @@ function SectionEditor({
   }
 
   const handleRegenerate = async () => {
-    if (disabled || isBatchGenerating || !instruction) {
+    if (disabled || !instruction) {
       setRegen(false)
       return
     }
@@ -771,129 +1810,137 @@ function SectionEditor({
     }
   }
 
-  const isCurrentGenerating = batchStatus === 'generating'
+  const wordCount = textValue ? textValue.trim().split(/\s+/).length : 0
 
   return (
     <div
-      className="card"
+      className="card section-editor-card"
       style={{
-        marginBottom: '1.5rem',
-        opacity: disabled && !isCurrentGenerating ? 0.6 : 1,
-        borderColor: isCurrentGenerating ? '#187257' : undefined,
-        boxShadow: isCurrentGenerating ? '0 0 0 2px rgba(24, 114, 87, 0.2)' : undefined,
+        marginTop: 0,
+        marginBottom: '0.25rem',
+        opacity: disabled ? 0.6 : 1,
         transition: 'all 0.2s ease',
+        border: isExpanded ? '1.5px solid var(--green-600, #187257)' : '1px solid var(--line, #ddd6c8)',
+        borderRadius: '10px',
+        padding: 'clamp(0.65rem, 2vw, 1.1rem)',
+        width: '100%',
+        minWidth: 0,
+        boxSizing: 'border-box',
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-          <h3 style={{ margin: 0 }}>{title}</h3>
-          {batchStatus === 'generating' && (
-            <span style={{ fontSize: '0.78rem', color: '#187257', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', padding: '0.2rem 0.6rem', borderRadius: '12px', fontWeight: 600, display: 'inline-flex', alignItems: 'center' }}>
-              <svg className="animate-spin" style={{ width: '13px', height: '13px', marginRight: '4px' }} viewBox="0 0 24 24" fill="none">
-                <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Menyusun...
+      {/* Accordion Card Header */}
+      <div
+        onClick={onToggleExpand}
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          cursor: 'pointer',
+          userSelect: 'none',
+          gap: '0.5rem',
+          flexWrap: 'wrap',
+          width: '100%',
+          minWidth: 0,
+          boxSizing: 'border-box',
+        }}
+      >
+        <div style={{ flex: 1, minWidth: 0, boxSizing: 'border-box' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', width: '100%', minWidth: 0, boxSizing: 'border-box' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--green-700)', fontWeight: 700, flexShrink: 0 }}>
+              {isExpanded ? '▼' : '▶'}
             </span>
-          )}
-          {batchStatus === 'failed' && (
-            <span style={{ fontSize: '0.78rem', color: '#dc2626', backgroundColor: '#fef2f2', border: '1px solid #fecaca', padding: '0.2rem 0.6rem', borderRadius: '12px', fontWeight: 600, display: 'inline-flex', alignItems: 'center' }}>
-              <IconAlert size={14} color="#dc2626" style={{ marginRight: '3px' }} /> Gagal
-            </span>
-          )}
-          {batchStatus === 'success' && !isCurrentGenerating && (
-            <span style={{ fontSize: '0.78rem', color: '#059669', backgroundColor: '#ecfdf5', border: '1px solid #a7f3d0', padding: '0.2rem 0.6rem', borderRadius: '12px', fontWeight: 600, display: 'inline-flex', alignItems: 'center' }}>
-              <IconCheck size={14} color="#059669" style={{ marginRight: '3px' }} /> Selesai
-            </span>
-          )}
-        </div>
-
-        {!textValue && !loading && !isCurrentGenerating && (
-          <button
-            type="button"
-            className="btn-sm btn-primary"
-            onClick={handleGenerate}
-            disabled={disabled || isBatchGenerating}
-            style={{ opacity: disabled || isBatchGenerating ? 0.5 : 1, cursor: disabled || isBatchGenerating ? 'not-allowed' : 'pointer' }}
-          >
-            Generate AI
-          </button>
-        )}
-      </div>
-
-      {(loading || isCurrentGenerating) && (
-        <p className="muted" style={{ fontSize: '0.9rem', color: '#187257' }}>
-          Penyusun AI sedang menulis draf naratif…
-        </p>
-      )}
-
-      {!loading && !isCurrentGenerating && textValue && (
-        <>
-          <textarea
-            className="input"
-            rows={Math.max(5, textValue.split('\n').length + 1)}
-            value={textValue}
-            disabled={isBatchGenerating}
-            onChange={(e) => {
-              if (isArrayType) {
-                const lines = e.target.value.split('\n').map((l) => l.replace(/^-\s*/, '').trim()).filter(Boolean)
-                onChange(lines)
-              } else {
-                onChange(e.target.value)
-              }
-            }}
-            style={{ width: '100%', resize: 'vertical', lineHeight: 1.6, opacity: disabled || isBatchGenerating ? 0.7 : 1, cursor: disabled || isBatchGenerating ? 'not-allowed' : 'text' }}
-          />
-
-          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', alignItems: 'center' }}>
-            {!regen ? (
-              <button
-                type="button"
-                className="btn-sm btn-outline"
-                onClick={() => setRegen(true)}
-                disabled={disabled || isBatchGenerating}
-                style={{ opacity: disabled || isBatchGenerating ? 0.5 : 1, cursor: disabled || isBatchGenerating ? 'not-allowed' : 'pointer' }}
-              >
-                <IconPencil size={14} style={{ marginRight: '0.3rem' }} /> Perbaiki &amp; Tulis Ulang
-              </button>
+            <h3 style={{ margin: 0, fontSize: 'clamp(0.88rem, 2.8vw, 0.98rem)', color: 'var(--ink, #262521)', wordBreak: 'break-word' }}>{title}</h3>
+            {textValue ? (
+              <span style={{ fontSize: 'clamp(0.7rem, 2vw, 0.75rem)', color: '#059669', backgroundColor: '#ecfdf5', border: '1px solid #a7f3d0', padding: '0.15rem 0.5rem', borderRadius: '12px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', boxSizing: 'border-box' }}>
+                <IconCheck size={13} color="#059669" style={{ marginRight: '3px', flexShrink: 0 }} /> Terisi ({wordCount} kata)
+              </span>
             ) : (
-              <>
-                <input
-                  type="text"
-                  className="input"
-                  disabled={disabled || isBatchGenerating}
-                  style={{ flex: 1, padding: '0.35rem 0.6rem' }}
-                  placeholder="Instruksi: contoh 'Lebih padat', 'Gunakan istilah TKJ yang baku'"
-                  value={instruction}
-                  onChange={(e) => setInstruction(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleRegenerate()}
-                />
-                <button type="button" className="btn-sm" onClick={handleRegenerate} disabled={disabled || isBatchGenerating}>
-                  Proses
-                </button>
-                <button type="button" className="btn-sm btn-outline" onClick={() => setRegen(false)}>
-                  Batal
-                </button>
-              </>
+              <span style={{ fontSize: 'clamp(0.7rem, 2vw, 0.75rem)', color: '#94a3b8', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', padding: '0.15rem 0.5rem', borderRadius: '12px', boxSizing: 'border-box' }}>
+                Kosong
+              </span>
             )}
           </div>
 
-          {/* Anti-AI Highlighter Component */}
-        </>
-      )}
+          {!isExpanded && snippet && (
+            <p style={{ margin: '0.3rem 0 0 1.3rem', fontSize: 'clamp(0.75rem, 2.3vw, 0.82rem)', color: 'var(--ink-soft, #64748b)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%', minWidth: 0, boxSizing: 'border-box' }}>
+              {snippet}
+            </p>
+          )}
+        </div>
+      </div>
 
-      {!loading && !isCurrentGenerating && !textValue && (
-        <div style={{ padding: '1.75rem', textAlign: 'center', background: 'var(--paper-2, #ece8de)', borderRadius: '8px' }}>
-          <p className="muted" style={{ marginBottom: '0.75rem' }}>Belum ada draf tulisan untuk bagian ini.</p>
-          <button
-            type="button"
-            className="btn-primary"
-            onClick={handleGenerate}
-            disabled={disabled || isBatchGenerating}
-            style={{ opacity: disabled || isBatchGenerating ? 0.5 : 1, cursor: disabled || isBatchGenerating ? 'not-allowed' : 'pointer' }}
-          >
-            Generate AI
-          </button>
+      {/* Accordion Card Content (Expanded Body) */}
+      {isExpanded && (
+        <div style={{ marginTop: '1rem', paddingTop: '0.85rem', borderTop: '1px solid var(--line, #e2e8f0)', width: '100%', minWidth: 0, boxSizing: 'border-box' }}>
+          {loading && (
+            <p className="muted" style={{ fontSize: 'clamp(0.8rem, 2.5vw, 0.9rem)', color: '#187257' }}>
+              Penyusun AI sedang menulis draf naratif…
+            </p>
+          )}
+
+          {!loading && (
+            <>
+              <textarea
+                className="input"
+                rows={Math.max(5, textValue ? textValue.split('\n').length + 1 : 4)}
+                value={textValue}
+                placeholder="Ketik draf tulisan kamu sendiri di sini, atau klik 'Generate AI Bagian Ini' untuk bantuan penyusunan otomatis..."
+                onChange={(e) => {
+                  if (isArrayType) {
+                    const lines = e.target.value.split('\n').map((l) => l.replace(/^-\s*/, '').trim()).filter(Boolean)
+                    onChange(lines)
+                  } else {
+                    onChange(e.target.value)
+                  }
+                }}
+                style={{ width: '100%', maxWidth: '100%', minWidth: 0, boxSizing: 'border-box', resize: 'vertical', lineHeight: 1.6, cursor: 'text', fontSize: 'clamp(0.82rem, 2.5vw, 0.93rem)' }}
+              />
+
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', alignItems: 'center', flexWrap: 'wrap', width: '100%', minWidth: 0, boxSizing: 'border-box' }}>
+                {!textValue && (
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    onClick={handleGenerate}
+                    style={{ fontSize: 'clamp(0.78rem, 2.3vw, 0.85rem)', flexWrap: 'wrap', boxSizing: 'border-box' }}
+                  >
+                    ✨ Generate AI Bagian Ini
+                  </button>
+                )}
+
+                {textValue && !regen && (
+                  <button
+                    type="button"
+                    className="btn-sm btn-outline"
+                    onClick={() => setRegen(true)}
+                    style={{ fontSize: 'clamp(0.75rem, 2.3vw, 0.82rem)', flexWrap: 'wrap', boxSizing: 'border-box' }}
+                  >
+                    <IconPencil size={14} style={{ marginRight: '0.3rem', flexShrink: 0 }} /> Perbaiki &amp; Tulis Ulang (AI)
+                  </button>
+                )}
+
+                {textValue && regen && (
+                  <>
+                    <input
+                      type="text"
+                      className="input"
+                      style={{ flex: '1 1 180px', padding: '0.35rem 0.6rem', minWidth: 0, maxWidth: '100%', boxSizing: 'border-box', fontSize: 'clamp(0.78rem, 2.3vw, 0.85rem)' }}
+                      placeholder="Instruksi: contoh 'Lebih padat', 'Gunakan istilah TKJ yang baku'"
+                      value={instruction}
+                      onChange={(e) => setInstruction(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleRegenerate()}
+                    />
+                    <button type="button" className="btn-sm" onClick={handleRegenerate} style={{ fontSize: 'clamp(0.75rem, 2.2vw, 0.82rem)', boxSizing: 'border-box', flexWrap: 'wrap' }}>
+                      Proses
+                    </button>
+                    <button type="button" className="btn-sm btn-outline" onClick={() => setRegen(false)} style={{ fontSize: 'clamp(0.75rem, 2.2vw, 0.82rem)', boxSizing: 'border-box', flexWrap: 'wrap' }}>
+                      Batal
+                    </button>
+                  </>
+                )}
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

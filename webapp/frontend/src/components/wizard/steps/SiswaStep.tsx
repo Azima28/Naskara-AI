@@ -89,9 +89,10 @@ export default function SiswaStep({ ctx, set }: { ctx: PklContext; set: (p: Part
       </FieldGroup>
 
       <FieldGroup title="Data Pribadi">
-        <TextField label="Tempat Lahir" value={s.tempat_lahir} onChange={(v) => upd({ tempat_lahir: v })} importance="wajib" placeholder="Bandar Lampung" />
-        <TextField label="Tanggal Lahir" value={s.tanggal_lahir} onChange={(v) => upd({ tanggal_lahir: v })} type="date" importance="wajib" />
+        <TextField name="siswa.tempat_lahir" label="Tempat Lahir" value={s.tempat_lahir} onChange={(v) => upd({ tempat_lahir: v })} importance="wajib" placeholder="Bandar Lampung" />
+        <TextField name="siswa.tanggal_lahir" label="Tanggal Lahir" value={s.tanggal_lahir} onChange={(v) => upd({ tanggal_lahir: v })} type="date" importance="wajib" />
         <SelectField
+          name="siswa.jenis_kelamin"
           label="Jenis Kelamin"
           value={s.jenis_kelamin}
           onChange={(v) => upd({ jenis_kelamin: v })}
@@ -102,6 +103,7 @@ export default function SiswaStep({ ctx, set }: { ctx: PklContext; set: (p: Part
           ]}
         />
         <SelectField
+          name="siswa.golongan_darah"
           label="Golongan Darah"
           value={s.golongan_darah}
           onChange={(v) => upd({ golongan_darah: v })}
@@ -113,14 +115,14 @@ export default function SiswaStep({ ctx, set }: { ctx: PklContext; set: (p: Part
           ]}
         />
         <TextField label="Catatan Kesehatan" value={s.catatan_kesehatan} onChange={(v) => upd({ catatan_kesehatan: v })} importance="opsional" hint="Misal: Baik, atau Alergi debu. Kosongkan jika tidak ada." />
-        <TextField label="No. Telp/HP" value={s.no_telp} onChange={(v) => upd({ no_telp: v })} importance="wajib" />
-        <TextField label="Alamat" value={s.alamat} onChange={(v) => upd({ alamat: v })} importance="wajib" />
+        <TextField name="siswa.no_telp" label="No. Telp/HP" value={s.no_telp} onChange={(v) => upd({ no_telp: v })} importance="wajib" />
+        <TextField name="siswa.alamat" label="Alamat" value={s.alamat} onChange={(v) => upd({ alamat: v })} importance="wajib" />
       </FieldGroup>
 
       <FieldGroup title="Data Orang Tua / Wali">
-        <TextField label="Nama Orang Tua/Wali" value={s.nama_ortu} onChange={(v) => upd({ nama_ortu: v })} importance="wajib" />
-        <TextField label="Alamat Orang Tua" value={s.alamat_ortu} onChange={(v) => upd({ alamat_ortu: v })} importance="wajib" />
-        <TextField label="No. Telp Orang Tua" value={s.telp_ortu} onChange={(v) => upd({ telp_ortu: v })} importance="wajib" />
+        <TextField name="siswa.nama_ortu" label="Nama Orang Tua/Wali" value={s.nama_ortu} onChange={(v) => upd({ nama_ortu: v })} importance="wajib" />
+        <TextField name="siswa.alamat_ortu" label="Alamat Orang Tua" value={s.alamat_ortu} onChange={(v) => upd({ alamat_ortu: v })} importance="wajib" />
+        <TextField name="siswa.telp_ortu" label="No. Telp Orang Tua" value={s.telp_ortu} onChange={(v) => upd({ telp_ortu: v })} importance="wajib" />
       </FieldGroup>
     </>
   )

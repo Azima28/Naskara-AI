@@ -182,7 +182,7 @@ export default function DocumentOutline({ ctx, activeSectionKey, onSelectSection
                       transition: 'background 0.15s ease',
                     }}
                   >
-                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '190px' }}>
+                    <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: '0.4rem' }}>
                       {item.title}
                     </span>
 

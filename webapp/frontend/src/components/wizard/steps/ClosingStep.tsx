@@ -63,6 +63,7 @@ export default function ClosingStep({ ctx, set }: { ctx: PklContext; set: (p: Pa
         </div>
 
         <TextareaField
+          name="kesimpulan_user"
           label="Apa yang kamu dapatkan setelah mengikuti PKL? (Kesimpulan)"
           value={ctx.kesimpulan_user || ''}
           onChange={(v) => set({ kesimpulan_user: v })}
@@ -71,6 +72,7 @@ export default function ClosingStep({ ctx, set }: { ctx: PklContext; set: (p: Pa
           rows={3}
         />
         <TextareaField
+          name="saran_user"
           label="Apa yang ingin kamu sarankan untuk sekolah atau perusahaan? (Saran)"
           value={ctx.saran_user || ''}
           onChange={(v) => set({ saran_user: v })}
@@ -82,8 +84,8 @@ export default function ClosingStep({ ctx, set }: { ctx: PklContext; set: (p: Pa
 
       <FieldGroup title="Kata Pengantar">
         <div style={{ marginTop: '0.5rem' }}>
-          <TextField label="Tempat Penulisan" value={kp.kota} onChange={(v) => updKp({ kota: v })} importance="wajib" placeholder="Bandar Lampung" hint="Untuk ttd Kata Pengantar" />
-          <TextField label="Tanggal Penulisan" value={kp.tanggal} onChange={(v) => updKp({ tanggal: v })} importance="wajib" placeholder="Juli 2026" />
+          <TextField name="kata_pengantar.kota" label="Tempat Penulisan" value={kp.kota} onChange={(v) => updKp({ kota: v })} importance="wajib" placeholder="Bandar Lampung" hint="Untuk ttd Kata Pengantar" />
+          <TextField name="kata_pengantar.tanggal" label="Tanggal Penulisan" value={kp.tanggal} onChange={(v) => updKp({ tanggal: v })} importance="wajib" placeholder="Juli 2026" />
         </div>
       </FieldGroup>
 

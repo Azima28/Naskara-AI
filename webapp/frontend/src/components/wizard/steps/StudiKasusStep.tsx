@@ -155,6 +155,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
         </div>
 
         <TextField
+          name="studi_kasus.judul"
           label="1. Pekerjaan / Tugas Apa yang Kamu Kerjakan?"
           value={sk.judul}
           onChange={(v) => upd({ judul: v })}
@@ -163,6 +164,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
           hint="Tuliskan nama tugas atau proyek utama yang kamu tangani."
         />
         <TextareaField
+          name="studi_kasus.latar_belakang"
           label="2. Bagaimana Kondisi Awal / Masalah Sebelum Kamu Kerjakan?"
           value={sk.latar_belakang}
           onChange={(v) => upd({ latar_belakang: v })}
@@ -171,6 +173,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
           hint="Bagaimana kondisi awal atau kendala sebelum pekerjaan kamu selesaikan?"
         />
         <TextareaField
+          name="studi_kasus.proses_atau_formula"
           label="3. Langkah-Langkah yang Kamu Lakukan untuk Menyelesaikannya (Urut)"
           value={sk.proses_atau_formula}
           onChange={(v) => upd({ proses_atau_formula: v })}
@@ -179,6 +182,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
           hint="Tuliskan urutan kegiatan pengerjaannya dari awal sampai selesai (bisa pakai nomor 1, 2, 3)."
         />
         <TextareaField
+          name="studi_kasus.hasil"
           label="4. Bagaimana Hasil Akhirnya?"
           value={sk.hasil}
           onChange={(v) => upd({ hasil: v })}
@@ -190,7 +194,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
 
       {/* Data Angka / Perbandingan (OPSIONAL) */}
       <FieldGroup title="Hasil yang Bisa Diukur &amp; Perbandingan" full>
-        <div className="field field--full">
+        <div className="field field--full" id="field-studi_kasus.jenis_tabel" data-field="studi_kasus.jenis_tabel">
           <div style={{ marginBottom: '1.25rem', padding: '1.1rem', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '10px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.85rem' }}>
               <label style={{ fontWeight: 600, fontSize: '0.92rem', color: '#0f172a' }}>

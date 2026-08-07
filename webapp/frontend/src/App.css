@@ -44,8 +44,11 @@
 
 .card {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   margin-top: 1.25rem;
-  padding: clamp(1.1rem, 2vw, 1.75rem) clamp(1.1rem, 2.5vw, 2rem);
+  padding: clamp(0.85rem, 2vw, 1.75rem) clamp(0.85rem, 2.5vw, 2rem);
   border: var(--card-border);
   border-radius: 10px;
   background: var(--surface);
@@ -54,7 +57,8 @@
 
 .card h2 {
   margin: 0;
-  font-size: 1.3rem;
+  font-size: clamp(1.05rem, 3.2vw, 1.3rem);
+  word-break: break-word;
 }
 
 .card__row {
@@ -63,6 +67,9 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 0.75rem;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 /* --- Buttons ------------------------------------------------------------ */
@@ -71,8 +78,9 @@ button, .btn-sm {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-wrap: wrap;
   padding: 0.55rem 1.2rem;
-  font-size: 0.92rem;
+  font-size: clamp(0.78rem, 2.4vw, 0.92rem);
   font-weight: 600;
   font-family: var(--font-sans);
   color: #ffffff;
@@ -82,6 +90,9 @@ button, .btn-sm {
   cursor: pointer;
   text-decoration: none;
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 button:hover:not(:disabled):not(.btn-outline):not(.btn-danger) {
@@ -96,8 +107,12 @@ button:disabled {
 
 .btn-sm {
   padding: 0.38rem 0.8rem;
-  font-size: 0.84rem;
+  font-size: clamp(0.74rem, 2.2vw, 0.84rem);
   border-radius: 7px;
+  flex-wrap: wrap;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .btn-outline {
@@ -459,6 +474,11 @@ select.field__input {
   overflow: hidden;
 }
 
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 @keyframes pulse-red-border {
   0% {
     box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.45);
@@ -667,6 +687,11 @@ input.field__input {
   box-shadow: 0 0 0 3px var(--green-100);
 }
 
+/* ── Mobile Download Floating Bar ── */
+.mobile-download-bar {
+  display: none !important;
+}
+
 /* ── Compact Example Table Styles ── */
 .compact-example-table table {
   width: 100%;
@@ -683,6 +708,9 @@ input.field__input {
 }
 
 @media (max-width: 600px) {
+  .mobile-download-bar {
+    display: flex !important;
+  }
   .shell {
     padding: 0.75rem 0.3rem 3rem !important;
   }
@@ -947,6 +975,63 @@ input.field__input {
   margin-top: 0.75rem;
 }
 
+.editor-header-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--line, #e2e8f0);
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.editor-header-controls__pills {
+  display: flex;
+  flex-wrap: wrap;
+  background: var(--paper-2, #ece8de);
+  border-radius: 8px;
+  padding: 3px;
+  border: 1px solid var(--line, #cbd5e1);
+  margin: 0 auto;
+  width: 100%;
+  max-width: 340px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.editor-header-controls__pills button {
+  flex: 1 1 auto;
+  text-align: center;
+  justify-content: center;
+  white-space: nowrap;
+  min-width: 0;
+  max-width: 100%;
+  font-size: clamp(0.72rem, 2.3vw, 0.84rem);
+  box-sizing: border-box;
+  flex-wrap: wrap;
+}
+
+.editor-header-controls__actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.editor-header-controls__actions button {
+  flex-wrap: wrap;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
 /* --- Editor Layout --------------------------------------------------------------- */
 
 .editor-grid {
@@ -955,16 +1040,25 @@ input.field__input {
   gap: 1.5rem;
   margin-top: 1.5rem;
   align-items: start;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .editor-sections {
   display: flex;
   flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .editor-sidebar {
   position: sticky;
   top: 1rem;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 /* Responsive Grid Helper */
@@ -978,6 +1072,9 @@ input.field__input {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 /* --- Responsive --------------------------------------------------------------------- */
@@ -985,10 +1082,81 @@ input.field__input {
 @media (max-width: 1024px) {
   .editor-grid {
     grid-template-columns: 1fr;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
   }
 
   .editor-sidebar {
     position: static;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 480px) {
+  .shell {
+    padding: 0.5rem 0.35rem 2.5rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+
+  .card {
+    padding: 0.75rem 0.5rem !important;
+    border-radius: 8px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .editor-header-controls__actions button {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    justify-content: center;
+    font-size: clamp(0.72rem, 2.3vw, 0.8rem) !important;
+    padding: 0.4rem 0.5rem !important;
+    box-sizing: border-box !important;
+    flex-wrap: wrap !important;
+  }
+
+  .editor-header-controls__pills button {
+    font-size: clamp(0.72rem, 2.3vw, 0.8rem) !important;
+    padding: 0.38rem 0.4rem !important;
+    box-sizing: border-box !important;
+    flex-wrap: wrap !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .shell {
+    padding: 0.35rem 0.2rem 2rem !important;
+    box-sizing: border-box !important;
+  }
+
+  .card {
+    padding: 0.6rem 0.35rem !important;
+    box-sizing: border-box !important;
+  }
+
+  .editor-header-controls__pills {
+    max-width: 100% !important;
+    flex-direction: column !important;
+  }
+
+  .editor-header-controls__actions {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+
+  .editor-header-controls__actions button {
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
 }
 
@@ -1986,7 +2154,8 @@ input.field__input {
 /* Trust Banner */
 .trust-banner {
   background: var(--surface);
-  border-y: 1px solid var(--line);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
   padding: 1.5rem 1.5rem;
 }
 
