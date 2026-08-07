@@ -729,6 +729,31 @@ def _get_image_page_cost(filename: str, width_cm: float = 14.0) -> float:
     return 1.0
 
 
+def _image_file_exists(filename: str) -> bool:
+    """Cek apakah file gambar benar-benar ada di direktori uploads atau smkn4_assets."""
+    clean_name = _sanitize_image_filename(filename)
+    if not clean_name:
+        return False
+
+    smkn4_dir = Path(__file__).resolve().parent / "smkn4_assets"
+    candidates = [
+        str(UPLOADS_DIR / "assets" / clean_name),
+        str(UPLOADS_DIR / clean_name),
+        str(smkn4_dir / clean_name),
+    ]
+    allowed_parents = [UPLOADS_DIR.resolve(), smkn4_dir.resolve()]
+
+    for cand in candidates:
+        if cand and os.path.exists(cand):
+            try:
+                cand_path = Path(cand).resolve()
+                if any(parent in cand_path.parents or cand_path == parent for parent in allowed_parents):
+                    return True
+            except Exception:
+                pass
+    return False
+
+
 def _try_image(builder: PklDocBuilder, filename: str, width_cm: float = 10) -> bool:
     """Sisipkan gambar dari uploads/assets atau smkn4_assets cadangan dengan proteksi path traversal."""
     clean_name = _sanitize_image_filename(filename)
@@ -802,7 +827,7 @@ def _scan_all_gambar(data: dict) -> list[dict]:
 
     # 1. BAB I: Logo Perusahaan
     logo = profil.get("logo_perusahaan")
-    if logo and _sanitize_image_filename(logo):
+    if logo and _image_file_exists(logo):
         img_idx = len([g for g in gambar_list if g["bab_num"] == bab1_num]) + 1
         bm = f"gambar_{bab1_num}_{img_idx}"
         title_clean = f"Logo {nama_prsh}"
@@ -820,7 +845,7 @@ def _scan_all_gambar(data: dict) -> list[dict]:
 
     # 2. BAB I: Struktur Organisasi
     struktur = profil.get("struktur_organisasi")
-    if struktur and _sanitize_image_filename(struktur):
+    if struktur and _image_file_exists(struktur):
         img_idx = len([g for g in gambar_list if g["bab_num"] == bab1_num]) + 1
         bm = f"gambar_{bab1_num}_{img_idx}"
         title_clean = f"Struktur Organisasi {nama_prsh}"
@@ -840,7 +865,7 @@ def _scan_all_gambar(data: dict) -> list[dict]:
     peralatan = data.get("peralatan", [])
     for idx, p in enumerate(peralatan, 1):
         g_file = p.get("gambar")
-        if g_file and _sanitize_image_filename(g_file):
+        if g_file and _image_file_exists(g_file):
             nama_raw = p.get("nama", f"Peralatan {idx}")
             title_clean = _clean_caption_title(nama_raw) or f"Peralatan {idx}"
             img_idx = len([g for g in gambar_list if g["bab_num"] == bab4_num]) + 1
@@ -861,7 +886,7 @@ def _scan_all_gambar(data: dict) -> list[dict]:
     studi_kasus = data.get("studi_kasus", {})
     sk_assets = studi_kasus.get("assets", []) if isinstance(studi_kasus, dict) else []
     for idx, a_file in enumerate(sk_assets, 1):
-        if isinstance(a_file, str) and a_file and _sanitize_image_filename(a_file):
+        if isinstance(a_file, str) and a_file and _image_file_exists(a_file):
             raw_title = studi_kasus.get("judul", "") or f"Studi Kasus Asset {idx}"
             title_clean = _clean_caption_title(raw_title) or f"Hasil Studi Kasus {idx}"
             img_idx = len([g for g in gambar_list if g["bab_num"] == bab4_num]) + 1
@@ -1940,6 +1965,38 @@ def _write_data_pengamatan(builder: PklDocBuilder, data: dict, bab_num: int) -> 
                             p_clean = _polish_task_detail(para.strip())
                             if p_clean:
                                 builder.add_sub_item(p_clean, indent_level=0)
+            sub += 1
+
+    # Sub-bab Studi Kasus / Pekerjaan Utama & Dokumentasi Asset
+    studi_kasus = data.get("studi_kasus", {})
+    if isinstance(studi_kasus, dict):
+        sk_judul = (studi_kasus.get("judul") or "").strip()
+        sk_assets = studi_kasus.get("assets", [])
+        sk_proses = (gen.get("studi_kasus_proses") or studi_kasus.get("proses_atau_formula") or "").strip()
+        sk_latar = (studi_kasus.get("latar_belakang") or "").strip()
+        sk_hasil = (studi_kasus.get("hasil") or "").strip()
+
+        if sk_judul or sk_assets or sk_proses or sk_latar or sk_hasil:
+            sub_title = judul.get(
+                "studi_kasus",
+                f"Proses Penyelesaian Studi Kasus ({sk_judul})" if sk_judul else "Proses Penyelesaian Pekerjaan Utama"
+            )
+            builder.add_sub_heading(bab_num, sub, sub_title)
+
+            if sk_latar:
+                _write_paragraphs(builder, _polish_task_detail(sk_latar))
+
+            if sk_proses:
+                _write_paragraphs(builder, _polish_task_detail(sk_proses))
+
+            if sk_hasil:
+                _write_paragraphs(builder, _polish_task_detail(sk_hasil))
+
+            # Render seluruh gambar asset studi kasus yang valid
+            for idx, a_file in enumerate(sk_assets, 1):
+                if isinstance(a_file, str) and a_file and _image_file_exists(a_file):
+                    _render_image_with_caption(builder, data, f"studi_kasus_{idx}")
+
             sub += 1
 
     # Sub-bab Peralatan & Perlengkapan Kantor
