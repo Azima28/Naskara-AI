@@ -1066,6 +1066,7 @@ function SpecialVisiMisiCard({
 }) {
   const { draftId } = useParams()
   const [expanded, setExpanded] = useState(false)
+  const [isOpen, setIsOpen] = useState(true)
   const visi = ctx.profil_perusahaan?.visi || ''
   const misi = ctx.profil_perusahaan?.misi || []
   const hasContent = !!visi || misi.length > 0
@@ -1097,59 +1098,75 @@ function SpecialVisiMisiCard({
           boxShadow: '0 2px 8px rgba(24, 114, 87, 0.08)',
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', borderBottom: '1px solid var(--line, #e2e8f0)', paddingBottom: '0.45rem', gap: '0.5rem' }}>
-          <h4 style={{ margin: 0, fontSize: 'clamp(0.88rem, 2.8vw, 1.02rem)', color: 'var(--green-800, #114e3b)', fontFamily: 'var(--font-serif)', fontWeight: 700 }}>
-            1.3.a Penyuntingan Visi &amp; Misi Perusahaan
+        <div
+          onClick={() => setIsOpen(!isOpen)}
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: isOpen ? '0.75rem' : 0,
+            borderBottom: isOpen ? '1px solid var(--line, #e2e8f0)' : 'none',
+            paddingBottom: isOpen ? '0.45rem' : 0,
+            gap: '0.5rem',
+            cursor: 'pointer',
+            userSelect: 'none',
+          }}
+        >
+          <h4 style={{ margin: 0, fontSize: 'clamp(0.88rem, 2.8vw, 1.02rem)', color: 'var(--green-800, #114e3b)', fontFamily: 'var(--font-serif)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+            <span style={{ fontSize: '0.78rem', color: 'var(--green-700, #14614a)' }}>{isOpen ? '▼' : '▶'}</span>
+            1.3.a Visi &amp; Misi Perusahaan (Dipoles AI KBBI)
           </h4>
           <span style={{ fontSize: '0.74rem', background: 'var(--green-50, #f0fdf4)', color: 'var(--green-700, #14614a)', border: '1px solid #86efac', padding: '0.15rem 0.5rem', borderRadius: '12px', fontWeight: 600 }}>
             Mode Edit Langsung
           </span>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--ink, #262521)', marginBottom: '0.25rem' }}>
-              Visi Perusahaan:
-            </label>
-            <textarea
-              value={visi}
-              onChange={(e) => handleVisiChange(e.target.value)}
-              placeholder="Masukkan visi perusahaan (misal: Menjadi perusahaan teknologi terdepan...)"
-              rows={2}
-              style={{
-                width: '100%',
-                padding: '0.5rem 0.65rem',
-                fontSize: '0.85rem',
-                borderRadius: '6px',
-                border: '1px solid #cbd5e1',
-                fontFamily: 'inherit',
-                boxSizing: 'border-box',
-              }}
-            />
-          </div>
+        {isOpen && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--ink, #262521)', marginBottom: '0.25rem' }}>
+                Visi Perusahaan:
+              </label>
+              <textarea
+                value={visi}
+                onChange={(e) => handleVisiChange(e.target.value)}
+                placeholder="Masukkan visi perusahaan (misal: Menjadi perusahaan teknologi terdepan...)"
+                rows={2}
+                style={{
+                  width: '100%',
+                  padding: '0.5rem 0.65rem',
+                  fontSize: '0.85rem',
+                  borderRadius: '6px',
+                  border: '1px solid #cbd5e1',
+                  fontFamily: 'inherit',
+                  boxSizing: 'border-box',
+                }}
+              />
+            </div>
 
-          <div>
-            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--ink, #262521)', marginBottom: '0.25rem' }}>
-              Misi Perusahaan (1 poin per baris):
-            </label>
-            <textarea
-              value={misi.join('\n')}
-              onChange={(e) => handleMisiChange(e.target.value)}
-              placeholder="Tekan Enter untuk membuat poin misi baru&#10;1. Memberikan layanan terbaik&#10;2. Mengembangkan inovasi teknologi"
-              rows={4}
-              style={{
-                width: '100%',
-                padding: '0.5rem 0.65rem',
-                fontSize: '0.85rem',
-                borderRadius: '6px',
-                border: '1px solid #cbd5e1',
-                fontFamily: 'inherit',
-                lineHeight: 1.5,
-                boxSizing: 'border-box',
-              }}
-            />
+            <div>
+              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--ink, #262521)', marginBottom: '0.25rem' }}>
+                Misi Perusahaan (1 poin per baris):
+              </label>
+              <textarea
+                value={misi.join('\n')}
+                onChange={(e) => handleMisiChange(e.target.value)}
+                placeholder="Tekan Enter untuk membuat poin misi baru&#10;1. Memberikan layanan terbaik&#10;2. Mengembangkan inovasi teknologi"
+                rows={4}
+                style={{
+                  width: '100%',
+                  padding: '0.5rem 0.65rem',
+                  fontSize: '0.85rem',
+                  borderRadius: '6px',
+                  border: '1px solid #cbd5e1',
+                  fontFamily: 'inherit',
+                  lineHeight: 1.5,
+                  boxSizing: 'border-box',
+                }}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </div>
     )
   }
@@ -1245,6 +1262,7 @@ function SpecialJobDescCard({
 }) {
   const { draftId } = useParams()
   const [expanded, setExpanded] = useState(false)
+  const [isOpen, setIsOpen] = useState(true)
   const jobs = ctx.profil_perusahaan?.job_descriptions || []
   const hasContent = jobs.length > 0
 
@@ -1289,93 +1307,109 @@ function SpecialJobDescCard({
           boxShadow: '0 2px 8px rgba(24, 114, 87, 0.08)',
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', borderBottom: '1px solid var(--line, #e2e8f0)', paddingBottom: '0.45rem', gap: '0.5rem' }}>
-          <h4 style={{ margin: 0, fontSize: 'clamp(0.88rem, 2.8vw, 1.02rem)', color: 'var(--green-800, #114e3b)', fontFamily: 'var(--font-serif)', fontWeight: 700 }}>
-            1.6 Penyuntingan Job Description per Posisi
+        <div
+          onClick={() => setIsOpen(!isOpen)}
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: isOpen ? '0.75rem' : 0,
+            borderBottom: isOpen ? '1px solid var(--line, #e2e8f0)' : 'none',
+            paddingBottom: isOpen ? '0.45rem' : 0,
+            gap: '0.5rem',
+            cursor: 'pointer',
+            userSelect: 'none',
+          }}
+        >
+          <h4 style={{ margin: 0, fontSize: 'clamp(0.88rem, 2.8vw, 1.02rem)', color: 'var(--green-800, #114e3b)', fontFamily: 'var(--font-serif)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+            <span style={{ fontSize: '0.78rem', color: 'var(--green-700, #14614a)' }}>{isOpen ? '▼' : '▶'}</span>
+            1.6 Job Description / Deskripsi Pekerjaan per Posisi
           </h4>
           <span style={{ fontSize: '0.74rem', background: 'var(--green-50, #f0fdf4)', color: 'var(--green-700, #14614a)', border: '1px solid #86efac', padding: '0.15rem 0.5rem', borderRadius: '12px', fontWeight: 600 }}>
             Mode Edit Langsung
           </span>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-          {jobs.length === 0 && (
-            <p style={{ margin: 0, fontSize: '0.82rem', color: '#64748b' }}>
-              Belum ada deskripsi posisi pekerjaan. Klik tombol di bawah untuk menambah jabatan.
-            </p>
-          )}
+        {isOpen && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+            {jobs.length === 0 && (
+              <p style={{ margin: 0, fontSize: '0.82rem', color: '#64748b' }}>
+                Belum ada deskripsi posisi pekerjaan. Klik tombol di bawah untuk menambah jabatan.
+              </p>
+            )}
 
-          {jobs.map((job, idx) => (
-            <div key={idx} style={{ background: '#f8fafc', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem', gap: '0.5rem' }}>
-                <input
-                  type="text"
-                  value={job.posisi}
-                  onChange={(e) => handleUpdateJobPosisi(idx, e.target.value)}
-                  placeholder={`Nama Jabatan ${idx + 1}`}
+            {jobs.map((job, idx) => (
+              <div key={idx} style={{ background: '#f8fafc', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem', gap: '0.5rem' }}>
+                  <input
+                    type="text"
+                    value={job.posisi}
+                    onChange={(e) => handleUpdateJobPosisi(idx, e.target.value)}
+                    placeholder={`Nama Jabatan ${idx + 1}`}
+                    style={{
+                      fontWeight: 700,
+                      fontSize: '0.85rem',
+                      color: 'var(--green-800, #114e3b)',
+                      padding: '0.3rem 0.5rem',
+                      borderRadius: '4px',
+                      border: '1px solid #cbd5e1',
+                      flex: 1,
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveJob(idx)}
+                    style={{
+                      background: '#fef2f2',
+                      border: '1px solid #fca5a5',
+                      color: '#dc2626',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      borderRadius: '4px',
+                      padding: '0.2rem 0.55rem',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Hapus
+                  </button>
+                </div>
+                <textarea
+                  value={(Array.isArray(job.tugas) ? job.tugas : [job.tugas]).join('\n')}
+                  onChange={(e) => handleUpdateJobTugas(idx, e.target.value)}
+                  placeholder="Rincian tugas per baris (Tekan Enter untuk poin baru)"
+                  rows={3}
                   style={{
-                    fontWeight: 700,
-                    fontSize: '0.85rem',
-                    color: 'var(--green-800, #114e3b)',
-                    padding: '0.3rem 0.5rem',
+                    width: '100%',
+                    padding: '0.45rem 0.6rem',
+                    fontSize: '0.82rem',
                     borderRadius: '4px',
                     border: '1px solid #cbd5e1',
-                    flex: 1,
+                    fontFamily: 'inherit',
+                    boxSizing: 'border-box',
                   }}
                 />
-                <button
-                  type="button"
-                  onClick={() => handleRemoveJob(idx)}
-                  style={{
-                    background: '#fef2f2',
-                    border: '1px solid #fca5a5',
-                    color: '#dc2626',
-                    fontSize: '0.72rem',
-                    fontWeight: 700,
-                    borderRadius: '4px',
-                    padding: '0.2rem 0.5rem',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Hapus
-                </button>
               </div>
-              <textarea
-                value={(Array.isArray(job.tugas) ? job.tugas : [job.tugas]).join('\n')}
-                onChange={(e) => handleUpdateJobTugas(idx, e.target.value)}
-                placeholder="Rincian tugas per baris (Tekan Enter untuk poin baru)"
-                rows={3}
-                style={{
-                  width: '100%',
-                  padding: '0.45rem 0.6rem',
-                  fontSize: '0.82rem',
-                  borderRadius: '4px',
-                  border: '1px solid #cbd5e1',
-                  fontFamily: 'inherit',
-                  boxSizing: 'border-box',
-                }}
-              />
-            </div>
-          ))}
+            ))}
 
-          <button
-            type="button"
-            onClick={handleAddJob}
-            style={{
-              background: '#ffffff',
-              border: '1px dashed var(--green-600, #187257)',
-              color: 'var(--green-700, #14614a)',
-              fontSize: '0.8rem',
-              fontWeight: 700,
-              padding: '0.4rem 0.8rem',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              alignSelf: 'flex-start',
-            }}
-          >
-            + Tambah Posisi / Jabatan Pekerjaan
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={handleAddJob}
+              style={{
+                background: '#ffffff',
+                border: '1px dashed var(--green-600, #187257)',
+                color: 'var(--green-700, #14614a)',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                padding: '0.4rem 0.8rem',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                alignSelf: 'flex-start',
+              }}
+            >
+              + Tambah Posisi / Jabatan Pekerjaan
+            </button>
+          </div>
+        )}
       </div>
     )
   }
