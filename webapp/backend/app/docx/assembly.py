@@ -1579,7 +1579,7 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
         f"Usaha/Dunia Industri (DU/DI) dan dunia pendidikan. Adapun tujuan kegiatan "
         f"Praktik Kerja Lapangan (PKL) adalah:"
     ))
-    for i, t in enumerate(data.get("tujuan_pkl") or DEFAULT_TUJUAN_PKL, 1):
+    for i, t in enumerate(data.get("tujuan_pkl") or gen.get("tujuan_pkl") or DEFAULT_TUJUAN_PKL, 1):
         builder.add_numbered(t, i)
     sub += 1
 
