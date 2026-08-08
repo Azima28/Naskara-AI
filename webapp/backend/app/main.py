@@ -21,20 +21,17 @@ async def lifespan(app: FastAPI):
     ensure_runtime_dirs()
     init_db()
 
-    # Gate auto-seeding to development environments only
-    if settings.environment.lower() not in ("production", "prod"):
-        try:
-            import sys
-            from pathlib import Path
-            backend_dir = Path(__file__).resolve().parent.parent
-            if str(backend_dir) not in sys.path:
-                sys.path.insert(0, str(backend_dir))
-            from seed_siswa import seed
-            seed()
-        except Exception as e:
-            print(f"⚠️ Auto-seed status: {e}")
-    else:
-        print("ℹ️ Production environment active: auto-seeding skipped.")
+    # Auto-seed initial demo accounts & 100% complete simulation draft if database is fresh
+    try:
+        import sys
+        from pathlib import Path
+        backend_dir = Path(__file__).resolve().parent.parent
+        if str(backend_dir) not in sys.path:
+            sys.path.insert(0, str(backend_dir))
+        from seed_siswa import seed
+        seed()
+    except Exception as e:
+        print(f"⚠️ Auto-seed status: {e}")
 
     is_prod = settings.environment.lower() in ("production", "prod")
     is_weak = settings.secret_key in INSECURE_SECRET_KEYS or len(settings.secret_key) < 32
