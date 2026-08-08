@@ -272,6 +272,12 @@ function EditorInner() {
     return Array.isArray(val) ? val.length > 0 : !!(typeof val === 'string' && val.trim())
   }).length
 
+  // Count actual filled sections (non-empty) for progress tracking
+  const filledCount = sections.filter((s) => {
+    const v = getSectionValue(ctx, s.key)
+    return Array.isArray(v) ? v.length > 0 : !!(typeof v === 'string' && v.trim())
+  }).length
+
   // Lock gate: BAB I must have at least 2 sections generated AND main narrative count >= 3 to unlock Mode Baca
   const isUnlocked = bab1Count >= 2 && mainNarrativeCount >= 3
 
@@ -591,12 +597,12 @@ function EditorInner() {
             <div style={{ marginBottom: '1rem', width: '100%', minWidth: 0, boxSizing: 'border-box' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'clamp(0.78rem, 2.4vw, 0.85rem)', marginBottom: '0.25rem', flexWrap: 'wrap', gap: '0.25rem', width: '100%', minWidth: 0, boxSizing: 'border-box' }}>
                 <span>Kemajuan Draf Sub-bab</span>
-                <strong>{Object.keys(ctx.generated_sections || {}).length} / {sections.length}</strong>
+                <strong>{filledCount} / {sections.length}</strong>
               </div>
               <div className="completeness__bar" style={{ width: '100%', minWidth: 0, boxSizing: 'border-box' }}>
                 <div
                   className="completeness__fill is-ready"
-                  style={{ width: `${sections.length > 0 ? (Object.keys(ctx.generated_sections || {}).length / sections.length) * 100 : 0}%` }}
+                  style={{ width: `${sections.length > 0 ? (filledCount / sections.length) * 100 : 0}%` }}
                 />
               </div>
             </div>
