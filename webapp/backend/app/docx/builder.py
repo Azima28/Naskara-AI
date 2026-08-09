@@ -1841,6 +1841,9 @@ def compute_toc_page_numbers_libreoffice(docx_path: str, sec_list: list[tuple[st
                         if p > total_pdf_pages:
                             break
                         p_text = re.sub(r"\s+", " ", pdf_doc[p - 1].get_text("text")).upper()
+                        # Abaikan pencocokan di halaman DAFTAR ISI sendiri agar tidak mencocokkan judul di dalam tabel DAFTAR ISI
+                        if p < bab1_page and "DAFTAR ISI" in p_text:
+                            continue
                         p_text_norm = re.sub(r"(\d+)\.\s+(\d+)", r"\1.\2", p_text)
 
                         if (sk_up in p_text) or (sk_up_norm in p_text_norm):
@@ -1853,6 +1856,8 @@ def compute_toc_page_numbers_libreoffice(docx_path: str, sec_list: list[tuple[st
                             if p > total_pdf_pages:
                                 break
                             p_text = re.sub(r"\s+", " ", pdf_doc[p - 1].get_text("text")).upper()
+                            if p < bab1_page and "DAFTAR ISI" in p_text:
+                                continue
                             if ct_up in p_text:
                                 found_page = p
                                 break
