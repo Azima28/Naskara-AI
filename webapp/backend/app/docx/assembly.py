@@ -875,7 +875,27 @@ def _scan_all_gambar(data: dict) -> list[dict]:
             "width_cm": 14,
         })
 
-    # 3. BAB IV: Peralatan
+    # 3. BAB IV: Studi Kasus / Assets (Sub-bab 4.3 muncul sebelum Peralatan Sub-bab 4.4)
+    studi_kasus = data.get("studi_kasus", {})
+    sk_assets = studi_kasus.get("assets", []) if isinstance(studi_kasus, dict) else []
+    for idx, a_file in enumerate(sk_assets, 1):
+        raw_title = studi_kasus.get("judul", "") or f"Studi Kasus Asset {idx}"
+        title_clean = _clean_caption_title(raw_title) or f"Hasil Studi Kasus {idx}"
+        img_idx = len([g for g in gambar_list if g["bab_num"] == bab4_num]) + 1
+        bm = f"gambar_{bab4_num}_{img_idx}"
+        label = f"Gambar {bab4_num}.{img_idx} {title_clean}"
+        gambar_list.append({
+            "key": f"studi_kasus_{idx}",
+            "filename": a_file if isinstance(a_file, str) and a_file else f"sim-lampiran-5.png",
+            "bab_num": bab4_num,
+            "img_idx": img_idx,
+            "bookmark": bm,
+            "text": label,
+            "title": title_clean,
+            "width_cm": 12,
+        })
+
+    # 4. BAB IV: Peralatan (Sub-bab 4.4)
     peralatan = data.get("peralatan", [])
     for idx, p in enumerate(peralatan, 1):
         g_file = p.get("gambar") if isinstance(p, dict) else ""
@@ -896,26 +916,6 @@ def _scan_all_gambar(data: dict) -> list[dict]:
                 "title": title_clean,
                 "width_cm": 10,
             })
-
-    # 4. BAB IV: Studi Kasus / Assets
-    studi_kasus = data.get("studi_kasus", {})
-    sk_assets = studi_kasus.get("assets", []) if isinstance(studi_kasus, dict) else []
-    for idx, a_file in enumerate(sk_assets, 1):
-        raw_title = studi_kasus.get("judul", "") or f"Studi Kasus Asset {idx}"
-        title_clean = _clean_caption_title(raw_title) or f"Hasil Studi Kasus {idx}"
-        img_idx = len([g for g in gambar_list if g["bab_num"] == bab4_num]) + 1
-        bm = f"gambar_{bab4_num}_{img_idx}"
-        label = f"Gambar {bab4_num}.{img_idx} {title_clean}"
-        gambar_list.append({
-            "key": f"studi_kasus_{idx}",
-            "filename": a_file if isinstance(a_file, str) and a_file else f"sim-lampiran-5.png",
-            "bab_num": bab4_num,
-            "img_idx": img_idx,
-            "bookmark": bm,
-            "text": label,
-            "title": title_clean,
-            "width_cm": 12,
-        })
 
     return gambar_list
 
