@@ -1773,7 +1773,7 @@ def compute_toc_page_numbers_libreoffice(docx_path: str, sec_list: list[tuple[st
                     found_page = None
 
                     # Cek apakah bookmark ini Front Matter vs Body Matter
-                    is_front = bookmark in ("peng_industri", "peng_sekolah", "id_siswa", "id_industri", "kata_pengantar") or bookmark.startswith("peng_") or bookmark.startswith("id_")
+                    is_front = bookmark in ("peng_industri", "peng_sekolah", "id_siswa", "id_industri", "kata_pengantar", "daftar_gambar", "daftar_lampiran") or bookmark.startswith("peng_") or bookmark.startswith("id_")
 
                     if is_front:
                         if bookmark == "peng_industri":
@@ -1784,7 +1784,7 @@ def compute_toc_page_numbers_libreoffice(docx_path: str, sec_list: list[tuple[st
                             search_range = range(p_id_siswa or 5, (p_id_ind or 6) + 1)
                         elif bookmark == "id_industri":
                             search_range = range(p_id_ind or 6, (p_kata_peng or 7) + 1)
-                        elif bookmark == "kata_pengantar":
+                        elif bookmark in ("kata_pengantar", "daftar_gambar", "daftar_lampiran"):
                             search_range = range(p_kata_peng or 7, bab1_page)
                         else:
                             search_range = range(1, bab1_page)

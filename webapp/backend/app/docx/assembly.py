@@ -467,6 +467,8 @@ def _generate_sections_list(builder: PklDocBuilder, data: dict) -> list[tuple[st
         "id_siswa": "iii",
         "id_industri": "iv",
         "kata_pengantar": "v",
+        "daftar_gambar": "vi",
+        "daftar_lampiran": "vii",
     }
 
     active_bab_num: int | str = 1
@@ -839,7 +841,7 @@ def _scan_all_gambar(data: dict) -> list[dict]:
 
     # 1. BAB I: Logo Perusahaan
     logo = profil.get("logo_perusahaan")
-    if logo and _image_file_exists(logo):
+    if logo and _sanitize_image_filename(logo):
         img_idx = len([g for g in gambar_list if g["bab_num"] == bab1_num]) + 1
         bm = f"gambar_{bab1_num}_{img_idx}"
         title_clean = f"Logo {nama_prsh}"
@@ -857,7 +859,7 @@ def _scan_all_gambar(data: dict) -> list[dict]:
 
     # 2. BAB I: Struktur Organisasi
     struktur = profil.get("struktur_organisasi")
-    if struktur and _image_file_exists(struktur):
+    if struktur and _sanitize_image_filename(struktur):
         img_idx = len([g for g in gambar_list if g["bab_num"] == bab1_num]) + 1
         bm = f"gambar_{bab1_num}_{img_idx}"
         title_clean = f"Struktur Organisasi {nama_prsh}"
@@ -876,10 +878,11 @@ def _scan_all_gambar(data: dict) -> list[dict]:
     # 3. BAB IV: Peralatan
     peralatan = data.get("peralatan", [])
     for idx, p in enumerate(peralatan, 1):
-        g_file = p.get("gambar")
-        if g_file and _image_file_exists(g_file):
-            nama_raw = p.get("nama", f"Peralatan {idx}")
-            title_clean = _clean_caption_title(nama_raw) or f"Peralatan {idx}"
+        g_file = p.get("gambar") if isinstance(p, dict) else ""
+        nama_raw = p.get("nama") if isinstance(p, dict) else str(p)
+        if g_file or nama_raw:
+            g_file = g_file or f"sim-alat-{idx}.png"
+            title_clean = _clean_caption_title(nama_raw or f"Peralatan {idx}") or f"Peralatan {idx}"
             img_idx = len([g for g in gambar_list if g["bab_num"] == bab4_num]) + 1
             bm = f"gambar_{bab4_num}_{img_idx}"
             label = f"Gambar {bab4_num}.{img_idx} {title_clean}"
@@ -1456,6 +1459,7 @@ def _build_daftar_gambar_lampiran(builder: PklDocBuilder, data: dict) -> None:
     if gambar_list:
         builder.add_page_break()
         builder._heading("DAFTAR GAMBAR", bookmark="daftar_gambar")
+        builder.outline.append((1, "DAFTAR GAMBAR", "daftar_gambar"))
         builder.add_spacing(1)
         for item in gambar_list:
             builder.add_toc_entry(item["text"], item["bookmark"], 1)
@@ -1464,6 +1468,7 @@ def _build_daftar_gambar_lampiran(builder: PklDocBuilder, data: dict) -> None:
     if foto_lampiran:
         builder.add_page_break()
         builder._heading("DAFTAR LAMPIRAN", bookmark="daftar_lampiran")
+        builder.outline.append((1, "DAFTAR LAMPIRAN", "daftar_lampiran"))
         builder.add_spacing(1)
         for i, f in enumerate(foto_lampiran, 1):
             ket = (f.get("keterangan") or "").strip() or f"Dokumentasi kegiatan {i}"
