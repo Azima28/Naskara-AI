@@ -232,6 +232,9 @@ export const setActiveAiModel = (model: string) =>
 export const addAiModel = (model: string) =>
   api.post<{ status: string; available_models: string[] }>('/ai/models/add', { model }).then((r) => r.data)
 
+export const testAiConnection = () =>
+  api.get<{ status: string; message: string }>('/ai/test').then((r) => r.data)
+
 export const draftSection = (sectionKey: string, contextData: PklContext, model?: string) =>
   api.post<{ content: string }>('/ai/draft-section', {
     section_key: sectionKey,

@@ -1,14 +1,21 @@
 import React, { useEffect, useState } from 'react'
-import { getSystemSettings, updateSystemSettings } from '@/api/client'
+import {
+  getSystemSettings,
+  updateSystemSettings,
+  getAiModels,
+  setActiveAiModel,
+  addAiModel,
+  testAiConnection,
+} from '@/api/client'
 import type { SystemConfigData } from '@/types/api'
 import NotificationModal from '@/components/common/NotificationModal'
-import { AiModelSelector } from '@/components/common/AiModelSelector'
 import {
   IconBuilding,
   IconCheck,
   IconChecklist,
   IconGear,
   IconUser,
+  IconSparkles,
 } from '@/components/common/Icons'
 
 const JURUSAN_KEYS = ['rpl', 'tkj', 'bdp', 'akl', 'mp', 'tb']
@@ -53,10 +60,19 @@ const DEFAULT_SETTINGS: SystemConfigData = {
 }
 
 export default function AdminSettingsPage() {
+  const [activeTab, setActiveTab] = useState<'school' | 'ai'>('school')
   const [config, setConfig] = useState<SystemConfigData>(DEFAULT_SETTINGS)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [notice, setNotice] = useState<{ title: string; message: string; type: 'success' | 'error' } | null>(null)
+
+  // AI model management state
+  const [availableModels, setAvailableModels] = useState<string[]>(['deepseek-opencode', 'gemini'])
+  const [selectedModel, setSelectedModel] = useState<string>('deepseek-opencode')
+  const [newModelName, setNewModelName] = useState<string>('')
+  const [addingModel, setAddingModel] = useState<boolean>(false)
+  const [testingAi, setTestingAi] = useState<boolean>(false)
+  const [aiTestResult, setAiTestResult] = useState<{ success: boolean; message: string } | null>(null)
 
   const loadSettings = async () => {
     setLoading(true)
@@ -71,6 +87,18 @@ export default function AdminSettingsPage() {
             ...(res.data.pejabat_jurusan || {}),
           },
         })
+        if (res.data.ai_model_default) {
+          setSelectedModel(res.data.ai_model_default)
+        }
+      }
+
+      // Fetch AI models list
+      const modelsRes = await getAiModels()
+      if (modelsRes.available_models) {
+        setAvailableModels(modelsRes.available_models)
+      }
+      if (modelsRes.active_model) {
+        setSelectedModel(modelsRes.active_model)
       }
     } catch (err: any) {
       setNotice({ title: 'Error', message: err?.response?.data?.detail || 'Gagal memuat pengaturan terpusat.', type: 'error' })
@@ -83,7 +111,7 @@ export default function AdminSettingsPage() {
     loadSettings()
   }, [])
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmitSchoolSettings = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
     try {
@@ -109,317 +137,533 @@ export default function AdminSettingsPage() {
     })
   }
 
+  const handleSelectActiveModel = async (modelName: string) => {
+    setSelectedModel(modelName)
+    setConfig((prev) => ({ ...prev, ai_model_default: modelName }))
+    try {
+      await setActiveAiModel(modelName)
+      await updateSystemSettings({ ...config, ai_model_default: modelName })
+      setNotice({ title: 'Model AI Berhasil Diubah', message: `Model AI aktif sistem diubah menjadi '${modelName}'.`, type: 'success' })
+    } catch (err: any) {
+      setNotice({ title: 'Error', message: err?.response?.data?.detail || 'Gagal mengubah model AI aktif.', type: 'error' })
+    }
+  }
+
+  const handleAddNewModel = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const trimmed = newModelName.trim()
+    if (!trimmed) return
+
+    setAddingModel(true)
+    try {
+      const res = await addAiModel(trimmed)
+      if (res.available_models) {
+        setAvailableModels(res.available_models)
+      } else if (!availableModels.includes(trimmed)) {
+        setAvailableModels([...availableModels, trimmed])
+      }
+      setSelectedModel(trimmed)
+      setConfig((prev) => ({ ...prev, ai_model_default: trimmed }))
+      await setActiveAiModel(trimmed)
+      setNewModelName('')
+      setNotice({ title: 'Model AI Ditambahkan', message: `Model AI '${trimmed}' berhasil ditambahkan dan dijadikan model aktif.`, type: 'success' })
+    } catch (err: any) {
+      setNotice({ title: 'Error', message: err?.response?.data?.detail || 'Gagal menambahkan model AI baru.', type: 'error' })
+    } finally {
+      setAddingModel(false)
+    }
+  }
+
+  const handleTestConnection = async () => {
+    setTestingAi(true)
+    setAiTestResult(null)
+    try {
+      const res = await testAiConnection()
+      setAiTestResult({ success: true, message: res.message || 'Koneksi ke AI Provider Berhasil' })
+    } catch (err: any) {
+      setAiTestResult({ success: false, message: err?.response?.data?.detail || 'Gagal terhubung ke AI Provider. Pastikan server AI aktif.' })
+    } finally {
+      setTestingAi(false)
+    }
+  }
+
   if (loading) {
     return <div style={{ color: 'var(--ink-soft)', padding: '24px' }}>Memuat pengaturan terpusat...</div>
   }
 
   return (
     <div>
-      <div style={{ marginBottom: '24px' }}>
+      {/* Page Header */}
+      <div style={{ marginBottom: '20px' }}>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--ink)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <IconGear size={24} color="var(--green-600)" /> Pengaturan Template Sekolah &amp; AI Config
+          <IconGear size={24} color="var(--green-600)" /> Pengaturan Sistem Terpusat
         </h1>
         <p style={{ color: 'var(--ink-soft)', margin: '4px 0 0 0', fontSize: '0.9rem' }}>
-          Konfigurasi terpusat identitas resmi sekolah, Kop Surat, NIP Pejabat Utama &amp; Ketua KK per jurusan, serta parameter AI Engine.
+          Kelola konfigurasi resmi sekolah, Kop Surat pengesahan, pejabat jurusan, dan preferensi AI Engine.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit}>
-        {/* Section 1: Identitas Resmi Sekolah & Kop Surat */}
-        <div style={sectionBoxStyle}>
-          <h3 style={sectionHeaderStyle}>
-            <IconBuilding size={20} color="var(--green-600)" /> Identitas Resmi Sekolah &amp; Kop Surat
-          </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
-            <div>
-              <label style={labelStyle}>Nama Singkat Sekolah</label>
-              <input
-                type="text"
-                required
-                value={config.school_name}
-                onChange={(e) => setConfig({ ...config, school_name: e.target.value })}
-                className="form-input"
-                style={{ width: '100%' }}
-              />
-            </div>
-            <div>
-              <label style={labelStyle}>Nama Lengkap Sekolah</label>
-              <input
-                type="text"
-                required
-                value={config.school_name_full || config.school_name}
-                onChange={(e) => setConfig({ ...config, school_name_full: e.target.value })}
-                className="form-input"
-                style={{ width: '100%' }}
-              />
-            </div>
-          </div>
+      {/* Tab Bar Navigation */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', borderBottom: '2px solid var(--line)' }}>
+        <button
+          type="button"
+          onClick={() => setActiveTab('school')}
+          style={{
+            padding: '10px 18px',
+            fontSize: '0.9rem',
+            fontWeight: 700,
+            border: 'none',
+            background: 'none',
+            cursor: 'pointer',
+            color: activeTab === 'school' ? 'var(--green-700)' : 'var(--ink-soft)',
+            borderBottom: activeTab === 'school' ? '3px solid var(--green-600)' : '3px solid transparent',
+            marginBottom: '-2px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
+          <IconBuilding size={18} /> Template &amp; Identitas Sekolah
+        </button>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginTop: '12px' }}>
-            <div>
-              <label style={labelStyle}>Alamat Lengkap Sekolah</label>
-              <input
-                type="text"
-                required
-                value={config.alamat}
-                onChange={(e) => setConfig({ ...config, alamat: e.target.value })}
-                className="form-input"
-                style={{ width: '100%' }}
-              />
-            </div>
-            <div>
-              <label style={labelStyle}>Kota Sekolah</label>
-              <input
-                type="text"
-                required
-                value={config.kota || 'Bandar Lampung'}
-                onChange={(e) => setConfig({ ...config, kota: e.target.value })}
-                className="form-input"
-                style={{ width: '100%' }}
-              />
-            </div>
-          </div>
+        <button
+          type="button"
+          onClick={() => setActiveTab('ai')}
+          style={{
+            padding: '10px 18px',
+            fontSize: '0.9rem',
+            fontWeight: 700,
+            border: 'none',
+            background: 'none',
+            cursor: 'pointer',
+            color: activeTab === 'ai' ? 'var(--green-700)' : 'var(--ink-soft)',
+            borderBottom: activeTab === 'ai' ? '3px solid var(--green-600)' : '3px solid transparent',
+            marginBottom: '-2px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
+          <IconSparkles size={18} /> Pengaturan AI Engine
+        </button>
+      </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginTop: '12px' }}>
-            <div>
-              <label style={labelStyle}>Telepon Sekolah</label>
-              <input
-                type="text"
-                value={config.telp || ''}
-                onChange={(e) => setConfig({ ...config, telp: e.target.value })}
-                className="form-input"
-                style={{ width: '100%' }}
-              />
-            </div>
-            <div>
-              <label style={labelStyle}>Email Resmi Sekolah</label>
-              <input
-                type="email"
-                value={config.email || ''}
-                onChange={(e) => setConfig({ ...config, email: e.target.value })}
-                className="form-input"
-                style={{ width: '100%' }}
-              />
-            </div>
-            <div>
-              <label style={labelStyle}>Website Resmi Sekolah</label>
-              <input
-                type="text"
-                value={config.website || ''}
-                onChange={(e) => setConfig({ ...config, website: e.target.value })}
-                className="form-input"
-                style={{ width: '100%' }}
-              />
-            </div>
-          </div>
-
-          {/* Sub-header Kop Surat */}
-          <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--line)' }}>
-            <h4 style={{ margin: '0 0 12px 0', fontSize: '0.95rem', color: 'var(--ink)' }}>Susunan Kop Surat Pengesahan</h4>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
+      {/* TAB 1: TEMPLATE & IDENTITAS SEKOLAH */}
+      {activeTab === 'school' && (
+        <form onSubmit={handleSubmitSchoolSettings}>
+          {/* Section 1: Identitas Resmi Sekolah & Kop Surat */}
+          <div style={sectionBoxStyle}>
+            <h3 style={sectionHeaderStyle}>
+              <IconBuilding size={20} color="var(--green-600)" /> Identitas Resmi Sekolah &amp; Alamat
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
               <div>
-                <label style={labelStyle}>Kop Baris 1 (Pemerintah/Provinsi)</label>
+                <label style={labelStyle}>Nama Singkat Sekolah</label>
                 <input
                   type="text"
                   required
-                  value={config.kop_baris_1 || 'PEMERINTAH PROVINSI LAMPUNG'}
-                  onChange={(e) => setConfig({ ...config, kop_baris_1: e.target.value })}
+                  value={config.school_name}
+                  onChange={(e) => setConfig({ ...config, school_name: e.target.value })}
                   className="form-input"
                   style={{ width: '100%' }}
                 />
               </div>
               <div>
-                <label style={labelStyle}>Kop Baris 2 (Dinas Pendidikan)</label>
+                <label style={labelStyle}>Nama Lengkap Sekolah</label>
                 <input
                   type="text"
                   required
-                  value={config.kop_baris_2 || 'DINAS PENDIDIKAN DAN KEBUDAYAAN'}
-                  onChange={(e) => setConfig({ ...config, kop_baris_2: e.target.value })}
+                  value={config.school_name_full || config.school_name}
+                  onChange={(e) => setConfig({ ...config, school_name_full: e.target.value })}
                   className="form-input"
                   style={{ width: '100%' }}
                 />
               </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginTop: '12px' }}>
               <div>
-                <label style={labelStyle}>Kop Baris 3 (Nama Sekolah Uppercase)</label>
+                <label style={labelStyle}>Alamat Lengkap Sekolah</label>
                 <input
                   type="text"
                   required
-                  value={config.kop_baris_3 || 'SMK NEGERI 4 BANDAR LAMPUNG'}
-                  onChange={(e) => setConfig({ ...config, kop_baris_3: e.target.value })}
+                  value={config.alamat}
+                  onChange={(e) => setConfig({ ...config, alamat: e.target.value })}
                   className="form-input"
                   style={{ width: '100%' }}
                 />
               </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginTop: '12px' }}>
               <div>
-                <label style={labelStyle}>NPSN Sekolah</label>
+                <label style={labelStyle}>Kota Sekolah</label>
                 <input
                   type="text"
                   required
-                  value={config.npsn}
-                  onChange={(e) => setConfig({ ...config, npsn: e.target.value })}
+                  value={config.kota || 'Bandar Lampung'}
+                  onChange={(e) => setConfig({ ...config, kota: e.target.value })}
+                  className="form-input"
+                  style={{ width: '100%' }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginTop: '12px' }}>
+              <div>
+                <label style={labelStyle}>Telepon Sekolah</label>
+                <input
+                  type="text"
+                  value={config.telp || ''}
+                  onChange={(e) => setConfig({ ...config, telp: e.target.value })}
                   className="form-input"
                   style={{ width: '100%' }}
                 />
               </div>
               <div>
-                <label style={labelStyle}>NSS Sekolah (Nomor Statistik)</label>
+                <label style={labelStyle}>Email Resmi Sekolah</label>
+                <input
+                  type="email"
+                  value={config.email || ''}
+                  onChange={(e) => setConfig({ ...config, email: e.target.value })}
+                  className="form-input"
+                  style={{ width: '100%' }}
+                />
+              </div>
+              <div>
+                <label style={labelStyle}>Website Resmi Sekolah</label>
                 <input
                   type="text"
-                  value={config.nss || ''}
-                  onChange={(e) => setConfig({ ...config, nss: e.target.value })}
+                  value={config.website || ''}
+                  onChange={(e) => setConfig({ ...config, website: e.target.value })}
                   className="form-input"
                   style={{ width: '100%' }}
                 />
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Section 2: Key School Officials */}
-        <div style={sectionBoxStyle}>
-          <h3 style={sectionHeaderStyle}>
-            <IconUser size={20} color="var(--green-600)" /> Pejabat Utama Sekolah
-          </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
-            <div>
-              <label style={labelStyle}>Nama Kepala Sekolah &amp; Gelar</label>
-              <input
-                type="text"
-                required
-                value={config.kepala_sekolah}
-                onChange={(e) => setConfig({ ...config, kepala_sekolah: e.target.value })}
-                className="form-input"
-                style={{ width: '100%' }}
-              />
-              <label style={{ ...labelStyle, marginTop: '8px' }}>NIP Kepala Sekolah</label>
-              <input
-                type="text"
-                required
-                value={config.nip_kepala_sekolah}
-                onChange={(e) => setConfig({ ...config, nip_kepala_sekolah: e.target.value })}
-                className="form-input"
-                style={{ width: '100%' }}
-              />
-            </div>
-
-            <div>
-              <label style={labelStyle}>Nama Waka Humas &amp; Gelar</label>
-              <input
-                type="text"
-                required
-                value={config.waka_humas}
-                onChange={(e) => setConfig({ ...config, waka_humas: e.target.value })}
-                className="form-input"
-                style={{ width: '100%' }}
-              />
-              <label style={{ ...labelStyle, marginTop: '8px' }}>NIP Waka Humas</label>
-              <input
-                type="text"
-                required
-                value={config.nip_waka_humas}
-                onChange={(e) => setConfig({ ...config, nip_waka_humas: e.target.value })}
-                className="form-input"
-                style={{ width: '100%' }}
-              />
-            </div>
-
-            <div>
-              <label style={labelStyle}>Nama Pembimbing Sekolah Global &amp; Gelar</label>
-              <input
-                type="text"
-                value={config.pembimbing_sekolah || ''}
-                onChange={(e) => setConfig({ ...config, pembimbing_sekolah: e.target.value })}
-                className="form-input"
-                style={{ width: '100%' }}
-              />
-              <label style={{ ...labelStyle, marginTop: '8px' }}>NIP Pembimbing Sekolah</label>
-              <input
-                type="text"
-                value={config.nip_pembimbing_sekolah || ''}
-                onChange={(e) => setConfig({ ...config, nip_pembimbing_sekolah: e.target.value })}
-                className="form-input"
-                style={{ width: '100%' }}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Section 3: Ketua Program Keahlian (KK) Per Jurusan */}
-        <div style={sectionBoxStyle}>
-          <h3 style={sectionHeaderStyle}>
-            <IconChecklist size={20} color="var(--green-600)" /> Ketua Program Keahlian (Ketua KK) Per Jurusan
-          </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
-            {JURUSAN_KEYS.map((key) => {
-              const p = config.pejabat_jurusan[key] || { nama: '', nip: '' }
-              return (
-                <div key={key} style={{ background: 'var(--paper)', padding: '12px', borderRadius: '6px', border: '1px solid var(--line)' }}>
-                  <strong style={{ fontSize: '0.85rem', color: 'var(--ink)' }}>{JURUSAN_LABELS[key]}</strong>
-                  <div style={{ marginTop: '8px' }}>
-                    <label style={{ fontSize: '0.75rem', color: 'var(--ink-soft)', display: 'block', marginBottom: '2px' }}>Nama Ketua KK &amp; Gelar</label>
-                    <input
-                      type="text"
-                      placeholder="Nama Ketua KK"
-                      value={p.nama}
-                      onChange={(e) => handleKetuaKkChange(key, 'nama', e.target.value)}
-                      className="form-input"
-                      style={{ width: '100%', fontSize: '0.8rem', marginBottom: '6px' }}
-                    />
-                    <label style={{ fontSize: '0.75rem', color: 'var(--ink-soft)', display: 'block', marginBottom: '2px' }}>NIP Ketua KK</label>
-                    <input
-                      type="text"
-                      placeholder="NIP Ketua KK"
-                      value={p.nip}
-                      onChange={(e) => handleKetuaKkChange(key, 'nip', e.target.value)}
-                      className="form-input"
-                      style={{ width: '100%', fontSize: '0.8rem' }}
-                    />
-                  </div>
+            {/* Sub-header Kop Surat */}
+            <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--line)' }}>
+              <h4 style={{ margin: '0 0 12px 0', fontSize: '0.95rem', color: 'var(--ink)' }}>Susunan Kop Surat Pengesahan</h4>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
+                <div>
+                  <label style={labelStyle}>Kop Baris 1 (Pemerintah/Provinsi)</label>
+                  <input
+                    type="text"
+                    required
+                    value={config.kop_baris_1 || 'PEMERINTAH PROVINSI LAMPUNG'}
+                    onChange={(e) => setConfig({ ...config, kop_baris_1: e.target.value })}
+                    className="form-input"
+                    style={{ width: '100%' }}
+                  />
                 </div>
-              )
-            })}
-          </div>
-        </div>
+                <div>
+                  <label style={labelStyle}>Kop Baris 2 (Dinas Pendidikan)</label>
+                  <input
+                    type="text"
+                    required
+                    value={config.kop_baris_2 || 'DINAS PENDIDIKAN DAN KEBUDAYAAN'}
+                    onChange={(e) => setConfig({ ...config, kop_baris_2: e.target.value })}
+                    className="form-input"
+                    style={{ width: '100%' }}
+                  />
+                </div>
+                <div>
+                  <label style={labelStyle}>Kop Baris 3 (Nama Sekolah Uppercase)</label>
+                  <input
+                    type="text"
+                    required
+                    value={config.kop_baris_3 || 'SMK NEGERI 4 BANDAR LAMPUNG'}
+                    onChange={(e) => setConfig({ ...config, kop_baris_3: e.target.value })}
+                    className="form-input"
+                    style={{ width: '100%' }}
+                  />
+                </div>
+              </div>
 
-        {/* Section 4: AI Model Config */}
-        <div style={sectionBoxStyle}>
-          <h3 style={sectionHeaderStyle}>
-            <IconGear size={20} color="var(--green-600)" /> Parameter AI Engine &amp; Limit Token
-          </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', alignItems: 'center' }}>
-            <div>
-              <label style={labelStyle}>Model AI Utama Sistem</label>
-              <div style={{ marginTop: '4px' }}>
-                <AiModelSelector
-                  selectedModel={config.ai_model_default}
-                  onModelChange={(m) => setConfig({ ...config, ai_model_default: m })}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginTop: '12px' }}>
+                <div>
+                  <label style={labelStyle}>NPSN Sekolah</label>
+                  <input
+                    type="text"
+                    required
+                    value={config.npsn}
+                    onChange={(e) => setConfig({ ...config, npsn: e.target.value })}
+                    className="form-input"
+                    style={{ width: '100%' }}
+                  />
+                </div>
+                <div>
+                  <label style={labelStyle}>NSS Sekolah (Nomor Statistik)</label>
+                  <input
+                    type="text"
+                    value={config.nss || ''}
+                    onChange={(e) => setConfig({ ...config, nss: e.target.value })}
+                    className="form-input"
+                    style={{ width: '100%' }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2: Key School Officials */}
+          <div style={sectionBoxStyle}>
+            <h3 style={sectionHeaderStyle}>
+              <IconUser size={20} color="var(--green-600)" /> Pejabat Utama Sekolah
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+              <div>
+                <label style={labelStyle}>Nama Kepala Sekolah &amp; Gelar</label>
+                <input
+                  type="text"
+                  required
+                  value={config.kepala_sekolah}
+                  onChange={(e) => setConfig({ ...config, kepala_sekolah: e.target.value })}
+                  className="form-input"
+                  style={{ width: '100%' }}
+                />
+                <label style={{ ...labelStyle, marginTop: '8px' }}>NIP Kepala Sekolah</label>
+                <input
+                  type="text"
+                  required
+                  value={config.nip_kepala_sekolah}
+                  onChange={(e) => setConfig({ ...config, nip_kepala_sekolah: e.target.value })}
+                  className="form-input"
+                  style={{ width: '100%' }}
+                />
+              </div>
+
+              <div>
+                <label style={labelStyle}>Nama Waka Humas &amp; Gelar</label>
+                <input
+                  type="text"
+                  required
+                  value={config.waka_humas}
+                  onChange={(e) => setConfig({ ...config, waka_humas: e.target.value })}
+                  className="form-input"
+                  style={{ width: '100%' }}
+                />
+                <label style={{ ...labelStyle, marginTop: '8px' }}>NIP Waka Humas</label>
+                <input
+                  type="text"
+                  required
+                  value={config.nip_waka_humas}
+                  onChange={(e) => setConfig({ ...config, nip_waka_humas: e.target.value })}
+                  className="form-input"
+                  style={{ width: '100%' }}
+                />
+              </div>
+
+              <div>
+                <label style={labelStyle}>Nama Pembimbing Sekolah Global &amp; Gelar</label>
+                <input
+                  type="text"
+                  value={config.pembimbing_sekolah || ''}
+                  onChange={(e) => setConfig({ ...config, pembimbing_sekolah: e.target.value })}
+                  className="form-input"
+                  style={{ width: '100%' }}
+                />
+                <label style={{ ...labelStyle, marginTop: '8px' }}>NIP Pembimbing Sekolah</label>
+                <input
+                  type="text"
+                  value={config.nip_pembimbing_sekolah || ''}
+                  onChange={(e) => setConfig({ ...config, nip_pembimbing_sekolah: e.target.value })}
+                  className="form-input"
+                  style={{ width: '100%' }}
                 />
               </div>
             </div>
-            <div>
-              <label style={labelStyle}>Max Output Tokens Per Request</label>
-              <input
-                type="number"
-                required
-                value={config.ai_max_tokens_per_req}
-                onChange={(e) => setConfig({ ...config, ai_max_tokens_per_req: parseInt(e.target.value) || 2048 })}
-                className="form-input"
-                style={{ width: '100%' }}
-              />
+          </div>
+
+          {/* Section 3: Ketua Program Keahlian (KK) Per Jurusan */}
+          <div style={sectionBoxStyle}>
+            <h3 style={sectionHeaderStyle}>
+              <IconChecklist size={20} color="var(--green-600)" /> Ketua Program Keahlian (Ketua KK) Per Jurusan
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
+              {JURUSAN_KEYS.map((key) => {
+                const p = config.pejabat_jurusan[key] || { nama: '', nip: '' }
+                return (
+                  <div key={key} style={{ background: 'var(--paper)', padding: '12px', borderRadius: '6px', border: '1px solid var(--line)' }}>
+                    <strong style={{ fontSize: '0.85rem', color: 'var(--ink)' }}>{JURUSAN_LABELS[key]}</strong>
+                    <div style={{ marginTop: '8px' }}>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--ink-soft)', display: 'block', marginBottom: '2px' }}>Nama Ketua KK &amp; Gelar</label>
+                      <input
+                        type="text"
+                        placeholder="Nama Ketua KK"
+                        value={p.nama}
+                        onChange={(e) => handleKetuaKkChange(key, 'nama', e.target.value)}
+                        className="form-input"
+                        style={{ width: '100%', fontSize: '0.8rem', marginBottom: '6px' }}
+                      />
+                      <label style={{ fontSize: '0.75rem', color: 'var(--ink-soft)', display: 'block', marginBottom: '2px' }}>NIP Ketua KK</label>
+                      <input
+                        type="text"
+                        placeholder="NIP Ketua KK"
+                        value={p.nip}
+                        onChange={(e) => handleKetuaKkChange(key, 'nip', e.target.value)}
+                        className="form-input"
+                        style={{ width: '100%', fontSize: '0.8rem' }}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </div>
-        </div>
 
-        {/* Save Bar */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px' }}>
-          <button type="submit" disabled={saving} className="btn btn--primary btn--lg" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <IconCheck size={16} /> {saving ? 'Menyimpan...' : 'Simpan Seluruh Pengaturan Terpusat'}
-          </button>
+          {/* Save Bar */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px' }}>
+            <button type="submit" disabled={saving} className="btn btn--primary btn--lg" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <IconCheck size={16} /> {saving ? 'Menyimpan...' : 'Simpan Identitas Sekolah'}
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* TAB 2: PENGATURAN AI ENGINE */}
+      {activeTab === 'ai' && (
+        <div>
+          {/* Information Banner */}
+          <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '16px', marginBottom: '20px' }}>
+            <h4 style={{ margin: '0 0 6px 0', fontSize: '0.95rem', color: '#166534', fontWeight: 700 }}>
+              Konfigurasi Model AI Engine
+            </h4>
+            <p style={{ margin: 0, fontSize: '0.85rem', color: '#15803d', lineHeight: 1.5 }}>
+              Pengaturan ini digunakan untuk menentukan model kecerdasan buatan (*AI Model*) yang dipakai oleh sistem untuk menyusun draf naskah laporan PKL, merapikan profil perusahaan, dan mengurai cerita kegiatan siswa.
+            </p>
+          </div>
+
+          {/* 1. Model AI Utama Sistem */}
+          <div style={sectionBoxStyle}>
+            <h3 style={sectionHeaderStyle}>
+              <IconSparkles size={20} color="var(--green-600)" /> Model AI Aktif Sistem
+            </h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--ink-soft)', marginTop: 0, marginBottom: '16px' }}>
+              Pilih model AI utama yang akan digunakan secara default saat membuat naskah laporan.
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
+              <select
+                value={selectedModel}
+                onChange={(e) => handleSelectActiveModel(e.target.value)}
+                className="form-input"
+                style={{ minWidth: '260px', fontWeight: 700, fontSize: '0.9rem', padding: '8px 12px' }}
+              >
+                {availableModels.map((m) => (
+                  <option key={m} value={m}>
+                    {m === 'deepseek-opencode' ? 'DeepSeek OpenCode' : m === 'gemini' ? 'Gemini (Port 20128)' : m}
+                  </option>
+                ))}
+              </select>
+              <span style={{ fontSize: '0.85rem', color: 'var(--green-700)', fontWeight: 600 }}>
+                Status: Model '{selectedModel}' Aktif
+              </span>
+            </div>
+          </div>
+
+          {/* 2. Tambah Model AI Baru */}
+          <div style={sectionBoxStyle}>
+            <h3 style={sectionHeaderStyle}>
+              <IconGear size={20} color="var(--green-600)" /> Tambah Model AI Baru
+            </h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--ink-soft)', marginTop: 0, marginBottom: '16px' }}>
+              Tambahkan ID model AI baru yang kompatibel dengan endpoint OpenAI API (contoh: <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: '4px' }}>gemini</code>, <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: '4px' }}>llama3</code>, <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: '4px' }}>gpt-4o-mini</code>).
+            </p>
+            <form onSubmit={handleAddNewModel} style={{ display: 'flex', gap: '10px', maxWidth: '520px', flexWrap: 'wrap' }}>
+              <input
+                type="text"
+                placeholder="Masukkan ID model AI (contoh: gemini)"
+                value={newModelName}
+                onChange={(e) => setNewModelName(e.target.value)}
+                className="form-input"
+                style={{ flex: 1, minWidth: '220px' }}
+              />
+              <button
+                type="submit"
+                disabled={addingModel || !newModelName.trim()}
+                className="btn btn--primary"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              >
+                <IconCheck size={16} /> {addingModel ? 'Menyimpan...' : 'Tambah Model'}
+              </button>
+            </form>
+
+            <div style={{ marginTop: '20px' }}>
+              <h4 style={{ margin: '0 0 10px 0', fontSize: '0.88rem', color: 'var(--ink)' }}>Daftar Model Terdaftar di Sistem:</h4>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {availableModels.map((m) => {
+                  const isActive = m === selectedModel
+                  return (
+                    <div
+                      key={m}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        fontSize: '0.82rem',
+                        fontWeight: 600,
+                        background: isActive ? '#dcfce7' : '#f1f5f9',
+                        border: isActive ? '1px solid #86efac' : '1px solid #cbd5e1',
+                        color: isActive ? '#166534' : '#475569',
+                      }}
+                    >
+                      {m === 'deepseek-opencode' ? 'DeepSeek OpenCode' : m === 'gemini' ? 'Gemini (Port 20128)' : m}
+                      {isActive && <span style={{ marginLeft: '6px', fontWeight: 800 }}>(Aktif)</span>}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* 3. Parameter Limit Token & Uji Koneksi */}
+          <div style={sectionBoxStyle}>
+            <h3 style={sectionHeaderStyle}>
+              <IconGear size={20} color="var(--green-600)" /> Parameter Limit Token &amp; Diagnostic Test
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+              <div>
+                <label style={labelStyle}>Max Output Tokens Per Request</label>
+                <input
+                  type="number"
+                  required
+                  value={config.ai_max_tokens_per_req}
+                  onChange={(e) => setConfig({ ...config, ai_max_tokens_per_req: parseInt(e.target.value) || 2048 })}
+                  className="form-input"
+                  style={{ width: '100%' }}
+                />
+              </div>
+
+              <div>
+                <label style={labelStyle}>Uji Koneksi AI Engine</label>
+                <button
+                  type="button"
+                  onClick={handleTestConnection}
+                  disabled={testingAi}
+                  className="btn btn--outline"
+                  style={{ marginTop: '4px', width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                >
+                  <IconSparkles size={16} /> {testingAi ? 'Menguji Koneksi...' : 'Jalankan Diagnostic Test AI'}
+                </button>
+              </div>
+            </div>
+
+            {aiTestResult && (
+              <div
+                style={{
+                  marginTop: '16px',
+                  padding: '12px 16px',
+                  borderRadius: '6px',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  background: aiTestResult.success ? '#f0fdf4' : '#fef2f2',
+                  border: aiTestResult.success ? '1px solid #bbf7d0' : '1px solid #fecaca',
+                  color: aiTestResult.success ? '#166534' : '#991b1b',
+                }}
+              >
+                {aiTestResult.success ? '✓' : '⚠️'} {aiTestResult.message}
+              </div>
+            )}
+          </div>
         </div>
-      </form>
+      )}
 
       {notice && (
         <NotificationModal
@@ -457,6 +701,6 @@ const labelStyle: React.CSSProperties = {
   display: 'block',
   fontSize: '0.85rem',
   fontWeight: 600,
-  color: 'var(--ink-soft)',
-  marginBottom: '4px',
+  color: 'var(--ink)',
+  marginBottom: '6px',
 }
