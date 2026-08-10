@@ -125,10 +125,12 @@ def scan_pdf_bab_pages(pdf_doc, total_pages: int, bab1_page: int) -> dict:
     p_babs = {}
     for p in range(1, total_pages + 1):
         txt = re.sub(r'\s+', ' ', pdf_doc[p - 1].get_text("text")).upper()
+        if 'DAFTAR ISI' in txt or 'DAFTAR GAMBAR' in txt or 'DAFTAR LAMPIRAN' in txt:
+            continue
         if p < bab1_page:
-            if 'PENGESAHAN' in txt and ('INDUSTRI' in txt or 'TELKOM' in txt or 'PERUSAHAAN' in txt) and 'peng_ind' not in p_babs:
+            if 'PENGESAHAN' in txt and 'peng_ind' not in p_babs:
                 p_babs['peng_ind'] = p
-            elif 'PENGESAHAN' in txt and ('SEKOLAH' in txt or 'SMK' in txt) and 'peng_sek' not in p_babs:
+            elif 'PENGESAHAN' in txt and 'peng_sek' not in p_babs:
                 p_babs['peng_sek'] = p
             elif 'IDENTITAS SISWA' in txt and 'id_siswa' not in p_babs:
                 p_babs['id_siswa'] = p
@@ -230,11 +232,18 @@ def verify_entry_in_pdf(pdf_doc, entry: dict, bab1_page: int, sec_front_start: i
                 search_range = range(p_babs.get('peng_ind', 3), p_babs.get('peng_sek', 4) + 1)
             else:
                 search_range = range(p_babs.get('peng_sek', 4), p_babs.get('id_siswa', 5) + 1)
+        elif title_upper.startswith('DARI '):
+            if pengesahan_idx_ref[0] <= 1:
+                search_range = range(p_babs.get('peng_ind', 3), p_babs.get('peng_sek', 4) + 1)
+            else:
+                search_range = range(p_babs.get('peng_sek', 4), p_babs.get('id_siswa', 5) + 1)
         elif 'IDENTITAS SISWA' in title_upper:
             search_range = range(p_babs.get('id_siswa', 5), p_babs.get('id_ind', 6) + 1)
         elif 'IDENTITAS INDUSTRI' in title_upper or 'IDENTITAS INSTANSI' in title_upper:
             search_range = range(p_babs.get('id_ind', 6), p_babs.get('kata_peng', 7) + 1)
         elif 'KATA PENGANTAR' in title_upper:
+            search_range = range(p_babs.get('kata_peng', 7), bab1_page)
+        elif 'DAFTAR GAMBAR' in title_upper or 'DAFTAR LAMPIRAN' in title_upper:
             search_range = range(p_babs.get('kata_peng', 7), bab1_page)
         else:
             search_range = range(1, bab1_page)
@@ -246,6 +255,9 @@ def verify_entry_in_pdf(pdf_doc, entry: dict, bab1_page: int, sec_front_start: i
         if p > total_pages or p < 1:
             continue
         page_text = re.sub(r'\s+', ' ', pdf_doc[p - 1].get_text("text")).upper()
+
+        if ('DAFTAR GAMBAR' in title_upper or 'DAFTAR LAMPIRAN' in title_upper) and 'DAFTAR ISI' in page_text:
+            continue
 
         if title_upper in page_text:
             found_page = p
@@ -324,6 +336,16 @@ def run_full_docx_accuracy_test():
         print("\n[3] Converting to PDF via LibreOffice...")
         soffice = shutil.which("soffice") or shutil.which("libreoffice")
         if not soffice:
+            for common_path in [
+                r"C:\Program Files\LibreOffice\program\soffice.exe",
+                r"C:\Program Files (x86)\LibreOffice\program\soffice.exe",
+                "/usr/bin/soffice",
+                "/usr/bin/libreoffice",
+            ]:
+                if os.path.exists(common_path):
+                    soffice = common_path
+                    break
+        if not soffice:
             print("  ERROR: soffice not found!")
             all_passed = False
             continue
@@ -348,8 +370,8 @@ def run_full_docx_accuracy_test():
         pdf_doc = fitz.open(pdf_path)
         total_pages = len(pdf_doc)
         bab1_page = find_bab1_page(pdf_doc, total_pages)
-        sec_front_start = 3
         p_babs = scan_pdf_bab_pages(pdf_doc, total_pages, bab1_page)
+        sec_front_start = p_babs.get('peng_ind', 3)
 
         print(f"  PDF pages: {total_pages}, BAB I at p.{bab1_page}")
         print(f"  Section map: {p_babs}")

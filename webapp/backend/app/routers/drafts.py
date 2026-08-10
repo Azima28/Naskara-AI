@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import datetime as dt
+import html
+import re
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
@@ -55,6 +57,17 @@ class DraftUpdate(BaseModel):
 # --------------------------------------------------------------------------- #
 #  Helpers                                                                     #
 # --------------------------------------------------------------------------- #
+def sanitize_title(title: str | None) -> str:
+    """Sanitize draft title against Stored XSS attacks using re.sub and html.escape."""
+    if not title:
+        return "Laporan PKL"
+    # Remove HTML/script tags completely
+    clean = re.sub(r'<[^>]*>', '', str(title))
+    # Escape HTML special characters (&, <, >, ", ')
+    escaped = html.escape(clean.strip())
+    return escaped[:255] if escaped else "Laporan PKL"
+
+
 def _fmt(dt_obj: dt.datetime | None) -> str:
     if dt_obj is None:
         return ""
@@ -94,7 +107,7 @@ def create_draft(payload: DraftCreate, current: User = Depends(get_current_user)
     empty = PklContext().model_dump(mode="json")
     draft = Draft(
         user_id=current.id,
-        title=payload.title,
+        title=sanitize_title(payload.title),
         data_json=empty,
     )
     db.add(draft)
@@ -122,7 +135,7 @@ def update_draft(draft_id: str, payload: DraftUpdate, current: User = Depends(ge
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Draft tidak ditemukan.")
 
     if payload.title is not None:
-        draft.title = payload.title
+        draft.title = sanitize_title(payload.title)
     if payload.status is not None:
         draft.status = payload.status
     if payload.data is not None:
