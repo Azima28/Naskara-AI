@@ -149,7 +149,8 @@ async def delete_asset(
     found_other_owner = False
 
     for fname in os.listdir(ASSETS_DIR):
-        if safe_asset_id in fname:
+        name_without_ext, _ = os.path.splitext(fname)
+        if name_without_ext.endswith(f"_{safe_asset_id}"):
             target_path = (ASSETS_DIR / fname).resolve()
             # Double check path stays strictly inside ASSETS_DIR
             if ASSETS_DIR.resolve() in target_path.parents:

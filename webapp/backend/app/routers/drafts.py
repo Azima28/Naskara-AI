@@ -58,14 +58,24 @@ class DraftUpdate(BaseModel):
 #  Helpers                                                                     #
 # --------------------------------------------------------------------------- #
 def sanitize_title(title: str | None) -> str:
-    """Sanitize draft title against Stored XSS attacks using re.sub and html.escape."""
+    """Sanitize draft title against Stored XSS attacks using multi-pass re.sub and html.escape."""
     if not title:
         return "Laporan PKL"
-    # Remove HTML/script tags completely
-    clean = re.sub(r'<[^>]*>', '', str(title))
-    # Escape HTML special characters (&, <, >, ", ')
-    escaped = html.escape(clean.strip())
-    return escaped[:255] if escaped else "Laporan PKL"
+
+    # Multi-pass HTML tag removal to prevent nested tag bypasses like <<script>script>
+    clean = str(title)
+    prev = None
+    while prev != clean:
+        prev = clean
+        clean = re.sub(r'<[^>]*?>', '', clean)
+
+    # Clean whitespace and truncate string length BEFORE escaping HTML entities
+    clean_stripped = clean.strip()[:255]
+    if not clean_stripped:
+        return "Laporan PKL"
+
+    # Escape special HTML characters (&, <, >, ", ')
+    return html.escape(clean_stripped)
 
 
 def _fmt(dt_obj: dt.datetime | None) -> str:
