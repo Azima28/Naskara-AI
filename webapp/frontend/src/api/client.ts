@@ -110,9 +110,17 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem('pkl-auth')
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('auth-unauthorized'))
+      const requestUrl = error.config?.url || ''
+      const isAuthRoute =
+        requestUrl.includes('/auth/login') ||
+        requestUrl.includes('/auth/register') ||
+        requestUrl.includes('/auth/logout')
+
+      if (!isAuthRoute) {
+        localStorage.removeItem('pkl-auth')
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('auth-unauthorized'))
+        }
       }
     }
     return Promise.reject(error)
