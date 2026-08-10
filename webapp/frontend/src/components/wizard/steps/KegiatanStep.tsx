@@ -41,7 +41,8 @@ export default function KegiatanStep({ ctx, set }: { ctx: PklContext; set: (p: P
     setParsing(true)
     setParseError('')
     try {
-      const result = await parseFullStory(cerita, ctx.siswa.jurusan_key)
+      const selectedModel = localStorage.getItem('naskara_selected_ai_model') || undefined
+      const result = await parseFullStory(cerita, ctx.siswa.jurusan_key, selectedModel)
       if (result.kegiatan && Array.isArray(result.kegiatan)) {
         // Merge: map AI output ke format Kegiatan[]
         const parsed: Kegiatan[] = result.kegiatan.map((k: any) => ({

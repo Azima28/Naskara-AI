@@ -3,6 +3,7 @@ import type { PklContext } from '@/types/pkl'
 import { draftSectionStream, updateDraft } from '@/api/client'
 import { IconCheck, IconAlert, IconSparkles, IconLightning } from '@/components/common/Icons'
 import { polishAcademicText, polishAcademicList } from '@/utils/textPolish'
+import { AiModelSelector } from '@/components/common/AiModelSelector'
 
 export interface MasterGenModalProps {
   isOpen: boolean
@@ -141,6 +142,14 @@ export default function MasterGenModal({
   const [streamText, setStreamText] = useState<string>('')
   const [isDoneAll, setIsDoneAll] = useState(false)
 
+  const [selectedModel, setSelectedModel] = useState<string>('')
+  const selectedModelRef = useRef<string>('')
+
+  const handleModelChange = (model: string) => {
+    setSelectedModel(model)
+    selectedModelRef.current = model
+  }
+
   const currentCtxRef = useRef<PklContext>({ ...ctx })
   const abortControllerRef = useRef<AbortController | null>(null)
   const streamBoxRef = useRef<HTMLDivElement | null>(null)
@@ -223,7 +232,8 @@ export default function MasterGenModal({
                 streamBoxRef.current.scrollTop = streamBoxRef.current.scrollHeight
               }
             },
-            abortControllerRef.current.signal
+            abortControllerRef.current.signal,
+            selectedModelRef.current
           ),
           timeoutPromise,
         ])
@@ -286,7 +296,8 @@ export default function MasterGenModal({
                 streamBoxRef.current.scrollTop = streamBoxRef.current.scrollHeight
               }
             },
-            abortControllerRef.current.signal
+            abortControllerRef.current.signal,
+            selectedModelRef.current
           ),
           timeoutPromise,
         ])
@@ -370,7 +381,8 @@ export default function MasterGenModal({
                 streamBoxRef.current.scrollTop = streamBoxRef.current.scrollHeight
               }
             },
-            abortControllerRef.current.signal
+            abortControllerRef.current.signal,
+            selectedModelRef.current
           ),
           timeoutPromise,
         ])
@@ -405,7 +417,8 @@ export default function MasterGenModal({
                 streamBoxRef.current.scrollTop = streamBoxRef.current.scrollHeight
               }
             },
-            abortControllerRef.current.signal
+            abortControllerRef.current.signal,
+            selectedModelRef.current
           ),
           timeoutPromise,
         ])
@@ -503,9 +516,12 @@ export default function MasterGenModal({
               <IconSparkles size={20} color="var(--green-700, #14614a)" />
             </span>
             <div style={{ flex: 1, minWidth: 0, boxSizing: 'border-box' }}>
-              <h3 style={{ margin: 0, fontSize: 'clamp(0.95rem, 3.5vw, 1.15rem)', color: 'var(--ink, #262521)', fontWeight: 700, fontFamily: 'var(--font-serif)', wordBreak: 'break-word', lineHeight: 1.25 }}>
-                Naskara AI Studio — Menyusun Laporan PKL
-              </h3>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <h3 style={{ margin: 0, fontSize: 'clamp(0.95rem, 3.5vw, 1.15rem)', color: 'var(--ink, #262521)', fontWeight: 700, fontFamily: 'var(--font-serif)', wordBreak: 'break-word', lineHeight: 1.25 }}>
+                  Naskara AI Studio — Menyusun Laporan PKL
+                </h3>
+                <AiModelSelector selectedModel={selectedModel} onModelChange={handleModelChange} />
+              </div>
               <p style={{ margin: '0.15rem 0 0', fontSize: 'clamp(0.75rem, 2.3vw, 0.82rem)', color: 'var(--ink-soft, #555)', wordBreak: 'break-word' }}>
                 AI sedang menyusun seluruh sub-bab &amp; memoles profil perusahaan secara akademis KBBI
               </p>

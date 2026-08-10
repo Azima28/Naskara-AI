@@ -10,6 +10,7 @@ from pydantic import BaseModel
 
 from typing import Any
 
+from ..config import settings
 from ..dependencies import get_current_user
 from ..models import User
 from ..ai.client import get_ai_provider
@@ -88,6 +89,7 @@ from pydantic import BaseModel, Field
 class DraftSectionRequest(BaseModel):
     section_key: str = Field(..., max_length=100)
     context_data: dict
+    model: str | None = Field(default=None, max_length=100)
 
 class DraftSectionOut(BaseModel):
     content: str
@@ -96,13 +98,62 @@ class DraftSectionOut(BaseModel):
 class ParseFullStoryRequest(BaseModel):
     cerita: str = Field(..., max_length=100000)
     jurusan_key: str = Field(default="", max_length=100)
+    model: str | None = Field(default=None, max_length=100)
 
 class RegenerateRequest(BaseModel):
     old_text: str = Field(..., max_length=100000)
     instruction: str = Field(..., max_length=5000)
+    model: str | None = Field(default=None, max_length=100)
 
 class EnhanceContextRequest(BaseModel):
     context_data: dict
+    model: str | None = Field(default=None, max_length=100)
+
+class SetActiveModelRequest(BaseModel):
+    model: str = Field(..., min_length=1, max_length=100)
+
+class AddModelRequest(BaseModel):
+    model: str = Field(..., min_length=1, max_length=100)
+
+@router.get("/models")
+async def get_models(user: User = Depends(get_current_user)):
+    """Mengembalikan daftar model AI yang tersedia dan model aktif default."""
+    return {
+        "available_models": settings.ai_available_models,
+        "active_model": settings.ai_model,
+    }
+
+@router.post("/models/active")
+async def set_active_model(
+    req: SetActiveModelRequest,
+    user: User = Depends(get_current_user)
+):
+    """Mengubah model AI aktif bawaan sistem."""
+    model_name = req.model.strip()
+    if model_name not in settings.ai_available_models:
+        settings.ai_available_models.append(model_name)
+    settings.ai_model = model_name
+    return {
+        "status": "success",
+        "message": f"Model AI aktif diubah menjadi '{model_name}'",
+        "active_model": settings.ai_model,
+        "available_models": settings.ai_available_models,
+    }
+
+@router.post("/models/add")
+async def add_model(
+    req: AddModelRequest,
+    user: User = Depends(get_current_user)
+):
+    """Menambahkan model AI baru ke daftar opsi."""
+    model_name = req.model.strip()
+    if model_name not in settings.ai_available_models:
+        settings.ai_available_models.append(model_name)
+    return {
+        "status": "success",
+        "message": f"Model AI '{model_name}' berhasil ditambahkan.",
+        "available_models": settings.ai_available_models,
+    }
 
 @router.post("/draft-section", response_model=DraftSectionOut)
 async def draft_section(
@@ -116,7 +167,7 @@ async def draft_section(
     """
     if not isinstance(req.context_data, dict) or len(str(req.context_data)) > 500_000:
         raise HTTPException(status_code=400, detail="Data konteks terlalu besar atau format tidak valid.")
-    provider = get_ai_provider()
+    provider = get_ai_provider(req.model)
     
     ctx = req.context_data
     siswa = ctx.get("siswa", {})
@@ -233,7 +284,7 @@ async def draft_section_stream(
     """Stream token/chunk respon AI secara realtime via Server-Sent Events (SSE)."""
     if not isinstance(req.context_data, dict) or len(str(req.context_data)) > 500_000:
         raise HTTPException(status_code=400, detail="Data konteks terlalu besar atau format tidak valid.")
-    provider = get_ai_provider()
+    provider = get_ai_provider(req.model)
 
     ctx = req.context_data
     siswa = ctx.get("siswa", {})
@@ -304,7 +355,7 @@ async def regenerate(
     user: User = Depends(get_current_user)
 ) -> dict[str, str]:
     """Edit/tulis ulang bagian laporan berdasarkan instruksi (Revisi AI)."""
-    provider = get_ai_provider()
+    provider = get_ai_provider(req.model)
     
     system_prompt = (
         "Kamu adalah editor laporan. Revisi teks berikut sesuai instruksi. "
@@ -322,7 +373,7 @@ async def parse_full_story(
     user: User = Depends(get_current_user)
 ) -> dict:
     """Menguraikan cerita bebas siswa menjadi seluruh field yang dibutuhkan secara komprehensif."""
-    provider = get_ai_provider()
+    provider = get_ai_provider(req.model)
     
     system_prompt = """Kamu adalah asisten pengurai data laporan PKL SMK.
 Tugasmu adalah mengubah cerita kegiatan PKL siswa menjadi struktur JSON yang lengkap.
@@ -391,7 +442,7 @@ async def enhance_context(
     """Merapikan data mentah PKL menggunakan AI secara global (ubah 'gatau' -> kalimat formal)."""
     if not isinstance(req.context_data, dict) or len(str(req.context_data)) > 500_000:
         raise HTTPException(status_code=400, detail="Data konteks terlalu besar atau format tidak valid.")
-    provider = get_ai_provider()
+    provider = get_ai_provider(req.model)
 
     ctx = req.context_data
     # Filter payload so we don't send huge non-text fields (images, kop, assets, config)

@@ -216,19 +216,35 @@ export const generateDocx = async (draftId: string): Promise<string> => {
 }
 
 // --------------------------------------------------------------------------- //
-//  AI Generation                                                              //
+//  AI Generation & Model Management                                           //
 // --------------------------------------------------------------------------- //
-export const draftSection = (sectionKey: string, contextData: PklContext) =>
+export interface AiModelsResponse {
+  available_models: string[]
+  active_model: string
+}
+
+export const getAiModels = () =>
+  api.get<AiModelsResponse>('/ai/models').then((r) => r.data)
+
+export const setActiveAiModel = (model: string) =>
+  api.post<{ status: string; active_model: string; available_models: string[] }>('/ai/models/active', { model }).then((r) => r.data)
+
+export const addAiModel = (model: string) =>
+  api.post<{ status: string; available_models: string[] }>('/ai/models/add', { model }).then((r) => r.data)
+
+export const draftSection = (sectionKey: string, contextData: PklContext, model?: string) =>
   api.post<{ content: string }>('/ai/draft-section', {
     section_key: sectionKey,
     context_data: contextData,
+    ...(model ? { model } : {}),
   }, { timeout: 120_000 }).then((r) => r.data)
 
 export async function draftSectionStream(
   sectionKey: string,
   contextData: PklContext,
   onChunk: (chunk: string) => void,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  model?: string
 ): Promise<string> {
   const rawAuth = localStorage.getItem('pkl-auth')
   let token = ''
@@ -250,13 +266,14 @@ export async function draftSectionStream(
       body: JSON.stringify({
         section_key: sectionKey,
         context_data: contextData,
+        ...(model ? { model } : {}),
       }),
       signal,
     })
 
     if (!response.ok || !response.body) {
       if (signal?.aborted) throw new Error('Aborted')
-      const fallback = await draftSection(sectionKey, contextData)
+      const fallback = await draftSection(sectionKey, contextData, model)
       if (signal?.aborted) throw new Error('Aborted')
       onChunk(fallback.content)
       return fallback.content
@@ -303,7 +320,7 @@ export async function draftSectionStream(
     }
 
     if (!fullText && !signal?.aborted) {
-      const fallback = await draftSection(sectionKey, contextData)
+      const fallback = await draftSection(sectionKey, contextData, model)
       if (signal?.aborted) throw new Error('Aborted')
       onChunk(fallback.content)
       return fallback.content
@@ -314,24 +331,32 @@ export async function draftSectionStream(
     if (signal?.aborted || err?.name === 'AbortError') {
       throw err
     }
-    const fallback = await draftSection(sectionKey, contextData)
+    const fallback = await draftSection(sectionKey, contextData, model)
     if (signal?.aborted) throw new Error('Aborted')
     onChunk(fallback.content)
     return fallback.content
   }
 }
 
-export const regenerateSection = (oldText: string, instruction: string) =>
+export const regenerateSection = (oldText: string, instruction: string, model?: string) =>
   api.post<{ content: string }>('/ai/regenerate', {
     old_text: oldText,
     instruction: instruction,
+    ...(model ? { model } : {}),
   }, { timeout: 120_000 }).then((r) => r.data)
 
-export const parseFullStory = (cerita: string, jurusanKey: string) =>
+export const parseFullStory = (cerita: string, jurusanKey: string, model?: string) =>
   api.post<{ kegiatan: any[], peralatan: any[], kendala: any[], pelajaran: any[], recommended_bab: string[] }>('/ai/parse-full-story', {
     cerita,
     jurusan_key: jurusanKey,
+    ...(model ? { model } : {}),
   }, { timeout: 120_000 }).then((r) => r.data)
+
+export const enhanceContext = (contextData: PklContext, model?: string) =>
+  api.post<{ context_data: PklContext }>('/ai/enhance-context', {
+    context_data: contextData,
+    ...(model ? { model } : {}),
+  }, { timeout: 180_000 }).then((r) => r.data)
 
 // --------------------------------------------------------------------------- //
 //  Asset Upload                                                                //

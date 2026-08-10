@@ -16,14 +16,16 @@ class DummyProvider(AIProvider):
         return "[DUMMY AI DRAFT]\n\nFitur AI sedang dinonaktifkan (ai_enabled=False)."
 
 
-def get_ai_provider() -> AIProvider:
+def get_ai_provider(model: str | None = None) -> AIProvider:
     if not settings.ai_enabled:
         return DummyProvider()
+
+    selected_model = model.strip() if model and model.strip() else settings.ai_model
 
     # Saat ini hanya support OpenAICompatibleProvider (yang bisa digunakan untuk 9router, LM Studio, Ollama, dll)
     return OpenAICompatibleProvider(
         base_url=settings.ai_base_url,
-        model=settings.ai_model,
+        model=selected_model,
         api_key=settings.ai_api_key,
         timeout=settings.ai_timeout,
     )

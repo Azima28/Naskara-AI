@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { getSystemSettings, updateSystemSettings } from '@/api/client'
 import type { SystemConfigData } from '@/types/api'
 import NotificationModal from '@/components/common/NotificationModal'
+import { AiModelSelector } from '@/components/common/AiModelSelector'
 import {
   IconBuilding,
   IconCheck,
@@ -388,17 +389,15 @@ export default function AdminSettingsPage() {
           <h3 style={sectionHeaderStyle}>
             <IconGear size={20} color="var(--green-600)" /> Parameter AI Engine &amp; Limit Token
           </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', alignItems: 'center' }}>
             <div>
-              <label style={labelStyle}>Default AI Model</label>
-              <input
-                type="text"
-                required
-                value={config.ai_model_default}
-                onChange={(e) => setConfig({ ...config, ai_model_default: e.target.value })}
-                className="form-input"
-                style={{ width: '100%' }}
-              />
+              <label style={labelStyle}>Model AI Utama Sistem</label>
+              <div style={{ marginTop: '4px' }}>
+                <AiModelSelector
+                  selectedModel={config.ai_model_default}
+                  onModelChange={(m) => setConfig({ ...config, ai_model_default: m })}
+                />
+              </div>
             </div>
             <div>
               <label style={labelStyle}>Max Output Tokens Per Request</label>

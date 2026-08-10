@@ -6,6 +6,7 @@ import DocumentOutline from '@/components/editor/DocumentOutline'
 import RequestionPanel, { type GenerateIssue, type Requestion } from '@/components/RequestionPanel'
 import NotificationModal from '@/components/common/NotificationModal'
 import MasterGenModal from '@/components/editor/MasterGenModal'
+import { AiModelSelector } from '@/components/common/AiModelSelector'
 import type { PklContext } from '@/types/pkl'
 import { emptyContext } from '@/types/pkl'
 import { IconDocument, IconDownload, IconAlert, IconPencil, IconCheck } from '@/components/common/Icons'
@@ -370,11 +371,12 @@ function EditorInner() {
           )}
         </div>
 
-        {/* Row 2: Document Title */}
-        <div style={{ marginBottom: '0.65rem', width: '100%', minWidth: 0, boxSizing: 'border-box' }}>
-          <h1 style={{ fontSize: 'clamp(0.95rem, 3.6vw, 1.28rem)', margin: 0, fontWeight: 700, color: 'var(--ink, #262521)', lineHeight: 1.35, wordBreak: 'break-word', width: '100%', minWidth: 0, boxSizing: 'border-box' }}>
+        {/* Row 2: Document Title & AI Model Selector */}
+        <div style={{ marginBottom: '0.65rem', width: '100%', minWidth: 0, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <h1 style={{ fontSize: 'clamp(0.95rem, 3.6vw, 1.28rem)', margin: 0, fontWeight: 700, color: 'var(--ink, #262521)', lineHeight: 1.35, wordBreak: 'break-word', flex: 1, minWidth: 0, boxSizing: 'border-box' }}>
             {title || 'Review & Edit Laporan PKL'}
           </h1>
+          <AiModelSelector />
         </div>
 
         {/* Row 3: Simpan Draf Button */}

@@ -279,6 +279,7 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
     }, 1000)
 
     try {
+      const selectedModel = localStorage.getItem('naskara_selected_ai_model') || undefined
       const resultText = await draftSectionStream(
         item.key,
         ctx,
@@ -289,7 +290,8 @@ export default function ProfilPolishModal({ isOpen, ctx, onComplete, onClose }: 
           // Enqueue characters into typewriter stream queue
           charQueueRef.current.push(...chunk.split(''))
         },
-        abortControllerRef.current.signal
+        abortControllerRef.current.signal,
+        selectedModel
       )
 
       if (heartbeatIntervalRef.current) {

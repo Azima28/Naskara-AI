@@ -29,7 +29,8 @@ export default function CeritaStep({ ctx, set }: { ctx: PklContext; set: (p: Par
     setSuccess(false)
 
     try {
-      const res = await parseFullStory(cerita, ctx.siswa.jurusan_key || 'lainnya')
+      const selectedModel = localStorage.getItem('naskara_selected_ai_model') || undefined
+      const res = await parseFullStory(cerita, ctx.siswa.jurusan_key || 'lainnya', selectedModel)
       
       // Update ctx dengan hasil AI
       set({

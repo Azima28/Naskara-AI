@@ -57,6 +57,7 @@ class Settings(BaseSettings):
     ai_enabled: bool = True
     ai_base_url: str = "http://host.docker.internal:20128/v1"
     ai_model: str = "deepseek-opencode"
+    ai_available_models: list[str] = ["deepseek-opencode", "gemini"]
     ai_api_key: str = "not-needed"
     ai_timeout: int = 120
 
