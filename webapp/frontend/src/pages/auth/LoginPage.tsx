@@ -18,7 +18,7 @@ export default function LoginPage() {
   useEffect(() => {
     if (token && user) {
       const role = user.role || 'siswa'
-      if (role === 'admin' || role === 'guru') {
+      if (role === 'admin') {
         nav('/admin', { replace: true })
       } else {
         nav('/dashboard', { replace: true })

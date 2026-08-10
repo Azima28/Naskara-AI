@@ -102,7 +102,7 @@ export default function PublicNavbar() {
           <div className="public-nav__desktop-actions">
             {token && user ? (
               <div className="public-nav__user-group">
-                {(user.role === 'admin' || user.role === 'guru') && (
+                {user.role === 'admin' && (
                   <Link to="/admin" className="btn-sm btn-outline" style={{ borderColor: 'var(--red-600, #dc2626)', color: 'var(--red-600, #dc2626)' }}>
                     🛡️ Admin Panel
                   </Link>

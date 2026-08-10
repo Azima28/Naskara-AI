@@ -93,7 +93,7 @@ export const useAuth = create<AuthState>((set, get) => ({
   },
 
   isAdmin: () => get().user?.role === 'admin',
-  isStaff: () => get().user?.role === 'admin' || get().user?.role === 'guru',
+  isStaff: () => get().user?.role === 'admin',
 }))
 
 if (typeof window !== 'undefined') {

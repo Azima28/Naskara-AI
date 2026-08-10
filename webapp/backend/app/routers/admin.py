@@ -54,11 +54,11 @@ class UserCreateIn(BaseModel):
     email: EmailStr
     name: str = Field(..., max_length=255)
     password: str = Field(min_length=8, max_length=128)
-    role: str = Field(default="siswa", pattern="^(admin|guru|siswa)$")
+    role: str = Field(default="siswa", pattern="^(admin|siswa)$")
 
 
 class UserRoleUpdateIn(BaseModel):
-    role: str = Field(..., pattern="^(admin|guru|siswa)$")
+    role: str = Field(..., pattern="^(admin|siswa)$")
 
 
 class UserStatusUpdateIn(BaseModel):
@@ -116,7 +116,6 @@ def get_dashboard_stats(
     total_users = db.query(func.count(User.id)).scalar() or 0
     users_by_role = {
         "admin": db.query(func.count(User.id)).filter(User.role == "admin").scalar() or 0,
-        "guru": db.query(func.count(User.id)).filter(User.role == "guru").scalar() or 0,
         "siswa": db.query(func.count(User.id)).filter(User.role == "siswa").scalar() or 0,
     }
 

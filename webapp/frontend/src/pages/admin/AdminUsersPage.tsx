@@ -136,7 +136,7 @@ export default function AdminUsersPage() {
             <IconUsers size={24} color="var(--green-600)" /> Manajemen Pengguna ({total} User) &amp; Otorisasi RBAC
           </h1>
           <p style={{ color: 'var(--ink-soft)', margin: '4px 0 0 0', fontSize: '0.9rem' }}>
-            Kelola daftar akun pengguna, penetapan peran (Admin, Guru, Siswa), reset password, dan status aktif.
+            Kelola daftar akun pengguna, penetapan peran (Admin, Siswa), reset password, dan status aktif.
           </p>
         </div>
         <button onClick={() => setShowAddModal(true)} className="btn btn--primary" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -157,7 +157,6 @@ export default function AdminUsersPage() {
         <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="form-input" style={{ width: '180px' }}>
           <option value="">Semua Role</option>
           <option value="siswa">Siswa</option>
-          <option value="guru">Guru</option>
           <option value="admin">Admin</option>
         </select>
       </div>
@@ -206,12 +205,11 @@ export default function AdminUsersPage() {
                         fontSize: '0.8rem',
                         fontWeight: 600,
                         border: '1px solid var(--line)',
-                        background: u.role === 'admin' ? 'var(--red-100, #fee2e2)' : u.role === 'guru' ? 'var(--blue-100, #dbeafe)' : 'var(--green-100, #dcfce7)',
-                        color: u.role === 'admin' ? 'var(--red-600, #dc2626)' : u.role === 'guru' ? 'var(--blue-700, #1d4ed8)' : 'var(--green-800, #166534)',
+                        background: u.role === 'admin' ? 'var(--red-100, #fee2e2)' : 'var(--green-100, #dcfce7)',
+                        color: u.role === 'admin' ? 'var(--red-600, #dc2626)' : 'var(--green-800, #166534)',
                       }}
                     >
                       <option value="siswa">Siswa</option>
-                      <option value="guru">Guru</option>
                       <option value="admin">Admin</option>
                     </select>
                   </td>
@@ -317,7 +315,6 @@ export default function AdminUsersPage() {
                   style={{ width: '100%' }}
                 >
                   <option value="siswa">Siswa</option>
-                  <option value="guru">Guru</option>
                   <option value="admin">Admin</option>
                 </select>
               </div>

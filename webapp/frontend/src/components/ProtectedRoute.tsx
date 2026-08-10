@@ -26,7 +26,7 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
   if (allowedRoles && allowedRoles.length > 0) {
     const userRole = user.role || 'siswa'
     if (!allowedRoles.includes(userRole)) {
-      const fallbackTarget = (userRole === 'admin' || userRole === 'guru') ? '/admin' : '/dashboard'
+      const fallbackTarget = userRole === 'admin' ? '/admin' : '/dashboard'
       if (location.pathname === fallbackTarget) {
         return <Navigate to="/dashboard" replace />
       }

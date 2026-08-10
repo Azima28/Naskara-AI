@@ -126,7 +126,7 @@ function DashboardInner() {
           </Link>
 
           <div className="dash-header__user">
-            {(user?.role === 'admin' || user?.role === 'guru') && (
+            {user?.role === 'admin' && (
               <Link to="/admin" className="btn-sm btn-outline" style={{ borderColor: 'var(--red-600, #dc2626)', color: 'var(--red-600, #dc2626)', marginRight: '8px' }}>
                 🛡️ Panel Admin
               </Link>
@@ -135,7 +135,7 @@ function DashboardInner() {
               <div className="user-avatar">{user?.name ? user.name.charAt(0).toUpperCase() : 'S'}</div>
               <div className="user-info">
                 <span className="user-name">{user?.name || user?.email}</span>
-                <span className="user-role">{user?.role === 'admin' ? 'Administrator' : user?.role === 'guru' ? 'Guru Pembimbing' : 'Siswa Vokasi'}</span>
+                <span className="user-role">{user?.role === 'admin' ? 'Administrator' : 'Siswa Vokasi'}</span>
               </div>
             </div>
             <button

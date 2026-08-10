@@ -70,4 +70,4 @@ def require_roles(*allowed_roles: str):
 
 
 require_admin = require_roles("admin")
-require_staff = require_roles("admin", "guru")
+require_staff = require_roles("admin")

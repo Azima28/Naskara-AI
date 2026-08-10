@@ -1,7 +1,7 @@
 /** Response types — mirror backend routers (auth, drafts, validate). */
 
 // Auth
-export type UserRole = 'admin' | 'guru' | 'siswa'
+export type UserRole = 'admin' | 'siswa'
 
 export interface UserOut {
   id: string
@@ -21,7 +21,7 @@ export interface TokenOut {
 export interface AdminStats {
   users: {
     total: number
-    by_role: { admin: number; guru: number; siswa: number }
+    by_role: { admin: number; siswa: number }
   }
   drafts: {
     total: number

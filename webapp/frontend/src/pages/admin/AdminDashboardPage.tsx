@@ -75,7 +75,7 @@ export default function AdminDashboardPage() {
             <span style={badgeStyle}>{stats?.users.total || 0}</span>
           </div>
           <div style={{ fontSize: '0.85rem', color: 'var(--ink-soft)', marginTop: '12px' }}>
-            Siswa: <strong>{stats?.users.by_role.siswa || 0}</strong> | Guru: <strong>{stats?.users.by_role.guru || 0}</strong> | Admin: <strong>{stats?.users.by_role.admin || 0}</strong>
+            Siswa: <strong>{stats?.users.by_role.siswa || 0}</strong> | Admin: <strong>{stats?.users.by_role.admin || 0}</strong>
           </div>
         </div>
 
