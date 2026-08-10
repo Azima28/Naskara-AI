@@ -590,7 +590,7 @@ def get_system_health_detail(
     admin: User = Depends(require_admin),
 ) -> dict[str, Any]:
     """Pemeriksaan diagnostik mendalam untuk environment & binary pendukung."""
-    # Check LibreOffice executable
+    # Check LibreOffice executable status (without exposing full local filesystem path)
     soffice_path = shutil.which("soffice") or shutil.which("libreoffice")
 
     # Disk usage
@@ -598,10 +598,8 @@ def get_system_health_detail(
 
     return {
         "status": "healthy",
-        "python_version": sys.version,
-        "os_platform": sys.platform,
+        "python_version": sys.version.split()[0] if sys.version else "3.x",
         "libreoffice_available": bool(soffice_path),
-        "libreoffice_path": soffice_path or "Not Found (Falling back to python-docx page estimate)",
         "disk": {
             "total_gb": round(disk_total / (1024**3), 2),
             "used_gb": round(disk_used / (1024**3), 2),
@@ -610,7 +608,6 @@ def get_system_health_detail(
         "env_settings": {
             "environment": settings.environment,
             "ai_enabled": settings.ai_enabled,
-            "ai_base_url": settings.ai_base_url,
             "ai_model": settings.ai_model,
         },
     }

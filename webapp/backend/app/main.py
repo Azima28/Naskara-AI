@@ -21,20 +21,6 @@ async def lifespan(app: FastAPI):
     ensure_runtime_dirs()
     init_db()
 
-    # Auto-seed initial demo accounts & 100% complete simulation draft if database is fresh (development only)
-    is_prod = settings.environment.lower() in ("production", "prod")
-    if not is_prod:
-        try:
-            import sys
-            from pathlib import Path
-            backend_dir = Path(__file__).resolve().parent.parent
-            if str(backend_dir) not in sys.path:
-                sys.path.insert(0, str(backend_dir))
-            from seed_siswa import seed
-            seed()
-        except Exception as e:
-            print(f"⚠️ Auto-seed status: {e}")
-
     is_prod = settings.environment.lower() in ("production", "prod")
     is_weak = settings.secret_key in INSECURE_SECRET_KEYS or len(settings.secret_key) < 32
 
@@ -108,10 +94,39 @@ app.include_router(ai.router)
 app.include_router(assets.router)
 app.include_router(admin.router)
 
-# File upload (foto lampiran, logo, dll) disajikan sebagai file statis agar
-# frontend bisa menampilkan pratinjau gambarnya.
+from pathlib import Path
+from starlette.responses import Response, FileResponse
+
+ALLOWED_STATIC_IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp"}
+
+class SecuredStaticFiles(StaticFiles):
+    """StaticFiles wrapper hardened against path traversal and non-image payload execution."""
+
+    async def get_response(self, path: str, scope) -> Response:
+        resolved_uploads = Path(self.directory).resolve()
+        try:
+            target = (resolved_uploads / path).resolve()
+        except Exception:
+            return Response("Forbidden", status_code=403)
+
+        # Prevent path traversal
+        if resolved_uploads not in target.parents and target != resolved_uploads:
+            return Response("Forbidden", status_code=403)
+
+        # Restrict serving strictly to allowed image file extensions
+        if target.suffix.lower() not in ALLOWED_STATIC_IMAGE_EXTENSIONS:
+            return Response("Forbidden: Only image assets are served publicly", status_code=403)
+
+        response = await super().get_response(path, scope)
+        if isinstance(response, FileResponse):
+            response.headers["X-Content-Type-Options"] = "nosniff"
+            response.headers["X-Frame-Options"] = "DENY"
+            response.headers["Content-Security-Policy"] = "default-src 'none'; img-src 'self' data: blob:;"
+        return response
+
+# File upload (foto lampiran, logo, dll) disajikan sebagai file statis yang telah diamankan
 ensure_runtime_dirs()
-app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
+app.mount("/uploads", SecuredStaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
 
 @app.get("/health")

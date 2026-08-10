@@ -96,13 +96,13 @@ class DraftSectionOut(BaseModel):
     warnings: list[str] = []
 
 class ParseFullStoryRequest(BaseModel):
-    cerita: str = Field(..., max_length=100000)
+    cerita: str = Field(..., max_length=20000)
     jurusan_key: str = Field(default="", max_length=100)
     model: str | None = Field(default=None, max_length=100)
 
 class RegenerateRequest(BaseModel):
-    old_text: str = Field(..., max_length=100000)
-    instruction: str = Field(..., max_length=5000)
+    old_text: str = Field(..., max_length=20000)
+    instruction: str = Field(..., max_length=2000)
     model: str | None = Field(default=None, max_length=100)
 
 class EnhanceContextRequest(BaseModel):
@@ -165,8 +165,8 @@ async def draft_section(
     Validasi output AI sebelum dikembalikan ke frontend.
     Auto-retry 1x jika validasi gagal dengan sistem prompt lebih ketat.
     """
-    if not isinstance(req.context_data, dict) or len(str(req.context_data)) > 500_000:
-        raise HTTPException(status_code=400, detail="Data konteks terlalu besar atau format tidak valid.")
+    if not isinstance(req.context_data, dict) or len(str(req.context_data)) > 100_000:
+        raise HTTPException(status_code=400, detail="Data konteks terlalu besar (maksimal 100KB) atau format tidak valid.")
     provider = get_ai_provider(req.model)
     
     ctx = req.context_data
@@ -282,8 +282,8 @@ async def draft_section_stream(
     user: User = Depends(get_current_user)
 ):
     """Stream token/chunk respon AI secara realtime via Server-Sent Events (SSE)."""
-    if not isinstance(req.context_data, dict) or len(str(req.context_data)) > 500_000:
-        raise HTTPException(status_code=400, detail="Data konteks terlalu besar atau format tidak valid.")
+    if not isinstance(req.context_data, dict) or len(str(req.context_data)) > 100_000:
+        raise HTTPException(status_code=400, detail="Data konteks terlalu besar (maksimal 100KB) atau format tidak valid.")
     provider = get_ai_provider(req.model)
 
     ctx = req.context_data
@@ -440,8 +440,8 @@ async def enhance_context(
     user: User = Depends(get_current_user)
 ) -> dict:
     """Merapikan data mentah PKL menggunakan AI secara global (ubah 'gatau' -> kalimat formal)."""
-    if not isinstance(req.context_data, dict) or len(str(req.context_data)) > 500_000:
-        raise HTTPException(status_code=400, detail="Data konteks terlalu besar atau format tidak valid.")
+    if not isinstance(req.context_data, dict) or len(str(req.context_data)) > 100_000:
+        raise HTTPException(status_code=400, detail="Data konteks terlalu besar (maksimal 100KB) atau format tidak valid.")
     provider = get_ai_provider(req.model)
 
     ctx = req.context_data

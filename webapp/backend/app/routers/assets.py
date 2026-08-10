@@ -5,7 +5,9 @@ Upload gambar/file untuk laporan PKL (logo, foto dokumentasi, dll).
 from __future__ import annotations
 
 import os
+import re
 import uuid
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel
@@ -27,6 +29,29 @@ class AssetInfo(BaseModel):
     type: str
 
 
+def validate_image_magic_bytes(contents: bytes, ext: str) -> None:
+    """Verifikasi bahwa file byte benar-benar gambar valid berdasarkan magic bytes header."""
+    if len(contents) < 12:
+        raise HTTPException(status_code=400, detail="File gambar terlalu kecil atau rusak.")
+
+    header = contents[:12]
+    if ext in ('.jpg', '.jpeg'):
+        if not header.startswith(b'\xff\xd8\xff'):
+            raise HTTPException(status_code=400, detail="File JPEG/JPG tidak valid (Magic bytes mismatch).")
+    elif ext == '.png':
+        if not header.startswith(b'\x89PNG\r\n\x1a\n'):
+            raise HTTPException(status_code=400, detail="File PNG tidak valid (Magic bytes mismatch).")
+    elif ext == '.gif':
+        if not (header.startswith(b'GIF87a') or header.startswith(b'GIF89a')):
+            raise HTTPException(status_code=400, detail="File GIF tidak valid (Magic bytes mismatch).")
+    elif ext == '.webp':
+        if not (header.startswith(b'RIFF') and header[8:12] == b'WEBP'):
+            raise HTTPException(status_code=400, detail="File WEBP tidak valid (Magic bytes mismatch).")
+    elif ext == '.bmp':
+        if not header.startswith(b'BM'):
+            raise HTTPException(status_code=400, detail="File BMP tidak valid (Magic bytes mismatch).")
+
+
 @router.post("/upload", response_model=AssetInfo)
 async def upload_asset(
     file: UploadFile = File(...),
@@ -37,9 +62,13 @@ async def upload_asset(
     if not file.filename:
         raise HTTPException(status_code=400, detail="Nama file tidak boleh kosong.")
 
+    # Sanitize original filename to prevent Path Traversal
+    raw_filename = os.path.basename(file.filename).replace("\0", "").strip()
+    if not raw_filename or ".." in raw_filename or "/" in raw_filename or "\\" in raw_filename:
+        raise HTTPException(status_code=400, detail="Nama file tidak valid.")
+
     # Validate extension
-    _, ext = os.path.splitext(file.filename)
-    ext = ext.lower()
+    ext = Path(raw_filename).suffix.lower()
     if ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(
             status_code=400,
@@ -51,6 +80,9 @@ async def upload_asset(
     if len(contents) > MAX_FILE_SIZE:
         raise HTTPException(status_code=400, detail="Ukuran file terlalu besar (maks 10MB).")
 
+    # Validate Magic Bytes (File Signature)
+    validate_image_magic_bytes(contents, ext)
+
     # Generate unique filename with user ID owner scoping
     asset_id = f"A-{uuid.uuid4().hex[:8]}"
     safe_name = f"u{user.id}_{asset_id}{ext}"
@@ -58,15 +90,18 @@ async def upload_asset(
     # Ensure assets directory exists
     ASSETS_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Save file
-    filepath = ASSETS_DIR / safe_name
+    # Save file securely & verify path stays inside ASSETS_DIR
+    filepath = (ASSETS_DIR / safe_name).resolve()
+    if ASSETS_DIR.resolve() not in filepath.parents:
+        raise HTTPException(status_code=400, detail="Jalur file tidak valid (Path Traversal).")
+
     with open(filepath, "wb") as f:
         f.write(contents)
 
     return AssetInfo(
         id=asset_id,
         filename=safe_name,
-        original_name=file.filename,
+        original_name=raw_filename,
         type=type,
     )
 
@@ -85,7 +120,6 @@ async def list_assets(
         if fname.startswith(owner_prefix):
             _, ext = os.path.splitext(fname)
             if ext.lower() in ALLOWED_EXTENSIONS:
-                # Remove owner prefix and extension to get asset_id
                 name_without_prefix = fname[len(owner_prefix):]
                 asset_id = os.path.splitext(name_without_prefix)[0]
                 result.append(AssetInfo(
@@ -107,8 +141,8 @@ async def delete_asset(
         raise HTTPException(status_code=404, detail="Asset tidak ditemukan.")
 
     # Sanitize asset_id to prevent Path Traversal
-    safe_asset_id = os.path.basename(asset_id).strip()
-    if not safe_asset_id or ".." in safe_asset_id or "/" in safe_asset_id or "\\" in safe_asset_id:
+    safe_asset_id = os.path.basename(asset_id).replace("\0", "").strip()
+    if not safe_asset_id or not re.match(r'^[A-Za-z0-9\-]+$', safe_asset_id):
         raise HTTPException(status_code=400, detail="Asset ID tidak valid.")
 
     owner_prefix = f"u{user.id}_"
@@ -117,7 +151,7 @@ async def delete_asset(
     for fname in os.listdir(ASSETS_DIR):
         if safe_asset_id in fname:
             target_path = (ASSETS_DIR / fname).resolve()
-            # Double check path stays inside ASSETS_DIR
+            # Double check path stays strictly inside ASSETS_DIR
             if ASSETS_DIR.resolve() in target_path.parents:
                 if fname.startswith(owner_prefix):
                     target_path.unlink()
