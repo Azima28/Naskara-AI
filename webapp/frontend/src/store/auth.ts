@@ -94,6 +94,7 @@ export const useAuth = create<AuthState>((set, get) => ({
   },
 
   logout: () => {
+    api.logoutApi()
     api.setAuthHeader(null)
     localStorage.removeItem(STORAGE_KEY)
     set({ token: null, user: null, initialized: true })

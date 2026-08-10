@@ -135,6 +135,9 @@ export const register = (email: string, name: string, password: string) =>
 export const login = (email: string, password: string) =>
   api.post<TokenOut>('/auth/login', { email, password }).then((r) => r.data)
 
+export const logoutApi = () =>
+  api.post<{ status: string }>('/auth/logout').then((r) => r.data).catch(() => {})
+
 export const getMe = () => api.get<UserOut>('/auth/me').then((r) => r.data)
 
 // --------------------------------------------------------------------------- //
