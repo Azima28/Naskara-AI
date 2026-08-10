@@ -9,9 +9,9 @@ services:
     environment:
       - ENVIRONMENT=${ENVIRONMENT:-production}
       - DATABASE_URL=sqlite:////app/webapp/backend/data/pkl_reports.db
-      - SECRET_KEY=${SECRET_KEY:-}
+      - SECRET_KEY=${SECRET_KEY:-naskara-prod-secret-key-smkn4-bandarlampung-2026-fixed-secure-key-64chars-prod}
       - AI_ENABLED=${AI_ENABLED:-true}
-      - AI_BASE_URL=${AI_BASE_URL:-http://host.docker.internal:20128/v1}
+      - AI_BASE_URL=${AI_BASE_URL:-http://127.0.0.1:20128/v1}
       - AI_MODEL=${AI_MODEL:-deepseek-opencode}
       - AI_API_KEY=${AI_API_KEY:-not-needed}
     volumes:

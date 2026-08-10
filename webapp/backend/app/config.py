@@ -49,7 +49,7 @@ class Settings(BaseSettings):
     database_url: str = f"sqlite:///{(BACKEND_DIR / 'pkl_reports.db').as_posix()}"
 
     # Security
-    secret_key: str = "ganti-saya-jadi-string-acak-panjang"
+    secret_key: str = "naskara-prod-secret-key-smkn4-bandarlampung-2026-fixed-secure-key-64chars-prod"
     access_token_expire_minutes: int = 60 * 24 * 7  # 7 hari
     enable_rate_limit: bool = True
 
