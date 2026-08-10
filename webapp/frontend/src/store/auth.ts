@@ -40,19 +40,27 @@ export const useAuth = create<AuthState>((set, get) => ({
     try {
       const { token, user } = JSON.parse(raw)
       if (token && user) {
+        // Set header Authorization & X-Access-Token secara langsung ke Axios
         api.setAuthHeader(token)
         set({ token, user, initialized: true })
+
+        // Refresh profil user dari backend di background (tapi jangan logout jika hanya kendala jaringan)
         try {
           const freshUser = await api.getMe()
-          if (freshUser) {
+          if (freshUser && freshUser.id) {
             set({ user: freshUser, initialized: true })
             localStorage.setItem(STORAGE_KEY, JSON.stringify({ token, user: freshUser }))
           }
-        } catch {
-          // Token kedaluwarsa saat restore -> logout
-          api.setAuthHeader(null)
-          localStorage.removeItem(STORAGE_KEY)
-          set({ token: null, user: null, initialized: true })
+        } catch (err: any) {
+          // Hanya hapus sesi jika backend secara eksplisit mengembalikan HTTP 401 (token benar-benar expired/invalid)
+          if (err?.response?.status === 401) {
+            console.warn('[Auth Restore] Sesi kedaluwarsa (401 Unauthorized), melakukan logout.')
+            api.setAuthHeader(null)
+            localStorage.removeItem(STORAGE_KEY)
+            set({ token: null, user: null, initialized: true })
+          } else {
+            console.warn('[Auth Restore] Gagal memperbarui profil di background, menggunakan sesi terarsip:', err?.message)
+          }
         }
       } else {
         api.setAuthHeader(null)
