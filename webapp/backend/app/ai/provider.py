@@ -29,18 +29,17 @@ class OpenAICompatibleProvider(AIProvider):
         self.api_key = api_key
         self.timeout = timeout
 
-        # Generate candidate base_urls for Docker-to-Host fallback
+        # Generate candidate base_urls for dynamic Docker-Host & Native loopback fallbacks
         self.candidate_urls = [self.base_url]
-        if "host.docker.internal" in self.base_url:
-            port = "20128"
-            if ":" in self.base_url.split("//")[-1]:
-                port = self.base_url.split(":")[-1].split("/")[0]
-            path = "/v1" if self.base_url.endswith("/v1") else ""
+        port = "20128"
+        if ":" in self.base_url.split("//")[-1]:
+            port = self.base_url.split(":")[-1].split("/")[0]
+        path = "/v1" if self.base_url.endswith("/v1") else ""
 
-            for host_ip in ["172.17.0.1", "172.18.0.1", "10.0.75.1", "127.0.0.1", "localhost"]:
-                candidate = f"http://{host_ip}:{port}{path}"
-                if candidate not in self.candidate_urls:
-                    self.candidate_urls.append(candidate)
+        for host_ip in ["127.0.0.1", "localhost", "host.docker.internal", "172.17.0.1", "172.18.0.1", "10.0.75.1"]:
+            candidate = f"http://{host_ip}:{port}{path}"
+            if candidate not in self.candidate_urls:
+                self.candidate_urls.append(candidate)
 
         headers = {}
         if self.api_key and self.api_key.strip():
@@ -96,8 +95,8 @@ class OpenAICompatibleProvider(AIProvider):
                         data = json.loads(text)
                         return data["choices"][0]["message"]["content"]
 
-                except (httpx.ConnectError, httpx.ConnectTimeout) as e:
-                    print(f"[AI Provider Unreachable] {endpoint} unreachable (Attempt {attempt}): {e}")
+                except (httpx.ConnectError, httpx.ConnectTimeout, httpx.RequestError, httpx.TransportError) as e:
+                    print(f"[AI Provider Unreachable/DNS Error] {endpoint} unreachable (Attempt {attempt}): {e}")
                     last_error = e
                     # Break loop to try next candidate IP immediately
                     break

@@ -74,8 +74,10 @@ export const api = axios.create({
 export function setAuthHeader(token: string | null) {
   if (token) {
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`
+    api.defaults.headers.common['X-Access-Token'] = token
   } else {
     delete api.defaults.headers.common['Authorization']
+    delete api.defaults.headers.common['X-Access-Token']
   }
 }
 
@@ -87,12 +89,14 @@ api.interceptors.request.use((config) => {
   if (raw) {
     try {
       const { token } = JSON.parse(raw)
-      if (token) {
-        if (config.headers && typeof (config.headers as any).set === 'function') {
+      if (token && config.headers) {
+        if (typeof (config.headers as any).set === 'function') {
           ;(config.headers as any).set('Authorization', `Bearer ${token}`)
-        } else if (config.headers) {
+          ;(config.headers as any).set('X-Access-Token', token)
+        } else {
           config.headers['Authorization'] = `Bearer ${token}`
           config.headers.Authorization = `Bearer ${token}`
+          config.headers['X-Access-Token'] = token
         }
       }
     } catch {
@@ -280,7 +284,7 @@ export async function draftSectionStream(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(token ? { Authorization: `Bearer ${token}`, 'X-Access-Token': token } : {}),
       },
       body: JSON.stringify({
         section_key: sectionKey,

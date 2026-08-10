@@ -26,15 +26,29 @@ def get_current_user(
     token: str | None = None
     if creds and creds.credentials:
         token = creds.credentials
-    else:
-        # Fallback to direct raw request headers check
+
+    if not token:
+        # Fallback to direct raw request headers check (Authorization / authorization)
         auth_header = request.headers.get("Authorization") or request.headers.get("authorization")
         if auth_header and auth_header.lower().startswith("bearer "):
             token = auth_header[7:].strip()
 
     if not token:
-        # Fallback to cookie
+        # Fallback to X-Access-Token / X-Authorization headers (bypasses proxy stripping)
+        token = (
+            request.headers.get("X-Access-Token")
+            or request.headers.get("x-access-token")
+            or request.headers.get("X-Authorization")
+            or request.headers.get("x-authorization")
+        )
+
+    if not token:
+        # Fallback to HttpOnly cookie
         token = request.cookies.get("access_token")
+
+    if not token:
+        # Fallback to URL query parameter
+        token = request.query_params.get("token")
 
     if not token:
         raise HTTPException(

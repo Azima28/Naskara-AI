@@ -55,7 +55,7 @@ class Settings(BaseSettings):
 
     # AI provider (9router / OpenCode / OpenAI-compatible port 20128)
     ai_enabled: bool = True
-    ai_base_url: str = "http://host.docker.internal:20128/v1"
+    ai_base_url: str = "http://127.0.0.1:20128/v1"
     ai_model: str = "deepseek-opencode"
     ai_available_models: list[str] = ["deepseek-opencode", "gemini"]
     ai_api_key: str = "not-needed"
