@@ -71,6 +71,14 @@ export const api = axios.create({
   timeout: 240_000,
 })
 
+export function setAuthHeader(token: string | null) {
+  if (token) {
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`
+  } else {
+    delete api.defaults.headers.common['Authorization']
+  }
+}
+
 // --------------------------------------------------------------------------- //
 //  Interceptor: auto-attach Bearer token & handle 401 expiration              //
 // --------------------------------------------------------------------------- //
@@ -80,7 +88,12 @@ api.interceptors.request.use((config) => {
     try {
       const { token } = JSON.parse(raw)
       if (token) {
-        config.headers.Authorization = `Bearer ${token}`
+        if (config.headers && typeof (config.headers as any).set === 'function') {
+          ;(config.headers as any).set('Authorization', `Bearer ${token}`)
+        } else if (config.headers) {
+          config.headers['Authorization'] = `Bearer ${token}`
+          config.headers.Authorization = `Bearer ${token}`
+        }
       }
     } catch {
       /* ignore corrupt data */

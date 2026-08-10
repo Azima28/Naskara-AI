@@ -33,12 +33,14 @@ export const useAuth = create<AuthState>((set, get) => ({
   restore: async () => {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) {
+      api.setAuthHeader(null)
       set({ initialized: true })
       return
     }
     try {
       const { token, user } = JSON.parse(raw)
       if (token && user) {
+        api.setAuthHeader(token)
         set({ token, user, initialized: true })
         try {
           const freshUser = await api.getMe()
@@ -48,19 +50,23 @@ export const useAuth = create<AuthState>((set, get) => ({
           }
         } catch {
           // Token kedaluwarsa saat restore -> logout
+          api.setAuthHeader(null)
           localStorage.removeItem(STORAGE_KEY)
           set({ token: null, user: null, initialized: true })
         }
       } else {
+        api.setAuthHeader(null)
         set({ initialized: true })
       }
     } catch {
+      api.setAuthHeader(null)
       localStorage.removeItem(STORAGE_KEY)
       set({ token: null, user: null, initialized: true })
     }
   },
 
   setAuth: (token, user) => {
+    api.setAuthHeader(token)
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ token, user }))
     set({ token, user, initialized: true })
   },
@@ -88,6 +94,7 @@ export const useAuth = create<AuthState>((set, get) => ({
   },
 
   logout: () => {
+    api.setAuthHeader(null)
     localStorage.removeItem(STORAGE_KEY)
     set({ token: null, user: null, initialized: true })
   },

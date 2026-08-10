@@ -23,7 +23,18 @@ def get_current_user(
 
     Dipakai sebagai dependency untuk semua endpoint yang butuh login.
     """
-    token = creds.credentials if creds and creds.credentials else request.cookies.get("access_token")
+    token: str | None = None
+    if creds and creds.credentials:
+        token = creds.credentials
+    else:
+        # Fallback to direct raw request headers check
+        auth_header = request.headers.get("Authorization") or request.headers.get("authorization")
+        if auth_header and auth_header.lower().startswith("bearer "):
+            token = auth_header[7:].strip()
+
+    if not token:
+        # Fallback to cookie
+        token = request.cookies.get("access_token")
 
     if not token:
         raise HTTPException(
