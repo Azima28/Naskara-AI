@@ -356,16 +356,24 @@ async def regenerate(
 ) -> dict[str, str]:
     """Edit/tulis ulang bagian laporan berdasarkan instruksi (Revisi AI)."""
     provider = get_ai_provider(req.model)
-    
+
     system_prompt = (
         "Kamu adalah editor laporan. Revisi teks berikut sesuai instruksi. "
         "Pertahankan gaya formal, gunakan sudut pandang orang ketiga (Penulis), "
         "dan jangan gunakan bullet points kecuali diminta.\n\n"
         f"Teks Lama:\n{req.old_text}"
     )
-    
-    text = await provider.generate(system_prompt, req.instruction)
-    return {"content": text}
+
+    try:
+        text = await provider.generate(system_prompt, req.instruction)
+        return {"content": text}
+    except Exception as e:
+        print(f"[AI Regenerate Error]: {type(e).__name__}: {e}")
+        model_name = req.model or settings.ai_model
+        raise HTTPException(
+            status_code=503,
+            detail=f"Layanan AI ('{model_name}') sedang tidak dapat dihubungi atau mengalami kendala. Gunakan model 'deepseek-opencode' yang stabil atau periksa koneksi 9Router."
+        )
 
 @router.post("/parse-full-story")
 async def parse_full_story(
