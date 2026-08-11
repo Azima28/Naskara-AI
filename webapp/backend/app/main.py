@@ -181,7 +181,12 @@ app.mount("/uploads", SecuredStaticFiles(directory=str(UPLOADS_DIR)), name="uplo
 
 @app.get("/health")
 def health() -> dict[str, object]:
-    return {"status": "ok", "app": settings.app_name, "ai_enabled": settings.ai_enabled}
+    return {
+        "status": "ok",
+        "app": settings.app_name,
+        "ai_enabled": settings.ai_enabled,
+        "maintenance_mode": settings.enable_maintenance_mode,
+    }
 
 
 # --------------------------------------------------------------------------- #

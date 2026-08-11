@@ -107,6 +107,7 @@ class SystemConfigIn(BaseModel):
     pembimbing_sekolah: str = "Siti Rahma, S.Pd."
     nip_pembimbing_sekolah: str = "19820101 200701 2 011"
     pejabat_jurusan: dict[str, dict[str, str]] = Field(default_factory=default_pejabat_jurusan)
+    enable_maintenance_mode: bool = False
     enable_ai_security_filter: bool = True
     ai_base_url: str = "http://127.0.0.1:20128/v1"
     ai_model_default: str = "deepseek-opencode"
@@ -126,6 +127,8 @@ def sync_system_settings_from_db(db: Session) -> dict[str, Any] | None:
     val_json = cfg.value_json or {}
     if "ai_base_url" in val_json and val_json["ai_base_url"]:
         settings.ai_base_url = val_json["ai_base_url"]
+    if "enable_maintenance_mode" in val_json:
+        settings.enable_maintenance_mode = bool(val_json["enable_maintenance_mode"])
     if "enable_ai_security_filter" in val_json:
         settings.enable_ai_security_filter = bool(val_json["enable_ai_security_filter"])
     if "ai_model_default" in val_json and val_json["ai_model_default"]:
@@ -584,6 +587,7 @@ def update_system_settings(
     else:
         cfg.value_json = val_json
 
+    settings.enable_maintenance_mode = payload.enable_maintenance_mode
     if payload.ai_base_url:
         settings.ai_base_url = payload.ai_base_url
     settings.enable_ai_security_filter = payload.enable_ai_security_filter

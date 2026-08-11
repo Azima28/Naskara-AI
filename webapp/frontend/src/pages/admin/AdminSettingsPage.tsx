@@ -16,6 +16,7 @@ import {
   IconGear,
   IconUser,
   IconSparkles,
+  IconAlert,
 } from '@/components/common/Icons'
 
 const JURUSAN_KEYS = ['rpl', 'tkj', 'bdp', 'akl', 'mp', 'tb']
@@ -55,6 +56,7 @@ const DEFAULT_SETTINGS: SystemConfigData = {
     mp: { nama: 'Hendra Wijaya, S.Pd.', nip: '19840910 200903 1 007' },
     tb: { nama: 'Dewi Sartika, S.Pd.', nip: '19871105 201101 2 008' },
   },
+  enable_maintenance_mode: false,
   enable_ai_security_filter: true,
   ai_base_url: 'http://127.0.0.1:20128/v1',
   ai_model_default: 'deepseek-opencode',
@@ -634,6 +636,44 @@ export default function AdminSettingsPage() {
                   )
                 })}
               </div>
+            </div>
+          </div>
+
+          {/* 2.5 Mode Pemeliharaan (Maintenance Mode) */}
+          <div style={sectionBoxStyle}>
+            <h3 style={sectionHeaderStyle}>
+              <IconAlert size={20} color="var(--amber-600)" /> Mode Pemeliharaan Sistem (Maintenance Mode)
+            </h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--ink-soft)', marginTop: 0, marginBottom: '16px' }}>
+              Aktifkan mode pemeliharaan untuk menampilkan banner peringatan halus saat siswa mengakses Wizard &amp; Editor Laporan PKL.
+            </p>
+
+            <div style={{ background: config.enable_maintenance_mode ? '#fffbeb' : '#f8fafc', border: `1px solid ${config.enable_maintenance_mode ? '#fcd34d' : '#e2e8f0'}`, borderRadius: '8px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+              <div>
+                <strong style={{ fontSize: '0.9rem', color: config.enable_maintenance_mode ? '#b45309' : 'var(--ink)', display: 'block', marginBottom: '4px' }}>
+                  Status Pemeliharaan: {config.enable_maintenance_mode ? '🔴 MAINTENANCE MODE AKTIF' : '🟢 SISTEM NORMAL'}
+                </strong>
+                <span style={{ fontSize: '0.8rem', color: 'var(--ink-soft)' }}>
+                  {config.enable_maintenance_mode
+                    ? '⚠️ Banner peringatan pemeliharaan sedang ditampilkan di Wizard, Editor, dan Dashboard siswa.'
+                    : 'Sistem beroperasi normal tanpa peringatan pemeliharaan.'}
+                </span>
+              </div>
+
+              <label style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer', gap: '10px', userSelect: 'none' }}>
+                <input
+                  type="checkbox"
+                  checked={!!config.enable_maintenance_mode}
+                  onChange={(e) => {
+                    const newValue = e.target.checked
+                    setConfig((prev) => ({ ...prev, enable_maintenance_mode: newValue }))
+                  }}
+                  style={{ width: '20px', height: '20px', cursor: 'pointer', accentColor: '#d97706' }}
+                />
+                <span style={{ fontSize: '0.9rem', fontWeight: 700, color: config.enable_maintenance_mode ? '#b45309' : '#64748b' }}>
+                  {config.enable_maintenance_mode ? 'Maintenance Aktif' : 'Normal'}
+                </span>
+              </label>
             </div>
           </div>
 

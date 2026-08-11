@@ -5,6 +5,7 @@ import { listDrafts, createDraft, deleteDraft, generateDocx } from '@/api/client
 import type { DraftSummary } from '@/types/api'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import NotificationModal from '@/components/common/NotificationModal'
+import { MaintenanceBanner } from '@/components/common/MaintenanceBanner'
 import {
   IconPlus,
   IconPencil,
@@ -152,6 +153,8 @@ function DashboardInner() {
       {/* Dashboard Main Content Shell */}
       <main className="dash-main">
         <div className="dash-main__container">
+          <MaintenanceBanner />
+
           {/* User Welcome & Overview Banner */}
           <div className="dash-welcome">
             <div className="dash-welcome__text">

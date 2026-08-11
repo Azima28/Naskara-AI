@@ -6,6 +6,7 @@ import { getDraft, updateDraft } from '@/api/client'
 import type { PklContext } from '@/types/pkl'
 import { emptyContext } from '@/types/pkl'
 import { IconDocument } from '@/components/common/Icons'
+import { MaintenanceBanner } from '@/components/common/MaintenanceBanner'
 
 import SiswaStep from '@/components/wizard/steps/SiswaStep'
 import SekolahStep from '@/components/wizard/steps/SekolahStep'
@@ -409,6 +410,8 @@ function WizardInner() {
 
   return (
     <div className="shell">
+      <MaintenanceBanner />
+
       <header className="shell__header">
         <div className="shell__row">
           <h1>

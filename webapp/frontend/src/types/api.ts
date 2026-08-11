@@ -92,6 +92,7 @@ export interface SystemConfigData {
   pembimbing_sekolah?: string
   nip_pembimbing_sekolah?: string
   pejabat_jurusan: Record<string, Record<string, string>>
+  enable_maintenance_mode?: boolean
   enable_ai_security_filter?: boolean
   ai_base_url?: string
   ai_model_default: string
@@ -182,4 +183,5 @@ export interface HealthResponse {
   status: string
   app: string
   ai_enabled: boolean
+  maintenance_mode?: boolean
 }

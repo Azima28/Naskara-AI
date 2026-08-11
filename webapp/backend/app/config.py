@@ -55,6 +55,9 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60 * 24 * 7  # 7 hari
     enable_rate_limit: bool = True
 
+    # Maintenance
+    enable_maintenance_mode: bool = False
+
     # AI provider (9router / OpenCode / OpenAI-compatible port 20128)
     ai_enabled: bool = True
     enable_ai_security_filter: bool = True

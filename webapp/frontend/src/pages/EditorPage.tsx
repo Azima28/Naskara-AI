@@ -11,6 +11,7 @@ import { AiModelSelector } from '@/components/common/AiModelSelector'
 import type { PklContext } from '@/types/pkl'
 import { emptyContext } from '@/types/pkl'
 import { IconDocument, IconDownload, IconAlert, IconPencil, IconCheck } from '@/components/common/Icons'
+import { MaintenanceBanner } from '@/components/common/MaintenanceBanner'
 import { polishAcademicText, polishAcademicList } from '@/utils/textPolish'
 
 const ARRAY_SECTION_KEYS = [
@@ -326,6 +327,8 @@ function EditorInner() {
 
   return (
     <div className="shell">
+      <MaintenanceBanner />
+
       {/* Unified Header & Action Bar Card */}
       <div
         className="card editor-header-card"
