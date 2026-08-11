@@ -149,6 +149,10 @@ function EditorInner() {
       })
       .catch((err) => {
         setSaveState('error')
+        if (err?.response?.status === 404) {
+          dirtyRef.current = false
+          nav('/dashboard')
+        }
         throw err
       })
       .finally(() => {
@@ -157,7 +161,7 @@ function EditorInner() {
 
     savingPromiseRef.current = promise
     await promise
-  }, [])
+  }, [nav])
 
   // Load draft
   useEffect(() => {
@@ -169,8 +173,14 @@ function EditorInner() {
         setTitle(d.title)
         dirtyRef.current = false
       })
+      .catch((err) => {
+        if (err?.response?.status === 404) {
+          dirtyRef.current = false
+          nav('/dashboard')
+        }
+      })
       .finally(() => setLoading(false))
-  }, [draftId])
+  }, [draftId, nav])
 
   // Autosave
   useEffect(() => {

@@ -233,6 +233,10 @@ function WizardInner() {
       })
       .catch((err) => {
         setSaveState('idle')
+        if (err?.response?.status === 404) {
+          dirtyRef.current = false
+          nav('/dashboard')
+        }
         throw err
       })
       .finally(() => {
@@ -241,7 +245,7 @@ function WizardInner() {
 
     savingPromiseRef.current = promise
     await promise
-  }, [])
+  }, [nav])
 
   // Handle URL query parameter step navigation & field highlight (e.g., ?step=assets&field=lampiran.foto_kegiatan)
   useEffect(() => {
@@ -275,8 +279,14 @@ function WizardInner() {
         setTitle(d.title)
         dirtyRef.current = false
       })
+      .catch((err) => {
+        if (err?.response?.status === 404) {
+          dirtyRef.current = false
+          nav('/dashboard')
+        }
+      })
       .finally(() => setLoading(false))
-  }, [draftId])
+  }, [draftId, nav])
 
   // Autosave (debounced 2s after last change)
   useEffect(() => {
