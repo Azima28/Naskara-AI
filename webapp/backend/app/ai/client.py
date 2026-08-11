@@ -22,9 +22,15 @@ def get_ai_provider(model: str | None = None) -> AIProvider:
 
     selected_model = model.strip() if model and model.strip() else settings.ai_model
 
-    # Saat ini hanya support OpenAICompatibleProvider (yang bisa digunakan untuk 9router, LM Studio, Ollama, dll)
+    # Cari Base URL spesifik model jika ada di dict ai_model_endpoints, fallback ke ai_base_url global jika kosong
+    resolved_base_url = (
+        settings.ai_model_endpoints.get(selected_model)
+        if hasattr(settings, "ai_model_endpoints") and settings.ai_model_endpoints.get(selected_model)
+        else settings.ai_base_url
+    )
+
     return OpenAICompatibleProvider(
-        base_url=settings.ai_base_url,
+        base_url=resolved_base_url,
         model=selected_model,
         api_key=settings.ai_api_key,
         timeout=settings.ai_timeout,

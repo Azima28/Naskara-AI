@@ -249,6 +249,7 @@ export const generateDocx = async (draftId: string): Promise<string> => {
 export interface AiModelsResponse {
   available_models: string[]
   active_model: string
+  model_endpoints?: Record<string, string>
 }
 
 export const getAiModels = () =>
@@ -257,8 +258,8 @@ export const getAiModels = () =>
 export const setActiveAiModel = (model: string) =>
   api.post<{ status: string; active_model: string; available_models: string[] }>('/ai/models/active', { model }).then((r) => r.data)
 
-export const addAiModel = (model: string) =>
-  api.post<{ status: string; available_models: string[] }>('/ai/models/add', { model }).then((r) => r.data)
+export const addAiModel = (model: string, baseUrl?: string) =>
+  api.post<{ status: string; available_models: string[]; model_endpoints?: Record<string, string> }>('/ai/models/add', { model, base_url: baseUrl }).then((r) => r.data)
 
 export const testAiConnection = () =>
   api.get<{ status: string; message: string }>('/ai/test').then((r) => r.data)

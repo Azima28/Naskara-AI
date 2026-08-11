@@ -95,6 +95,8 @@ export interface SystemConfigData {
   enable_ai_security_filter?: boolean
   ai_base_url?: string
   ai_model_default: string
+  ai_available_models?: string[]
+  ai_model_endpoints?: Record<string, string>
   ai_max_tokens_per_req: number
 }
 

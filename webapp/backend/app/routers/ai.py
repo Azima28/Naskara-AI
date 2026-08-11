@@ -124,13 +124,15 @@ class SetActiveModelRequest(BaseModel):
 
 class AddModelRequest(BaseModel):
     model: str = Field(..., min_length=1, max_length=100)
+    base_url: str | None = None
 
 @router.get("/models")
 async def get_models(user: User = Depends(get_current_user)):
-    """Mengembalikan daftar model AI yang tersedia dan model aktif default."""
+    """Mengembalikan daftar model AI yang tersedia, model aktif default, dan per-model base URLs."""
     return {
         "available_models": settings.ai_available_models,
         "active_model": settings.ai_model,
+        "model_endpoints": getattr(settings, "ai_model_endpoints", {}),
     }
 
 @router.post("/models/active")
@@ -155,14 +157,19 @@ async def add_model(
     req: AddModelRequest,
     user: User = Depends(get_current_user)
 ):
-    """Menambahkan model AI baru ke daftar opsi."""
+    """Menambahkan model AI baru ke daftar opsi (opsional beserta Base URL khusus)."""
     model_name = req.model.strip()
     if model_name not in settings.ai_available_models:
         settings.ai_available_models.append(model_name)
+    if req.base_url and req.base_url.strip():
+        if not hasattr(settings, "ai_model_endpoints"):
+            settings.ai_model_endpoints = {}
+        settings.ai_model_endpoints[model_name] = req.base_url.strip()
     return {
         "status": "success",
         "message": f"Model AI '{model_name}' berhasil ditambahkan.",
         "available_models": settings.ai_available_models,
+        "model_endpoints": getattr(settings, "ai_model_endpoints", {}),
     }
 
 @router.post("/draft-section", response_model=DraftSectionOut)

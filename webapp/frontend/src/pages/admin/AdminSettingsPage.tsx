@@ -58,6 +58,10 @@ const DEFAULT_SETTINGS: SystemConfigData = {
   enable_ai_security_filter: true,
   ai_base_url: 'http://127.0.0.1:20128/v1',
   ai_model_default: 'deepseek-opencode',
+  ai_model_endpoints: {
+    'deepseek-opencode': 'http://127.0.0.1:20128/v1',
+    'gemini': 'http://127.0.0.1:20128/v1',
+  },
   ai_max_tokens_per_req: 2048,
 }
 
@@ -134,6 +138,19 @@ export default function AdminSettingsPage() {
         pejabat_jurusan: {
           ...prev.pejabat_jurusan,
           [jurusanKey]: { ...currentPejabat, [field]: value },
+        },
+      }
+    })
+  }
+
+  const handleModelEndpointChange = (modelName: string, url: string) => {
+    setConfig((prev) => {
+      const currentEndpoints = prev.ai_model_endpoints || {}
+      return {
+        ...prev,
+        ai_model_endpoints: {
+          ...currentEndpoints,
+          [modelName]: url,
         },
       }
     })
@@ -660,8 +677,8 @@ export default function AdminSettingsPage() {
             </h3>
 
             <form onSubmit={handleSubmitSchoolSettings}>
-              <div style={{ marginBottom: '16px' }}>
-                <label style={labelStyle}>URL Base Endpoint AI Provider (Port &amp; Protocol)</label>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={labelStyle}>URL Base Endpoint AI Default Global (Fallback Port &amp; Protocol)</label>
                 <input
                   type="text"
                   required
@@ -672,8 +689,43 @@ export default function AdminSettingsPage() {
                   style={{ width: '100%', fontFamily: 'monospace', fontSize: '0.9rem' }}
                 />
                 <span style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', marginTop: '4px', display: 'block' }}>
-                  Endpoint OpenAI-compatible local/remote proxy (default: <code style={{ background: '#f1f5f9', padding: '1px 5px', borderRadius: '3px' }}>http://127.0.0.1:20128/v1</code>).
+                  Endpoint default utama untuk semua model AI jika tidak dikustomisasi secara khusus (default: <code style={{ background: '#f1f5f9', padding: '1px 5px', borderRadius: '3px' }}>http://127.0.0.1:20128/v1</code>).
                 </span>
+              </div>
+
+              {/* Sub-section: Custom Endpoint per Model */}
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '16px', marginBottom: '20px' }}>
+                <h4 style={{ margin: '0 0 8px 0', fontSize: '0.9rem', color: 'var(--ink)', fontWeight: 700 }}>
+                  Custom Base URL Endpoint Per Model AI
+                </h4>
+                <p style={{ margin: '0 0 14px 0', fontSize: '0.8rem', color: 'var(--ink-soft)' }}>
+                  Atur URL port &amp; protocol khusus untuk masing-masing model. Misal: <code style={{ background: '#e2e8f0', padding: '1px 4px', borderRadius: '3px' }}>deepseek-opencode</code> ➔ Port 20128, <code style={{ background: '#e2e8f0', padding: '1px 4px', borderRadius: '3px' }}>gemini</code> ➔ Port 20129.
+                </p>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '12px' }}>
+                  {availableModels.map((m) => {
+                    const customUrl = (config.ai_model_endpoints || {})[m] || ''
+                    const hasCustom = Boolean(customUrl && customUrl.trim())
+                    return (
+                      <div key={m} style={{ background: '#ffffff', border: '1px solid var(--line)', borderRadius: '6px', padding: '12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                          <strong style={{ fontSize: '0.85rem', color: 'var(--ink)' }}>{m}</strong>
+                          <span style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', fontWeight: 600, background: hasCustom ? '#dbeafe' : '#f1f5f9', color: hasCustom ? '#1e40af' : '#64748b' }}>
+                            {hasCustom ? '🔵 Custom Endpoint' : '↩️ Default Fallback'}
+                          </span>
+                        </div>
+                        <input
+                          type="text"
+                          placeholder={config.ai_base_url || 'http://127.0.0.1:20128/v1'}
+                          value={customUrl}
+                          onChange={(e) => handleModelEndpointChange(m, e.target.value)}
+                          className="form-input"
+                          style={{ width: '100%', fontFamily: 'monospace', fontSize: '0.82rem' }}
+                        />
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>

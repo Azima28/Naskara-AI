@@ -110,7 +110,31 @@ class SystemConfigIn(BaseModel):
     enable_ai_security_filter: bool = True
     ai_base_url: str = "http://127.0.0.1:20128/v1"
     ai_model_default: str = "deepseek-opencode"
+    ai_available_models: list[str] = Field(default_factory=lambda: ["deepseek-opencode", "gemini"])
+    ai_model_endpoints: dict[str, str] = Field(default_factory=lambda: {
+        "deepseek-opencode": "http://127.0.0.1:20128/v1",
+        "gemini": "http://127.0.0.1:20128/v1",
+    })
     ai_max_tokens_per_req: int = 2048
+
+
+def sync_system_settings_from_db(db: Session) -> dict[str, Any] | None:
+    """Membaca konfigurasi global_settings dari SQLite dan menyinkronkan ke runtime settings memory."""
+    cfg = db.get(SystemConfig, "global_settings")
+    if not cfg or not cfg.value_json:
+        return None
+    val_json = cfg.value_json or {}
+    if "ai_base_url" in val_json and val_json["ai_base_url"]:
+        settings.ai_base_url = val_json["ai_base_url"]
+    if "enable_ai_security_filter" in val_json:
+        settings.enable_ai_security_filter = bool(val_json["enable_ai_security_filter"])
+    if "ai_model_default" in val_json and val_json["ai_model_default"]:
+        settings.ai_model = val_json["ai_model_default"]
+    if "ai_available_models" in val_json and isinstance(val_json["ai_available_models"], list):
+        settings.ai_available_models = val_json["ai_available_models"]
+    if "ai_model_endpoints" in val_json and isinstance(val_json["ai_model_endpoints"], dict):
+        settings.ai_model_endpoints = val_json["ai_model_endpoints"]
+    return val_json
 
 
 # --------------------------------------------------------------------------- #
@@ -539,11 +563,7 @@ def get_system_settings(
         default_val = SystemConfigIn().model_dump()
         return {"key": "global_settings", "data": default_val}
 
-    val_json = cfg.value_json or {}
-    if "ai_base_url" in val_json and val_json["ai_base_url"]:
-        settings.ai_base_url = val_json["ai_base_url"]
-    if "enable_ai_security_filter" in val_json:
-        settings.enable_ai_security_filter = bool(val_json["enable_ai_security_filter"])
+    val_json = sync_system_settings_from_db(db) or cfg.value_json or {}
     return {"key": "global_settings", "data": val_json}
 
 
@@ -567,6 +587,12 @@ def update_system_settings(
     if payload.ai_base_url:
         settings.ai_base_url = payload.ai_base_url
     settings.enable_ai_security_filter = payload.enable_ai_security_filter
+    if payload.ai_model_default:
+        settings.ai_model = payload.ai_model_default
+    if payload.ai_available_models:
+        settings.ai_available_models = payload.ai_available_models
+    if payload.ai_model_endpoints:
+        settings.ai_model_endpoints = payload.ai_model_endpoints
 
     db.commit()
     log_admin_action(db, admin, "SYSTEM_SETTINGS_UPDATE", details=val_json, request=req)

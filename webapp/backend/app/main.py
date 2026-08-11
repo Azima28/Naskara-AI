@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from .config import INSECURE_SECRET_KEYS, UPLOADS_DIR, ensure_runtime_dirs, settings
-from .db import init_db
+from .db import init_db, SessionLocal
 from .debug_logger import add_debug_log
 
 
@@ -21,6 +21,16 @@ async def lifespan(app: FastAPI):
     # Startup
     ensure_runtime_dirs()
     init_db()
+
+    # Sync runtime settings with central SQLite database
+    try:
+        with SessionLocal() as db:
+            from .routers.admin import sync_system_settings_from_db
+            synced = sync_system_settings_from_db(db)
+            if synced:
+                print(f"✅ Startup Sync: Konfigurasi AI & System berhasil dimuat dari DB SQLite (Base URL: {settings.ai_base_url})")
+    except Exception as sync_err:
+        print(f"⚠️ Startup Sync Warning: Gagal memuat konfigurasi dari DB ({sync_err})")
 
     is_prod = settings.environment.lower() in ("production", "prod")
     is_weak = settings.secret_key in INSECURE_SECRET_KEYS or len(settings.secret_key) < 32
