@@ -543,11 +543,16 @@ export default function AdminSettingsPage() {
         <div>
           {/* Information Banner */}
           <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '16px', marginBottom: '20px' }}>
-            <h4 style={{ margin: '0 0 6px 0', fontSize: '0.95rem', color: '#166534', fontWeight: 700 }}>
-              Konfigurasi Model AI Engine
-            </h4>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '6px' }}>
+              <h4 style={{ margin: 0, fontSize: '0.95rem', color: '#166534', fontWeight: 700 }}>
+                Konfigurasi Model AI Engine
+              </h4>
+              <span style={{ fontSize: '0.75rem', padding: '3px 8px', borderRadius: '6px', background: '#dcfce7', border: '1px solid #86efac', color: '#15803d', fontWeight: 700 }}>
+                ✨ Multi-Model Custom Endpoint &amp; DB Sync v1.2.0
+              </span>
+            </div>
             <p style={{ margin: 0, fontSize: '0.85rem', color: '#15803d', lineHeight: 1.5 }}>
-              Pengaturan ini digunakan untuk menentukan model kecerdasan buatan (*AI Model*) yang dipakai oleh sistem untuk menyusun draf naskah laporan PKL, merapikan profil perusahaan, dan mengurai cerita kegiatan siswa.
+              Pengaturan ini digunakan untuk menentukan model kecerdasan buatan (*AI Model*) dan URL Base Endpoint tersendiri per model yang dipakai oleh sistem untuk menyusun draf naskah laporan PKL.
             </p>
           </div>
 

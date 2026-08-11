@@ -1,5 +1,7 @@
 """Konfigurasi aplikasi. Semua nilai berasal dari environment / .env.
 
+Naskara AI Engine - Version 1.2.0 (Multi-Model Endpoint Customization & DB-Runtime Sync)
+
 Default formatting diambil dari references/formatting-defaults.md:
 - Times New Roman 12pt, spasi 1.5, justify
 - Margin default 4-4-3-3 (atas-bawah-kiri-kanan), left lebih lebar untuk jilid.
