@@ -16,7 +16,13 @@ from ..models import User
 from ..ai.client import get_ai_provider
 from ..prompts.base import SYSTEM_PROMPT_TEMPLATE
 from ..prompts.jurusan_knowledge import get_jurusan_context
-from ..prompts.validator import validate_ai_output, truncate_to_limit, AIOutputError
+from ..prompts.validator import (
+    validate_ai_output,
+    truncate_to_limit,
+    AIOutputError,
+    check_prompt_injection,
+    check_off_topic_or_meta,
+)
 import json
 import re
 from ..prompts import sections
@@ -355,18 +361,53 @@ async def regenerate(
     user: User = Depends(get_current_user)
 ) -> dict[str, str]:
     """Edit/tulis ulang bagian laporan berdasarkan instruksi (Revisi AI)."""
+    # 1. Check prompt injection & off-topic meta questions
+    combined_input = f"{req.old_text} {req.instruction}".strip()
+    is_inj, inj_msg = check_prompt_injection(combined_input)
+    if is_inj:
+        raise HTTPException(
+            status_code=400,
+            detail="Teks terdeteksi mengandung instruksi manipulasi sistem (prompt injection). Silakan perbaiki input Anda."
+        )
+
+    is_off_old, _ = check_off_topic_or_meta(req.old_text)
+    is_off_inst, _ = check_off_topic_or_meta(req.instruction)
+    if is_off_old or is_off_inst:
+        raise HTTPException(
+            status_code=400,
+            detail="Teks yang Anda masukkan terdeteksi sebagai pertanyaan/obrolan santai, bukan draf Laporan PKL. Silakan masukkan teks draf kegiatan PKL Anda."
+        )
+
     provider = get_ai_provider(req.model)
 
+    clean_old = req.old_text.replace("<", "&lt;").replace(">", "&gt;")
+    clean_inst = req.instruction.replace("<", "&lt;").replace(">", "&gt;")
+
     system_prompt = (
-        "Kamu adalah editor laporan. Revisi teks berikut sesuai instruksi. "
+        "Kamu adalah editor laporan. Revisi teks di dalam tag <teks_asal> sesuai instruksi di dalam tag <instruksi_revisi>.\n"
         "Pertahankan gaya formal, gunakan sudut pandang orang ketiga (Penulis), "
         "dan jangan gunakan bullet points kecuali diminta.\n\n"
-        f"Teks Lama:\n{req.old_text}"
+        "ATURAN RELEVANSI UTAMA:\n"
+        "Jika <teks_asal> atau <instruksi_revisi> BUKAN MERUPAKAN DATA LAPORAN PKL (misal: pertanyaan ke AI 'kamu dari model apa', obrolan santai, atau kalimat ngawur), "
+        "JANGAN PAKSA MERUBAH JADI LAPORAN. KEMBALIKAN HANYA TEKS: [REJECT_OUT_OF_SCOPE]"
+    )
+
+    user_prompt = (
+        f"<teks_asal>\n{clean_old}\n</teks_asal>\n\n"
+        f"<instruksi_revisi>\n{clean_inst}\n</instruksi_revisi>"
     )
 
     try:
-        text = await provider.generate(system_prompt, req.instruction)
-        return {"content": text}
+        text = await provider.generate(system_prompt, user_prompt)
+        text_str = text.strip()
+        if "[REJECT_OUT_OF_SCOPE]" in text_str or "[REJECT_INVALID]" in text_str:
+            raise HTTPException(
+                status_code=400,
+                detail="Teks yang Anda masukkan terdeteksi sebagai pertanyaan/obrolan santai, bukan draf Laporan PKL. Silakan masukkan draf teks kegiatan PKL Anda."
+            )
+        return {"content": text_str}
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"[AI Regenerate Error]: {type(e).__name__}: {e}")
         model_name = req.model or settings.ai_model
@@ -381,6 +422,20 @@ async def parse_full_story(
     user: User = Depends(get_current_user)
 ) -> dict:
     """Menguraikan cerita bebas siswa menjadi seluruh field yang dibutuhkan secara komprehensif."""
+    is_inj, _ = check_prompt_injection(req.cerita)
+    if is_inj:
+        raise HTTPException(
+            status_code=400,
+            detail="Cerita terdeteksi mengandung instruksi manipulasi sistem (prompt injection). Silakan perbaiki input cerita Anda."
+        )
+
+    is_off, _ = check_off_topic_or_meta(req.cerita)
+    if is_off:
+        raise HTTPException(
+            status_code=400,
+            detail="Teks yang Anda masukkan terdeteksi sebagai pertanyaan/obrolan santai, bukan cerita kegiatan PKL. Silakan tuliskan pengalaman PKL Anda."
+        )
+
     provider = get_ai_provider(req.model)
     
     system_prompt = """Kamu adalah asisten pengurai data laporan PKL SMK.

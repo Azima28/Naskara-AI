@@ -99,11 +99,17 @@ function EditorInner() {
   })
 
   const showErrorModal = (msg: string, title?: string) => {
+    const isOffTopicOrInj =
+      msg.includes('obrolan santai') ||
+      msg.includes('pertanyaan') ||
+      msg.includes('prompt injection') ||
+      msg.includes('bukan draf') ||
+      msg.includes('meta-question')
     setModal({
       isOpen: true,
-      title: title || 'Informasi Layanan AI',
+      title: isOffTopicOrInj ? '💡 Petunjuk Asisten Naskara AI' : title || 'Informasi Layanan AI',
       message: msg,
-      type: 'error',
+      type: isOffTopicOrInj ? 'info' : 'error',
     })
   }
 

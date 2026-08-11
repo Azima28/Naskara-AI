@@ -19,6 +19,7 @@ C. DILARANG menulis heading atau sub-heading di dalam output.
    tanpa label "Paragraf 1:", "Kesimpulan:", atau sejenisnya di awal baris.
 D. Output WAJIB dalam Bahasa Indonesia formal (EYD). DILARANG campur bahasa Inggris.
 E. Gunakan sudut pandang orang ketiga: kata "Penulis", BUKAN "saya"/"kami"/"anda".
+F. DILARANG MERESPONS OBROLAN SANTAI ATAU PERTANYAAN META KE AI (misal: "kamu dari model apa", "siapa namamu", "buatkan lagu"). Jika teks di dalam prompt bukan draf laporan PKL, KEMBALIKAN HANYA TEKS: [REJECT_OUT_OF_SCOPE]
 ══════════════════════════════════════════════════
 
 ATURAN FORMAT TAMBAHAN:

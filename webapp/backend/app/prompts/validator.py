@@ -93,6 +93,45 @@ def _check_kesimpulan_saran_tags(text: str) -> tuple[bool, str]:
     return True, "OK"
 
 
+# ── Injection & Meta-Question Patterns ───────────────────────────────────── #
+_INJECTION_PATTERNS = re.compile(
+    r"(ignore\s+(previous|all)\s+instructions?|system\s+override|forget\s+all\s+instructions?|"
+    r"dan\s+mode|you\s+are\s+now\s+an\s+unfiltered|act\s+as\s+a\s+linux\s+terminal|"
+    r"print\s+your\s+system\s+prompt|show\s+me\s+your\s+system\s+prompt|"
+    r"abaikan\s+semua\s+instruksi|abaikan\s+instruksi\s+sebelumnya)",
+    re.IGNORECASE,
+)
+
+_META_QUESTION_PATTERNS = re.compile(
+    r"^(kamu\s+dari\s+model\s+apa|kamu\s+model\s+apa|siapa\s+kamu|kamu\s+siapa|"
+    r"siapa\s+namamu|siapa\s+pembuatmu|siapa\s+yang\s+membuatmu|apa\s+nama\s+modelmu|"
+    r"buatkan\s+saya?\s+(lagu|puisi|cerpen|naskah)|siapa\s+presiden|"
+    r"apa\s+bedanya\s+rpl\s+dan\s+tkj)\??$",
+    re.IGNORECASE,
+)
+
+
+def check_prompt_injection(text: str) -> tuple[bool, str]:
+    """Cek apakah teks mengandung pola prompt injection / jailbreak."""
+    if not text:
+        return False, ""
+    match = _INJECTION_PATTERNS.search(text)
+    if match:
+        return True, f"Terdeteksi pola prompt injection: '{match.group(0)}'"
+    return False, ""
+
+
+def check_off_topic_or_meta(text: str) -> tuple[bool, str]:
+    """Cek apakah teks merupakan pertanyaan meta ke AI atau obrolan santai di luar draf PKL."""
+    if not text:
+        return False, ""
+    stripped = text.strip()
+    match = _META_QUESTION_PATTERNS.search(stripped)
+    if match:
+        return True, f"Terdeteksi pertanyaan/obrolan santai di luar draf PKL: '{match.group(0)}'"
+    return False, ""
+
+
 @dataclass
 class ValidationResult:
     passed: bool
@@ -420,6 +459,11 @@ def validate_ai_output(
     # 1. Empty check
     if not text or not text.strip():
         errors.append("Output AI kosong")
+        return ValidationResult(passed=False, errors=errors)
+
+    # 1b. Check for explicit rejection signal from AI
+    if "[REJECT_OUT_OF_SCOPE]" in text or "[REJECT_INVALID]" in text:
+        errors.append("Teks yang Anda masukkan terdeteksi sebagai pertanyaan/obrolan santai, bukan draf Laporan PKL.")
         return ValidationResult(passed=False, errors=errors)
 
     # 2. Bahasa Indonesia check

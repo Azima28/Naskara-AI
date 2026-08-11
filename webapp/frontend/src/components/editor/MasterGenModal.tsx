@@ -265,7 +265,9 @@ export default function MasterGenModal({
         }
       } catch (err: any) {
         console.warn(`[MasterGenModal] Sub-bab ${sec.key} failed:`, err)
-        setErrorDetails((prev) => ({ ...prev, [sec.key]: err?.message || 'Timeout/Gagal AI' }))
+        const d = err?.response?.data?.detail
+        const msg = (d && typeof d === 'object' ? d.message : d) || err?.message || 'Timeout/Gagal AI'
+        setErrorDetails((prev) => ({ ...prev, [sec.key]: msg }))
         setStatuses((prev) => ({ ...prev, [sec.key]: 'failed' }))
       }
     }
