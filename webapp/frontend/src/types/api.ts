@@ -107,6 +107,16 @@ export interface AuditLogItem {
   created_at: string
 }
 
+export interface DebugLogItem {
+  id: number
+  timestamp: string
+  level: 'ERROR' | 'WARNING' | 'INFO' | 'DEBUG'
+  category: 'AI_PROVIDER' | 'AUTH' | 'DATABASE' | 'DOCX_ENGINE' | 'HTTP_REQUEST' | 'SECURITY' | 'SYSTEM' | string
+  message: string
+  detail?: any
+  source: string
+}
+
 export interface HealthDetailResponse {
   status: string
   python_version: string

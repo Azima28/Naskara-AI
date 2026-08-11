@@ -419,6 +419,7 @@ import type {
   AdminStats,
   AssetAuditItem,
   AuditLogItem,
+  DebugLogItem,
   HealthDetailResponse,
   SystemConfigData,
   UserManagementItem,
@@ -470,3 +471,12 @@ export const listAuditLogs = (params?: { skip?: number; limit?: number }) =>
 
 export const getHealthDetail = () =>
   api.get<HealthDetailResponse>('/admin/health-detail').then((r) => r.data)
+
+export const getDebugLogs = (params?: { level?: string; category?: string; search?: string; limit?: number; since_id?: number }) =>
+  api.get<{ total: number; since_id: number; items: DebugLogItem[] }>('/admin/debug/logs', { params }).then((r) => r.data)
+
+export const clearDebugLogs = () =>
+  api.post<{ status: string; message: string }>('/admin/debug/clear').then((r) => r.data)
+
+export const simulateDebugErrorLogs = () =>
+  api.post<{ status: string; message: string }>('/admin/debug/simulate-error').then((r) => r.data)

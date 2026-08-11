@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -19,6 +20,12 @@ from sqlalchemy.orm import Session
 from ..config import UPLOADS_DIR, settings
 from ..db import get_db
 from ..dependencies import require_admin, require_staff
+from ..debug_logger import (
+    add_debug_log,
+    clear_debug_logs,
+    debug_stream_generator,
+    get_debug_logs,
+)
 from ..models import AuditLog, Draft, SystemConfig, User
 from ..security import hash_password
 
@@ -610,3 +617,97 @@ def get_system_health_detail(
             "ai_model": settings.ai_model,
         },
     }
+
+
+# --------------------------------------------------------------------------- #
+# 7. Realtime Debug Console & Live Log Streaming                              #
+# --------------------------------------------------------------------------- #
+@router.get("/debug/logs")
+def get_realtime_debug_logs(
+    level: str | None = None,
+    category: str | None = None,
+    search: str | None = None,
+    limit: int = 200,
+    since_id: int = 0,
+    admin: User = Depends(require_admin),
+) -> dict[str, Any]:
+    """Mengambil daftar log debug real-time dengan filter level, kategori, & keyword."""
+    items = get_debug_logs(level=level, category=category, search=search, limit=limit, since_id=since_id)
+    return {
+        "total": len(items),
+        "since_id": since_id,
+        "items": items,
+    }
+
+
+@router.get("/debug/stream")
+async def stream_realtime_debug_logs(
+    admin: User = Depends(require_admin),
+):
+    """Stream token/log debug secara realtime via Server-Sent Events (SSE)."""
+    return StreamingResponse(
+        debug_stream_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache, no-transform",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
+@router.post("/debug/clear")
+def clear_realtime_debug_logs(
+    req: Request,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+) -> dict[str, Any]:
+    """Membersihkan seluruh log debug dari buffer memori."""
+    clear_debug_logs()
+    log_admin_action(db, admin, "DEBUG_LOGS_CLEAR", details={"cleared": True}, request=req)
+    return {"status": "success", "message": "Buffer log debug berhasil dibersihkan."}
+
+
+@router.post("/debug/simulate-error")
+def simulate_debug_error_logs(
+    admin: User = Depends(require_admin),
+) -> dict[str, Any]:
+    """Mengabaikan/mensimulasikan contoh log error & warning untuk menguji UI Realtime Debug Console."""
+    add_debug_log(
+        level="INFO",
+        category="SYSTEM",
+        message="Memulai simulasi pengujian log debug...",
+        detail={"simulated_by": admin.email},
+        source="admin.py:simulate_debug_error_logs",
+    )
+    add_debug_log(
+        level="WARNING",
+        category="AI_PROVIDER",
+        message="[SIMULASI WARNING] AI Provider mengalami latency 1850ms saat memanggil model 'gemini'.",
+        detail={"endpoint": "http://127.0.0.1:20128/v1/chat/completions", "latency_ms": 1850, "model": "gemini"},
+        source="provider.py:generate",
+    )
+    add_debug_log(
+        level="ERROR",
+        category="AI_PROVIDER",
+        message="[SIMULASI ERROR] Gagal terhubung ke AI Provider pada Port 20128 (Connection Refused).",
+        detail={
+            "error_type": "httpx.ConnectError",
+            "endpoint": "http://127.0.0.1:20128/v1/chat/completions",
+            "exception": "All candidate URLs [127.0.0.1:20128, localhost:20128] unreachable",
+            "stack_trace": "Traceback (most recent call last):\n  File 'app/ai/provider.py', line 99, in generate\n    resp = await self.client.post(endpoint, json=payload)\nhttpx.ConnectError: [Errno 111] Connection refused"
+        },
+        source="provider.py:generate",
+    )
+    add_debug_log(
+        level="ERROR",
+        category="DOCX_ENGINE",
+        message="[SIMULASI ERROR] Gagal mengekstrak halaman PDF via LibreOffice Headless Extractor.",
+        detail={
+            "error_type": "RuntimeError",
+            "file": "Laporan-PKL-Draft-1.docx",
+            "reason": "LibreOffice process timed out after 30 seconds."
+        },
+        source="assembly.py:compute_toc_page_numbers",
+    )
+    return {"status": "success", "message": "Log simulasi error & warning berhasil dibuat."}

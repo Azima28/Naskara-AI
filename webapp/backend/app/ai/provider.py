@@ -8,6 +8,7 @@ import asyncio
 import json
 import httpx
 from abc import ABC, abstractmethod
+from ..debug_logger import add_debug_log
 
 
 class AIProvider(ABC):
@@ -96,29 +97,69 @@ class OpenAICompatibleProvider(AIProvider):
                         return data["choices"][0]["message"]["content"]
 
                 except (httpx.ConnectError, httpx.ConnectTimeout, httpx.RequestError, httpx.TransportError) as e:
-                    print(f"[AI Provider Unreachable/DNS Error] {endpoint} unreachable (Attempt {attempt}): {e}")
+                    msg = f"[AI Provider Unreachable/DNS Error] Endpoint {endpoint} tidak dapat dihubungi (Percobaan {attempt}): {e}"
+                    print(msg)
+                    add_debug_log(
+                        level="ERROR",
+                        category="AI_PROVIDER",
+                        message=msg,
+                        detail={"endpoint": endpoint, "model": self.model, "attempt": attempt, "error": str(e)},
+                        source="provider.py:generate"
+                    )
                     last_error = e
                     # Break loop to try next candidate IP immediately
                     break
 
                 except httpx.HTTPStatusError as e:
-                    print(f"[AI Provider Status Error {e.response.status_code}] URL: {endpoint}")
+                    msg = f"[AI Provider Status Error {e.response.status_code}] URL: {endpoint}"
+                    print(msg)
+                    add_debug_log(
+                        level="ERROR",
+                        category="AI_PROVIDER",
+                        message=msg,
+                        detail={"endpoint": endpoint, "model": self.model, "status_code": e.response.status_code, "response_body": e.response.text[:300]},
+                        source="provider.py:generate"
+                    )
                     if e.response.status_code < 500:
                         raise RuntimeError(f"AI Provider client error ({e.response.status_code})")
                     last_error = e
 
                 except httpx.TimeoutException as e:
                     last_error = e
-                    print(f"[AI Provider Timeout] URL: {endpoint} (Attempt {attempt}): {e}")
+                    msg = f"[AI Provider Timeout] URL: {endpoint} (Attempt {attempt}): {e}"
+                    print(msg)
+                    add_debug_log(
+                        level="ERROR",
+                        category="AI_PROVIDER",
+                        message=msg,
+                        detail={"endpoint": endpoint, "model": self.model, "attempt": attempt, "error": str(e)},
+                        source="provider.py:generate"
+                    )
 
                 except Exception as e:
                     last_error = e
-                    print(f"[AI Provider Error] URL: {endpoint}: {e}")
+                    msg = f"[AI Provider Error] URL: {endpoint}: {e}"
+                    print(msg)
+                    add_debug_log(
+                        level="ERROR",
+                        category="AI_PROVIDER",
+                        message=msg,
+                        detail={"endpoint": endpoint, "model": self.model, "error": str(e)},
+                        source="provider.py:generate"
+                    )
 
                 if attempt < max_retries:
                     await asyncio.sleep(retry_delay)
 
-        raise RuntimeError(f"Gagal terhubung ke 9router di {self.base_url} (Port 20128): {last_error}")
+        err_msg = f"Gagal terhubung ke AI Provider di {self.base_url} (Port 20128): {last_error}"
+        add_debug_log(
+            level="ERROR",
+            category="AI_PROVIDER",
+            message=err_msg,
+            detail={"base_url": self.base_url, "model": self.model, "last_error": str(last_error)},
+            source="provider.py:generate"
+        )
+        raise RuntimeError(err_msg)
 
     async def generate_stream(self, system: str, user: str):
         """Call /chat/completions endpoint with stream=True and yield real-time token chunks."""

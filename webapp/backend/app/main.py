@@ -13,6 +13,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .config import INSECURE_SECRET_KEYS, UPLOADS_DIR, ensure_runtime_dirs, settings
 from .db import init_db
+from .debug_logger import add_debug_log
 
 
 @asynccontextmanager
@@ -44,26 +45,65 @@ app = FastAPI(
     debug=settings.debug,
 )
 
-# Security Headers Middleware
+# Security Headers & Debug Logging Middleware
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
-    response = await call_next(request)
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "DENY"
-    response.headers["X-XSS-Protection"] = "1; mode=block"
-    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-    response.headers["Content-Security-Policy"] = (
-        "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
-        "style-src 'self' 'unsafe-inline'; "
-        "img-src 'self' data: blob: http: https:; "
-        "font-src 'self' data:; "
-        "connect-src 'self' ws: wss: http: https:; "
-        "frame-ancestors 'none';"
-    )
-    if settings.environment.lower() in ("production", "prod"):
-        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-    return response
+    # Ignore noisy static file or sse ping polling requests from flood logging
+    path = request.url.path
+    is_quiet_route = path.startswith("/uploads") or path == "/admin/debug/stream" or path == "/health"
+
+    try:
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+            "style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data: blob: http: https:; "
+            "font-src 'self' data:; "
+            "connect-src 'self' ws: wss: http: https:; "
+            "frame-ancestors 'none';"
+        )
+        if settings.environment.lower() in ("production", "prod"):
+            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+
+        if not is_quiet_route:
+            status_code = response.status_code
+            if status_code >= 400:
+                level = "ERROR" if status_code >= 500 else "WARNING"
+                cat = "HTTP_REQUEST"
+                msg = f"[HTTP {status_code}] {request.method} {path}"
+                add_debug_log(
+                    level=level,
+                    category=cat,
+                    message=msg,
+                    detail={
+                        "method": request.method,
+                        "path": path,
+                        "status_code": status_code,
+                        "client_ip": request.client.host if request.client else "unknown",
+                    },
+                    source="main.py:http_middleware",
+                )
+
+        return response
+    except Exception as e:
+        add_debug_log(
+            level="ERROR",
+            category="HTTP_REQUEST",
+            message=f"[HTTP EXCEPTION] {request.method} {path}: {str(e)}",
+            detail={
+                "method": request.method,
+                "path": path,
+                "error": str(e),
+                "exception_type": type(e).__name__,
+            },
+            source="main.py:http_middleware",
+        )
+        raise e
 
 # Proteksi DDoS L7 & Brute Force Rate Limiter (dikendurkan untuk pemakaian intensif)
 app.add_middleware(RateLimiterMiddleware, default_limit=180, window_seconds=60)
