@@ -107,6 +107,7 @@ class SystemConfigIn(BaseModel):
     pembimbing_sekolah: str = "Siti Rahma, S.Pd."
     nip_pembimbing_sekolah: str = "19820101 200701 2 011"
     pejabat_jurusan: dict[str, dict[str, str]] = Field(default_factory=default_pejabat_jurusan)
+    ai_base_url: str = "http://127.0.0.1:20128/v1"
     ai_model_default: str = "deepseek-opencode"
     ai_max_tokens_per_req: int = 2048
 
@@ -536,7 +537,11 @@ def get_system_settings(
     if not cfg:
         default_val = SystemConfigIn().model_dump()
         return {"key": "global_settings", "data": default_val}
-    return {"key": "global_settings", "data": cfg.value_json}
+
+    val_json = cfg.value_json or {}
+    if "ai_base_url" in val_json and val_json["ai_base_url"]:
+        settings.ai_base_url = val_json["ai_base_url"]
+    return {"key": "global_settings", "data": val_json}
 
 
 @router.put("/settings")
@@ -555,6 +560,9 @@ def update_system_settings(
         db.add(cfg)
     else:
         cfg.value_json = val_json
+
+    if payload.ai_base_url:
+        settings.ai_base_url = payload.ai_base_url
 
     db.commit()
     log_admin_action(db, admin, "SYSTEM_SETTINGS_UPDATE", details=val_json, request=req)

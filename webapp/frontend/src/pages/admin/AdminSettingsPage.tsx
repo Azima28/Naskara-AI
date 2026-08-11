@@ -55,6 +55,7 @@ const DEFAULT_SETTINGS: SystemConfigData = {
     mp: { nama: 'Hendra Wijaya, S.Pd.', nip: '19840910 200903 1 007' },
     tb: { nama: 'Dewi Sartika, S.Pd.', nip: '19871105 201101 2 008' },
   },
+  ai_base_url: 'http://127.0.0.1:20128/v1',
   ai_model_default: 'deepseek-opencode',
   ai_max_tokens_per_req: 2048,
 }
@@ -613,37 +614,63 @@ export default function AdminSettingsPage() {
             </div>
           </div>
 
-          {/* 3. Parameter Limit Token & Uji Koneksi */}
+          {/* 3. Endpoint URL, Limit Token & Uji Koneksi */}
           <div style={sectionBoxStyle}>
             <h3 style={sectionHeaderStyle}>
-              <IconGear size={20} color="var(--green-600)" /> Parameter Limit Token &amp; Diagnostic Test
+              <IconGear size={20} color="var(--green-600)" /> Endpoint URL &amp; Parameter AI Engine
             </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
-              <div>
-                <label style={labelStyle}>Max Output Tokens Per Request</label>
+
+            <form onSubmit={handleSubmitSchoolSettings}>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={labelStyle}>URL Base Endpoint AI Provider (Port &amp; Protocol)</label>
                 <input
-                  type="number"
+                  type="text"
                   required
-                  value={config.ai_max_tokens_per_req}
-                  onChange={(e) => setConfig({ ...config, ai_max_tokens_per_req: parseInt(e.target.value) || 2048 })}
+                  placeholder="http://127.0.0.1:20128/v1"
+                  value={config.ai_base_url || 'http://127.0.0.1:20128/v1'}
+                  onChange={(e) => setConfig({ ...config, ai_base_url: e.target.value })}
                   className="form-input"
-                  style={{ width: '100%' }}
+                  style={{ width: '100%', fontFamily: 'monospace', fontSize: '0.9rem' }}
                 />
+                <span style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', marginTop: '4px', display: 'block' }}>
+                  Endpoint OpenAI-compatible local/remote proxy (default: <code style={{ background: '#f1f5f9', padding: '1px 5px', borderRadius: '3px' }}>http://127.0.0.1:20128/v1</code>).
+                </span>
               </div>
 
-              <div>
-                <label style={labelStyle}>Uji Koneksi AI Engine</label>
-                <button
-                  type="button"
-                  onClick={handleTestConnection}
-                  disabled={testingAi}
-                  className="btn btn--outline"
-                  style={{ marginTop: '4px', width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                >
-                  <IconSparkles size={16} /> {testingAi ? 'Menguji Koneksi...' : 'Jalankan Diagnostic Test AI'}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                <div>
+                  <label style={labelStyle}>Max Output Tokens Per Request</label>
+                  <input
+                    type="number"
+                    required
+                    value={config.ai_max_tokens_per_req}
+                    onChange={(e) => setConfig({ ...config, ai_max_tokens_per_req: parseInt(e.target.value) || 2048 })}
+                    className="form-input"
+                    style={{ width: '100%' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={labelStyle}>Uji Koneksi AI Engine</label>
+                  <button
+                    type="button"
+                    onClick={handleTestConnection}
+                    disabled={testingAi}
+                    className="btn btn--outline"
+                    style={{ marginTop: '4px', width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                  >
+                    <IconSparkles size={16} /> {testingAi ? 'Menguji Koneksi...' : 'Jalankan Diagnostic Test AI'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Save Bar */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                <button type="submit" disabled={saving} className="btn btn--primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <IconCheck size={16} /> {saving ? 'Menyimpan...' : 'Simpan Pengaturan AI Engine'}
                 </button>
               </div>
-            </div>
+            </form>
 
             {aiTestResult && (
               <div

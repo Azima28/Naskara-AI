@@ -32,15 +32,18 @@ class OpenAICompatibleProvider(AIProvider):
 
         # Generate candidate base_urls for dynamic Docker-Host & Native loopback fallbacks
         self.candidate_urls = [self.base_url]
-        port = "20128"
+        ports = ["20128"]
         if ":" in self.base_url.split("//")[-1]:
-            port = self.base_url.split(":")[-1].split("/")[0]
+            extracted_port = self.base_url.split(":")[-1].split("/")[0]
+            if extracted_port not in ports:
+                ports.insert(0, extracted_port)
         path = "/v1" if self.base_url.endswith("/v1") else ""
 
-        for host_ip in ["127.0.0.1", "localhost", "host.docker.internal", "172.17.0.1", "172.18.0.1", "10.0.75.1"]:
-            candidate = f"http://{host_ip}:{port}{path}"
-            if candidate not in self.candidate_urls:
-                self.candidate_urls.append(candidate)
+        for p in ports:
+            for host_ip in ["127.0.0.1", "localhost", "host.docker.internal", "172.17.0.1", "172.18.0.1", "10.0.75.1"]:
+                candidate = f"http://{host_ip}:{p}{path}"
+                if candidate not in self.candidate_urls:
+                    self.candidate_urls.append(candidate)
 
         headers = {}
         if self.api_key and self.api_key.strip():
@@ -93,8 +96,21 @@ class OpenAICompatibleProvider(AIProvider):
                         last_brace = text.rfind("}")
                         if last_brace != -1:
                             text = text[:last_brace + 1]
-                        data = json.loads(text)
-                        return data["choices"][0]["message"]["content"]
+                        try:
+                            data = json.loads(text)
+                            return data["choices"][0]["message"]["content"]
+                        except Exception as json_err:
+                            msg = f"[AI Provider Invalid Response] Endpoint {endpoint} tidak mengembalikan JSON OpenAI valid: {json_err}"
+                            print(msg)
+                            add_debug_log(
+                                level="WARNING",
+                                category="AI_PROVIDER",
+                                message=msg,
+                                detail={"endpoint": endpoint, "model": self.model, "response_snippet": resp.text[:200]},
+                                source="provider.py:generate"
+                            )
+                            last_error = json_err
+                            break
 
                 except (httpx.ConnectError, httpx.ConnectTimeout, httpx.RequestError, httpx.TransportError) as e:
                     msg = f"[AI Provider Unreachable/DNS Error] Endpoint {endpoint} tidak dapat dihubungi (Percobaan {attempt}): {e}"

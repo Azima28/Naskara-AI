@@ -92,6 +92,7 @@ export interface SystemConfigData {
   pembimbing_sekolah?: string
   nip_pembimbing_sekolah?: string
   pejabat_jurusan: Record<string, Record<string, string>>
+  ai_base_url?: string
   ai_model_default: string
   ai_max_tokens_per_req: number
 }
