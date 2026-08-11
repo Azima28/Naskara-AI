@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import urllib.parse
 import httpx
 from abc import ABC, abstractmethod
 from ..debug_logger import add_debug_log
@@ -78,25 +79,35 @@ def parse_openai_response(resp_text: str) -> str:
 
 class OpenAICompatibleProvider(AIProvider):
     def __init__(self, base_url: str, model: str, api_key: str = "not-needed", timeout: int = 120):
-        self.base_url = base_url.rstrip('/')
+        self.user_url = (base_url or "").strip()
+        self.base_url = self.user_url.rstrip('/')
         self.model = model
         self.api_key = api_key
         self.timeout = timeout
 
-        # Generate candidate base_urls for dynamic Docker-Host & Native loopback fallbacks
-        self.candidate_urls = [self.base_url]
-        ports = ["20128"]
-        if ":" in self.base_url.split("//")[-1]:
-            extracted_port = self.base_url.split(":")[-1].split("/")[0]
-            if extracted_port not in ports:
-                ports.insert(0, extracted_port)
-        path = "/v1" if self.base_url.endswith("/v1") else ""
+        # Candidate utama = URL yang diberikan user (base_url), DIPAKAI APA ADANYA
+        self.candidate_urls = [self.base_url] if self.base_url else []
 
-        for p in ports:
-            for host_ip in ["127.0.0.1", "localhost", "host.docker.internal", "172.17.0.1", "172.18.0.1", "10.0.75.1"]:
-                candidate = f"http://{host_ip}:{p}{path}"
-                if candidate not in self.candidate_urls:
-                    self.candidate_urls.append(candidate)
+        # Fallback TAMBAHAN dinamis:
+        # Jika host URL user mengandung "localhost" atau "127.0.0.1" / "host.docker.internal",
+        # buat candidate alternatif dengan host.docker.internal / 127.0.0.1 menggunakan PORT yang sama persis.
+        # DILARANG menambahkan IP/IP-list keras apa pun ke kode.
+        if self.base_url:
+            try:
+                parsed = urllib.parse.urlparse(self.base_url)
+                hostname = (parsed.hostname or "").lower()
+                if hostname in ("127.0.0.1", "localhost"):
+                    netloc = parsed.netloc.replace(parsed.hostname, "host.docker.internal")
+                    fallback = urllib.parse.urlunparse((parsed.scheme, netloc, parsed.path, parsed.params, parsed.query, parsed.fragment)).rstrip('/')
+                    if fallback and fallback not in self.candidate_urls:
+                        self.candidate_urls.append(fallback)
+                elif "host.docker.internal" in hostname:
+                    netloc = parsed.netloc.replace(parsed.hostname, "127.0.0.1")
+                    fallback = urllib.parse.urlunparse((parsed.scheme, netloc, parsed.path, parsed.params, parsed.query, parsed.fragment)).rstrip('/')
+                    if fallback and fallback not in self.candidate_urls:
+                        self.candidate_urls.append(fallback)
+            except Exception:
+                pass
 
         headers = {}
         if self.api_key and self.api_key.strip():
@@ -212,12 +223,12 @@ class OpenAICompatibleProvider(AIProvider):
                 if attempt < max_retries:
                     await asyncio.sleep(retry_delay)
 
-        err_msg = f"Gagal terhubung ke AI Provider di {self.base_url} (Port 20128): {last_error}"
+        err_msg = f"Gagal terhubung ke AI Provider di {self.user_url}: {last_error}"
         add_debug_log(
             level="ERROR",
             category="AI_PROVIDER",
             message=err_msg,
-            detail={"base_url": self.base_url, "model": self.model, "last_error": str(last_error)},
+            detail={"base_url": self.user_url, "model": self.model, "last_error": str(last_error)},
             source="provider.py:generate"
         )
         raise RuntimeError(err_msg)

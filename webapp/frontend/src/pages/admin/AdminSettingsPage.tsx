@@ -723,18 +723,17 @@ export default function AdminSettingsPage() {
 
             <form onSubmit={handleSubmitSchoolSettings}>
               <div style={{ marginBottom: '20px' }}>
-                <label style={labelStyle}>URL Base Endpoint AI Default Global (Fallback Port &amp; Protocol)</label>
+                <label style={labelStyle}>URL Base Endpoint AI Default Global (Bebas: Host/IP/Port/Domain)</label>
                 <input
                   type="text"
-                  required
-                  placeholder="http://127.0.0.1:20128/v1"
-                  value={config.ai_base_url || 'http://127.0.0.1:20128/v1'}
+                  placeholder="Contoh: http://host.docker.internal:20128/v1 atau https://api.openai.com/v1"
+                  value={config.ai_base_url ?? ''}
                   onChange={(e) => setConfig({ ...config, ai_base_url: e.target.value })}
                   className="form-input"
                   style={{ width: '100%', fontFamily: 'monospace', fontSize: '0.9rem' }}
                 />
                 <span style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', marginTop: '4px', display: 'block' }}>
-                  Endpoint default utama untuk semua model AI jika tidak dikustomisasi secara khusus (default: <code style={{ background: '#f1f5f9', padding: '1px 5px', borderRadius: '3px' }}>http://127.0.0.1:20128/v1</code>).
+                  URL aktif global runtime: <code style={{ background: '#f1f5f9', padding: '1px 5px', borderRadius: '3px', fontWeight: 700 }}>{config.ai_base_url || '(Belum Diatur)'}</code>
                 </span>
               </div>
 
@@ -744,13 +743,14 @@ export default function AdminSettingsPage() {
                   Custom Base URL Endpoint Per Model AI
                 </h4>
                 <p style={{ margin: '0 0 14px 0', fontSize: '0.8rem', color: 'var(--ink-soft)' }}>
-                  Atur URL port &amp; protocol khusus untuk masing-masing model. Misal: <code style={{ background: '#e2e8f0', padding: '1px 4px', borderRadius: '3px' }}>deepseek-opencode</code> ➔ Port 20128, <code style={{ background: '#e2e8f0', padding: '1px 4px', borderRadius: '3px' }}>gemini</code> ➔ Port 20129.
+                  Bebas memasukkan URL port &amp; domain apa saja untuk setiap model (misal: <code style={{ background: '#e2e8f0', padding: '1px 4px', borderRadius: '3px' }}>http://host.docker.internal:20128/v1</code>, <code style={{ background: '#e2e8f0', padding: '1px 4px', borderRadius: '3px' }}>http://127.0.0.1:11434/v1</code>, atau domain remote).
                 </p>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '12px' }}>
                   {availableModels.map((m) => {
                     const customUrl = (config.ai_model_endpoints || {})[m] || ''
                     const hasCustom = Boolean(customUrl && customUrl.trim())
+                    const effectiveUrl = hasCustom ? customUrl.trim() : (config.ai_base_url || 'Belum Diatur')
                     return (
                       <div key={m} style={{ background: '#ffffff', border: '1px solid var(--line)', borderRadius: '6px', padding: '12px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
@@ -761,12 +761,15 @@ export default function AdminSettingsPage() {
                         </div>
                         <input
                           type="text"
-                          placeholder={config.ai_base_url || 'http://127.0.0.1:20128/v1'}
+                          placeholder={config.ai_base_url || 'Masukkan URL (mis. http://localhost:20128/v1)'}
                           value={customUrl}
                           onChange={(e) => handleModelEndpointChange(m, e.target.value)}
                           className="form-input"
                           style={{ width: '100%', fontFamily: 'monospace', fontSize: '0.82rem' }}
                         />
+                        <span style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '4px', display: 'block' }}>
+                          URL Efektif Runtime: <code style={{ background: '#f1f5f9', padding: '1px 4px', borderRadius: '3px' }}>{effectiveUrl}</code>
+                        </span>
                       </div>
                     )
                   })}

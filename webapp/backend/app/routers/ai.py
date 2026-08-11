@@ -615,8 +615,8 @@ async def test_ai_connection(
             "message": "Koneksi ke AI Provider Berhasil!",
         }
     except Exception as e:
-        print("[AI Test Connection Error]:", type(e).__name__)
+        print("[AI Test Connection Error]:", type(e).__name__, str(e))
         return {
             "status": "error",
-            "message": "Gagal terhubung ke AI Provider.",
+            "message": f"Gagal terhubung ke AI Provider: {e}",
         }

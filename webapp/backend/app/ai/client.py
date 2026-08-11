@@ -22,12 +22,23 @@ def get_ai_provider(model: str | None = None) -> AIProvider:
 
     selected_model = model.strip() if model and model.strip() else settings.ai_model
 
-    # Cari Base URL spesifik model jika ada di dict ai_model_endpoints, fallback ke ai_base_url global jika kosong
-    resolved_base_url = (
-        settings.ai_model_endpoints.get(selected_model)
-        if hasattr(settings, "ai_model_endpoints") and settings.ai_model_endpoints.get(selected_model)
-        else settings.ai_base_url
-    )
+    # Prioritas 1: URL Base spesifik per-model dari DB (ai_model_endpoints)
+    resolved_base_url = None
+    if hasattr(settings, "ai_model_endpoints") and isinstance(settings.ai_model_endpoints, dict):
+        resolved_base_url = settings.ai_model_endpoints.get(selected_model)
+
+    # Prioritas 2: URL Base global dari DB / .env (ai_base_url)
+    if not resolved_base_url or not str(resolved_base_url).strip():
+        resolved_base_url = getattr(settings, "ai_base_url", None)
+
+    resolved_base_url = str(resolved_base_url).strip() if resolved_base_url else ""
+
+    # Prioritas 3: Error jelas jika AI Base URL belum diatur (tanpa fallback tebak-tebak)
+    if not resolved_base_url:
+        raise ValueError(
+            f"AI Base URL belum diatur untuk model '{selected_model}'. "
+            "Silakan atur Endpoint Base URL di Web Admin Settings."
+        )
 
     return OpenAICompatibleProvider(
         base_url=resolved_base_url,

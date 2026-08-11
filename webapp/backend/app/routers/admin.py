@@ -112,10 +112,7 @@ class SystemConfigIn(BaseModel):
     ai_base_url: str = "http://127.0.0.1:20128/v1"
     ai_model_default: str = "deepseek-opencode"
     ai_available_models: list[str] = Field(default_factory=lambda: ["deepseek-opencode", "gemini"])
-    ai_model_endpoints: dict[str, str] = Field(default_factory=lambda: {
-        "deepseek-opencode": "http://127.0.0.1:20128/v1",
-        "gemini": "http://127.0.0.1:20128/v1",
-    })
+    ai_model_endpoints: dict[str, str] = Field(default_factory=dict)
     ai_max_tokens_per_req: int = 2048
 
 
@@ -564,9 +561,15 @@ def get_system_settings(
     cfg = db.get(SystemConfig, "global_settings")
     if not cfg:
         default_val = SystemConfigIn().model_dump()
+        default_val["ai_base_url"] = settings.ai_base_url
+        default_val["ai_model_endpoints"] = getattr(settings, "ai_model_endpoints", {})
         return {"key": "global_settings", "data": default_val}
 
     val_json = sync_system_settings_from_db(db) or cfg.value_json or {}
+    if not val_json.get("ai_base_url"):
+        val_json["ai_base_url"] = settings.ai_base_url
+    if "ai_model_endpoints" not in val_json:
+        val_json["ai_model_endpoints"] = getattr(settings, "ai_model_endpoints", {})
     return {"key": "global_settings", "data": val_json}
 
 

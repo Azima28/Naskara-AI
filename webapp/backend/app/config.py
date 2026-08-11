@@ -58,16 +58,13 @@ class Settings(BaseSettings):
     # Maintenance
     enable_maintenance_mode: bool = False
 
-    # AI provider (9router / OpenCode / OpenAI-compatible port 20128)
+    # AI provider (9router / OpenCode / OpenAI-compatible)
     ai_enabled: bool = True
     enable_ai_security_filter: bool = True
     ai_base_url: str = "http://127.0.0.1:20128/v1"
     ai_model: str = "deepseek-opencode"
     ai_available_models: list[str] = ["deepseek-opencode", "gemini"]
-    ai_model_endpoints: dict[str, str] = {
-        "deepseek-opencode": "http://127.0.0.1:20128/v1",
-        "gemini": "http://127.0.0.1:20128/v1",
-    }
+    ai_model_endpoints: dict[str, str] = {}
     ai_api_key: str = "not-needed"
     ai_timeout: int = 120
 
