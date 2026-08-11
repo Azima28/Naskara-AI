@@ -55,6 +55,7 @@ const DEFAULT_SETTINGS: SystemConfigData = {
     mp: { nama: 'Hendra Wijaya, S.Pd.', nip: '19840910 200903 1 007' },
     tb: { nama: 'Dewi Sartika, S.Pd.', nip: '19871105 201101 2 008' },
   },
+  enable_ai_security_filter: true,
   ai_base_url: 'http://127.0.0.1:20128/v1',
   ai_model_default: 'deepseek-opencode',
   ai_max_tokens_per_req: 2048,
@@ -614,7 +615,45 @@ export default function AdminSettingsPage() {
             </div>
           </div>
 
-          {/* 3. Endpoint URL, Limit Token & Uji Koneksi */}
+          {/* 3. Filter Keamanan AI & Guardrail Switch */}
+          <div style={sectionBoxStyle}>
+            <h3 style={sectionHeaderStyle}>
+              <IconCheck size={20} color="var(--green-600)" /> Filter Keamanan &amp; Relevansi AI (Guardrail Anti-Injection)
+            </h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--ink-soft)', marginTop: 0, marginBottom: '16px' }}>
+              Aktifkan saringan keamanan untuk memblokir secara otomatis teks manipulasi sistem (prompt injection) dan pertanyaan obrolan santai di luar draf Laporan PKL SMK.
+            </p>
+
+            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+              <div>
+                <strong style={{ fontSize: '0.9rem', color: 'var(--ink)', display: 'block', marginBottom: '4px' }}>
+                  Status Filter Keamanan &amp; Relevansi: {config.enable_ai_security_filter !== false ? '🟢 AKTIF' : '⚪ NON-AKTIF'}
+                </strong>
+                <span style={{ fontSize: '0.8rem', color: 'var(--ink-soft)' }}>
+                  {config.enable_ai_security_filter !== false
+                    ? 'Sistem secara aktif memproteksi prompt injection dan mengarahkan teks ngawur siswa ke petunjuk perbaikan.'
+                    : '🔴 PERINGATAN: Filter keamanan dinonaktifkan. AI akan memproses semua input tanpa saringan pre-sanitization.'}
+                </span>
+              </div>
+
+              <label style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer', gap: '10px', userSelect: 'none' }}>
+                <input
+                  type="checkbox"
+                  checked={config.enable_ai_security_filter !== false}
+                  onChange={(e) => {
+                    const newValue = e.target.checked
+                    setConfig((prev) => ({ ...prev, enable_ai_security_filter: newValue }))
+                  }}
+                  style={{ width: '20px', height: '20px', cursor: 'pointer', accentColor: 'var(--green-600)' }}
+                />
+                <span style={{ fontSize: '0.9rem', fontWeight: 700, color: config.enable_ai_security_filter !== false ? 'var(--green-700)' : '#64748b' }}>
+                  {config.enable_ai_security_filter !== false ? 'Filter Aktif' : 'Filter Non-Aktif'}
+                </span>
+              </label>
+            </div>
+          </div>
+
+          {/* 4. Endpoint URL, Limit Token & Uji Koneksi */}
           <div style={sectionBoxStyle}>
             <h3 style={sectionHeaderStyle}>
               <IconGear size={20} color="var(--green-600)" /> Endpoint URL &amp; Parameter AI Engine

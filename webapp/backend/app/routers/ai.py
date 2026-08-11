@@ -366,22 +366,23 @@ async def regenerate(
     user: User = Depends(get_current_user)
 ) -> dict[str, str]:
     """Edit/tulis ulang bagian laporan berdasarkan instruksi (Revisi AI)."""
-    # 1. Check prompt injection & off-topic meta questions
-    combined_input = f"{req.old_text} {req.instruction}".strip()
-    is_inj, inj_msg = check_prompt_injection(combined_input)
-    if is_inj:
-        raise HTTPException(
-            status_code=400,
-            detail="Teks terdeteksi mengandung instruksi manipulasi sistem (prompt injection). Silakan perbaiki input Anda."
-        )
+    # 1. Check prompt injection & off-topic meta questions if security filter is enabled
+    if settings.enable_ai_security_filter:
+        combined_input = f"{req.old_text} {req.instruction}".strip()
+        is_inj, inj_msg = check_prompt_injection(combined_input)
+        if is_inj:
+            raise HTTPException(
+                status_code=400,
+                detail="Teks terdeteksi mengandung instruksi manipulasi sistem (prompt injection). Silakan perbaiki input Anda."
+            )
 
-    is_off_old, _ = check_off_topic_or_meta(req.old_text)
-    is_off_inst, _ = check_off_topic_or_meta(req.instruction)
-    if is_off_old or is_off_inst:
-        raise HTTPException(
-            status_code=400,
-            detail="Teks yang Anda masukkan terdeteksi sebagai pertanyaan/obrolan santai, bukan draf Laporan PKL. Silakan masukkan teks draf kegiatan PKL Anda."
-        )
+        is_off_old, _ = check_off_topic_or_meta(req.old_text)
+        is_off_inst, _ = check_off_topic_or_meta(req.instruction)
+        if is_off_old or is_off_inst:
+            raise HTTPException(
+                status_code=400,
+                detail="Teks yang Anda masukkan terdeteksi sebagai pertanyaan/obrolan santai, bukan draf Laporan PKL. Silakan masukkan teks draf kegiatan PKL Anda."
+            )
 
     provider = get_ai_provider(req.model)
 
@@ -427,19 +428,20 @@ async def parse_full_story(
     user: User = Depends(get_current_user)
 ) -> dict:
     """Menguraikan cerita bebas siswa menjadi seluruh field yang dibutuhkan secara komprehensif."""
-    is_inj, _ = check_prompt_injection(req.cerita)
-    if is_inj:
-        raise HTTPException(
-            status_code=400,
-            detail="Cerita terdeteksi mengandung instruksi manipulasi sistem (prompt injection). Silakan perbaiki input cerita Anda."
-        )
+    if settings.enable_ai_security_filter:
+        is_inj, _ = check_prompt_injection(req.cerita)
+        if is_inj:
+            raise HTTPException(
+                status_code=400,
+                detail="Cerita terdeteksi mengandung instruksi manipulasi sistem (prompt injection). Silakan perbaiki input cerita Anda."
+            )
 
-    is_off, _ = check_off_topic_or_meta(req.cerita)
-    if is_off:
-        raise HTTPException(
-            status_code=400,
-            detail="Teks yang Anda masukkan terdeteksi sebagai pertanyaan/obrolan santai, bukan cerita kegiatan PKL. Silakan tuliskan pengalaman PKL Anda."
-        )
+        is_off, _ = check_off_topic_or_meta(req.cerita)
+        if is_off:
+            raise HTTPException(
+                status_code=400,
+                detail="Teks yang Anda masukkan terdeteksi sebagai pertanyaan/obrolan santai, bukan cerita kegiatan PKL. Silakan tuliskan pengalaman PKL Anda."
+            )
 
     provider = get_ai_provider(req.model)
     
