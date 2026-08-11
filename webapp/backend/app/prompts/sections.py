@@ -127,3 +127,57 @@ Instruksi Khusus:
 2. Kembalikan HANYA teks yang baru (tanpa kata-kata pengantar seperti "Berikut adalah...").
 3. Ingat Aturan Mutlak: Tidak boleh ada bullet point, dan tetap gunakan sudut pandang "Penulis".
 """
+
+
+def get_deterministic_academic_fallback(section_key: str, ctx: dict) -> str:
+    """Menghasilkan teks templat akademik baku KBBI bawaan jurusan tanpa memanggil API LLM luar (Offline Fallback)."""
+    siswa = ctx.get("siswa", {})
+    perusahaan = ctx.get("perusahaan", {})
+    nama_siswa = siswa.get("nama", "Penulis") or "Penulis"
+    jurusan_str = siswa.get("jurusan", "Teknik Komputer dan Jaringan") or "Kompetensi Keahlian SMK"
+    nama_perusahaan = perusahaan.get("nama_lengkap") or perusahaan.get("nama") or "Dunia Usaha / Dunia Industri"
+
+    if section_key == "latar_belakang":
+        return (
+            f"Praktik Kerja Lapangan (PKL) merupakan salah satu bentuk penyelenggaraan pendidikan kejuruan yang memadukan secara sistematis dan sinkron antara program pendidikan di sekolah dengan program penguasaan keahlian yang diperoleh melalui kegiatan bekerja langsung di dunia kerja. Bagi siswa kompetensi keahlian {jurusan_str}, kegiatan ini bertujuan untuk membentuk keterampilan, kedisiplinan, serta etika kerja profesional.\n\n"
+            f"Penulis melaksanakan kegiatan Praktik Kerja Lapangan di {nama_perusahaan}. Pemilihan tempat PKL ini didasari oleh kesesuaian antara kompetensi keahlian yang dipelajari di sekolah dengan bidang aktivitas operasional yang berjalan di {nama_perusahaan}.\n\n"
+            f"Melalui pelaksanaan PKL ini, Penulis berharap dapat memperluas wawasan teknis, memahami alur kerja standar industri, serta mempersiapkan diri untuk menjadi tenaga kerja yang kompeten dan siap pakai di bidang {jurusan_str}."
+        )
+    elif section_key == "tujuan_pkl":
+        return (
+            f"1. Memperoleh pengalaman kerja nyata di {nama_perusahaan} sesuai dengan kompetensi keahlian {jurusan_str}.\n"
+            f"2. Mengaplikasikan teori dan keterampilan teknis yang telah dipelajari di sekolah ke dalam lingkungan kerja industri.\n"
+            f"3. Meningkatkan kemampuan komunikasi, kedisiplinan, serta etika profesionalisme dalam bekerja.\n"
+            f"4. Memahami alur dan standar operasional prosedur yang berlaku di {nama_perusahaan}."
+        )
+    elif section_key == "profil_sejarah":
+        return (
+            f"{nama_perusahaan} merupakan instansi/perusahaan yang bergerak di bidang pelayanan dan operasional profesional. "
+            f"Dalam menjalankan aktivitasnya, {nama_perusahaan} senantiasa berkomitmen untuk memberikan kualitas layanan terbaik serta menerapkan standar kerja yang efisien dan disiplin bagi seluruh staf dan peserta praktik."
+        )
+    elif section_key == "landasan_teori":
+        return (
+            f"Praktik Kerja Lapangan menurut Oemar Hamalik (2001: 21) adalah model pelatihan yang bertujuan untuk memberikan kecakapan yang diperlukan dalam pekerjaan tertentu sesuai dengan tuntutan kemampuan bagi pekerja. "
+            f"Menurut Wardiman Djojonegoro (1998: 79), PKL adalah suatu bentuk penyelenggaraan pendidikan keahlian kejuruan yang memadukan secara akademik program pendidikan di sekolah dan penguasaan keahlian di dunia kerja. "
+            f"Dalam konteks kompetensi keahlian {jurusan_str}, landasan teori ini menjadi acuan utama Penulis dalam melaksanakan tugas-tugas teknis selama kegiatan PKL."
+        )
+    elif section_key == "pembahasan":
+        return (
+            f"Dalam proses peningkatan kompetensi keahlian {jurusan_str} di {nama_perusahaan}, terdapat beberapa hal utama yang perlu diperhatikan. "
+            f"Penulis diwajibkan untuk memahami dan mematuhi standar operasional prosedur (SOP) yang berlaku agar setiap pengerjaan tugas berjalan secara aman, tepat, dan efisien.\n\n"
+            f"Selain aspek keterampilan teknis, aspek non-teknis seperti ketelitian, manajemen waktu, serta komunikasi kerja menjadi faktor kunci dalam menyelesaikan setiap tanggung jawab. "
+            f"Pengalaman kerja di {nama_perusahaan} memberikan pemahaman nyata bagi Penulis mengenai pentingnya kedisiplinan dan tanggung jawab profesional."
+        )
+    elif section_key == "kesimpulan_saran":
+        return (
+            "[KESIMPULAN]\n"
+            f"Pelaksanaan Praktik Kerja Lapangan selama PKL di {nama_perusahaan} memberikan pengalaman kerja nyata yang sangat berharga bagi Penulis. Penulis dapat mengaplikasikan ilmu keahlian {jurusan_str} serta memahami lingkungan kerja industri secara langsung.\n\n"
+            "[SARAN]\n"
+            f"1. Bagi Sekolah: Diharapkan dapat terus meningkatkan kerja sama dengan {nama_perusahaan} serta memperbarui sarana praktik di sekolah sesuai perkembangan industri.\n"
+            f"2. Bagi Perusahaan: Diharapkan dapat terus memberikan bimbingan dan kesempatan belajar bagi peserta PKL di masa mendatang."
+        )
+    else:
+        return (
+            f"Pelaksanaan kegiatan PKL di {nama_perusahaan} dilaksanakan sesuai dengan alur operasional yang ditetapkan. "
+            f"Penulis berusaha menjalankan seluruh tugas di bidang {jurusan_str} dengan sebaik-baiknya sesuai dengan petunjuk dari pembimbing industri."
+        )

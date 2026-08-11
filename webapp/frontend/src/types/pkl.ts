@@ -317,6 +317,16 @@ export interface Lampiran {
 // --------------------------------------------------------------------------- //
 export type PklStatus = 'collecting' | 'reviewing' | 'ready' | 'generated' | 'completed'
 
+export interface SectionErrorDetail {
+  section_key: string
+  error_type: 'REJECT_OUT_OF_SCOPE' | 'REJECT_INVALID' | 'PROMPT_INJECTION' | 'AI_TIMEOUT' | 'VALIDATION_FAILED'
+  message: string
+  source_field?: string
+  wizard_step?: number
+  raw_input_snippet?: string
+  timestamp: string
+}
+
 export interface PklContext {
   version: string
   status: PklStatus
@@ -349,6 +359,7 @@ export interface PklContext {
   lampiran: Lampiran
   generated_sections?: Record<string, any>
   judul_override?: Record<string, string>
+  section_errors?: Record<string, SectionErrorDetail>
 }
 
 // --------------------------------------------------------------------------- //

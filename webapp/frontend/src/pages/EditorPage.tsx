@@ -1,11 +1,12 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, useNavigate, useSearchParams, type NavigateFunction } from 'react-router-dom'
 import ProtectedRoute from '@/components/ProtectedRoute'
-import { getDraft, updateDraft, generateDocx, draftSectionStream, regenerateSection } from '@/api/client'
+import { getDraft, updateDraft, generateDocx, draftSectionStream, regenerateSection, getAcademicFallback } from '@/api/client'
 import DocumentOutline from '@/components/editor/DocumentOutline'
 import RequestionPanel, { type GenerateIssue, type Requestion } from '@/components/RequestionPanel'
 import NotificationModal from '@/components/common/NotificationModal'
 import MasterGenModal from '@/components/editor/MasterGenModal'
+import { SectionCorrectionCard } from '@/components/editor/SectionCorrectionCard'
 import { AiModelSelector } from '@/components/common/AiModelSelector'
 import type { PklContext } from '@/types/pkl'
 import { emptyContext } from '@/types/pkl'
@@ -2148,6 +2149,26 @@ function SectionEditor({
     }
   }
 
+  const handleApplyFallback = async () => {
+    setLoading(true)
+    try {
+      const res = await getAcademicFallback(sectionKey, ctx)
+      if (isArrayType) {
+        const arr = res.content
+          .split('\n')
+          .map((s) => s.replace(/^[0-9]+\.\s*/, '').replace(/^-\s*/, '').replace(/^[a-z]\.\s*/, '').trim())
+          .filter(Boolean)
+        onChange(polishAcademicList(arr))
+      } else {
+        onChange(polishAcademicText(res.content))
+      }
+    } catch (err: any) {
+      if (onError) onError('Gagal mengambil templat baku akademik')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const wordCount = textValue ? textValue.trim().split(/\s+/).length : 0
 
   return (
@@ -2210,6 +2231,25 @@ function SectionEditor({
       {/* Accordion Card Content (Expanded Body) */}
       {isExpanded && (
         <div style={{ marginTop: '1rem', paddingTop: '0.85rem', borderTop: '1px solid var(--line, #e2e8f0)', width: '100%', minWidth: 0, boxSizing: 'border-box' }}>
+          {ctx.section_errors?.[sectionKey] && (
+            <SectionCorrectionCard
+              sectionKey={sectionKey}
+              sectionTitle={title}
+              errorDetail={ctx.section_errors[sectionKey]}
+              draftId={(ctx as any).id || ''}
+              onApplyFallback={handleApplyFallback}
+              onRegenerateSection={async (inst) => {
+                if (inst) setInstruction(inst)
+                await handleGenerate()
+              }}
+              onClearError={() => {
+                if (ctx.section_errors?.[sectionKey]) {
+                  delete ctx.section_errors[sectionKey]
+                }
+              }}
+            />
+          )}
+
           {loading && (
             <p className="muted" style={{ fontSize: 'clamp(0.8rem, 2.5vw, 0.9rem)', color: '#187257' }}>
               Penyusun AI sedang menulis draf naratif…

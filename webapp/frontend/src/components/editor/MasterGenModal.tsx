@@ -269,6 +269,22 @@ export default function MasterGenModal({
         const msg = (d && typeof d === 'object' ? d.message : d) || err?.message || 'Timeout/Gagal AI'
         setErrorDetails((prev) => ({ ...prev, [sec.key]: msg }))
         setStatuses((prev) => ({ ...prev, [sec.key]: 'failed' }))
+
+        currentCtxRef.current = {
+          ...currentCtxRef.current,
+          section_errors: {
+            ...(currentCtxRef.current.section_errors || {}),
+            [sec.key]: {
+              section_key: sec.key,
+              error_type: d && typeof d === 'object' && d.error_type ? d.error_type : 'VALIDATION_FAILED',
+              message: msg,
+              source_field: d && typeof d === 'object' && d.source_field ? d.source_field : undefined,
+              wizard_step: d && typeof d === 'object' && d.wizard_step ? d.wizard_step : 3,
+              raw_input_snippet: d && typeof d === 'object' && d.raw_input_snippet ? d.raw_input_snippet : undefined,
+              timestamp: new Date().toISOString(),
+            },
+          },
+        }
       }
     }
 

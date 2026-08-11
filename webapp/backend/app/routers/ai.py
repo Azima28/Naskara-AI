@@ -115,6 +115,10 @@ class EnhanceContextRequest(BaseModel):
     context_data: dict
     model: str | None = Field(default=None, max_length=100)
 
+class AcademicFallbackRequest(BaseModel):
+    section_key: str = Field(..., max_length=100)
+    context_data: dict
+
 class SetActiveModelRequest(BaseModel):
     model: str = Field(..., min_length=1, max_length=100)
 
@@ -577,6 +581,16 @@ ATURAN:
             status_code=500,
             detail="Gagal merapikan data menggunakan AI. Silakan periksa koneksi AI atau coba lagi."
         )
+
+
+@router.post("/academic-fallback")
+async def get_academic_fallback(
+    req: AcademicFallbackRequest,
+    user: User = Depends(get_current_user)
+) -> dict[str, str]:
+    """Menghasilkan teks templat akademik baku KBBI bawaan jurusan tanpa memanggil API LLM luar."""
+    content = sections.get_deterministic_academic_fallback(req.section_key, req.context_data)
+    return {"content": content}
 
 
 @router.get("/test")

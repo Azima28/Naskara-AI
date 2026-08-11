@@ -263,6 +263,9 @@ export const addAiModel = (model: string) =>
 export const testAiConnection = () =>
   api.get<{ status: string; message: string }>('/ai/test').then((r) => r.data)
 
+export const getAcademicFallback = (sectionKey: string, contextData: PklContext) =>
+  api.post<{ content: string }>('/ai/academic-fallback', { section_key: sectionKey, context_data: contextData }).then((r) => r.data)
+
 export const draftSection = (sectionKey: string, contextData: PklContext, model?: string) =>
   api.post<{ content: string }>('/ai/draft-section', {
     section_key: sectionKey,
