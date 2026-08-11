@@ -237,7 +237,8 @@ async def draft_section(
                     "Ikuti aturan keras berikut dengan SANGAT KETAT:\n"
                     "1. Output HANYA paragraf narasi. DILARANG menulis heading, label, atau tag selain yang diminta.\n"
                     "2. Jika diminta tag [KESIMPULAN] dan [SARAN], tuliskan PERSIS seperti itu sebagai baris tersendiri.\n"
-                    "3. Output dalam Bahasa Indonesia formal.\n\n"
+                    "3. Output dalam Bahasa Indonesia formal.\n"
+                    "4. Jika data mentah siswa minim atau tidak jelas, gunakan pengetahuan standar kompetensi keahlian jurusan SMK siswa pada tempat PKL untuk menyusun paragraf narasi akademik baku yang relevan.\n\n"
                 ) + user_prompt
 
             draft = await provider.generate(current_system, user_prompt)
