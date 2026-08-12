@@ -125,6 +125,82 @@ function parseJobDescriptions(text: string): Array<{ posisi: string; tugas: stri
   return jobs.length > 0 ? jobs : [{ posisi: 'Staf Operasional / Teknisi Industri', tugas: [text.trim()] }]
 }
 
+// ── Persistence Helpers (localStorage State Rehydration) ──────────────────── //
+
+export interface MasterGenPersistedState {
+  draftId: string
+  statuses: Record<string, 'pending' | 'generating' | 'success' | 'failed'>
+  errorDetails: Record<string, string>
+  activePhase: 1 | 2
+  activeItemTitle: string
+  isDoneAll: boolean
+  dismissed?: boolean
+  lastUpdated: number
+}
+
+const STORAGE_PREFIX = 'naskara_master_gen_'
+
+export function getPersistedGenState(draftId: string): MasterGenPersistedState | null {
+  if (!draftId) return null
+  try {
+    const raw = localStorage.getItem(`${STORAGE_PREFIX}${draftId}`)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as MasterGenPersistedState
+    if (parsed && typeof parsed === 'object' && parsed.draftId === draftId) {
+      return parsed
+    }
+  } catch {
+    /* ignore */
+  }
+  return null
+}
+
+export function savePersistedGenState(draftId: string, patch: Partial<MasterGenPersistedState>) {
+  if (!draftId) return
+  try {
+    const existing = getPersistedGenState(draftId) || {
+      draftId,
+      statuses: {},
+      errorDetails: {},
+      activePhase: 1,
+      activeItemTitle: '',
+      isDoneAll: false,
+      dismissed: false,
+      lastUpdated: Date.now(),
+    }
+    const updated: MasterGenPersistedState = {
+      ...existing,
+      ...patch,
+      lastUpdated: Date.now(),
+    }
+    localStorage.setItem(`${STORAGE_PREFIX}${draftId}`, JSON.stringify(updated))
+  } catch {
+    /* ignore */
+  }
+}
+
+export function dismissPersistedGenState(draftId: string) {
+  if (!draftId) return
+  try {
+    const existing = getPersistedGenState(draftId)
+    if (existing) {
+      existing.dismissed = true
+      localStorage.setItem(`${STORAGE_PREFIX}${draftId}`, JSON.stringify(existing))
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+export function clearPersistedGenState(draftId: string) {
+  if (!draftId) return
+  try {
+    localStorage.removeItem(`${STORAGE_PREFIX}${draftId}`)
+  } catch {
+    /* ignore */
+  }
+}
+
 export default function MasterGenModal({
   isOpen,
   ctx,
@@ -197,20 +273,67 @@ export default function MasterGenModal({
   }, [isOpen])
 
   const startMasterGeneration = async () => {
-    setIsDoneAll(false)
-    const initialStatuses: Record<string, 'pending' | 'generating' | 'success' | 'failed'> = {}
+    const saved = getPersistedGenState(draftId)
+    let restoredStatuses: Record<string, 'pending' | 'generating' | 'success' | 'failed'> = {}
+    let restoredErrors: Record<string, string> = {}
 
-    totalItems.forEach((it) => {
-      initialStatuses[it.key] = 'pending'
-    })
-    setStatuses(initialStatuses)
+    if (saved && saved.statuses && Object.keys(saved.statuses).length > 0) {
+      restoredStatuses = { ...saved.statuses }
+      // Convert any interrupted 'generating' status back to 'pending'
+      Object.keys(restoredStatuses).forEach((k) => {
+        if (restoredStatuses[k] === 'generating') {
+          restoredStatuses[k] = 'pending'
+        }
+      })
+      restoredErrors = saved.errorDetails || {}
+      if (saved.activePhase) setActivePhase(saved.activePhase)
+      if (saved.activeItemTitle) setActiveItemTitle(saved.activeItemTitle)
+    } else {
+      totalItems.forEach((it) => {
+        restoredStatuses[it.key] = 'pending'
+      })
+      savePersistedGenState(draftId, {
+        statuses: restoredStatuses,
+        errorDetails: {},
+        isDoneAll: false,
+        dismissed: false,
+        activePhase: 1,
+        activeItemTitle: '',
+      })
+    }
+
+    setStatuses(restoredStatuses)
+    setErrorDetails(restoredErrors)
+
+    // Check if generation process was already completed prior to reload
+    const allDone = totalItems.length > 0 && totalItems.every(
+      (it) => restoredStatuses[it.key] === 'success' || restoredStatuses[it.key] === 'failed'
+    )
+    if (allDone) {
+      setIsDoneAll(true)
+      savePersistedGenState(draftId, { isDoneAll: true, statuses: restoredStatuses, errorDetails: restoredErrors })
+      onComplete(currentCtxRef.current)
+      return
+    }
+
+    setIsDoneAll(false)
 
     // ── FASE 1: Sub-bab Utama ────────────────────────────────────────────── //
     setActivePhase(1)
     for (let i = 0; i < phase1Sections.length; i++) {
       const sec = phase1Sections[i]
+      if (restoredStatuses[sec.key] === 'success') {
+        continue
+      }
+
       setActiveItemTitle(sec.title)
-      setStatuses((prev) => ({ ...prev, [sec.key]: 'generating' }))
+      restoredStatuses[sec.key] = 'generating'
+      setStatuses({ ...restoredStatuses })
+      savePersistedGenState(draftId, {
+        statuses: restoredStatuses,
+        activePhase: 1,
+        activeItemTitle: sec.title,
+      })
       setStreamText('')
 
       try {
@@ -257,7 +380,9 @@ export default function MasterGenModal({
           },
         }
 
-        setStatuses((prev) => ({ ...prev, [sec.key]: 'success' }))
+        restoredStatuses[sec.key] = 'success'
+        setStatuses({ ...restoredStatuses })
+        savePersistedGenState(draftId, { statuses: restoredStatuses })
         try {
           await updateDraft(draftId, { data: currentCtxRef.current })
         } catch {
@@ -267,8 +392,11 @@ export default function MasterGenModal({
         console.warn(`[MasterGenModal] Sub-bab ${sec.key} failed:`, err)
         const d = err?.response?.data?.detail
         const msg = (d && typeof d === 'object' ? d.message : d) || err?.message || 'Timeout/Gagal AI'
-        setErrorDetails((prev) => ({ ...prev, [sec.key]: msg }))
-        setStatuses((prev) => ({ ...prev, [sec.key]: 'failed' }))
+        restoredErrors[sec.key] = msg
+        setErrorDetails({ ...restoredErrors })
+        restoredStatuses[sec.key] = 'failed'
+        setStatuses({ ...restoredStatuses })
+        savePersistedGenState(draftId, { statuses: restoredStatuses, errorDetails: restoredErrors })
 
         currentCtxRef.current = {
           ...currentCtxRef.current,
@@ -291,8 +419,18 @@ export default function MasterGenModal({
     // ── FASE 2: Poles Profil Perusahaan (4 Item) ─────────────────────────── //
     setActivePhase(2)
     for (const p of POLISH_ITEMS) {
+      if (restoredStatuses[p.key] === 'success') {
+        continue
+      }
+
       setActiveItemTitle(p.title)
-      setStatuses((prev) => ({ ...prev, [p.key]: 'generating' }))
+      restoredStatuses[p.key] = 'generating'
+      setStatuses({ ...restoredStatuses })
+      savePersistedGenState(draftId, {
+        statuses: restoredStatuses,
+        activePhase: 2,
+        activeItemTitle: p.title,
+      })
       setStreamText('')
 
       try {
@@ -353,24 +491,38 @@ export default function MasterGenModal({
             profil_perusahaan: pr,
             generated_sections: gen,
           }
-          setStatuses((prev) => ({ ...prev, [p.key]: 'success' }))
+          restoredStatuses[p.key] = 'success'
+          setStatuses({ ...restoredStatuses })
+          savePersistedGenState(draftId, { statuses: restoredStatuses })
           try {
             await updateDraft(draftId, { data: currentCtxRef.current })
           } catch {
             /* ignore */
           }
         } else {
-          setErrorDetails((prev) => ({ ...prev, [p.key]: 'Respon AI terlalu pendek' }))
-          setStatuses((prev) => ({ ...prev, [p.key]: 'failed' }))
+          restoredErrors[p.key] = 'Respon AI terlalu pendek'
+          setErrorDetails({ ...restoredErrors })
+          restoredStatuses[p.key] = 'failed'
+          setStatuses({ ...restoredStatuses })
+          savePersistedGenState(draftId, { statuses: restoredStatuses, errorDetails: restoredErrors })
         }
       } catch (err: any) {
         console.warn(`[MasterGenModal] Item profil ${p.key} failed:`, err)
-        setErrorDetails((prev) => ({ ...prev, [p.key]: err?.message || 'Timeout/Gagal AI' }))
-        setStatuses((prev) => ({ ...prev, [p.key]: 'failed' }))
+        restoredErrors[p.key] = err?.message || 'Timeout/Gagal AI'
+        setErrorDetails({ ...restoredErrors })
+        restoredStatuses[p.key] = 'failed'
+        setStatuses({ ...restoredStatuses })
+        savePersistedGenState(draftId, { statuses: restoredStatuses, errorDetails: restoredErrors })
       }
     }
 
     setIsDoneAll(true)
+    savePersistedGenState(draftId, {
+      isDoneAll: true,
+      statuses: restoredStatuses,
+      errorDetails: restoredErrors,
+      activeItemTitle: '',
+    })
     onComplete(currentCtxRef.current)
   }
 
@@ -477,12 +629,28 @@ export default function MasterGenModal({
         }
       }
 
-      setStatuses((prev) => ({ ...prev, [item.key]: 'success' }))
+      setStatuses((prev) => {
+        const next = { ...prev, [item.key]: 'success' as const }
+        const allDone = totalItems.length > 0 && totalItems.every((it) => next[it.key] === 'success' || next[it.key] === 'failed')
+        savePersistedGenState(draftId, { statuses: next, isDoneAll: allDone })
+        if (allDone) setIsDoneAll(true)
+        return next
+      })
       await updateDraft(draftId, { data: currentCtxRef.current })
       onComplete(currentCtxRef.current)
     } catch (err: any) {
-      setErrorDetails((prev) => ({ ...prev, [item.key]: err?.message || 'Timeout/Gagal AI' }))
-      setStatuses((prev) => ({ ...prev, [item.key]: 'failed' }))
+      const msg = err?.message || 'Timeout/Gagal AI'
+      setErrorDetails((prev) => {
+        const nextErrs = { ...prev, [item.key]: msg }
+        setStatuses((prevSt) => {
+          const nextSt = { ...prevSt, [item.key]: 'failed' as const }
+          const allDone = totalItems.length > 0 && totalItems.every((it) => nextSt[it.key] === 'success' || nextSt[it.key] === 'failed')
+          savePersistedGenState(draftId, { statuses: nextSt, errorDetails: nextErrs, isDoneAll: allDone })
+          if (allDone) setIsDoneAll(true)
+          return nextSt
+        })
+        return nextErrs
+      })
     }
   }
 
@@ -613,7 +781,7 @@ export default function MasterGenModal({
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 'clamp(0.75rem, 2.3vw, 0.82rem)', marginBottom: '0.35rem', fontWeight: 600, color: 'var(--ink, #262521)', flexWrap: 'wrap', gap: '0.25rem' }}>
               <span style={{ wordBreak: 'break-word', flex: 1, minWidth: 0 }}>
                 Progres ({processedCount} / {totalCount} Diproses
-                {failedCount > 0 ? ` — ${successCount} OK, ${failedCount} Asli` : ''})
+                {failedCount > 0 ? ` — ${successCount} OK, ${failedCount} Gagal` : ''})
               </span>
               <span style={{ color: 'var(--green-700, #14614a)', fontWeight: 700, flexShrink: 0 }}>{progressPercent}%</span>
             </div>
@@ -648,9 +816,15 @@ export default function MasterGenModal({
               <span style={{ fontSize: 'clamp(0.76rem, 2.3vw, 0.82rem)', fontWeight: 600, color: '#38bdf8', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', flex: 1, minWidth: 0 }}>
                 {!isDoneAll && <span className="spinner" style={{ width: 12, height: 12, border: '2px solid #38bdf8', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />}
                 {isDoneAll ? (
-                  <span style={{ color: '#4ade80', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <IconCheck size={15} color="#4ade80" style={{ flexShrink: 0 }} /> Seluruh Penyusunan Selesai (100%)
-                  </span>
+                  failedCount > 0 ? (
+                    <span style={{ color: '#fbbf24', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <IconAlert size={15} color="#fbbf24" style={{ flexShrink: 0 }} /> Penyusunan Selesai dengan Kendala ({failedCount} Gagal)
+                    </span>
+                  ) : (
+                    <span style={{ color: '#4ade80', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <IconCheck size={15} color="#4ade80" style={{ flexShrink: 0 }} /> Seluruh Penyusunan Selesai (100%)
+                    </span>
+                  )
                 ) : (
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>
                     <IconLightning size={14} color="#38bdf8" style={{ flexShrink: 0 }} />
@@ -680,7 +854,15 @@ export default function MasterGenModal({
                 boxSizing: 'border-box',
               }}
             >
-              {streamText || (isDoneAll ? 'Penyusunan telah selesai 100%. Silakan klik tombol di bawah untuk melihat hasil laporan.' : 'Menyiapkan prompt akademis...')}
+              {streamText || (
+                isDoneAll ? (
+                  failedCount > 0
+                    ? `Penyusunan telah selesai, namun terdapat ${failedCount} bagian yang belum terisi optimal. Silakan klik 'Coba Lagi' pada bagian yang gagal di bawah.`
+                    : 'Penyusunan telah selesai 100% tanpa kendala. Silakan klik tombol di bawah untuk melihat hasil laporan.'
+                ) : (
+                  'Menyiapkan prompt akademis...'
+                )
+              )}
             </div>
           </div>
 
@@ -827,6 +1009,7 @@ export default function MasterGenModal({
               className="btn-primary"
               disabled={!isDoneAll}
               onClick={() => {
+                dismissPersistedGenState(draftId)
                 onComplete(currentCtxRef.current)
                 onClose()
               }}

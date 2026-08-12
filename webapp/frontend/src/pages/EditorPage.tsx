@@ -5,7 +5,7 @@ import { getDraft, updateDraft, generateDocx, draftSectionStream, regenerateSect
 import DocumentOutline from '@/components/editor/DocumentOutline'
 import RequestionPanel, { type GenerateIssue, type Requestion } from '@/components/RequestionPanel'
 import NotificationModal from '@/components/common/NotificationModal'
-import MasterGenModal from '@/components/editor/MasterGenModal'
+import MasterGenModal, { getPersistedGenState, clearPersistedGenState } from '@/components/editor/MasterGenModal'
 import { SectionCorrectionCard } from '@/components/editor/SectionCorrectionCard'
 import { AiModelSelector } from '@/components/common/AiModelSelector'
 import type { PklContext } from '@/types/pkl'
@@ -118,15 +118,23 @@ function EditorInner() {
   const [activeSectionKey, setActiveSectionKey] = useState<string | undefined>(undefined)
 
   const handleStartMasterBatch = () => {
+    if (draftId) {
+      clearPersistedGenState(draftId)
+    }
     setShowMasterModal(true)
   }
 
-  // Auto-trigger Master Generation Modal on mount if ?batch=true parameter is present
+  // Auto-trigger or restore active Master Generation Modal state on mount/reload
   useEffect(() => {
-    if (searchParams.get('batch') === 'true' && !loading) {
-      setShowMasterModal(true)
+    if (!loading && draftId) {
+      const savedState = getPersistedGenState(draftId)
+      if (savedState && !savedState.dismissed) {
+        setShowMasterModal(true)
+      } else if (searchParams.get('batch') === 'true') {
+        setShowMasterModal(true)
+      }
     }
-  }, [searchParams, loading])
+  }, [searchParams, loading, draftId])
 
   const flushSave = useCallback(async (extraStatus: string = 'completed') => {
     if (savingPromiseRef.current) {
