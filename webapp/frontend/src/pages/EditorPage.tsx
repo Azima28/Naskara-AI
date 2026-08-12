@@ -10,7 +10,7 @@ import { SectionCorrectionCard } from '@/components/editor/SectionCorrectionCard
 import { AiModelSelector } from '@/components/common/AiModelSelector'
 import type { PklContext } from '@/types/pkl'
 import { emptyContext } from '@/types/pkl'
-import { IconDocument, IconDownload, IconAlert, IconPencil, IconCheck } from '@/components/common/Icons'
+import { IconDocument, IconDownload, IconAlert, IconPencil, IconCheck, IconBook, IconFolder, IconChecklist, IconChevronDown, IconChevronRight, IconSparkles } from '@/components/common/Icons'
 import { MaintenanceBanner } from '@/components/common/MaintenanceBanner'
 import { polishAcademicText, polishAcademicList } from '@/utils/textPolish'
 import { findFirstInvalidField } from '@/utils/validationHelpers'
@@ -404,7 +404,11 @@ function EditorInner() {
             >
               {saveState === 'saving' && 'menyimpan…'}
               {saveState === 'saved' && 'tersimpan ✓'}
-              {saveState === 'error' && 'Gagal ⚠'}
+              {saveState === 'error' && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
+                  <IconAlert size={13} color="#dc2626" /> Gagal
+                </span>
+              )}
             </span>
           )}
         </div>
@@ -1677,7 +1681,7 @@ interface ParentChapter {
   id: string
   title: string
   subtitle: string
-  icon: string
+  icon: React.ReactNode
   items: { key: string; title: string; type?: 'standard' | 'visi_misi' | 'job_descriptions' | 'front_matter' | 'lampiran' }[]
 }
 
@@ -1787,8 +1791,8 @@ function ChapterAccordionGroup({
           <span style={{ fontSize: 'clamp(0.68rem, 2vw, 0.75rem)', background: chapterIsLocked ? '#ece8de' : '#ffffff', border: '1px solid var(--line-strong, #b9b09c)', padding: '0.15rem 0.5rem', borderRadius: '14px', fontWeight: 700, color: chapterIsLocked ? '#64748b' : 'var(--green-700, #14614a)', whiteSpace: 'nowrap' }}>
             {filledCount} / {chapter.items.length} Bagian
           </span>
-          <span style={{ fontSize: '0.85rem', color: chapterIsLocked ? '#94a3b8' : 'var(--green-700, #14614a)', fontWeight: 700, flexShrink: 0 }}>
-            {isOpen ? '▼' : '▶'}
+          <span style={{ fontSize: '0.85rem', color: chapterIsLocked ? '#94a3b8' : 'var(--green-700, #14614a)', fontWeight: 700, flexShrink: 0, display: 'inline-flex', alignItems: 'center' }}>
+            {isOpen ? <IconChevronDown size={16} /> : <IconChevronRight size={16} />}
           </span>
         </div>
       </div>
@@ -1893,14 +1897,14 @@ function DocumentReaderView({
       id: 'front_matter',
       title: 'HALAMAN DEPAN (FRONT MATTER)',
       subtitle: 'Cover, Halaman Pengesahan, Identitas Siswa/Industri & Kata Pengantar',
-      icon: '📘',
+      icon: <IconBook size={20} color="var(--green-700, #14614a)" />,
       items: [{ key: 'front_matter_summary', title: 'Halaman Depan Dokumen', type: 'front_matter' }],
     },
     {
       id: 'bab_1',
       title: 'BAB I: PENDAHULUAN',
       subtitle: 'Latar Belakang, Tujuan PKL, Sejarah & Profil Perusahaan, Tata Tertib, Struktur, Job Desc',
-      icon: '📗',
+      icon: <IconDocument size={20} color="var(--green-700, #14614a)" />,
       items: [
         { key: 'latar_belakang', title: '1.1 Latar Belakang' },
         { key: 'tujuan_pkl', title: '1.2 Tujuan Kegiatan PKL' },
@@ -1915,7 +1919,7 @@ function DocumentReaderView({
       id: 'bab_2',
       title: 'BAB II: KEGIATAN DI INDUSTRI',
       subtitle: 'Proses & Ringkasan Kegiatan Operasional Industri Per Seksi/Divisi',
-      icon: '📙',
+      icon: <IconFolder size={20} color="var(--green-700, #14614a)" />,
       items: sections.filter((s) => s.key.startsWith('kegiatan_') && s.key.endsWith('_intro')).length > 0
         ? sections.filter((s) => s.key.startsWith('kegiatan_') && s.key.endsWith('_intro'))
         : [{ key: 'proses_kegiatan', title: '2.1 Ringkasan Proses Kegiatan Industri' }],
@@ -1924,7 +1928,7 @@ function DocumentReaderView({
       id: 'bab_3',
       title: 'BAB III: TINJAUAN PUSTAKA',
       subtitle: 'Landasan Teori Akademis Paraphrased AI, Asas PKL & Sejarah Sekolah',
-      icon: '📕',
+      icon: <IconBook size={20} color="var(--green-700, #14614a)" />,
       items: [
         { key: 'landasan_teori', title: '3.1 Landasan Teori Akademis' },
       ],
@@ -1933,7 +1937,7 @@ function DocumentReaderView({
       id: 'bab_4',
       title: 'BAB IV: DATA PENGAMATAN',
       subtitle: 'Pelaksanaan Pekerjaan, Studi Kasus Problem Solving & Rincian Peralatan',
-      icon: '📒',
+      icon: <IconChecklist size={20} color="var(--green-700, #14614a)" />,
       items: sections.filter((s) => s.key === 'studi_kasus_proses' || s.key.startsWith('detail_kegiatan')).length > 0
         ? sections.filter((s) => s.key === 'studi_kasus_proses' || s.key.startsWith('detail_kegiatan'))
         : [
@@ -1945,21 +1949,21 @@ function DocumentReaderView({
       id: 'bab_5',
       title: 'BAB V: PEMBAHASAN',
       subtitle: 'Hal-hal yang Perlu Diperhatikan & Analisis Peningkatan Kompetensi Industri',
-      icon: '📔',
+      icon: <IconDocument size={20} color="var(--green-700, #14614a)" />,
       items: [{ key: 'pembahasan', title: '5.1 Pembahasan & Analisis Peningkatan Kompetensi' }],
     },
     {
       id: 'bab_6',
       title: 'BAB VI: KESIMPULAN DAN SARAN',
       subtitle: 'Kesimpulan Laporan PKL & Saran Konstruktif untuk Sekolah / Industri',
-      icon: '📑',
+      icon: <IconDocument size={20} color="var(--green-700, #14614a)" />,
       items: [{ key: 'kesimpulan_saran', title: '6.1 Kesimpulan & 6.2 Saran' }],
     },
     {
       id: 'back_matter',
       title: 'HALAMAN BELAKANG & LAMPIRAN',
       subtitle: 'Daftar Pustaka, Jurnal Kegiatan, Absensi, Penilaian & Foto Dokumentasi',
-      icon: '📂',
+      icon: <IconFolder size={20} color="var(--green-700, #14614a)" />,
       items: [{ key: 'lampiran_summary', title: 'Daftar Pustaka & Lampiran Dokumentasi', type: 'lampiran' }],
     },
   ]
@@ -2311,9 +2315,9 @@ function SectionEditor({
                     type="button"
                     className="btn-primary"
                     onClick={handleGenerate}
-                    style={{ fontSize: 'clamp(0.78rem, 2.3vw, 0.85rem)', flexWrap: 'wrap', boxSizing: 'border-box' }}
+                    style={{ fontSize: 'clamp(0.78rem, 2.3vw, 0.85rem)', flexWrap: 'wrap', boxSizing: 'border-box', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
                   >
-                    ✨ Generate AI Bagian Ini
+                    <IconSparkles size={14} style={{ flexShrink: 0 }} /> Generate AI Bagian Ini
                   </button>
                 )}
 

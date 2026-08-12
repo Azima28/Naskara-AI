@@ -15,6 +15,8 @@ import {
   IconTrash,
   IconChecklist,
   IconCheck,
+  IconShield,
+  IconLock,
 } from '@/components/common/Icons'
 
 export default function DashboardPage() {
@@ -130,7 +132,7 @@ function DashboardInner() {
           <div className="dash-header__user">
             {user?.role === 'admin' && (
               <Link to="/admin" className="btn-sm btn-outline" style={{ borderColor: 'var(--red-600, #dc2626)', color: 'var(--red-600, #dc2626)', marginRight: '8px' }}>
-                🛡️ Panel Admin
+                <IconShield size={14} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} /> Panel Admin
               </Link>
             )}
             <div className="user-profile-badge">
@@ -240,8 +242,8 @@ function DashboardInner() {
                     : 'Form Data Wizard belum lengkap.'
                   setModal({
                     isOpen: true,
-                    title: '🔒 Form Data Wizard Belum Lengkap',
-                    message: `⚠️ Lengkapi Form Data Wizard terlebih dahulu sebelum membuka Editor. ${detailMsg}`,
+                    title: 'Form Data Wizard Belum Lengkap',
+                    message: `Lengkapi Form Data Wizard terlebih dahulu sebelum membuka Editor. ${detailMsg}`,
                     type: 'warning',
                   })
                 }
@@ -255,16 +257,16 @@ function DashboardInner() {
                       : 'Form Data Wizard belum lengkap.'
                     setModal({
                       isOpen: true,
-                      title: '🔒 Form Data Wizard Belum Lengkap',
-                      message: `⚠️ Form Data Wizard belum lengkap. ${detailMsg}`,
+                      title: 'Form Data Wizard Belum Lengkap',
+                      message: `Form Data Wizard belum lengkap. ${detailMsg}`,
                       type: 'warning',
                     })
                   } else {
                     setModal({
                       isOpen: true,
-                      title: '🔒 Draf Editor Belum Siap Unduh',
+                      title: 'Draf Editor Belum Siap Unduh',
                       message:
-                        '⚠️ Draf laporan belum memenuhi syarat Editor (minimal 2 sub-bab BAB I & 3 narasi terisi). Silakan klik "Edit & Rapikan Teks AI" untuk menyusun isi laporan terlebih dahulu.',
+                        'Draf laporan belum memenuhi syarat Editor (minimal 2 sub-bab BAB I & 3 narasi terisi). Silakan klik "Edit & Rapikan Teks AI" untuk menyusun isi laporan terlebih dahulu.',
                       type: 'warning',
                     })
                   }
@@ -307,7 +309,7 @@ function DashboardInner() {
                           }}
                           title="Lengkapi Form Data Wizard terlebih dahulu"
                         >
-                          <IconDocument size={14} style={{ marginRight: '0.3rem' }} /> Edit &amp; Rapikan Teks AI 🔒
+                          <IconDocument size={14} style={{ marginRight: '0.3rem' }} /> Edit &amp; Rapikan Teks AI <IconLock size={13} style={{ marginLeft: '0.2rem' }} />
                         </button>
                       )}
 
@@ -334,7 +336,7 @@ function DashboardInner() {
                           }}
                           title={!wizardOK ? 'Form Data Wizard belum lengkap' : 'Draf laporan di Editor belum memenuhi syarat (minimal 2 sub-bab BAB I & 3 narasi)'}
                         >
-                          <IconDownload size={14} style={{ marginRight: '0.3rem' }} /> Unduh .docx 🔒
+                          <IconDownload size={14} style={{ marginRight: '0.3rem' }} /> Unduh .docx <IconLock size={13} style={{ marginLeft: '0.2rem' }} />
                         </button>
                       )}
 

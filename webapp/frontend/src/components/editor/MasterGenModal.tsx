@@ -1025,8 +1025,8 @@ export default function MasterGenModal({
           <span style={{ fontSize: 'clamp(0.78rem, 2.3vw, 0.82rem)', color: 'var(--ink-soft, #555)', display: 'inline-flex', alignItems: 'center', flex: '1 1 200px', wordBreak: 'break-word' }}>
             {isDoneAll ? (
               failedCount > 0 ? (
-                <span style={{ color: '#dc2626', fontWeight: 600 }}>
-                  ⚠️ Ada {failedCount} bagian yang belum terisi optimal. Klik 'Coba Lagi' di kanan.
+                <span style={{ color: '#dc2626', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <IconAlert size={15} color="#dc2626" style={{ flexShrink: 0 }} /> Ada {failedCount} bagian yang belum terisi optimal. Klik 'Coba Lagi' di kanan.
                 </span>
               ) : (
                 <>

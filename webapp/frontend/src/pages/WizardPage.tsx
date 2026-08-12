@@ -170,7 +170,7 @@ function WizardInner() {
           const invalid = findFirstInvalidField(d.data)
           if (invalid) {
             setValError({
-              message: `⚠️ Form Data Wizard belum lengkap. Kolom WAJIB "${invalid.fieldLabel}" pada ${invalid.stepTitle} belum diisi/dipilih. Silakan lengkapi terlebih dahulu!`,
+              message: `Kolom WAJIB "${invalid.fieldLabel}" pada ${invalid.stepTitle} belum diisi/dipilih. Silakan lengkapi terlebih dahulu!`,
               fieldKey: invalid.fieldKey,
             })
             setStepIdx(invalid.stepIdx)
@@ -275,7 +275,7 @@ function WizardInner() {
       const invalid = findFirstInvalidField(currentCtx)
       if (invalid) {
         setValError({
-          message: `⚠️ Kolom WAJIB "${invalid.fieldLabel}" pada ${invalid.stepTitle} belum diisi/dipilih. Silakan lengkapi terlebih dahulu!`,
+          message: `Kolom WAJIB "${invalid.fieldLabel}" pada ${invalid.stepTitle} belum diisi/dipilih. Silakan lengkapi terlebih dahulu!`,
           fieldKey: invalid.fieldKey,
         })
         if (stepIdx !== invalid.stepIdx) {
