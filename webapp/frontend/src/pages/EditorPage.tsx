@@ -153,7 +153,7 @@ function EditorInner() {
       status: extraStatus,
     })
       .then((updated) => {
-        setCtx(updated.data)
+        if (updated?.data) setCtx(updated.data)
         setSaveState('saved')
         dirtyRef.current = false
       })
@@ -179,16 +179,17 @@ function EditorInner() {
     setLoading(true)
     getDraft(draftId)
       .then((d) => {
+        const draftData = d?.data || emptyContext()
         // Guard check: if wizard data is incomplete, redirect immediately to /wizard
-        const invalid = findFirstInvalidField(d.data)
+        const invalid = findFirstInvalidField(draftData)
         if (invalid) {
           dirtyRef.current = false
           nav(`/wizard/${draftId}?step=${invalid.stepIdx}&field=${invalid.fieldKey}&valError=true`, { replace: true })
           return
         }
 
-        setCtx(d.data)
-        setTitle(d.title)
+        setCtx(draftData)
+        setTitle(d.title || 'Laporan PKL')
         dirtyRef.current = false
       })
       .catch((err) => {

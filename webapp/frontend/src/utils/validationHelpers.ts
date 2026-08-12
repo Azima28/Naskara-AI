@@ -11,8 +11,12 @@ export interface InvalidFieldResult {
  * Pengecekan menyeluruh untuk mencari kolom WAJIB paling pertama (urutan teratas)
  * yang belum diisi atau dipilih oleh siswa di Form Wizard.
  */
-export function findFirstInvalidField(ctx: PklContext): InvalidFieldResult | null {
-  const filled = (v?: string | null) => !!v && v.trim().length > 0
+export function findFirstInvalidField(ctx?: PklContext | null): InvalidFieldResult | null {
+  if (!ctx) {
+    return { stepIdx: 0, fieldKey: 'siswa.jurusan', fieldLabel: 'Jurusan / Program Keahlian', stepTitle: 'Data Siswa' }
+  }
+
+  const filled = (v?: string | null) => !!v && typeof v === 'string' && v.trim().length > 0
 
   // 0. Data Siswa
   if (!filled(ctx.siswa?.jurusan)) return { stepIdx: 0, fieldKey: 'siswa.jurusan', fieldLabel: 'Jurusan / Program Keahlian', stepTitle: 'Data Siswa' }
@@ -73,27 +77,32 @@ export function findFirstInvalidField(ctx: PklContext): InvalidFieldResult | nul
   if (!filled(ctx.profil_perusahaan?.logo_perusahaan)) return { stepIdx: 4, fieldKey: 'profil_perusahaan.logo_perusahaan', fieldLabel: 'Logo Perusahaan', stepTitle: 'Profil Perusahaan (BAB II)' }
   if (!filled(ctx.profil_perusahaan?.sejarah)) return { stepIdx: 4, fieldKey: 'profil_perusahaan.sejarah', fieldLabel: 'Sejarah Perusahaan', stepTitle: 'Profil Perusahaan (BAB II)' }
   if (!filled(ctx.profil_perusahaan?.visi)) return { stepIdx: 4, fieldKey: 'profil_perusahaan.visi', fieldLabel: 'Visi Perusahaan', stepTitle: 'Profil Perusahaan (BAB II)' }
-  if (!ctx.profil_perusahaan?.misi || ctx.profil_perusahaan.misi.length === 0 || !filled(ctx.profil_perusahaan.misi[0])) {
+
+  const misiArr = Array.isArray(ctx.profil_perusahaan?.misi) ? ctx.profil_perusahaan.misi : []
+  if (misiArr.length === 0 || !filled(misiArr[0])) {
     return { stepIdx: 4, fieldKey: 'profil_perusahaan.misi', fieldLabel: 'Misi Perusahaan', stepTitle: 'Profil Perusahaan (BAB II)' }
   }
 
-  const tt = ctx.profil_perusahaan?.tata_tertib_perusahaan || ctx.profil_perusahaan?.tata_tertib || []
-  if (!tt || tt.length === 0 || !filled(tt[0])) {
+  const ttRaw: any = ctx.profil_perusahaan?.tata_tertib_perusahaan || ctx.profil_perusahaan?.tata_tertib || []
+  const ttArr: string[] = Array.isArray(ttRaw) ? ttRaw : typeof ttRaw === 'string' && String(ttRaw).trim() ? [String(ttRaw)] : []
+  if (ttArr.length === 0 || !filled(ttArr[0])) {
     return { stepIdx: 4, fieldKey: 'profil_perusahaan.tata_tertib_perusahaan', fieldLabel: 'Tata Tertib Perusahaan', stepTitle: 'Profil Perusahaan (BAB II)' }
   }
-  if (!ctx.profil_perusahaan?.jam_kerja || ctx.profil_perusahaan.jam_kerja.length === 0) {
+
+  const jkArr = Array.isArray(ctx.profil_perusahaan?.jam_kerja) ? ctx.profil_perusahaan.jam_kerja : []
+  if (jkArr.length === 0) {
     return { stepIdx: 4, fieldKey: 'profil_perusahaan.jam_kerja', fieldLabel: 'Jadwal Jam Kerja', stepTitle: 'Profil Perusahaan (BAB II)' }
   }
 
   // 5. Kegiatan, Peralatan & Kendala
-  const kegs = ctx.kegiatan || []
-  const hasValidKeg = kegs.some(k => filled(k.bidang) || (k.tugas || []).some(t => filled(t.nama)))
+  const kegs = Array.isArray(ctx.kegiatan) ? ctx.kegiatan : []
+  const hasValidKeg = kegs.some(k => filled(k?.bidang) || (Array.isArray(k?.tugas) && k.tugas.some(t => filled(t?.nama))))
   if (!hasValidKeg) return { stepIdx: 5, fieldKey: 'kegiatan', fieldLabel: 'Kegiatan Utama PKL', stepTitle: 'Kegiatan, Peralatan & Kendala' }
-  const peralatans = ctx.peralatan || []
-  if (!peralatans.some(p => filled(p.nama))) return { stepIdx: 5, fieldKey: 'peralatan', fieldLabel: 'Nama Peralatan', stepTitle: 'Kegiatan, Peralatan & Kendala' }
-  const kendalas = ctx.kendala || []
-  if (!kendalas.some(k => filled(k.masalah) && filled(k.solusi))) return { stepIdx: 5, fieldKey: 'kendala', fieldLabel: 'Kendala & Solusi', stepTitle: 'Kegiatan, Peralatan & Kendala' }
-  const pelajaran = ctx.pelajaran || []
+  const peralatans = Array.isArray(ctx.peralatan) ? ctx.peralatan : []
+  if (!peralatans.some(p => filled(p?.nama))) return { stepIdx: 5, fieldKey: 'peralatan', fieldLabel: 'Nama Peralatan', stepTitle: 'Kegiatan, Peralatan & Kendala' }
+  const kendalas = Array.isArray(ctx.kendala) ? ctx.kendala : []
+  if (!kendalas.some(k => filled(k?.masalah) && filled(k?.solusi))) return { stepIdx: 5, fieldKey: 'kendala', fieldLabel: 'Kendala & Solusi', stepTitle: 'Kegiatan, Peralatan & Kendala' }
+  const pelajaran = Array.isArray(ctx.pelajaran) ? ctx.pelajaran : []
   if (!pelajaran.some(p => filled(p))) return { stepIdx: 5, fieldKey: 'pelajaran', fieldLabel: 'Pelajaran / Pengalaman', stepTitle: 'Kegiatan, Peralatan & Kendala' }
 
   // 6. Studi Kasus Teknis
@@ -110,13 +119,14 @@ export function findFirstInvalidField(ctx: PklContext): InvalidFieldResult | nul
   if (!filled(ctx.kata_pengantar?.tanggal)) return { stepIdx: 7, fieldKey: 'kata_pengantar.tanggal', fieldLabel: 'Tanggal Penulisan Kata Pengantar', stepTitle: 'Penutup & Kesimpulan' }
 
   // 8. Assets & Lampiran
-  const hasFoto = (ctx.assets && ctx.assets.length > 0) || (ctx.lampiran?.foto_kegiatan && ctx.lampiran.foto_kegiatan.length > 0)
+  const hasFoto = (Array.isArray(ctx.assets) && ctx.assets.length > 0) || (Array.isArray(ctx.lampiran?.foto_kegiatan) && ctx.lampiran.foto_kegiatan.length > 0)
   if (!hasFoto) return { stepIdx: 8, fieldKey: 'lampiran.foto_kegiatan', fieldLabel: 'Foto Dokumentasi Kegiatan (Minimal 1 Foto)', stepTitle: 'Lampiran & Foto' }
 
   return null
 }
 
-export function isWizardComplete(ctx: PklContext): boolean {
+export function isWizardComplete(ctx?: PklContext | null): boolean {
+  if (!ctx) return false
   return findFirstInvalidField(ctx) === null
 }
 
@@ -131,7 +141,8 @@ const MAIN_NARRATIVE_KEYS = [
   'kesimpulan_saran',
 ]
 
-export function isEditorComplete(ctx: PklContext): boolean {
+export function isEditorComplete(ctx?: PklContext | null): boolean {
+  if (!ctx) return false
   const gen = ctx.generated_sections || {}
   const prof = ctx.profil_perusahaan || {}
 
