@@ -126,23 +126,14 @@ export const SectionCorrectionCard: React.FC<SectionCorrectionCardProps> = ({
         </div>
       )}
 
-      {/* 3 Resolution Options Panel */}
-      <div
-        style={{
-          background: '#ffffff',
-          borderRadius: '10px',
-          border: '1px solid #fde68a',
-          padding: 'clamp(0.6rem, 2.2vw, 0.85rem)',
-          width: '100%',
-          boxSizing: 'border-box',
-        }}
-      >
+      {/* 3 Resolution Options Panel (Clean Flat Direct Layout - No Border inside Border) */}
+      <div style={{ marginTop: '0.65rem', paddingTop: '0.55rem', borderTop: '1px dashed #fcd34d' }}>
         <strong style={{ fontSize: 'clamp(0.78rem, 2.3vw, 0.84rem)', color: '#92400e', display: 'block', marginBottom: '0.65rem' }}>
           Pilih 1 dari 3 Cara Penyelesaian Berikut:
         </strong>
 
         {/* Option A: Inline Re-prompt Fix */}
-        <div style={{ marginBottom: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px dashed #fde68a' }}>
+        <div style={{ marginBottom: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px dashed #fcd34d' }}>
           <label style={{ fontSize: 'clamp(0.75rem, 2.2vw, 0.8rem)', fontWeight: 700, color: '#1c1917', display: 'block', marginBottom: '0.35rem', wordBreak: 'break-word' }}>
             Opsi 1: Tulis Ulang Teks / Instruksi Tambahan (Inline)
           </label>
@@ -191,7 +182,7 @@ export const SectionCorrectionCard: React.FC<SectionCorrectionCardProps> = ({
         </div>
 
         {/* Option B: Jump Back to Wizard Form */}
-        <div style={{ marginBottom: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px dashed #fde68a' }}>
+        <div style={{ marginBottom: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px dashed #fcd34d' }}>
           <label style={{ fontSize: 'clamp(0.75rem, 2.2vw, 0.8rem)', fontWeight: 700, color: '#1c1917', display: 'block', marginBottom: '0.35rem', wordBreak: 'break-word' }}>
             Opsi 2: Edit Sumber Data Utama di Form Wizard
           </label>
@@ -206,8 +197,8 @@ export const SectionCorrectionCard: React.FC<SectionCorrectionCardProps> = ({
               fontSize: 'clamp(0.75rem, 2.2vw, 0.82rem)',
               fontWeight: 700,
               color: '#b45309',
-              borderColor: '#fde68a',
-              background: '#fffbeb',
+              borderColor: '#fcd34d',
+              background: '#ffffff',
               borderRadius: '6px',
               padding: '0.45rem 0.8rem',
               textDecoration: 'none',
@@ -240,7 +231,7 @@ export const SectionCorrectionCard: React.FC<SectionCorrectionCardProps> = ({
               fontWeight: 700,
               color: '#475569',
               borderColor: '#cbd5e1',
-              background: '#f8fafc',
+              background: '#ffffff',
               borderRadius: '6px',
               padding: '0.45rem 0.8rem',
               width: '100%',
