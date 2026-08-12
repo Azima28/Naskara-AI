@@ -80,7 +80,7 @@ export default function AdminLogsPage() {
         listAuditLogs(),
         getHealthDetail(),
       ])
-      setDebugLogs(debugRes.items || [])
+      setDebugLogs((debugRes.items || []).sort((a, b) => a.id - b.id))
       setAuditLogs(auditRes.items || [])
       setAuditTotal(auditRes.total || 0)
       setHealth(healthRes)

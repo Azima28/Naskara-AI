@@ -119,9 +119,10 @@ def get_debug_logs(
 
         result.append(item)
 
-    # Return newest logs up to limit
-    result.sort(key=lambda x: x["id"], reverse=True)
-    return result[:limit]
+    # Ambil log terbaru sebanyak limit, lalu urutkan secara kronologis (ID ascending: terlama di atas, terbaru di bawah)
+    sliced = result[-limit:] if len(result) > limit else result
+    sliced.sort(key=lambda x: x["id"])
+    return sliced
 
 
 def clear_debug_logs() -> None:

@@ -618,7 +618,7 @@ def list_audit_logs(
 ) -> dict[str, Any]:
     """Menampilkan riwayat jejak audit (AuditLog) aktivitas administrator."""
     total = db.query(func.count(AuditLog.id)).scalar() or 0
-    logs = db.query(AuditLog).order_by(AuditLog.created_at.desc()).offset(skip).limit(limit).all()
+    logs = db.query(AuditLog).order_by(AuditLog.created_at.asc()).offset(skip).limit(limit).all()
 
     items = []
     for l in logs:
