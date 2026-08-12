@@ -203,13 +203,13 @@ function EditorInner() {
 
   // Autosave
   useEffect(() => {
-    if (loading || !dirtyRef.current || !draftId) return
+    if (loading || !dirtyRef.current || !draftId || showMasterModal) return
     setSaveState('saving')
     const t = setTimeout(() => {
       flushSave('completed')
     }, 2000)
     return () => clearTimeout(t)
-  }, [ctx, draftId, loading, flushSave])
+  }, [ctx, draftId, loading, flushSave, showMasterModal])
 
   // Unmount & page leave cleanup
   useEffect(() => {
@@ -833,16 +833,33 @@ function EditorInner() {
 
 function getSectionValue(ctx: PklContext, key: string): string | string[] {
   const gen = ctx.generated_sections || {}
-  if (key in gen) {
-    return gen[key] ?? ''
+  const val = gen[key]
+  const hasVal = Array.isArray(val) ? val.length > 0 : !!(typeof val === 'string' && val.trim())
+  if (hasVal) {
+    return val
   }
-  if (key === 'profil_sejarah' && ctx.profil_perusahaan?.sejarah) {
-    return ctx.profil_perusahaan.sejarah
+  if (key === 'profil_sejarah') {
+    return gen.profil_sejarah || ctx.profil_perusahaan?.sejarah || ''
   }
-  if (key === 'tata_tertib' && (ctx.profil_perusahaan?.tata_tertib_perusahaan?.length || ctx.profil_perusahaan?.tata_tertib?.length)) {
-    return ctx.profil_perusahaan.tata_tertib_perusahaan || ctx.profil_perusahaan.tata_tertib || ''
+  if (key === 'tata_tertib' || key === 'tata_tertib_perusahaan') {
+    return gen.tata_tertib || gen.tata_tertib_perusahaan || ctx.profil_perusahaan?.tata_tertib_perusahaan || ctx.profil_perusahaan?.tata_tertib || ''
   }
-  return ''
+  if (key === 'visi_misi') {
+    if (gen.visi_misi) return gen.visi_misi
+    const visi = ctx.profil_perusahaan?.visi || ''
+    const misi = ctx.profil_perusahaan?.misi || []
+    if (visi || misi.length > 0) {
+      return `[VISI]\n${visi}\n\n[MISI]\n${misi.join('\n')}`
+    }
+  }
+  if (key === 'job_descriptions') {
+    if (gen.job_descriptions) return gen.job_descriptions as any
+    const jobs = ctx.profil_perusahaan?.job_descriptions || []
+    if (jobs.length > 0) {
+      return jobs.map((j) => `[POSISI: ${j.posisi}]\n${(j.tugas || []).join('\n')}`).join('\n\n')
+    }
+  }
+  return gen[key] ?? ''
 }
 
 function buildSectionList(ctx: PklContext) {

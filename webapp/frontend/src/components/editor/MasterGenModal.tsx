@@ -385,6 +385,7 @@ export default function MasterGenModal({
             } catch {
               /* ignore */
             }
+            onComplete(currentCtxRef.current)
           },
           abortControllerRef.current.signal,
           selectedModelRef.current
@@ -508,6 +509,7 @@ export default function MasterGenModal({
               } catch {
                 /* ignore */
               }
+              onComplete(currentCtxRef.current)
             } else {
               restoredErrors[pKey] = 'Respon AI terlalu pendek'
               setErrorDetails({ ...restoredErrors })
