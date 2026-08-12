@@ -353,7 +353,11 @@ export default function MasterGenModal({
               accumulated += chunk
               setStreamText(accumulated + ' ▌')
               if (streamBoxRef.current) {
-                streamBoxRef.current.scrollTop = streamBoxRef.current.scrollHeight
+                requestAnimationFrame(() => {
+                  if (streamBoxRef.current) {
+                    streamBoxRef.current.scrollTop = streamBoxRef.current.scrollHeight
+                  }
+                })
               }
             },
             abortControllerRef.current.signal,
@@ -450,7 +454,11 @@ export default function MasterGenModal({
               accumulated += chunk
               setStreamText(accumulated + ' ▌')
               if (streamBoxRef.current) {
-                streamBoxRef.current.scrollTop = streamBoxRef.current.scrollHeight
+                requestAnimationFrame(() => {
+                  if (streamBoxRef.current) {
+                    streamBoxRef.current.scrollTop = streamBoxRef.current.scrollHeight
+                  }
+                })
               }
             },
             abortControllerRef.current.signal,
@@ -600,7 +608,11 @@ export default function MasterGenModal({
               accumulated += chunk
               setStreamText(accumulated + ' ▌')
               if (streamBoxRef.current) {
-                streamBoxRef.current.scrollTop = streamBoxRef.current.scrollHeight
+                requestAnimationFrame(() => {
+                  if (streamBoxRef.current) {
+                    streamBoxRef.current.scrollTop = streamBoxRef.current.scrollHeight
+                  }
+                })
               }
             },
             abortControllerRef.current.signal,
@@ -636,7 +648,11 @@ export default function MasterGenModal({
               accumulated += chunk
               setStreamText(accumulated + ' ▌')
               if (streamBoxRef.current) {
-                streamBoxRef.current.scrollTop = streamBoxRef.current.scrollHeight
+                requestAnimationFrame(() => {
+                  if (streamBoxRef.current) {
+                    streamBoxRef.current.scrollTop = streamBoxRef.current.scrollHeight
+                  }
+                })
               }
             },
             abortControllerRef.current.signal,
