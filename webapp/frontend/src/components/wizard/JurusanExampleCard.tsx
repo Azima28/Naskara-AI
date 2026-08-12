@@ -11,7 +11,7 @@ interface JurusanExampleCardProps {
 
 export default function JurusanExampleCard({ jurusanKey, jenisTabel }: JurusanExampleCardProps) {
   const [showModal, setShowModal] = useState(false)
-  const example: JurusanExample = getJurusanExample(jurusanKey)
+  const example: JurusanExample = getJurusanExample(jurusanKey, jenisTabel)
   const sk = example.studiKasus
 
   const effectiveType = jenisTabel || 'optimasi'

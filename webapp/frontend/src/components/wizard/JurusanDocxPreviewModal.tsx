@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { JURUSAN_EXAMPLES, type JurusanExample } from '@/utils/jurusanExamples'
+import type { JenisTabel } from '@/types/pkl'
+import { getJurusanExample, type JurusanExample } from '@/utils/jurusanExamples'
 
 interface JurusanDocxPreviewModalProps {
   isOpen: boolean
   onClose: () => void
   initialJurusanKey?: string
+  jenisTabel?: JenisTabel
   onSelectJurusan?: (jurusanValue: string, jurusanKey: string) => void
 }
 
@@ -21,18 +23,55 @@ const MAJOR_TABS = [
   { key: 'bdp', label: 'BDP / Marketing' },
 ]
 
+const JENIS_TABS: { key: JenisTabel; label: string; icon: string }[] = [
+  { key: 'optimasi', label: 'Optimasi', icon: '⚙️' },
+  { key: 'pencapaian', label: 'Pencapaian', icon: '🎯' },
+  { key: 'kesesuaian', label: 'Kesesuaian SOP', icon: '✅' },
+  { key: 'troubleshooting', label: 'Troubleshooting', icon: '🔧' },
+]
+
+const HEADER_MAP = {
+  optimasi: {
+    title: 'Tabel 4.1 Data Perbandingan Sebelum dan Sesudah Optimasi',
+    label: 'Nama / Parameter Data',
+    awal: 'Kondisi Sebelum (Awal)',
+    akhir: 'Kondisi Sesudah (Hasil Akhir)',
+  },
+  pencapaian: {
+    title: 'Tabel 4.1 Data Pencapaian Target Kerja',
+    label: 'Indikator / Parameter Target',
+    awal: 'Target Perusahaan',
+    akhir: 'Realisasi Pelaksanaan',
+  },
+  kesesuaian: {
+    title: 'Tabel 4.1 Data Kesesuaian Standar SOP',
+    label: 'Prosedur / Standar Kerja',
+    awal: 'Standar SOP / Teori',
+    akhir: 'Pelaksanaan di Lapangan',
+  },
+  troubleshooting: {
+    title: 'Tabel 4.1 Data Troubleshooting dan Penanganan Masalah',
+    label: 'Kasus / Gejala Kerusakan',
+    awal: 'Analisis Penyebab',
+    akhir: 'Tindakan / Solusi',
+  },
+}
+
 export default function JurusanDocxPreviewModal({
   isOpen,
   onClose,
   initialJurusanKey = 'mplb',
+  jenisTabel = 'optimasi',
   onSelectJurusan,
 }: JurusanDocxPreviewModalProps) {
   const [activeKey, setActiveKey] = useState<string>(initialJurusanKey || 'mplb')
+  const [activeJenis, setActiveJenis] = useState<JenisTabel>(jenisTabel || 'optimasi')
 
   if (!isOpen) return null
 
-  const example: JurusanExample = JURUSAN_EXAMPLES[activeKey] || JURUSAN_EXAMPLES['mplb']
+  const example: JurusanExample = getJurusanExample(activeKey, activeJenis)
   const sk = example.studiKasus
+  const h = HEADER_MAP[activeJenis] || HEADER_MAP.optimasi
 
   const handleApply = () => {
     if (onSelectJurusan) {
@@ -146,6 +185,52 @@ export default function JurusanDocxPreviewModal({
           })}
         </div>
 
+        {/* Jenis Tabel Sub-tabs */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.4rem',
+            padding: '0.45rem 0.85rem',
+            background: 'var(--paper-2, #ece8de)',
+            borderBottom: '1px solid var(--line, #ddd6c8)',
+            overflowX: 'auto',
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
+          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--ink-soft, #555)', flexShrink: 0, marginRight: '0.2rem' }}>
+            Jenis Analisis:
+          </span>
+          {JENIS_TABS.map((jTab) => {
+            const isActive = activeJenis === jTab.key
+            return (
+              <button
+                key={jTab.key}
+                type="button"
+                onClick={() => setActiveJenis(jTab.key)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                  padding: '0.2rem 0.55rem',
+                  borderRadius: '6px',
+                  fontSize: '0.76rem',
+                  fontWeight: 600,
+                  whiteSpace: 'nowrap',
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                  border: isActive ? '1px solid var(--green-600, #187257)' : '1px solid #cbd5e1',
+                  backgroundColor: isActive ? '#f0fdf4' : '#ffffff',
+                  color: isActive ? 'var(--green-800, #166534)' : '#475569',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                <span>{jTab.icon}</span> {jTab.label}
+              </button>
+            )
+          })}
+        </div>
+
         {/* Document Sheet Container */}
         <div
           style={{
@@ -212,7 +297,7 @@ export default function JurusanDocxPreviewModal({
             {/* Simulated Word Table */}
             <div style={{ margin: '1.2rem 0 1.5rem 0', overflowX: 'auto' }}>
               <div style={{ fontWeight: 'bold', fontSize: '10pt', marginBottom: '0.35rem', textAlign: 'center' }}>
-                Tabel 4.1 Hasil Pengamatan & Data Pengukuran ({example.badge})
+                {h.title}
               </div>
 
               <table
@@ -227,8 +312,9 @@ export default function JurusanDocxPreviewModal({
                 <thead>
                   <tr style={{ background: '#f2f2f2' }}>
                     <th style={{ border: '1px solid #000000', padding: '5px 6px', textAlign: 'center', width: '35px' }}>No</th>
-                    <th style={{ border: '1px solid #000000', padding: '5px 8px', textAlign: 'left' }}>Parameter / Nama Data</th>
-                    <th style={{ border: '1px solid #000000', padding: '5px 8px', textAlign: 'left' }}>Nilai Hasil Pengukuran</th>
+                    <th style={{ border: '1px solid #000000', padding: '5px 8px', textAlign: 'left' }}>{h.label}</th>
+                    <th style={{ border: '1px solid #000000', padding: '5px 8px', textAlign: 'left' }}>{h.awal}</th>
+                    <th style={{ border: '1px solid #000000', padding: '5px 8px', textAlign: 'left' }}>{h.akhir}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -236,7 +322,8 @@ export default function JurusanDocxPreviewModal({
                     <tr key={dIdx}>
                       <td style={{ border: '1px solid #000000', padding: '5px 6px', textAlign: 'center' }}>{dIdx + 1}</td>
                       <td style={{ border: '1px solid #000000', padding: '5px 8px' }}>{d.label}</td>
-                      <td style={{ border: '1px solid #000000', padding: '5px 8px', fontWeight: 'bold' }}>{d.nilai}</td>
+                      <td style={{ border: '1px solid #000000', padding: '5px 8px' }}>{d.sebelum || d.nilai_awal || '-'}</td>
+                      <td style={{ border: '1px solid #000000', padding: '5px 8px', fontWeight: 'bold' }}>{d.sesudah || d.nilai_akhir || d.nilai || '-'}</td>
                     </tr>
                   ))}
                 </tbody>

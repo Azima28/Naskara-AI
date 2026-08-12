@@ -50,7 +50,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
     }
   }, [])
 
-  const jurusanExample = getJurusanExample(ctx.siswa?.jurusan_key || ctx.siswa?.jurusan)
+  const jurusanExample = getJurusanExample(ctx.siswa?.jurusan_key || ctx.siswa?.jurusan, sk.jenis_tabel || 'optimasi')
   const sampleData = jurusanExample.studiKasus.data_angka
   const sample1 = sampleData[0] || { label: 'Jumlah Dokumen / Unit Diproses', sebelum: '0 Berkas', sesudah: '45 Berkas', nilai: '45 Berkas' }
 

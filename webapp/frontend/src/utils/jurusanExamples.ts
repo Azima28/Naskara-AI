@@ -41,6 +41,14 @@ export interface ContohKendalaExample {
   solusi: string
 }
 
+export interface StudiKasusExample {
+  judul: string
+  latar_belakang: string
+  proses_atau_formula: string
+  hasil: string
+  data_angka: DataAngkaExample[]
+}
+
 export interface JurusanExample {
   jurusan_key: string
   label: string
@@ -52,13 +60,8 @@ export interface JurusanExample {
   contohKegiatan?: ContohKegiatanExample[]
   contohPeralatan?: ContohPeralatanExample[]
   contohKendala?: ContohKendalaExample[]
-  studiKasus: {
-    judul: string
-    latar_belakang: string
-    proses_atau_formula: string
-    hasil: string
-    data_angka: DataAngkaExample[]
-  }
+  studiKasus: StudiKasusExample
+  studiKasusByJenis?: Record<string, StudiKasusExample>
 }
 
 export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
@@ -134,6 +137,49 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         { label: 'Kapasitas Pengunjung Bersamaan', sebelum: '20 User', sesudah: '60 User', nilai: '60 User' },
       ],
     },
+    studiKasusByJenis: {
+      optimasi: {
+        judul: 'Mempercepat Pemuatan Data Laporan pada Aplikasi Web Kasir',
+        latar_belakang: 'Halaman rekap laporan transaksi terasa sangat lambat saat dibuka karena data yang dipanggil belum di-indeks.',
+        proses_atau_formula: '1. Cek perintah SQL query yang lambat.\n2. Tambahkan indeks pada kolom tanggal transaksi.\n3. Rapikan kodingan pemanggilan tabel database.\n4. Coba buka kembali aplikasi web kasir.',
+        hasil: 'Halaman laporan web kini terbuka sangat cepat (dari 4,5 detik menjadi 0,6 detik) dan tidak ada lag lagi.',
+        data_angka: [
+          { label: 'Waktu Pemuatan Aplikasi (Speed)', sebelum: '4,5 Detik', sesudah: '0,6 Detik', nilai: '0,6 Detik' },
+          { label: 'Ukuran Bundle Website', sebelum: '12 MB', sesudah: '3,2 MB', nilai: '3,2 MB' },
+          { label: 'Kapasitas Pengunjung Bersamaan', sebelum: '20 User', sesudah: '60 User', nilai: '60 User' },
+        ],
+      },
+      pencapaian: {
+        judul: 'Pencapaian Target Pengembangan Endpoint REST API POS Kasir',
+        latar_belakang: 'Tim pengembang menetapkan target pembuatan endpoint API transaksi dan pengujian unit testing.',
+        proses_atau_formula: '1. Rancang skema database transaksi.\n2. Buat controller API checkout dan payment.\n3. Jalankan pengujian unit testing dengan Jest/Postman.',
+        hasil: 'Seluruh target endpoint API berhasil diselesaikan tepat waktu dengan coverage testing di atas target.',
+        data_angka: [
+          { label: 'Pembuatan Endpoint REST API', sebelum: '10 Endpoint (Target)', sesudah: '12 Endpoint (Realisasi)', nilai: '12 Endpoint' },
+          { label: 'Coverage Unit Testing Code', sebelum: '80% Code (Target)', sesudah: '92% Code (Realisasi)', nilai: '92% Code' },
+        ],
+      },
+      kesesuaian: {
+        judul: 'Kesesuaian Standar Coding Style & Dokumentasi API',
+        latar_belakang: 'Evaluasi penerapan standar penulisan kodingan (SOP ESLint/Prettier) dan dokumentasi Postman.',
+        proses_atau_formula: '1. Jalankan linter ESLint pada seluruh berkas project.\n2. Format ulang kodingan sesuai aturan Clean Code.\n3. Tuliskan dokumentasi API di Postman Collection.',
+        hasil: 'Kodingan 100% rapi sesuai standar perusahaan dan siap digunakan oleh tim pengembang frontend.',
+        data_angka: [
+          { label: 'Standard Code Formatting (ESLint)', sebelum: 'Wajib 100% Lolos Rule', sesudah: '100% Clean Code', nilai: '100% Clean Code' },
+          { label: 'Dokumentasi Postman Collection', sebelum: 'Lengkap Per Endpoint', sesudah: 'Terstruktur Per Divisi', nilai: 'Terstruktur' },
+        ],
+      },
+      troubleshooting: {
+        judul: 'Penanganan Memory Leak Server & Database Timeout',
+        latar_belakang: 'Server backend sering mengalami crash saat jumlah permintaan bersamaan meningkat.',
+        proses_atau_formula: '1. Analisis log error pada server Express.js.\n2. Hapus event listener yang menumpuk di memori.\n3. Atur ulang konfigurasi connection pool MySQL.',
+        hasil: 'Server backend berjalan stabil tanpa pernah crash lagi walaupun menerima beban trafik tinggi.',
+        data_angka: [
+          { label: 'Memory Leak Server Express.js', sebelum: 'Penggunaan RAM > 90%', sesudah: 'Normal (RAM 35%)', nilai: 'RAM 35%' },
+          { label: 'Koneksi Pool Database Timeout', sebelum: 'Max Connection Error', sesudah: 'Pool Stabil & Responsif', nilai: 'Stabil' },
+        ],
+      },
+    },
   },
 
   tkj: {
@@ -207,6 +253,48 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         { label: 'Pembagian Bandwidth Komputer', sebelum: 'Acak (Saling Rebut)', sesudah: 'Rata 20 Mbps / PC', nilai: '20 Mbps' },
         { label: 'Waktu Pemasangan Kabel LAN', sebelum: '3 Jam', sesudah: '45 Menit', nilai: '45 Menit' },
       ],
+    },
+    studiKasusByJenis: {
+      optimasi: {
+        judul: 'Optimasi Bandwidth & Performa Jaringan Wi-Fi Kantor',
+        latar_belakang: 'Koneksi internet kantor sering terputus dan lambat di jam kerja sibuk.',
+        proses_atau_formula: '1. Cek pemakaian bandwidth per ruangan.\n2. Buat aturan Simple Queue di MikroTik.\n3. Batasi kecepatan download pengguna Wi-Fi tamu.',
+        hasil: 'Koneksi internet menjadi sangat stabil dan lancar di seluruh divisi kantor.',
+        data_angka: [
+          { label: 'Kecepatan Internet Per User', sebelum: '1 Mbps (Lambat)', sesudah: '10 Mbps (Lancar)', nilai: '10 Mbps' },
+          { label: 'Packet Loss Jaringan Wi-Fi', sebelum: '15% Packet Loss', sesudah: '0% (Sangat Stabil)', nilai: '0%' },
+        ],
+      },
+      pencapaian: {
+        judul: 'Pencapaian Target Pemasangan Kabel LAN & Access Point',
+        latar_belakang: 'Perusahaan menargetkan peremajaan jaringan kabel LAN dan instalasi Router MikroTik di gedung baru.',
+        proses_atau_formula: '1. Tarik kabel UTP dari server room ke tiap meja kerja.\n2. Pasang konektor RJ45 dan tes dengan LAN Tester.\n3. Pasang dan konfigurasi Access Point Wi-Fi.',
+        hasil: 'Seluruh titik jaringan berhasil terpasang rapi dan aktif sebelum batas waktu yang ditentukan.',
+        data_angka: [
+          { label: 'Instalasi Titik Kabel LAN', sebelum: '20 Titik (Target)', sesudah: '24 Titik (Realisasi)', nilai: '24 Titik' },
+          { label: 'Konfigurasi Router & Access Point', sebelum: '5 Unit (Target)', sesudah: '5 Unit (Realisasi)', nilai: '5 Unit' },
+        ],
+      },
+      kesesuaian: {
+        judul: 'Kesesuaian Urutan Kabel Crimping & Labeling Server Rack',
+        latar_belakang: 'Pemeriksaan kerapian kabel jaringan sesuai standar internasional T568B.',
+        proses_atau_formula: '1. Kupas dan urutkan 8 warna kabel UTP sesuai standar T568B.\n2. Crimp dengan tang crimping hingga kuat.\n3. Beri label nama pada tiap ujung kabel sesuai port switch.',
+        hasil: 'Seluruh sambungan kabel 100% lolos uji LAN tester dan teridentifikasi dengan jelas pada rack server.',
+        data_angka: [
+          { label: 'Standar Urutan Warna Crimping (T568B)', sebelum: 'Standar T568B Wajib 100%', sesudah: '100% Lolos Tester', nilai: '100% Lolos' },
+          { label: 'Labeling Kabel Patch Cord Rack', sebelum: 'Tercatat di Dokumen Rack', sesudah: 'Sesuai Kode Port Switch', nilai: 'Sesuai Port' },
+        ],
+      },
+      troubleshooting: {
+        judul: 'Penanganan Masalah IP Conflict & Network Loop',
+        latar_belakang: 'Sejumlah komputer tidak bisa terhubung ke printer jaringan karena tabrakan IP Address.',
+        proses_atau_formula: '1. Scan seluruh alamat IP aktif di jaringan local.\n2. Ubah pengaturan IP statis komputer bermasalah ke DHCP Server.\n3. Lakukan DHCP Lease Binding pada MikroTik.',
+        hasil: 'Seluruh komputer dan printer kini dapat saling terhubung tanpa ada konflik IP lagi.',
+        data_angka: [
+          { label: 'Masalah IP Conflict Komputer', sebelum: '8 PC Terisolasi', sesudah: 'DHCP Binding Aktif', nilai: 'DHCP Binding' },
+          { label: 'Loop Jaringan pada Switch', sebelum: 'Broadcast Storming', sesudah: 'STP Loop Protect On', nilai: 'STP On' },
+        ],
+      },
     },
   },
 
@@ -282,6 +370,48 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         { label: 'Jangkauan Penonton Konten (Reach)', sebelum: '1.200 Orang', sesudah: '3.500 Orang', nilai: '3.500 Orang' },
       ],
     },
+    studiKasusByJenis: {
+      optimasi: {
+        judul: 'Optimasi Durasi Rendering & Ukuran File Video Promosi',
+        latar_belakang: 'File video promosi berukuran sangat besar sehingga proses ekspor dan upload ke sosmed sangat lama.',
+        proses_atau_formula: '1. Atur ulang bitrate ekspor di Adobe Premiere Pro.\n2. Pakai codec H.264 / HEVC yang lebih efisien.\n3. Ekspor ulang video proyek.',
+        hasil: 'Durasi rendering jauh lebih cepat dan ukuran file berkurang drastis tanpa menurunkan kualitas.',
+        data_angka: [
+          { label: 'Waktu Rendering Video 4K', sebelum: '45 Menit', sesudah: '8 Menit', nilai: '8 Menit' },
+          { label: 'Ukuran File Video (MP4)', sebelum: '2,5 GB', sesudah: '350 MB (Kualitas Jernih)', nilai: '350 MB' },
+        ],
+      },
+      pencapaian: {
+        judul: 'Pencapaian Target Desain Feed Instagram & Banner Spanduk',
+        latar_belakang: 'Klien menargetkan pembuatan aset visual promosi mingguan untuk campaign produk baru.',
+        proses_atau_formula: '1. Buat moodboard dan sketsa konsep visual.\n2. Desain postingan carousel Instagram di Adobe Illustrator.\n3. Cetak spanduk x-banner untuk display promosi toko.',
+        hasil: 'Target desain konten mingguan berhasil diselesaikan melebihi kuota target klien.',
+        data_angka: [
+          { label: 'Desain Feed Instagram (Post)', sebelum: '15 Konten (Target)', sesudah: '18 Konten (Realisasi)', nilai: '18 Konten' },
+          { label: 'Desain X-Banner & Spanduk', sebelum: '3 Banner (Target)', sesudah: '4 Banner (Realisasi)', nilai: '4 Banner' },
+        ],
+      },
+      kesesuaian: {
+        judul: 'Kesesuaian Desain dengan Brand Guideline Klien',
+        latar_belakang: 'Pemeriksaan keselarasan warna (CMYK/RGB) dan tipografi sesuai buku panduan brand.',
+        proses_atau_formula: '1. Cek kode warna Hex dan CMYK dari buku brand guideline.\n2. Pakai font resmi perusahaan pada setiap desain visual.\n3. Periksa jarak aman (safezone) penempatan logo.',
+        hasil: 'Seluruh karya desain 100% sesuai dengan standar indentitas visual perusahaan.',
+        data_angka: [
+          { label: 'Kesesuaian Warna Kode Hex/CMYK', sebelum: 'Sesuai Palette Brand', sesudah: '100% Akurat Hasil Cetak', nilai: '100% Akurat' },
+          { label: 'Penggunaan Font & Logo Safezone', sebelum: 'Aturan Brand Guideline', sesudah: 'Sesuai Standar Klien', nilai: 'Sesuai Standar' },
+        ],
+      },
+      troubleshooting: {
+        judul: 'Penanganan Perubahan Warna Cetak Buram (CMYK vs RGB)',
+        latar_belakang: 'Brosur yang dicetak mengalami perubahan warna pucat dibanding tampilan di monitor.',
+        proses_atau_formula: '1. Cek profil warna berkas dari RGB ke CMYK.\n2. Sesuaikan tingkat kepekatan tinta di Adobe Photoshop.\n3. Lakukan cetak coba (proof print) sebelum dicetak masal.',
+        hasil: 'Hasil cetakan brosur memiliki warna yang cerah dan persis sesuai dengan tampilan layar.',
+        data_angka: [
+          { label: 'Distorsi Warna Brosur Cetak', sebelum: 'Warna Pucat Beda > 30%', sesudah: 'Konversi CMYK Akurat', nilai: 'CMYK Akurat' },
+          { label: 'Penyelesaian Gambar Pecah (DPI)', sebelum: '72 DPI (Pecah)', sesudah: 'Vector / 300 DPI Jernih', nilai: '300 DPI Jernih' },
+        ],
+      },
+    },
   },
 
   upw: {
@@ -355,6 +485,48 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         { label: 'Waktu Penyusunan Jadwal Tour', sebelum: '2 Hari', sesudah: '3 Jam', nilai: '3 Jam' },
         { label: 'Indeks Kepuasan Peserta Tur', sebelum: '78%', sesudah: '98%', nilai: '98%' },
       ],
+    },
+    studiKasusByJenis: {
+      optimasi: {
+        judul: 'Optimasi Alokasi Waktu Rencana Perjalanan Wisata (Itinerary)',
+        latar_belakang: 'Peserta wisata sering kelelahan karena jadwal kunjungan antar tempat wisata terlalu padat.',
+        proses_atau_formula: '1. Evaluasi rute perjalanan dan jam kemacetan jalan.\n2. Kelompokkan objek wisata yang lokasinya berdekatan.\n3. Susun ulang durasi kunjungan di tiap lokasi.',
+        hasil: 'Peserta dapat menikmati tempat wisata dengan santai tanpa terburu-buru lagi.',
+        data_angka: [
+          { label: 'Waktu Terbuang di Kemacetan', sebelum: '3 Jam / Hari', sesudah: '45 Menit / Hari', nilai: '45 Menit' },
+          { label: 'Jumlah Destinasi Terkunjungi', sebelum: '3 Tempat (Terburu-buru)', sesudah: '5 Tempat (Sangat Nyaman)', nilai: '5 Tempat' },
+        ],
+      },
+      pencapaian: {
+        judul: 'Pencapaian Target Penjualan Paket Tour Rombongan',
+        latar_belakang: 'Target pemasaran paket tour sekolah dan studi banding perusahaan semester ini.',
+        proses_atau_formula: '1. Sebar brosur paket wisata ke sekolah dan kantor.\n2. Presentasi program wisata menarik di hadapan panitia.\n3. Lakukan reservasi armada bus dan penginapan.',
+        hasil: 'Target penjualan bus pariwisata tercapai melampaui target yang ditetapkan perusahaan.',
+        data_angka: [
+          { label: 'Penjualan Paket Tour Rombongan', sebelum: '5 Bus (Target)', sesudah: '7 Bus (Realisasi)', nilai: '7 Bus' },
+          { label: 'Kepuasan Peserta Wisata (CSAT)', sebelum: '85% (Target)', sesudah: '96% (Realisasi)', nilai: '96%' },
+        ],
+      },
+      kesesuaian: {
+        judul: 'Kesesuaian Standar Pelayanan Pemandu Wisata (SOP Tour Guiding)',
+        latar_belakang: 'Pemeriksaan kelengkapan dokumen perjalanan dan kenyamanan pemanduan turis.',
+        proses_atau_formula: '1. Periksa kelengkapan tiket masuk dan voucher makan.\n2. Lakukan sambutan hangat dan briefing keselamatan di bus.\n3. Dampingi peserta di setiap destinasi wisata.',
+        hasil: 'Seluruh rangkaian tur berjalan lancar dan sesuai dengan standar Kementerian Pariwisata.',
+        data_angka: [
+          { label: 'Checklist Kelengkapan Tiket/Voucher', sebelum: 'Wajib 100% Siap H-1', sesudah: '100% Terverifikasi', nilai: '100% Terverifikasi' },
+          { label: 'Penyampaian Briefing Keselamatan', sebelum: 'SOP Pemanduan Wisata', sesudah: 'Sesuai Standar Kemenparekraf', nilai: 'Sesuai SOP' },
+        ],
+      },
+      troubleshooting: {
+        judul: 'Penanganan Keterlambatan Armada Bus & Perubahan Destinasi',
+        latar_belakang: 'Bus pariwisata mengalami kendala mogok saat perjalanan menuju lokasi wisata.',
+        proses_atau_formula: '1. Hubungi garasi bus untuk mengirim armada pengganti.\n2. Berikan makanan ringan tambahan agar peserta tetap tenang.\n3. Alihkan rute sementara ke destinasi terdekat yang menarik.',
+        hasil: 'Peserta wisata tetap merasa puas dan perjalanan dapat dilanjutkan dengan aman.',
+        data_angka: [
+          { label: 'Penanganan Bus Wisata Mogok', sebelum: 'Potensi Delay 4 Jam', sesudah: 'Bus Pengganti Tiba 30 Mnt', nilai: 'Tiba 30 Mnt' },
+          { label: 'Kompensasi Perubahan Destinasi', sebelum: 'Keluhan Peserta Tinggi', sesudah: 'Voucher Kuliner & Tiket Bonus', nilai: 'Tiket Bonus' },
+        ],
+      },
     },
   },
 
@@ -430,6 +602,48 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         { label: 'Tingkat Kesiapan Kamar VIP', sebelum: '80%', sesudah: '100% Ready', nilai: '100%' },
       ],
     },
+    studiKasusByJenis: {
+      optimasi: {
+        judul: 'Optimasi Durasi Pembersihan Kamar Hotel (Housekeeping)',
+        latar_belakang: 'Tamu hotel sering menunggu lama saat check-in karena kamar belum selesai dibersihkan.',
+        proses_atau_formula: '1. Rapikan alur kerja penataan perlengkapan kebersihan di trolley.\n2. Terapkan metode pembersihan kamar dari area atas ke bawah.\n3. Periksa kembali kebersihan kamar mandi dengan checklist cepat.',
+        hasil: 'Kamar hotel siap digunakan lebih cepat dan tamu dapat langsung masuk tanpa menunggu lama.',
+        data_angka: [
+          { label: 'Waktu Cleaning 1 Kamar Deluxe', sebelum: '45 Menit', sesudah: '20 Menit', nilai: '20 Menit' },
+          { label: 'Ketersediaan Kamar Ready Check-in', sebelum: '60% Tepat Waktu', sesudah: '98% Ready Tepat Waktu', nilai: '98% Ready' },
+        ],
+      },
+      pencapaian: {
+        judul: 'Pencapaian Target Tingkat Okupansi Kamar & Penjualan F&B',
+        latar_belakang: 'Pencapaian target tingkat hunian kamar hotel pada musim liburan (peak season).',
+        proses_atau_formula: '1. Tawarkan paket kamar promo termasuk sarapan pagi.\n2. Tingkatkan kecepatan pelayanan saat proses check-in tamu.\n3. Berikan rekomendasi menu restoran hotel kepada tamu.',
+        hasil: 'Tingkat hunian kamar hotel mencapai target tertinggi dalam semester ini.',
+        data_angka: [
+          { label: 'Tingkat Okupansi Kamar Hotel', sebelum: '75% (Target)', sesudah: '88% (Realisasi)', nilai: '88%' },
+          { label: 'Review Positif Tamu (Online Rating)', sebelum: '4.5 / 5.0 (Target)', sesudah: '4.8 / 5.0 (Realisasi)', nilai: '4.8 / 5.0' },
+        ],
+      },
+      kesesuaian: {
+        judul: 'Kesesuaian Standar Penataan Tempat Tidur (Bed Making SOP)',
+        latar_belakang: 'Pemeriksaan kerapian seprai (sheet), pillow case, dan duvet cover sesuai standar hotel bintang 4.',
+        proses_atau_formula: '1. Pasang bed sheet dengan lipatan sudut 45 derajat yang rapi.\n2. Masukkan duvet ke dalam cover tanpa ada yang menggumpal.\n3. Susun bantal dengan posisi tegak dan simetris.',
+        hasil: 'Penataan kamar tidur tampak sangat rapi dan memenuhi standar pemeriksaan supervisor.',
+        data_angka: [
+          { label: 'Kerapian Lipatan Sudut Bed (45°)', sebelum: 'Standar Bintang 4 Wajib', sesudah: '100% Rapi Tanpa Kerutan', nilai: '100% Rapi' },
+          { label: 'Sanitasi & Kerapian Kamar Mandi', sebelum: 'Checklist SOP Kerapian', sesudah: 'Sesuai Standar Hygiene', nilai: 'Sesuai Standar' },
+        ],
+      },
+      troubleshooting: {
+        judul: 'Penanganan AC Kamar Bocor & Penanganan Keluhan Tamu',
+        latar_belakang: 'Tamu kamar 304 melaporkan pendingin ruangan (AC) meneteskan air pada malam hari.',
+        proses_atau_formula: '1. Sampaikan permohonan maaf dan kirim petugas teknisi dalam 5 menit.\n2. Bersihkan saluran pembuangan air AC yang tersumbat.\n3. Tawarkan pindah kamar atau berikan sarapan gratis sebagai kompensasi.',
+        hasil: 'Keluhan tamu tertangani dengan sangat baik dan tamu memberikan ulasan yang memuaskan.',
+        data_angka: [
+          { label: 'Respon Waktu Penanganan Komplain', sebelum: 'Lebih dari 30 Menit', sesudah: 'Teknisi Tiba dalam 5 Menit', nilai: 'Tiba 5 Mnt' },
+          { label: 'Penyelesaian Masalah Tamu', sebelum: 'Tamu Minta Move Kamar', sesudah: 'Upgraded ke Executive Suite', nilai: 'Upgraded Suite' },
+        ],
+      },
+    },
   },
 
   tb: {
@@ -503,6 +717,48 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         { label: 'Waktu Persiapan Bahan (Mise en Place)', sebelum: '2 Jam', sesudah: '45 Menit', nilai: '45 Menit' },
         { label: 'Daya Tahan Bahan Chiller', sebelum: '1 Hari', sesudah: '4 Hari (Chiller FIFO)', nilai: '4 Hari' },
       ],
+    },
+    studiKasusByJenis: {
+      optimasi: {
+        judul: 'Optimasi Waktu Penyajian Makanan (Kitchen Cooking Speed)',
+        latar_belakang: 'Pelanggan restoran mengeluh karena makanan pesanan keluar terlalu lama dari dapur.',
+        proses_atau_formula: '1. Siapkan potongan bahan makanan (mise en place) sebelum jam buka restoran.\n2. Atur tata letak alat masak agar mudah dijangkau juru masak.\n3. Bagi tugas memasak berdasarkan spesialisasi menu.',
+        hasil: 'Makanan dapat disajikan hangat ke meja pelanggan jauh lebih cepat.',
+        data_angka: [
+          { label: 'Waktu Memasak Main Course', sebelum: '25 Menit', sesudah: '10 Menit', nilai: '10 Menit' },
+          { label: 'Tingkat Sisa Bahan Makanan (Food Waste)', sebelum: '18%', sesudah: '4%', nilai: '4%' },
+        ],
+      },
+      pencapaian: {
+        judul: 'Pencapaian Target Porsi Catering & Prasmanan Acara',
+        latar_belakang: 'Target pembuatan dan penyajian porsi catering acara pernikahan 500 undangan.',
+        proses_atau_formula: '1. Hitung kebutuhan bahan baku masakan secara akurat.\n2. Lakukan proses memasak sekala besar secara bertahap.\n3. Kemas masakan ke dalam pemanas prasmanan dengan rapi.',
+        hasil: 'Seluruh porsi masakan tersaji tepat waktu dengan cita rasa yang lezat.',
+        data_angka: [
+          { label: 'Jumlah Porsi Catering Siap Saji', sebelum: '500 Porsi (Target)', sesudah: '530 Porsi (Realisasi)', nilai: '530 Porsi' },
+          { label: 'Ketepatan Waktu Delivery Food', sebelum: 'Jam 10.00 (Target)', sesudah: 'Jam 09.30 (Realisasi)', nilai: 'Jam 09.30' },
+        ],
+      },
+      kesesuaian: {
+        judul: 'Kesesuaian Standar Resep & Hygiene Sanitasi Dapur',
+        latar_belakang: 'Pemeriksaan takaran bumbu resep baku dan kebersihan peralatan masak.',
+        proses_atau_formula: '1. Timbang setiap bumbu masakan sesuai timbangan resep standar.\n2. Pakai celemek, penutup kepala, dan sarung tangan saat mengolah makanan.\n3. Cuci peralatan masak dengan air panas dan sabun sanitasi.',
+        hasil: 'Rasa masakan selalu konsisten dan dapur lolos pemeriksaan kebersihan hygiene.',
+        data_angka: [
+          { label: 'Penimbangan Gramasi Bumbu Resep', sebelum: 'Akurat Sesuai Standar', sesudah: '100% Konsistensi Rasa', nilai: '100% Konsisten' },
+          { label: 'APD & Hygiene Juru Masak', sebelum: 'Masker, Celemek, Sarung Tangan', sesudah: '100% Lolos Audit Hygiene', nilai: '100% Lolos' },
+        ],
+      },
+      troubleshooting: {
+        judul: 'Penanganan Stok Bahan Baku Utama Habis di Dapur',
+        latar_belakang: 'Bahan daging ayam segar mendadak habis saat restoran ramai di akhir pekan.',
+        proses_atau_formula: '1. Lakukan pemesanan darurat ke pemasok langganan terdekat.\n2. Tawarkan menu masakan alternatif berbahan dasar ikan/sapi kepada pelanggan.\n3. Perbaiki sistem pencatatan stok bahan di dapur.',
+        hasil: 'Pesanan pelanggan tetap terpenuhi tanpa ada kekecewaan.',
+        data_angka: [
+          { label: 'Stok Out Bahan Daging Ayam', sebelum: 'Pesanan Tertunda 1 Jam', sesudah: 'Emergency Order 15 Menit', nilai: 'Order 15 Mnt' },
+          { label: 'Penyesuaian Suhu Storage Freezer', sebelum: 'Suhu Naik (Daging Mencair)', sesudah: 'Reset Thermostat Ke -18°C', nilai: '-18°C' },
+        ],
+      },
     },
   },
 
@@ -578,6 +834,48 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         { label: 'Waktu Pembuatan Pola & Jahit', sebelum: '4 Jam', sesudah: '1,5 Jam', nilai: '1,5 Jam' },
       ],
     },
+    studiKasusByJenis: {
+      optimasi: {
+        judul: 'Optimasi Efisiensi Pemotongan Kain (Pattern Layout Optimization)',
+        latar_belakang: 'Banyak sisa perca kain terbuang saat proses pemotongan pola baju pesanan.',
+        proses_atau_formula: '1. Susun ulang tata letak pola pakaian di atas kain sampel.\n2. Manfaatkan sisa sela kain untuk membuat pola saku dan kerah.\n3. Potong kain menggunakan mesin pemotong kain presisi.',
+        hasil: 'Penggunaan bahan kain menjadi sangat hemat dan sisa kain sisa berkurang drastis.',
+        data_angka: [
+          { label: 'Efisiensi Penggunaan Kain', sebelum: '65% (Banyak Sisa)', sesudah: '90% (Sangat Hemat)', nilai: '90%' },
+          { label: 'Waktu Menjahit 1 Kemeja', sebelum: '4 Jam', sesudah: '1,5 Jam', nilai: '1,5 Jam' },
+        ],
+      },
+      pencapaian: {
+        judul: 'Pencapaian Target Produksi Seragam Batik Sekolah',
+        latar_belakang: 'Target pemenuhan order seragam batik sekolah sebanyak 100 stel baju.',
+        proses_atau_formula: '1. Buat pola standar ukuran S, M, L, dan XL.\n2. Lakukan penjahitan masal dengan sistem pembagian kerja.\n3. Lakukan pemeriksaan kerapian jahitan dan penyetrikaan.',
+        hasil: 'Seluruh seragam selesai dibuat tepat waktu dengan kualitas jahitan yang rapi.',
+        data_angka: [
+          { label: 'Produksi Stel Seragam Jadi', sebelum: '100 Stel (Target)', sesudah: '105 Stel (Realisasi)', nilai: '105 Stel' },
+          { label: 'Kesesuaian Ukuran S/M/L/XL', sebelum: '95% (Target)', sesudah: '100% (Realisasi)', nilai: '100%' },
+        ],
+      },
+      kesesuaian: {
+        judul: 'Kesesuaian Ukuran Pola & Kerapian Jahitan Sub-Part',
+        latar_belakang: 'Pemeriksaan kerapian setikan jahit (SPI) dan presisi kerah baju.',
+        proses_atau_formula: '1. Atur kerapatan setikan benang mesin jahit ke 12 setikan per inci.\n2. Pasang kain keras pada kerah baju agar berdiri tegak.\n3. Ukur simetri bagian kiri dan kanan kemeja.',
+        hasil: 'Pakaian jadi memiliki potongan yang sangat presisi dan nyaman dipakai.',
+        data_angka: [
+          { label: 'Kerapian Kepadatan Jahitan (SPI)', sebelum: '12 Setikan Per Inci SOP', sesudah: '100% Rapi & Kuat', nilai: '100% Rapi' },
+          { label: 'Presisi Simetri Kerah Baju', sebelum: 'Toleransi Kesalahan < 1mm', sesudah: 'Sesuai Standar Quality Control', nilai: 'Sesuai QC' },
+        ],
+      },
+      troubleshooting: {
+        judul: 'Penanganan Jahitan Kerut & Jarum Mesin Jahit Patah',
+        latar_belakang: 'Mesin jahit high-speed menghasilkan jahitan berkerut pada kain bahan sutra/sifon.',
+        proses_atau_formula: '1. Kendurkan tegangan benang atas pada mesin jahit.\n2. Ganti jarum mesin jahit dengan nomor lebih kecil (ukuran 9).\n3. Coba jahit pada kain sampel hingga hasil jahitan mulus.',
+        hasil: 'Kain tipis dapat dijahit dengan sangat halus tanpa ada kerutan lagi.',
+        data_angka: [
+          { label: 'Masalah Jahitan Kain Berkerut', sebelum: 'Kain Rusak & Berkerut', sesudah: 'Setel Tension Benang Rapi', nilai: 'Tension Rapi' },
+          { label: 'Jarum Mesin Jahit Sering Patah', sebelum: 'Ganti Jarum 4x / Hari', sesudah: 'Pakai Jarum No. 9 Mulus', nilai: 'Jarum No. 9' },
+        ],
+      },
+    },
   },
 
   mplb: {
@@ -651,6 +949,48 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         { label: 'Waktu Lembar Disposisi Surat', sebelum: '1 Hari', sesudah: '2 Jam', nilai: '2 Jam' },
         { label: 'Berkas Fisik Terdigitalisasi', sebelum: '0 Berkas', sesudah: '250 Berkas (PDF)', nilai: '250 Berkas' },
       ],
+    },
+    studiKasusByJenis: {
+      optimasi: {
+        judul: 'Optimasi Waktu Pencarian Berkas Arsip Surat (Sistem Kearsipan)',
+        latar_belakang: 'Petugas kesulitan menemukan dokumen berkas lama karena arsip belum ditata sistematis.',
+        proses_atau_formula: '1. Sortir surat berdasarkan tanggal dan kode klasifikasi masalah.\n2. Masukkan berkas ke dalam folder ordner yang diberi label jelas.\n3. Pindai surat ke format digital PDF dan simpan di Google Drive.',
+        hasil: 'Pencarian dokumen surat kini dapat dilakukan hanya dalam hitungan detik.',
+        data_angka: [
+          { label: 'Waktu Pencarian 1 Berkas Surat', sebelum: '25 Menit', sesudah: '1 Menit', nilai: '1 Menit' },
+          { label: 'Digitalisasi Arsip Dokumen', sebelum: '20% Tergandakan', sesudah: '100% Ter-scan & Ter-indeks', nilai: '100% Ter-scan' },
+        ],
+      },
+      pencapaian: {
+        judul: 'Pencapaian Target Pengelolaan Surat Masuk & Keluar',
+        latar_belakang: 'Target pencatatan lembar disposisi dan pengagendaan surat dinas bulan ini.',
+        proses_atau_formula: '1. Catat nomor dan perihal surat masuk di buku agenda.\n2. Buat lembar disposisi untuk diserahkan ke pimpinan.\n3. Ketik dan kirim surat balasan dinas resmi.',
+        hasil: 'Seluruh administrasi surat dinas tercatat dengan sangat rapi tanpa ada yang tertunda.',
+        data_angka: [
+          { label: 'Pencatatan Agenda Surat Masuk', sebelum: '150 Surat (Target)', sesudah: '165 Surat (Realisasi)', nilai: '165 Surat' },
+          { label: 'Pengiriman Surat Balasan Dinas', sebelum: '100% H+1 (Target)', sesudah: '100% Tepat Waktu', nilai: '100% Tepat Waktu' },
+        ],
+      },
+      kesesuaian: {
+        judul: 'Kesesuaian Format Surat Resmi (SOP Tata Naskah Dinas)',
+        latar_belakang: 'Pemeriksaan kesesuaian nomor surat, kop naskah, dan kelengkapan stempel.',
+        proses_atau_formula: '1. Gunakan templat kop surat resmi perusahaan.\n2. Periksa nomor surat, tanggal, dan alamat tujuan surat.\n3. Minta tanda tangan pimpinan dan cap stempel basah.',
+        hasil: 'Surat dinas yang diterbitkan 100% sesuai dengan tata naskah dinas resmi.',
+        data_angka: [
+          { label: 'Kesesuaian Format Kop & Margin', sebelum: 'Wajib Standar Naskah Dinas', sesudah: '100% Sesuai SOP Surat', nilai: '100% Sesuai' },
+          { label: 'Kelengkapan Lampiran & Tanda Tangan', sebelum: 'Verifikasi Sekretaris', sesudah: 'Rapi & Terstruktur', nilai: 'Terstruktur' },
+        ],
+      },
+      troubleshooting: {
+        judul: 'Penanganan Berkas Arsip Hilang / Salah Selip Folder',
+        latar_belakang: 'Dokumen kontrak kerja penting tidak ditemukan di ordner tempat penyimpanan biasa.',
+        proses_atau_formula: '1. Periksa buku peminjaman arsip kantor.\n2. Cari folder terkait menggunakan kartu tunjuk silang.\n3. Kumpulkan dokumen dan kembalikan ke ordner yang benar.',
+        hasil: 'Berkas kontrak berhasil ditemukan kembali dan sistem kearsipan dirapikan.',
+        data_angka: [
+          { label: 'Pencarian Berkas Salah Selip', sebelum: 'Dokumen Hilang 2 Hari', sesudah: 'Ketemu via Kartu Tunjuk Silang', nilai: 'Ditemukan' },
+          { label: 'Penataan Ulang Kategori Arsip', sebelum: 'Arsip Menumpuk Acak', sesudah: 'Sesuai Kode Sub-sub Masalah', nilai: 'Rapi Sub-kode' },
+        ],
+      },
     },
   },
 
@@ -726,6 +1066,48 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         { label: 'Waktu Verifikasi Invoice & Kuitansi', sebelum: '1 Hari', sesudah: '2 Jam', nilai: '2 Jam' },
       ],
     },
+    studiKasusByJenis: {
+      optimasi: {
+        judul: 'Optimasi Waktu Penyusunan Laporan Rekonsiliasi Bank',
+        latar_belakang: 'Proses pencocokan saldo kas perusahaan dan rekening koran bank dilakukan manual dan memakan waktu.',
+        proses_atau_formula: '1. Unduh mutasi rekening koran dari internet banking.\n2. Gunakan rumus VLOOKUP / IF di Microsoft Excel untuk mencocokkan transaksi.\n3. Susun laporan rekonsiliasi kas dan buat jurnal penyesuaian.',
+        hasil: 'Proses rekonsiliasi bank dapat diselesaikan jauh lebih cepat dengan akurasi tinggi.',
+        data_angka: [
+          { label: 'Waktu Penyusunan Rekonsiliasi Bank', sebelum: '3 Hari', sesudah: '2 Jam (Otomatis Excel)', nilai: '2 Jam' },
+          { label: 'Tingkat Akurasi Input Jurnal', sebelum: '92%', sesudah: '100% Balance & Akurat', nilai: '100% Balance' },
+        ],
+      },
+      pencapaian: {
+        judul: 'Pencapaian Target Verifikasi Bukti Transaksi Kas Kecil',
+        latar_belakang: 'Target pemeriksaan dan pencatatan kwitansi kas kecil (petty cash) bulanan.',
+        proses_atau_formula: '1. Kumpulkan seluruh nota dan kwitansi pengeluaran kas kecil.\n2. Verifikasi keabsahan tanda tangan dan nilai nominal transaksi.\n3. Catat transaksi ke dalam sistem aplikasi akuntansi.',
+        hasil: 'Pembukuan kas kecil selesai tepat waktu dan saldo tunai selalu sesuai.',
+        data_angka: [
+          { label: 'Verifikasi Kwitansi Transaksi', sebelum: '200 Nota (Target)', sesudah: '215 Nota (Realisasi)', nilai: '215 Nota' },
+          { label: 'Penyusunan Jurnal Penyesuaian', sebelum: '100% Tepat Waktu (Target)', sesudah: '100% Selesai H-2 Closing', nilai: 'H-2 Closing' },
+        ],
+      },
+      kesesuaian: {
+        judul: 'Kesesuaian Pembukuan dengan Standar Akuntansi (PSAK)',
+        latar_belakang: 'Evaluasi penerapan pencatatan debet-kredit dan bukti fisik transaksi sesuai PSAK.',
+        proses_atau_formula: '1. Periksa setiap jurnal agar nilai debet dan kredit selalu seimbang.\n2. Lampirkan bukti kas masuk atau kas keluar pada tiap lembar voucher.\n3. Arsipkan laporan keuangan bulanan secara rapi.',
+        hasil: 'Laporan keuangan perusahaan 100% memenuhi standar akuntansi keuangan yang berlaku.',
+        data_angka: [
+          { label: 'Pencatatan Berpasangan (Double Entry)', sebelum: 'Balance Debet Kredit', sesudah: '100% Sesuai PSAK', nilai: '100% Sesuai' },
+          { label: 'Kelengkapan Bukti Kas Masuk/Keluar', sebelum: 'Kwitansi, Stempel & TTD', sesudah: 'Sesuai Standar Audit', nilai: 'Sesuai Audit' },
+        ],
+      },
+      troubleshooting: {
+        judul: 'Penanganan Selisih Kas Kecil (Petty Cash Discrepancy)',
+        latar_belakang: 'Terjadi perbedaan antara saldo fisik uang tunai kas kecil dengan catatan di buku kas.',
+        proses_atau_formula: '1. Hitung ulang seluruh fisik uang tunai di kasir kas kecil.\n2. Lacak kembali nota transaksi kecil yang belum ter-input.\n3. Buat jurnal koreksi untuk menyesuaikan saldo kas.',
+        hasil: 'Penyebab selisih ditemukan dan saldo catatan kembali cocok dengan uang fisik.',
+        data_angka: [
+          { label: 'Selisih Saldo Kas Kecil', sebelum: 'Kurang Rp 150.000', sesudah: 'Ketemu Nota Parkir Tercecer', nilai: 'Ditemukan Nota' },
+          { label: 'Koreksi Jurnal Salah Catat', sebelum: 'Error Akun Beban', sesudah: 'Jurnal Koreksi Reversal Rapi', nilai: 'Reversal Rapi' },
+        ],
+      },
+    },
   },
 
   bdp: {
@@ -800,6 +1182,48 @@ export const JURUSAN_EXAMPLES: Record<string, JurusanExample> = {
         { label: 'Total Omzet Penjualan Bulanan', sebelum: 'Rp 4.500.000', sesudah: 'Rp 7.200.000', nilai: 'Rp 7.200.000' },
       ],
     },
+    studiKasusByJenis: {
+      optimasi: {
+        judul: 'Optimasi Jangkauan Promosi & Omzet Toko Online (Marketplace)',
+        latar_belakang: 'Jumlah pengunjung dan penjualan toko online di Shopee/Tokopedia stagnan.',
+        proses_atau_formula: '1. Perbaiki judul dan kata kunci pencarian produk (SEO Toko).\n2. Pasang iklan kata kunci produk di Shopee Ads.\n3. Buat foto produk yang menarik dengan latar belakang bersih.',
+        hasil: 'Pengunjung toko melonjak drastis dan jumlah pembeli harian meningkat pesat.',
+        data_angka: [
+          { label: 'Pengunjung Toko Per Hari (Traffic)', sebelum: '120 Orang', sesudah: '1.500 Orang', nilai: '1.500 Orang' },
+          { label: 'Jumlah Pesanan Harian (Closing)', sebelum: '5 Transaksi', sesudah: '45 Transaksi', nilai: '45 Transaksi' },
+        ],
+      },
+      pencapaian: {
+        judul: 'Pencapaian Target Omzet Penjualan & Live Streaming Product',
+        latar_belakang: 'Target omzet bulanan dan penonton live streaming jualan produk.',
+        proses_atau_formula: '1. Siapkan jadwal live streaming jualan di TikTok / Shopee Live.\n2. Berikan voucher diskon khusus bagi penonton live.\n3. Balas pertanyaan calon pembeli di kolom komentar secara interaktif.',
+        hasil: 'Target pencapaian penjualan bulanan berhasil ditembus melampaui ekspektasi.',
+        data_angka: [
+          { label: 'Target Omzet Penjualan Bulanan', sebelum: 'Rp 15 Juta (Target)', sesudah: 'Rp 18.5 Juta (Realisasi)', nilai: 'Rp 18.5 Juta' },
+          { label: 'Penonton Live Shopping TikTok', sebelum: '500 Penonton (Target)', sesudah: '1.200 Penonton (Realisasi)', nilai: '1.200 Penonton' },
+        ],
+      },
+      kesesuaian: {
+        judul: 'Kesesuaian Standar Packing Pengiriman & Pelayanan Pelanggan',
+        latar_belakang: 'Pemeriksaan kerapian pembungkusan bubble wrap dan waktu balasan chat pelanggan.',
+        proses_atau_formula: '1. Balas pesan chat pembeli kurang dari 3 menit.\n2. Bungkus barang pesanan dengan bubble wrap 3 lapis yang tebal.\n3. Tempelkan stiker fragile dan resi pengiriman dengan jelas.',
+        hasil: 'Pelanggan memberikan rating bintang 5 dan pujian atas kecepatan pelayanan.',
+        data_angka: [
+          { label: 'Waktu Balas Chat Customer (SOP)', sebelum: 'Kurang dari 5 Menit', sesudah: '100% Memenuhi SOP', nilai: '100% Memenuhi' },
+          { label: 'Keamanan Packing Bubble Wrap', sebelum: 'Bebas Rusak Pengiriman', sesudah: '0% Komplain Pecah', nilai: '0% Komplain' },
+        ],
+      },
+      troubleshooting: {
+        judul: 'Penanganan Komplain Retur Barang & Ulasan Bintang 1',
+        latar_belakang: 'Pembeli memberikan rating buruk karena barang yang dikirim salah warna.',
+        proses_atau_formula: '1. Segera hubungi pembeli dan minta maaf atas kekeliruan kirim.\n2. Kirimkan barang pengganti yang benar tanpa membebani ongkir pembeli.\n3. Minta pembeli untuk mengubah ulasan setelah barang pengganti diterima.',
+        hasil: 'Pembeli merasa puas dengan respon cepat dan mengubah rating menjadi bintang 5.',
+        data_angka: [
+          { label: 'Ulasan Bintang 1 Produk', sebelum: '3 Ulasan Negatif', sesudah: 'Ganti Produk & Rating Jadi 5', nilai: 'Rating 5' },
+          { label: 'Penanganan Resi Pengiriman Gantung', sebelum: 'Resi Gantung H+2', sesudah: 'Koordinasi Kurir & Chat Update', nilai: 'Update Chat' },
+        ],
+      },
+    },
   },
 }
 
@@ -826,9 +1250,18 @@ export function detectJurusanKey(input: string): string {
   return 'mplb'
 }
 
-export function getJurusanExample(jurusanKey?: string): JurusanExample {
-  if (!jurusanKey) return JURUSAN_EXAMPLES['mplb']
-  const key = jurusanKey.toLowerCase().trim()
-  const detectedKey = detectJurusanKey(key)
-  return JURUSAN_EXAMPLES[key] || JURUSAN_EXAMPLES[detectedKey] || JURUSAN_EXAMPLES['mplb']
+export function getJurusanExample(jurusanKey?: string, jenisTabel?: string): JurusanExample {
+  let base = JURUSAN_EXAMPLES['mplb']
+  if (jurusanKey) {
+    const key = jurusanKey.toLowerCase().trim()
+    const detectedKey = detectJurusanKey(key)
+    base = JURUSAN_EXAMPLES[key] || JURUSAN_EXAMPLES[detectedKey] || JURUSAN_EXAMPLES['mplb']
+  }
+  if (jenisTabel && base.studiKasusByJenis && base.studiKasusByJenis[jenisTabel]) {
+    return {
+      ...base,
+      studiKasus: base.studiKasusByJenis[jenisTabel],
+    }
+  }
+  return base
 }
