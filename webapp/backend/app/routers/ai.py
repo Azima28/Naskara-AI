@@ -294,22 +294,11 @@ async def draft_section(
         }
     )
 
-@router.post("/draft-section-stream")
-async def draft_section_stream(
-    req: DraftSectionRequest,
-    user: User = Depends(get_current_user)
-):
-    """Stream token/chunk respon AI secara realtime via Server-Sent Events (SSE)."""
-    if not isinstance(req.context_data, dict) or len(str(req.context_data)) > 100_000:
-        raise HTTPException(status_code=400, detail="Data konteks terlalu besar (maksimal 100KB) atau format tidak valid.")
-    provider = get_ai_provider(req.model)
-
-    ctx = req.context_data
-    siswa = ctx.get("siswa", {})
+def _get_prompt_for_section(key: str, ctx: dict) -> tuple[str, str]:
+    siswa = ctx.get("siswa") or {}
     jurusan_key = siswa.get("jurusan_key", "")
     jurusan_context = get_jurusan_context(jurusan_key)
 
-    key = req.section_key
     if key == "latar_belakang":
         user_prompt = sections.prompt_latar_belakang(ctx, jurusan_context)
     elif key == "tujuan_pkl":
@@ -337,18 +326,77 @@ async def draft_section_stream(
     elif key.startswith("kegiatan_") and key.endswith("_intro"):
         bidang = key.replace("kegiatan_", "").replace("_intro", "").replace("_", " ").title()
         deskripsi = ""
-        for keg in ctx.get("kegiatan", []):
+        for keg in (ctx.get("kegiatan") or []):
             if isinstance(keg, dict) and keg.get("bidang", "").lower() == bidang.lower():
                 deskripsi = keg.get("deskripsi_umum", "")
                 break
         user_prompt = sections.prompt_pelaksanaan(ctx, bidang, deskripsi)
     elif key == "studi_kasus_proses":
-        studi = ctx.get("studi_kasus", {})
+        studi = ctx.get("studi_kasus") or {}
         user_prompt = f"Buat paragraf naratif proses penyelesaian studi kasus/masalah berjudul '{studi.get('judul', '')}'. {jurusan_context}. Hindari penomoran list, gunakan gaya bercerita akademik."
     else:
         user_prompt = f"Buat narasi untuk bagian {key.replace('_', ' ')}. Ingat: Jangan pakai bullet point."
 
     system = LIST_POLISH_SYSTEM_PROMPT if key in ["tata_tertib_perusahaan", "visi_misi", "job_descriptions"] else SYSTEM_PROMPT_TEMPLATE
+    return system, user_prompt
+
+
+class BatchDraftSectionRequest(BaseModel):
+    section_keys: list[str]
+    context_data: dict[str, Any]
+    model: str | None = None
+
+
+@router.post("/batch-draft-sections-stream")
+async def batch_draft_sections_stream(
+    req: BatchDraftSectionRequest,
+    user: User = Depends(get_current_user)
+):
+    """Stream token/chunk respon AI untuk sekumpulan section_keys dalam 1 HTTP request via SSE."""
+    if not isinstance(req.context_data, dict) or len(str(req.context_data)) > 100_000:
+        raise HTTPException(status_code=400, detail="Data konteks terlalu besar (maksimal 100KB) atau format tidak valid.")
+
+    provider = get_ai_provider(req.model)
+    ctx = req.context_data
+
+    async def event_generator():
+        try:
+            for key in req.section_keys:
+                system, user_prompt = _get_prompt_for_section(key, ctx)
+                if not user_prompt.strip() and key in ["tata_tertib_perusahaan", "job_descriptions"]:
+                    yield f"data: {json.dumps({'section_key': key, 'done': True, 'content': ''})}\n\n"
+                    continue
+
+                full_acc = ""
+                async for chunk in provider.generate_stream(system, user_prompt):
+                    if chunk:
+                        full_acc += chunk
+                        yield f"data: {json.dumps({'section_key': key, 'content': chunk})}\n\n"
+
+                yield f"data: {json.dumps({'section_key': key, 'done': True, 'content': full_acc})}\n\n"
+
+            yield "data: [DONE]\n\n"
+        except Exception as e:
+            print(f"[SSE Batch AI Stream Error]: {type(e).__name__}")
+            err_payload = json.dumps({"error": "Terjadi kendala saat menghasilkan konten AI batch. Silakan coba beberapa saat lagi."})
+            yield f"data: {err_payload}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+@router.post("/draft-section-stream")
+async def draft_section_stream(
+    req: DraftSectionRequest,
+    user: User = Depends(get_current_user)
+):
+    """Stream token/chunk respon AI secara realtime via Server-Sent Events (SSE)."""
+    if not isinstance(req.context_data, dict) or len(str(req.context_data)) > 100_000:
+        raise HTTPException(status_code=400, detail="Data konteks terlalu besar (maksimal 100KB) atau format tidak valid.")
+    provider = get_ai_provider(req.model)
+
+    ctx = req.context_data
+    key = req.section_key
+    system, user_prompt = _get_prompt_for_section(key, ctx)
 
     async def event_generator():
         try:

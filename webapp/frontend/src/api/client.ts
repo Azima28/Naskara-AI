@@ -373,6 +373,118 @@ export async function draftSectionStream(
   }
 }
 
+export async function batchDraftSectionsStream(
+  sectionKeys: string[],
+  contextData: PklContext,
+  onSectionChunk: (key: string, chunk: string) => void,
+  onSectionDone: (key: string, content: string) => void,
+  signal?: AbortSignal,
+  model?: string
+): Promise<Record<string, string>> {
+  const rawAuth = localStorage.getItem('pkl-auth')
+  let token = ''
+  if (rawAuth) {
+    try {
+      token = JSON.parse(rawAuth).token || ''
+    } catch {
+      /* ignore */
+    }
+  }
+
+  const results: Record<string, string> = {}
+
+  try {
+    const response = await fetch('/api/ai/batch-draft-sections-stream', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}`, 'X-Access-Token': token } : {}),
+      },
+      body: JSON.stringify({
+        section_keys: sectionKeys,
+        context_data: contextData,
+        ...(model ? { model } : {}),
+      }),
+      signal,
+    })
+
+    if (!response.ok || !response.body) {
+      if (signal?.aborted) throw new Error('Aborted')
+      for (const key of sectionKeys) {
+        if (signal?.aborted) throw new Error('Aborted')
+        const single = await draftSection(key, contextData, model)
+        results[key] = single.content
+        onSectionChunk(key, single.content)
+        onSectionDone(key, single.content)
+      }
+      return results
+    }
+
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder('utf-8')
+    let buffer = ''
+    let isStreamDone = false
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done || isStreamDone) break
+
+      buffer += decoder.decode(value, { stream: true })
+      const lines = buffer.split('\n')
+      buffer = lines.pop() || ''
+
+      for (const line of lines) {
+        const trimmed = line.trim()
+        if (!trimmed || trimmed.startsWith(':')) continue
+        if (trimmed === 'data: [DONE]') {
+          isStreamDone = true
+          break
+        }
+        if (trimmed.startsWith('data: ')) {
+          try {
+            const parsed = JSON.parse(trimmed.slice(6))
+            if (parsed.error) {
+              throw new Error(parsed.error)
+            }
+            const key = parsed.section_key
+            if (key) {
+              if (parsed.content) {
+                results[key] = (results[key] || '') + parsed.content
+                onSectionChunk(key, parsed.content)
+              }
+              if (parsed.done) {
+                onSectionDone(key, results[key] || parsed.content || '')
+              }
+            }
+          } catch (e: any) {
+            if (e?.message && e.message.includes('error')) throw e
+          }
+        }
+      }
+    }
+
+    return results
+  } catch (err: any) {
+    if (signal?.aborted || err?.name === 'AbortError') {
+      throw err
+    }
+    for (const key of sectionKeys) {
+      if (!results[key]) {
+        if (signal?.aborted) throw new Error('Aborted')
+        try {
+          const single = await draftSection(key, contextData, model)
+          results[key] = single.content
+          onSectionChunk(key, single.content)
+          onSectionDone(key, single.content)
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+    return results
+  }
+}
+
 export const regenerateSection = (oldText: string, instruction: string, model?: string) =>
   api.post<{ content: string }>('/ai/regenerate', {
     old_text: oldText,

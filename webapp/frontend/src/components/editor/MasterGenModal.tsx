@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { PklContext } from '@/types/pkl'
-import { draftSectionStream, updateDraft } from '@/api/client'
+import { draftSectionStream, batchDraftSectionsStream, updateDraft } from '@/api/client'
 import { IconCheck, IconAlert, IconSparkles, IconLightning, IconRefresh } from '@/components/common/Icons'
 import { polishAcademicText, polishAcademicList } from '@/utils/textPolish'
 import { AiModelSelector } from '@/components/common/AiModelSelector'
@@ -319,260 +319,217 @@ export default function MasterGenModal({
 
     setIsDoneAll(false)
 
-    // ── FASE 1: Sub-bab Utama ────────────────────────────────────────────── //
+    // ── FASE 1: Sub-bab Utama (1 Batch Request) ────────────────────────── //
     setActivePhase(1)
-    for (let i = 0; i < phase1Sections.length; i++) {
-      const sec = phase1Sections[i]
-      if (restoredStatuses[sec.key] === 'success') {
-        continue
-      }
+    const p1KeysToRun = phase1Sections
+      .filter((sec) => restoredStatuses[sec.key] !== 'success')
+      .map((sec) => sec.key)
 
-      setActiveItemTitle(sec.title)
-      restoredStatuses[sec.key] = 'generating'
+    if (p1KeysToRun.length > 0) {
+      p1KeysToRun.forEach((k) => {
+        restoredStatuses[k] = 'generating'
+      })
       setStatuses({ ...restoredStatuses })
       savePersistedGenState(draftId, {
         statuses: restoredStatuses,
         activePhase: 1,
-        activeItemTitle: sec.title,
+        activeItemTitle: phase1Sections.find((s) => s.key === p1KeysToRun[0])?.title || '',
       })
-      setStreamText('')
+
+      abortControllerRef.current = new AbortController()
+      let streamAcc = ''
 
       try {
-        let accumulated = ''
-        abortControllerRef.current = new AbortController()
+        await batchDraftSectionsStream(
+          p1KeysToRun,
+          currentCtxRef.current,
+          (secKey, chunk) => {
+            const secDef = phase1Sections.find((s) => s.key === secKey)
+            if (secDef) setActiveItemTitle(secDef.title)
+            streamAcc += chunk
+            setStreamText(streamAcc + ' ▌')
+            if (streamBoxRef.current) {
+              requestAnimationFrame(() => {
+                if (streamBoxRef.current) {
+                  streamBoxRef.current.scrollTop = streamBoxRef.current.scrollHeight
+                }
+              })
+            }
+          },
+          async (secKey, rawContent) => {
+            streamAcc = ''
+            let parsedContent: string | string[] = rawContent
+            if (ARRAY_SECTION_KEYS.includes(secKey)) {
+              const list = (typeof parsedContent === 'string' ? parsedContent : '')
+                .split('\n')
+                .map((s: string) => s.replace(/^[0-9]+\.\s*/, '').replace(/^-\s*/, '').replace(/^[a-z]\.\s*/, '').trim())
+                .filter(Boolean)
+              parsedContent = polishAcademicList(list)
+            } else if (typeof parsedContent === 'string') {
+              parsedContent = polishAcademicText(parsedContent)
+            }
 
-        const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Timeout AI')), 90000)
+            currentCtxRef.current = {
+              ...currentCtxRef.current,
+              generated_sections: {
+                ...(currentCtxRef.current.generated_sections || {}),
+                [secKey]: parsedContent,
+              },
+            }
+
+            restoredStatuses[secKey] = 'success'
+            setStatuses({ ...restoredStatuses })
+            savePersistedGenState(draftId, { statuses: restoredStatuses })
+            try {
+              await updateDraft(draftId, { data: currentCtxRef.current })
+            } catch {
+              /* ignore */
+            }
+          },
+          abortControllerRef.current.signal,
+          selectedModelRef.current
         )
-
-        const rawContent: string = await Promise.race([
-          draftSectionStream(
-            sec.key,
-            currentCtxRef.current,
-            (chunk) => {
-              accumulated += chunk
-              setStreamText(accumulated + ' ▌')
-              if (streamBoxRef.current) {
-                requestAnimationFrame(() => {
-                  if (streamBoxRef.current) {
-                    streamBoxRef.current.scrollTop = streamBoxRef.current.scrollHeight
-                  }
-                })
-              }
-            },
-            abortControllerRef.current.signal,
-            selectedModelRef.current
-          ),
-          timeoutPromise,
-        ])
-
-        let parsedContent: string | string[] = rawContent || accumulated
-        if (ARRAY_SECTION_KEYS.includes(sec.key)) {
-          const list = (typeof parsedContent === 'string' ? parsedContent : '')
-            .split('\n')
-            .map((s: string) => s.replace(/^[0-9]+\.\s*/, '').replace(/^-\s*/, '').replace(/^[a-z]\.\s*/, '').trim())
-            .filter(Boolean)
-          parsedContent = polishAcademicList(list)
-        } else if (typeof parsedContent === 'string') {
-          parsedContent = polishAcademicText(parsedContent)
-        }
-
-        currentCtxRef.current = {
-          ...currentCtxRef.current,
-          generated_sections: {
-            ...(currentCtxRef.current.generated_sections || {}),
-            [sec.key]: parsedContent,
-          },
-        }
-
-        restoredStatuses[sec.key] = 'success'
-        setStatuses({ ...restoredStatuses })
-        savePersistedGenState(draftId, { statuses: restoredStatuses })
-        try {
-          await updateDraft(draftId, { data: currentCtxRef.current })
-        } catch {
-          /* ignore */
-        }
       } catch (err: any) {
-        console.warn(`[MasterGenModal] Sub-bab ${sec.key} failed:`, err)
-        const d = err?.response?.data?.detail
-        const msg = (d && typeof d === 'object' ? d.message : d) || err?.message || 'Timeout/Gagal AI'
-        restoredErrors[sec.key] = msg
-        setErrorDetails({ ...restoredErrors })
-        restoredStatuses[sec.key] = 'failed'
+        console.warn('[MasterGenModal] Phase 1 batch error:', err)
+        p1KeysToRun.forEach((k) => {
+          if (restoredStatuses[k] !== 'success') {
+            restoredStatuses[k] = 'failed'
+            restoredErrors[k] = err?.message || 'Gagal batch AI'
+          }
+        })
         setStatuses({ ...restoredStatuses })
+        setErrorDetails({ ...restoredErrors })
         savePersistedGenState(draftId, { statuses: restoredStatuses, errorDetails: restoredErrors })
-
-        currentCtxRef.current = {
-          ...currentCtxRef.current,
-          section_errors: {
-            ...(currentCtxRef.current.section_errors || {}),
-            [sec.key]: {
-              section_key: sec.key,
-              error_type: d && typeof d === 'object' && d.error_type ? d.error_type : 'VALIDATION_FAILED',
-              message: msg,
-              source_field: d && typeof d === 'object' && d.source_field ? d.source_field : undefined,
-              wizard_step: d && typeof d === 'object' && d.wizard_step ? d.wizard_step : 3,
-              raw_input_snippet: d && typeof d === 'object' && d.raw_input_snippet ? d.raw_input_snippet : undefined,
-              timestamp: new Date().toISOString(),
-            },
-          },
-        }
       }
     }
 
-    // ── FASE 2: Poles Profil Perusahaan (4 Item) ─────────────────────────── //
+    // ── FASE 2: Poles Profil Perusahaan (1 Batch Request) ──────────────── //
     setActivePhase(2)
-    for (const p of POLISH_ITEMS) {
-      if (restoredStatuses[p.key] === 'success') {
-        continue
-      }
+    const p2KeysToRun = POLISH_ITEMS
+      .filter((p) => restoredStatuses[p.key] !== 'success')
+      .map((p) => p.key)
 
-      setActiveItemTitle(p.title)
-      restoredStatuses[p.key] = 'generating'
+    if (p2KeysToRun.length > 0) {
+      p2KeysToRun.forEach((k) => {
+        restoredStatuses[k] = 'generating'
+      })
       setStatuses({ ...restoredStatuses })
       savePersistedGenState(draftId, {
         statuses: restoredStatuses,
         activePhase: 2,
-        activeItemTitle: p.title,
+        activeItemTitle: POLISH_ITEMS.find((p) => p.key === p2KeysToRun[0])?.title || '',
       })
-      setStreamText('')
+
+      abortControllerRef.current = new AbortController()
+      let streamAcc = ''
 
       try {
-        let accumulated = ''
-        abortControllerRef.current = new AbortController()
+        await batchDraftSectionsStream(
+          p2KeysToRun,
+          currentCtxRef.current,
+          (pKey, chunk) => {
+            const pDef = POLISH_ITEMS.find((p) => p.key === pKey)
+            if (pDef) setActiveItemTitle(pDef.title)
+            streamAcc += chunk
+            setStreamText(streamAcc + ' ▌')
+            if (streamBoxRef.current) {
+              requestAnimationFrame(() => {
+                if (streamBoxRef.current) {
+                  streamBoxRef.current.scrollTop = streamBoxRef.current.scrollHeight
+                }
+              })
+            }
+          },
+          async (pKey, resultText) => {
+            streamAcc = ''
+            const finalContent = (resultText || '').trim()
+            const pr = { ...currentCtxRef.current.profil_perusahaan }
+            const gen = { ...(currentCtxRef.current.generated_sections || {}) }
+            let hasValidContent = false
 
-        const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Timeout AI')), 90000)
-        )
-
-        const resultText = await Promise.race([
-          draftSectionStream(
-            p.key,
-            currentCtxRef.current,
-            (chunk) => {
-              accumulated += chunk
-              setStreamText(accumulated + ' ▌')
-              if (streamBoxRef.current) {
-                requestAnimationFrame(() => {
-                  if (streamBoxRef.current) {
-                    streamBoxRef.current.scrollTop = streamBoxRef.current.scrollHeight
-                  }
-                })
+            if (pKey === 'profil_sejarah') {
+              if (finalContent.length > 10) {
+                const polished = polishAcademicText(finalContent)
+                pr.sejarah = polished
+                gen.profil_sejarah = polished
+                hasValidContent = true
+              } else if (pr.sejarah && pr.sejarah.trim().length > 10) {
+                hasValidContent = true
               }
-            },
-            abortControllerRef.current.signal,
-            selectedModelRef.current
-          ),
-          timeoutPromise,
-        ])
+            } else if (pKey === 'visi_misi') {
+              if (finalContent.length > 10) {
+                const parsed = parseVisiMisi(finalContent)
+                if (parsed.visi) pr.visi = polishAcademicText(parsed.visi)
+                if (parsed.misi.length > 0) pr.misi = polishAcademicList(parsed.misi)
+                hasValidContent = !!(pr.visi || (pr.misi && pr.misi.length > 0))
+              } else if (pr.visi || (pr.misi && pr.misi.length > 0)) {
+                hasValidContent = true
+              }
+            } else if (pKey === 'tata_tertib_perusahaan') {
+              let list = parseNumberedList(finalContent)
+              if (list.length === 0) {
+                const existing = pr.tata_tertib_perusahaan || pr.tata_tertib || gen.tata_tertib || []
+                list = Array.isArray(existing) && existing.length > 0 ? existing : [
+                  'Hadir tepat waktu sesuai jam kerja operasional perusahaan.',
+                  'Mengenakan pakaian seragam sekolah atau pakaian kerja rapi dan bersopan santun.',
+                  'Mematuhi seluruh standar Keselamatan dan Kesehatan Kerja (K3) industri.',
+                  'Menjaga etika komunikasi dan kerahasiaan informasi di tempat kerja.'
+                ]
+              }
+              const polished = polishAcademicList(list)
+              pr.tata_tertib_perusahaan = polished
+              pr.tata_tertib = polished
+              gen.tata_tertib = polished
+              hasValidContent = true
+            } else if (pKey === 'job_descriptions') {
+              if (finalContent.length > 10) {
+                const parsedJobs = parseJobDescriptions(finalContent).map((j) => ({
+                  posisi: polishAcademicText(j.posisi),
+                  tugas: polishAcademicList(j.tugas),
+                }))
+                if (parsedJobs.length > 0) pr.job_descriptions = parsedJobs
+                hasValidContent = (pr.job_descriptions || []).length > 0
+              } else if ((pr.job_descriptions || []).length > 0) {
+                hasValidContent = true
+              }
+            }
 
-        const finalContent = (resultText || accumulated).trim()
-        const pr = { ...currentCtxRef.current.profil_perusahaan }
-        const gen = { ...(currentCtxRef.current.generated_sections || {}) }
-        let hasValidContent = false
-
-        if (p.key === 'profil_sejarah') {
-          if (finalContent.length > 10) {
-            const polished = polishAcademicText(finalContent)
-            pr.sejarah = polished
-            gen.profil_sejarah = polished
-            hasValidContent = true
-          } else if (pr.sejarah && pr.sejarah.trim().length > 10) {
-            hasValidContent = true
-          }
-        } else if (p.key === 'visi_misi') {
-          if (finalContent.length > 10) {
-            const parsed = parseVisiMisi(finalContent)
-            if (parsed.visi) pr.visi = polishAcademicText(parsed.visi)
-            if (parsed.misi.length > 0) pr.misi = polishAcademicList(parsed.misi)
-            hasValidContent = !!(pr.visi || (pr.misi && pr.misi.length > 0))
-          } else if (pr.visi || (pr.misi && pr.misi.length > 0)) {
-            hasValidContent = true
-          }
-        } else if (p.key === 'tata_tertib_perusahaan') {
-          let list = parseNumberedList(finalContent)
-          if (list.length === 0) {
-            const existing = pr.tata_tertib_perusahaan || pr.tata_tertib || gen.tata_tertib || []
-            list = Array.isArray(existing) && existing.length > 0 ? existing : [
-              'Hadir tepat waktu sesuai jam kerja operasional perusahaan.',
-              'Mengenakan pakaian seragam sekolah atau pakaian kerja rapi dan bersopan santun.',
-              'Mematuhi seluruh standar Keselamatan dan Kesehatan Kerja (K3) industri.',
-              'Menjaga etika komunikasi dan kerahasiaan informasi di tempat kerja.'
-            ]
-          }
-          const polished = polishAcademicList(list)
-          pr.tata_tertib_perusahaan = polished
-          pr.tata_tertib = polished
-          gen.tata_tertib = polished
-          hasValidContent = true
-        } else if (p.key === 'job_descriptions') {
-          if (finalContent.length > 10) {
-            const parsedJobs = parseJobDescriptions(finalContent).map((j) => ({
-              posisi: polishAcademicText(j.posisi),
-              tugas: polishAcademicList(j.tugas),
-            }))
-            if (parsedJobs.length > 0) pr.job_descriptions = parsedJobs
-            hasValidContent = (pr.job_descriptions || []).length > 0
-          } else if ((pr.job_descriptions || []).length > 0) {
-            hasValidContent = true
-          }
-        }
-
-        if (hasValidContent) {
-          currentCtxRef.current = {
-            ...currentCtxRef.current,
-            profil_perusahaan: pr,
-            generated_sections: gen,
-          }
-          restoredStatuses[p.key] = 'success'
-          setStatuses({ ...restoredStatuses })
-          savePersistedGenState(draftId, { statuses: restoredStatuses })
-          try {
-            await updateDraft(draftId, { data: currentCtxRef.current })
-          } catch {
-            /* ignore */
-          }
-        } else {
-          restoredErrors[p.key] = 'Respon AI terlalu pendek'
-          setErrorDetails({ ...restoredErrors })
-          restoredStatuses[p.key] = 'failed'
-          setStatuses({ ...restoredStatuses })
-          savePersistedGenState(draftId, { statuses: restoredStatuses, errorDetails: restoredErrors })
-        }
+            if (hasValidContent) {
+              currentCtxRef.current = {
+                ...currentCtxRef.current,
+                profil_perusahaan: pr,
+                generated_sections: gen,
+              }
+              restoredStatuses[pKey] = 'success'
+              setStatuses({ ...restoredStatuses })
+              savePersistedGenState(draftId, { statuses: restoredStatuses })
+              try {
+                await updateDraft(draftId, { data: currentCtxRef.current })
+              } catch {
+                /* ignore */
+              }
+            } else {
+              restoredErrors[pKey] = 'Respon AI terlalu pendek'
+              setErrorDetails({ ...restoredErrors })
+              restoredStatuses[pKey] = 'failed'
+              setStatuses({ ...restoredStatuses })
+              savePersistedGenState(draftId, { statuses: restoredStatuses, errorDetails: restoredErrors })
+            }
+          },
+          abortControllerRef.current.signal,
+          selectedModelRef.current
+        )
       } catch (err: any) {
-        console.warn(`[MasterGenModal] Item profil ${p.key} failed:`, err)
-        const pr = { ...currentCtxRef.current.profil_perusahaan }
-        const gen = { ...(currentCtxRef.current.generated_sections || {}) }
-        if (p.key === 'tata_tertib_perusahaan') {
-          const defaultRules = [
-            'Hadir tepat waktu sesuai jam kerja operasional perusahaan.',
-            'Mengenakan pakaian seragam sekolah atau pakaian kerja rapi dan bersopan santun.',
-            'Mematuhi seluruh standar Keselamatan dan Kesehatan Kerja (K3) industri.',
-            'Menjaga etika komunikasi dan kerahasiaan informasi di tempat kerja.'
-          ]
-          pr.tata_tertib_perusahaan = defaultRules
-          pr.tata_tertib = defaultRules
-          gen.tata_tertib = defaultRules
-          currentCtxRef.current = { ...currentCtxRef.current, profil_perusahaan: pr, generated_sections: gen }
-          restoredStatuses[p.key] = 'success'
-          setStatuses({ ...restoredStatuses })
-          savePersistedGenState(draftId, { statuses: restoredStatuses })
-        } else if (
-          (p.key === 'profil_sejarah' && pr.sejarah) ||
-          (p.key === 'visi_misi' && (pr.visi || (pr.misi && pr.misi.length > 0))) ||
-          (p.key === 'job_descriptions' && (pr.job_descriptions || []).length > 0)
-        ) {
-          restoredStatuses[p.key] = 'success'
-          setStatuses({ ...restoredStatuses })
-          savePersistedGenState(draftId, { statuses: restoredStatuses })
-        } else {
-          restoredErrors[p.key] = err?.message || 'Timeout/Gagal AI'
-          setErrorDetails({ ...restoredErrors })
-          restoredStatuses[p.key] = 'failed'
-          setStatuses({ ...restoredStatuses })
-          savePersistedGenState(draftId, { statuses: restoredStatuses, errorDetails: restoredErrors })
-        }
+        console.warn('[MasterGenModal] Phase 2 batch error:', err)
+        p2KeysToRun.forEach((k) => {
+          if (restoredStatuses[k] !== 'success') {
+            restoredStatuses[k] = 'failed'
+            restoredErrors[k] = err?.message || 'Gagal batch AI'
+          }
+        })
+        setStatuses({ ...restoredStatuses })
+        setErrorDetails({ ...restoredErrors })
+        savePersistedGenState(draftId, { statuses: restoredStatuses, errorDetails: restoredErrors })
       }
     }
 
