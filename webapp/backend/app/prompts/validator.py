@@ -128,7 +128,7 @@ def check_off_topic_or_meta(text: str) -> tuple[bool, str]:
     stripped = text.strip()
     match = _META_QUESTION_PATTERNS.search(stripped)
     if match:
-        return True, f"Terdeteksi pertanyaan/obrolan santai di luar draf PKL: '{match.group(0)}'"
+        return True, "AI belum menghasilkan isi Laporan PKL yang sesuai dengan bagian ini. Silakan berikan instruksi yang lebih jelas terkait isi yang ingin dibuat atau diperbaiki."
     return False, ""
 
 

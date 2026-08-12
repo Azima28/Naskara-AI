@@ -102,7 +102,7 @@ export const SectionCorrectionCard: React.FC<SectionCorrectionCardProps> = ({
         }}
       >
         {errorDetail.message ||
-          'Sistem AI menolak input ini karena terdeteksi mengandung obrolan santai atau di luar kegiatan PKL.'}
+          'AI belum menghasilkan isi Laporan PKL yang sesuai dengan bagian ini. Silakan berikan instruksi yang lebih jelas terkait isi yang ingin dibuat atau diperbaiki.'}
       </p>
 
       {/* Raw Input Snippet */}

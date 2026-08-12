@@ -2324,7 +2324,7 @@ function SectionEditor({
                 placeholder="Ketik draf tulisan kamu sendiri di sini, atau klik 'Generate AI Bagian Ini' untuk bantuan penyusunan otomatis..."
                 onChange={(e) => {
                   if (isArrayType) {
-                    const lines = e.target.value.split('\n').map((l) => l.replace(/^-\s*/, '').trim()).filter(Boolean)
+                    const lines = e.target.value.split('\n').map((l) => l.replace(/^-\s*/, ''))
                     onChange(lines)
                   } else {
                     onChange(e.target.value)
