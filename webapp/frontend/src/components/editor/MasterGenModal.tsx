@@ -217,7 +217,6 @@ export default function MasterGenModal({
   const [statuses, setStatuses] = useState<Record<string, 'pending' | 'generating' | 'success' | 'failed'>>({})
   const [errorDetails, setErrorDetails] = useState<Record<string, string>>({})
   const [streamText, setStreamText] = useState<string>('')
-  const [isDoneAll, setIsDoneAll] = useState(false)
 
   const [selectedModel, setSelectedModel] = useState<string>('')
   const selectedModelRef = useRef<string>('')
@@ -261,6 +260,11 @@ export default function MasterGenModal({
   const totalCount = totalItems.length
   const progressPercent = Math.min(100, Math.round((processedCount / (totalCount || 1)) * 100))
 
+  // Dynamically derived completion state (Guarantees UI consistency)
+  const isDoneAll = totalItems.length > 5 && totalItems.every(
+    (it) => statuses[it.key] === 'success' || statuses[it.key] === 'failed'
+  )
+
   useEffect(() => {
     if (isOpen) {
       currentCtxRef.current = { ...ctx }
@@ -280,12 +284,10 @@ export default function MasterGenModal({
 
     if (saved && saved.statuses && Object.keys(saved.statuses).length > 0) {
       restoredStatuses = { ...saved.statuses }
-      // Convert any interrupted 'generating' status back to 'pending'
       Object.keys(restoredStatuses).forEach((k) => {
         if (restoredStatuses[k] === 'generating') {
           restoredStatuses[k] = 'pending'
         }
-        // Verification: If stored as 'success' but context actually lacks content, force re-generation
         const gen = currentCtxRef.current.generated_sections || {}
         const pr = currentCtxRef.current.profil_perusahaan || {}
         let hasData = !!gen[k]
@@ -301,35 +303,39 @@ export default function MasterGenModal({
       restoredErrors = saved.errorDetails || {}
       if (saved.activePhase) setActivePhase(saved.activePhase)
       if (saved.activeItemTitle) setActiveItemTitle(saved.activeItemTitle)
-    } else {
-      totalItems.forEach((it) => {
-        restoredStatuses[it.key] = 'pending'
-      })
-      savePersistedGenState(draftId, {
-        statuses: restoredStatuses,
-        errorDetails: {},
-        isDoneAll: false,
-        dismissed: false,
-        activePhase: 1,
-        activeItemTitle: '',
-      })
     }
 
-    setStatuses(restoredStatuses)
-    setErrorDetails(restoredErrors)
+    totalItems.forEach((it) => {
+      if (!restoredStatuses[it.key]) {
+        restoredStatuses[it.key] = 'pending'
+      }
+    })
 
-    // Check if generation process was already completed prior to reload
-    const allDone = totalItems.length > 0 && totalItems.every(
-      (it) => restoredStatuses[it.key] === 'success' || restoredStatuses[it.key] === 'failed'
-    )
-    if (allDone) {
-      setIsDoneAll(true)
+    setStatuses({ ...restoredStatuses })
+    setErrorDetails({ ...restoredErrors })
+
+    // Only skip generation if totalItems has all sections AND every section actually has verified content
+    const allDoneInitially = totalItems.length > 5 && totalItems.every((it) => {
+      if (restoredStatuses[it.key] !== 'success' && restoredStatuses[it.key] !== 'failed') return false
+      if (restoredStatuses[it.key] === 'success') {
+        const gen = currentCtxRef.current.generated_sections || {}
+        const pr = currentCtxRef.current.profil_perusahaan || {}
+        const k = it.key
+        let hasData = !!gen[k]
+        if (k === 'profil_sejarah') hasData = !!(gen.profil_sejarah || pr.sejarah)
+        else if (k === 'visi_misi') hasData = !!(gen.visi_misi || pr.visi || (pr.misi && pr.misi.length > 0))
+        else if (k === 'tata_tertib_perusahaan') hasData = !!(gen.tata_tertib || gen.tata_tertib_perusahaan || pr.tata_tertib_perusahaan || pr.tata_tertib)
+        else if (k === 'job_descriptions') hasData = !!(gen.job_descriptions || (pr.job_descriptions && pr.job_descriptions.length > 0))
+        return hasData
+      }
+      return true
+    })
+
+    if (allDoneInitially) {
       savePersistedGenState(draftId, { isDoneAll: true, statuses: restoredStatuses, errorDetails: restoredErrors })
       onComplete(currentCtxRef.current)
       return
     }
-
-    setIsDoneAll(false)
 
     // ── FASE 1: Sub-bab Utama (1 Batch Request) ────────────────────────── //
     setActivePhase(1)
@@ -550,7 +556,6 @@ export default function MasterGenModal({
       }
     }
 
-    setIsDoneAll(true)
     savePersistedGenState(draftId, {
       isDoneAll: true,
       statuses: restoredStatuses,
@@ -675,7 +680,6 @@ export default function MasterGenModal({
         const next = { ...prev, [item.key]: 'success' as const }
         const allDone = totalItems.length > 0 && totalItems.every((it) => next[it.key] === 'success' || next[it.key] === 'failed')
         savePersistedGenState(draftId, { statuses: next, isDoneAll: allDone })
-        if (allDone) setIsDoneAll(true)
         return next
       })
       await updateDraft(draftId, { data: currentCtxRef.current })
@@ -688,7 +692,6 @@ export default function MasterGenModal({
           const nextSt = { ...prevSt, [item.key]: 'failed' as const }
           const allDone = totalItems.length > 0 && totalItems.every((it) => nextSt[it.key] === 'success' || nextSt[it.key] === 'failed')
           savePersistedGenState(draftId, { statuses: nextSt, errorDetails: nextErrs, isDoneAll: allDone })
-          if (allDone) setIsDoneAll(true)
           return nextSt
         })
         return nextErrs
