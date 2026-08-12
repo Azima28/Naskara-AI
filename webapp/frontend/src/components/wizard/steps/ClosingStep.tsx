@@ -11,40 +11,42 @@ function DaftarPustakaTable({ items, onChange }: { items: DaftarPustaka[], onCha
   const remove = (idx: number) => onChange(items.filter((_, i) => i !== idx))
 
   return (
-    <div className="table-scroll" style={{ marginTop: '0.5rem' }}>
-      <table className="simple-table" style={{ width: '100%', minWidth: '560px', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr style={{ borderBottom: '2px solid var(--line-strong, #b9b09c)' }}>
-            <th style={{ textAlign: 'left', padding: '0.5rem' }}>Penulis</th>
-            <th style={{ textAlign: 'left', padding: '0.5rem', width: '80px' }}>Tahun</th>
-            <th style={{ textAlign: 'left', padding: '0.5rem' }}>Judul</th>
-            <th style={{ textAlign: 'left', padding: '0.5rem' }}>Penerbit/Sumber</th>
-            <th style={{ width: '40px' }}></th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((item, i) => (
-            <tr key={i} style={{ borderBottom: '1px solid var(--line, #ddd6c8)' }}>
-              <td style={{ padding: '0.4rem' }}>
-                <input className="field__input" value={item.penulis} onChange={e => update(i, { penulis: e.target.value })} placeholder="Nama" />
-              </td>
-              <td style={{ padding: '0.4rem' }}>
-                <input className="field__input" value={item.tahun} onChange={e => update(i, { tahun: e.target.value })} placeholder="2024" />
-              </td>
-              <td style={{ padding: '0.4rem' }}>
-                <input className="field__input" value={item.judul} onChange={e => update(i, { judul: e.target.value })} placeholder="Judul Buku/Artikel" />
-              </td>
-              <td style={{ padding: '0.4rem' }}>
-                <input className="field__input" value={item.sumber} onChange={e => update(i, { sumber: e.target.value })} placeholder="Penerbit/Web" />
-              </td>
-              <td style={{ padding: '0.4rem', textAlign: 'center' }}>
-                <button type="button" className="btn-sm btn-danger" onClick={() => remove(i)} title="Hapus referensi">✕</button>
-              </td>
+    <div style={{ marginTop: '0.75rem', width: '100%', boxSizing: 'border-box' }}>
+      <div className="table-scroll" style={{ width: '100%', overflowX: 'auto', boxSizing: 'border-box' }}>
+        <table className="simple-table" style={{ width: '100%', minWidth: '500px', borderCollapse: 'collapse', boxSizing: 'border-box' }}>
+          <thead>
+            <tr style={{ borderBottom: '2px solid var(--line-strong, #b9b09c)' }}>
+              <th style={{ textAlign: 'left', padding: '0.5rem', width: '28%' }}>Penulis</th>
+              <th style={{ textAlign: 'left', padding: '0.5rem', width: '14%' }}>Tahun</th>
+              <th style={{ textAlign: 'left', padding: '0.5rem', width: '32%' }}>Judul</th>
+              <th style={{ textAlign: 'left', padding: '0.5rem', width: '22%' }}>Penerbit/Sumber</th>
+              <th style={{ width: '4%', textAlign: 'center' }}></th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-      <button type="button" className="btn-sm btn-outline" style={{ marginTop: '0.5rem' }} onClick={add}>+ Tambah Referensi</button>
+          </thead>
+          <tbody>
+            {items.map((item, i) => (
+              <tr key={i} style={{ borderBottom: '1px solid var(--line, #ddd6c8)' }}>
+                <td style={{ padding: '0.4rem' }}>
+                  <input className="field__input" style={{ width: '100%', boxSizing: 'border-box' }} value={item.penulis} onChange={e => update(i, { penulis: e.target.value })} placeholder="Nama Penulis" />
+                </td>
+                <td style={{ padding: '0.4rem' }}>
+                  <input className="field__input" style={{ width: '100%', boxSizing: 'border-box' }} value={item.tahun} onChange={e => update(i, { tahun: e.target.value })} placeholder="2026" />
+                </td>
+                <td style={{ padding: '0.4rem' }}>
+                  <input className="field__input" style={{ width: '100%', boxSizing: 'border-box' }} value={item.judul} onChange={e => update(i, { judul: e.target.value })} placeholder="Judul Buku / Website" />
+                </td>
+                <td style={{ padding: '0.4rem' }}>
+                  <input className="field__input" style={{ width: '100%', boxSizing: 'border-box' }} value={item.sumber} onChange={e => update(i, { sumber: e.target.value })} placeholder="Penerbit / URL" />
+                </td>
+                <td style={{ padding: '0.4rem', textAlign: 'center' }}>
+                  <button type="button" className="btn-sm btn-danger" onClick={() => remove(i)} title="Hapus referensi">✕</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <button type="button" className="btn-sm btn-outline" style={{ marginTop: '0.75rem' }} onClick={add}>+ Tambah Referensi Manual</button>
     </div>
   )
 }
@@ -89,7 +91,7 @@ export default function ClosingStep({ ctx, set }: { ctx: PklContext; set: (p: Pa
         </div>
       </FieldGroup>
 
-      <FieldGroup title="Daftar Pustaka">
+      <FieldGroup title="Daftar Pustaka" full>
         {(() => {
           // Default aktif — draft lama tanpa field ini dianggap ON.
           const autoOn = ctx.config.auto_daftar_pustaka !== false
