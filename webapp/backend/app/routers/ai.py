@@ -341,6 +341,20 @@ def _get_prompt_for_section(key: str, ctx: dict) -> tuple[str, str]:
     return system, user_prompt
 
 
+BATCH_SYSTEM_PROMPT = """Kamu adalah editor & penulis profesional untuk laporan Praktik Kerja Lapangan (PKL) siswa SMK.
+Tugasmu adalah menyusun dan merapikan seluruh sub-bab laporan yang diminta secara sekaligus dalam SATU respon tunggal.
+
+SISTEM FORMAT OBLIGATORI (WAJIB DITUTURI):
+Setiap kali kamu membuat satu sub-bab, kamu HARUS mengawalinya dengan baris header penanda persis seperti berikut:
+===SECTION:section_key===
+
+Dan menutup sub-bab tersebut dengan baris penanda persis seperti berikut:
+===END_SECTION:section_key===
+
+Gunakan Bahasa Indonesia baku akademis, formal, dan sesuai EYD/KBBI.
+Jangan menyertakan teks pembuka atau penutup di luar penanda ===SECTION:section_key=== dan ===END_SECTION:section_key===."""
+
+
 class BatchDraftSectionRequest(BaseModel):
     section_keys: list[str]
     context_data: dict[str, Any]
@@ -352,7 +366,7 @@ async def batch_draft_sections_stream(
     req: BatchDraftSectionRequest,
     user: User = Depends(get_current_user)
 ):
-    """Stream token/chunk respon AI untuk sekumpulan section_keys dalam 1 HTTP request via SSE."""
+    """Stream token/chunk respon AI untuk sekumpulan section_keys dalam 1 HTTP request & 1 tunggal panggilan LLM API via SSE."""
     if not isinstance(req.context_data, dict) or len(str(req.context_data)) > 100_000:
         raise HTTPException(status_code=400, detail="Data konteks terlalu besar (maksimal 100KB) atau format tidak valid.")
 
@@ -361,23 +375,111 @@ async def batch_draft_sections_stream(
 
     async def event_generator():
         try:
+            section_instructions = []
+            valid_keys = []
             for key in req.section_keys:
-                system, user_prompt = _get_prompt_for_section(key, ctx)
-                if not user_prompt.strip() and key in ["tata_tertib_perusahaan", "job_descriptions"]:
+                _, single_prompt = _get_prompt_for_section(key, ctx)
+                if not single_prompt.strip() and key in ["tata_tertib_perusahaan", "job_descriptions"]:
                     yield f"data: {json.dumps({'section_key': key, 'done': True, 'content': ''})}\n\n"
                     continue
+                valid_keys.append(key)
+                section_instructions.append(
+                    f"=== PETUNJUK SUB-BAB KEY '{key}' ===\n"
+                    f"Tuliskan isi untuk penanda ===SECTION:{key}===\n"
+                    f"{single_prompt.strip()}\n"
+                    f"Tutup dengan ===END_SECTION:{key}==="
+                )
 
-                full_acc = ""
-                async for chunk in provider.generate_stream(system, user_prompt):
-                    if chunk:
-                        full_acc += chunk
-                        yield f"data: {json.dumps({'section_key': key, 'content': chunk})}\n\n"
+            if not valid_keys:
+                yield "data: [DONE]\n\n"
+                return
 
-                yield f"data: {json.dumps({'section_key': key, 'done': True, 'content': full_acc})}\n\n"
+            unified_user_prompt = (
+                f"Tolong buatkan secara sekaligus {len(valid_keys)} sub-bab laporan berikut dalam 1 dokumen respon:\n"
+                f"Daftar key: {', '.join(valid_keys)}\n\n"
+                + "\n\n".join(section_instructions)
+            )
+
+            buffer = ""
+            current_key = None
+            current_acc = ""
+            completed_keys = set()
+
+            async for chunk in provider.generate_stream(BATCH_SYSTEM_PROMPT, unified_user_prompt):
+                if not chunk:
+                    continue
+                buffer += chunk
+
+                while True:
+                    start_match = re.search(r'===SECTION:([a_zA_Z0_9_]+)===', buffer)
+                    end_match = re.search(r'===END_SECTION:([a_zA_Z0_9_]+)===', buffer)
+
+                    first_match = None
+                    is_start = False
+
+                    if start_match and end_match:
+                        if start_match.start() < end_match.start():
+                            first_match = start_match
+                            is_start = True
+                        else:
+                            first_match = end_match
+                            is_start = False
+                    elif start_match:
+                        first_match = start_match
+                        is_start = True
+                    elif end_match:
+                        first_match = end_match
+                        is_start = False
+                    else:
+                        break
+
+                    pre_text = buffer[:first_match.start()]
+                    if current_key and pre_text:
+                        current_acc += pre_text
+                        yield f"data: {json.dumps({'section_key': current_key, 'content': pre_text})}\n\n"
+
+                    if not is_start or (current_key and current_key != first_match.group(1)):
+                        if current_key:
+                            yield f"data: {json.dumps({'section_key': current_key, 'done': True, 'content': current_acc.strip()})}\n\n"
+                            completed_keys.add(current_key)
+                            current_key = None
+                            current_acc = ""
+
+                    if is_start:
+                        current_key = first_match.group(1)
+                        current_acc = ""
+
+                    buffer = buffer[first_match.end():]
+
+                if current_key and buffer:
+                    last_eq = buffer.rfind('=')
+                    if last_eq != -1 and (len(buffer) - last_eq) < 30:
+                        emit_text = buffer[:last_eq]
+                        buffer = buffer[last_eq:]
+                    else:
+                        emit_text = buffer
+                        buffer = ""
+
+                    if emit_text:
+                        current_acc += emit_text
+                        yield f"data: {json.dumps({'section_key': current_key, 'content': emit_text})}\n\n"
+
+            if current_key:
+                if buffer:
+                    clean_buf = re.sub(r'===END_SECTION:.*', '', buffer).strip()
+                    if clean_buf:
+                        current_acc += clean_buf
+                        yield f"data: {json.dumps({'section_key': current_key, 'content': clean_buf})}\n\n"
+                yield f"data: {json.dumps({'section_key': current_key, 'done': True, 'content': current_acc.strip()})}\n\n"
+                completed_keys.add(current_key)
+
+            for key in valid_keys:
+                if key not in completed_keys:
+                    yield f"data: {json.dumps({'section_key': key, 'done': True, 'content': ''})}\n\n"
 
             yield "data: [DONE]\n\n"
         except Exception as e:
-            print(f"[SSE Batch AI Stream Error]: {type(e).__name__}")
+            print(f"[SSE Batch AI Stream Error]: {type(e).__name__} - {e}")
             err_payload = json.dumps({"error": "Terjadi kendala saat menghasilkan konten AI batch. Silakan coba beberapa saat lagi."})
             yield f"data: {err_payload}\n\n"
 
