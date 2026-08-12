@@ -823,6 +823,115 @@ def _clean_caption_title(title: str) -> str:
     return t or str(title).strip()
 
 
+def _parse_studi_kasus_table(studi_kasus: dict, bab_num: int = 4, tbl_idx: int = 1) -> tuple[str, list[str], list[list[str]]] | None:
+    """
+    Ekstrak data_angka dan jenis_tabel dari studi_kasus menjadi:
+    (table_caption, headers, rows)
+    """
+    if not isinstance(studi_kasus, dict):
+        return None
+
+    raw_data_angka = studi_kasus.get("data_angka")
+    if not raw_data_angka or not isinstance(raw_data_angka, list):
+        return None
+
+    jenis = str(studi_kasus.get("jenis_tabel") or "optimasi").lower().strip()
+
+    HEADER_MAP = {
+        "optimasi": {
+            "title": "Data Perbandingan Sebelum dan Sesudah Optimasi",
+            "headers": ["NO", "NAMA / PARAMETER DATA", "KONDISI SEBELUM (AWAL)", "KONDISI SESUDAH (HASIL AKHIR)"]
+        },
+        "pencapaian": {
+            "title": "Data Pencapaian Target Kerja",
+            "headers": ["NO", "INDIKATOR / PARAMETER TARGET", "TARGET PERUSAHAAN", "REALISASI PELAKSANAAN"]
+        },
+        "kesesuaian": {
+            "title": "Data Kesesuaian Standar SOP",
+            "headers": ["NO", "PROSEDUR / STANDAR KERJA", "STANDAR SOP / TEORI", "PELAKSANAAN DI LAPANGAN"]
+        },
+        "troubleshooting": {
+            "title": "Data Troubleshooting dan Penanganan Masalah",
+            "headers": ["NO", "KASUS / GEJALA KERUSAKAN", "ANALISIS PENYEBAB", "TINDAKAN / SOLUSI"]
+        }
+    }
+
+    config = HEADER_MAP.get(jenis, HEADER_MAP["optimasi"])
+    headers = config["headers"]
+    caption = f"Tabel {bab_num}.{tbl_idx} {config['title']}"
+
+    items: list[dict] = []
+    for item in raw_data_angka:
+        if isinstance(item, dict):
+            items.append(item)
+        elif isinstance(item, str) and item.strip():
+            items.append({"label": item.strip(), "nilai": ""})
+
+    if not items:
+        return None
+
+    paired_items: list[tuple[str, str, str]] = []
+    i = 0
+    while i < len(items):
+        cur = items[i]
+        lbl = str(cur.get("label", "")).strip()
+        val = str(cur.get("nilai", "")).strip()
+        sebelum_val = str(cur.get("sebelum") or cur.get("nilai_awal") or "").strip()
+        sesudah_val = str(cur.get("sesudah") or cur.get("nilai_akhir") or "").strip()
+
+        if sebelum_val and sesudah_val:
+            paired_items.append((lbl, sebelum_val, sesudah_val))
+            i += 1
+            continue
+
+        delimiter = None
+        for d in ["➔", "->", "→"]:
+            if d in val:
+                delimiter = d
+                break
+
+        if delimiter:
+            parts = val.split(delimiter)
+            p1 = parts[0].replace("Sebelum", "").replace("sebelum", "").strip()
+            p2 = parts[1].replace("Sesudah", "").replace("sesudah", "").strip() if len(parts) > 1 else ""
+            paired_items.append((lbl, p1 or "-", p2 or "-"))
+            i += 1
+            continue
+
+        if i + 1 < len(items):
+            nxt = items[i + 1]
+            nxt_lbl = str(nxt.get("label", "")).strip()
+            nxt_val = str(nxt.get("nilai", "")).strip()
+
+            lbl_lower = lbl.lower()
+            nxt_lbl_lower = nxt_lbl.lower()
+
+            if ("sebelum" in lbl_lower or "awal" in lbl_lower) and ("setelah" in nxt_lbl_lower or "sesudah" in nxt_lbl_lower or "akhir" in nxt_lbl_lower):
+                clean_title = re.sub(r'\b(sebelum|setelah|sesudah|awal|akhir)\b.*$', '', lbl, flags=re.IGNORECASE).strip()
+                if not clean_title:
+                    clean_title = lbl
+                paired_items.append((clean_title, val or "-", nxt_val or "-"))
+                i += 2
+                continue
+
+        if sebelum_val or sesudah_val:
+            paired_items.append((lbl, sebelum_val or "-", sesudah_val or val or "-"))
+        else:
+            paired_items.append((lbl, "-", val or "-"))
+        i += 1
+
+    rows: list[list[str]] = []
+    for row_idx, (l_text, awal_text, akhir_text) in enumerate(paired_items, 1):
+        if not l_text:
+            continue
+        rows.append([str(row_idx), l_text, awal_text, akhir_text])
+
+    if not rows:
+        return None
+
+    return caption, headers, rows
+
+
 def _scan_all_gambar(data: dict) -> list[dict]:
     """Pre-scan seluruh gambar di dokumen untuk penomoran Gambar X.Y (Format 2 Berdasarkan Bab) & DAFTAR GAMBAR."""
     gambar_list: list[dict] = []
@@ -1991,8 +2100,9 @@ def _write_data_pengamatan(builder: PklDocBuilder, data: dict, bab_num: int) -> 
         sk_proses = (gen.get("studi_kasus_proses") or studi_kasus.get("proses_atau_formula") or "").strip()
         sk_latar = (studi_kasus.get("latar_belakang") or "").strip()
         sk_hasil = (studi_kasus.get("hasil") or "").strip()
+        sk_data_angka = studi_kasus.get("data_angka")
 
-        if sk_judul or sk_assets or sk_proses or sk_latar or sk_hasil:
+        if sk_judul or sk_assets or sk_proses or sk_latar or sk_hasil or sk_data_angka:
             sub_title = judul.get(
                 "studi_kasus",
                 f"Proses Penyelesaian Studi Kasus ({sk_judul})" if sk_judul else "Proses Penyelesaian Pekerjaan Utama"
@@ -2004,6 +2114,14 @@ def _write_data_pengamatan(builder: PklDocBuilder, data: dict, bab_num: int) -> 
 
             if sk_proses:
                 _write_paragraphs(builder, _polish_task_detail(sk_proses))
+
+            # Render Tabel Data Perbandingan Studi Kasus jika ada
+            tb_data = _parse_studi_kasus_table(studi_kasus, bab_num=bab_num, tbl_idx=1)
+            if tb_data:
+                tb_caption, tb_headers, tb_rows = tb_data
+                builder.add_table_caption(tb_caption)
+                builder.add_table(tb_headers, tb_rows)
+                builder.add_spacing(1)
 
             if sk_hasil:
                 _write_paragraphs(builder, _polish_task_detail(sk_hasil))

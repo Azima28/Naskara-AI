@@ -1328,6 +1328,21 @@ class PklDocBuilder:
         if bookmark:
             self.attach_bookmark(p, bookmark)
 
+    def add_table_caption(self, text: str, bookmark: str | None = None) -> None:
+        """Judul/Caption Tabel (Format: Tabel X.Y Judul Tabel) — Times New Roman 11pt Bold, Center."""
+        p = self.doc.add_paragraph()
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.paragraph_format.line_spacing = 1.15
+        p.paragraph_format.space_before = Pt(8)
+        p.paragraph_format.space_after = Pt(4)
+        run = p.add_run(text)
+        run.font.name = "Times New Roman"
+        run.font.size = Pt(11)
+        run.bold = True
+        run.font.color.rgb = RGBColor(0x00, 0x00, 0x00)
+        if bookmark:
+            self.attach_bookmark(p, bookmark)
+
     def add_image(self, image_path: str, caption: str = "", width_cm: float = 10) -> None:
         p = self.doc.add_paragraph()
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -1353,6 +1368,15 @@ class PklDocBuilder:
         table = self.doc.add_table(rows=1 + len(rows), cols=len(headers))
         table.style = "Table Grid"
         table.alignment = WD_TABLE_ALIGNMENT.CENTER
+
+        # Atur lebar kolom proporsional jika 4 kolom (Tabel Studi Kasus Perbandingan)
+        if len(headers) == 4 and headers[0].upper() in ["NO", "#", "NO."]:
+            col_widths = (Cm(1.2), Cm(5.0), Cm(3.8), Cm(3.8))
+            for row in table.rows:
+                for idx, w in enumerate(col_widths):
+                    if idx < len(row.cells):
+                        row.cells[idx].width = w
+
         for i, h in enumerate(headers):
             cell = table.rows[0].cells[i]
             cell.text = ""
