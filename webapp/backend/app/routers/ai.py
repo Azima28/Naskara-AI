@@ -341,18 +341,6 @@ def _get_prompt_for_section(key: str, ctx: dict) -> tuple[str, str]:
     return system, user_prompt
 
 
-BATCH_JSON_SYSTEM_PROMPT = """Kamu adalah editor & penulis profesional untuk laporan Praktik Kerja Lapangan (PKL) siswa SMK.
-Tugasmu adalah menyusun dan merapikan seluruh sub-bab laporan yang diminta secara sekaligus dalam SATU RESPON JSON TUNGGAL.
-
-ATURAN UTAMA:
-1. Respon HARUS berupa JSON Object murni tanpa markdown (tanpa ```json ... ```), di mana SETIAP KEY di dalam JSON adalah nama section_key yang diminta.
-2. Bahasa yang digunakan baku, formal, akademis (EYD/KBBI).
-3. Jangan menyertakan kata sambutan atau teks di luar bracket JSON {"key": "konten"}.
-4. Untuk key yang membutuhkan list/poin (seperti tujuan_pkl, tata_tertib_perusahaan), kembalikan sebagai Array of Strings atau string yang dipisahkan baris baru.
-5. Untuk key visi_misi, kembalikan teks berformat [VISI] ... [MISI] ... atau JSON object {"visi": "...", "misi": [...]}.
-6. Untuk key job_descriptions, kembalikan array object [{"posisi": "...", "tugas": [...]}] atau teks berformat [POSISI: ...]."""
-
-
 class BatchDraftSectionRequest(BaseModel):
     section_keys: list[str]
     context_data: dict[str, Any]
@@ -364,7 +352,7 @@ async def batch_draft_sections_stream(
     req: BatchDraftSectionRequest,
     user: User = Depends(get_current_user)
 ):
-    """Stream token/chunk respon AI untuk sekumpulan section_keys dalam 1 HTTP request & 1 tunggal panggilan LLM API via SSE."""
+    """Stream token/chunk respon AI untuk sekumpulan section_keys dalam 1 HTTP request SSE tunggal per fase."""
     if not isinstance(req.context_data, dict) or len(str(req.context_data)) > 100_000:
         raise HTTPException(status_code=400, detail="Data konteks terlalu besar (maksimal 100KB) atau format tidak valid.")
 
@@ -373,91 +361,21 @@ async def batch_draft_sections_stream(
 
     async def event_generator():
         try:
-            section_instructions = []
-            valid_keys = []
             for key in req.section_keys:
-                _, single_prompt = _get_prompt_for_section(key, ctx)
-                if not single_prompt.strip() and key in ["tata_tertib_perusahaan", "job_descriptions"]:
+                system, user_prompt = _get_prompt_for_section(key, ctx)
+                if not user_prompt.strip() and key in ["tata_tertib_perusahaan", "job_descriptions"]:
                     yield f"data: {json.dumps({'section_key': key, 'done': True, 'content': ''})}\n\n"
                     continue
-                valid_keys.append(key)
-                section_instructions.append(
-                    f"Sub-bab key '{key}': {single_prompt.strip()}"
-                )
 
-            if not valid_keys:
-                yield "data: [DONE]\n\n"
-                return
+                full_acc = ""
+                async for chunk in provider.generate_stream(system, user_prompt):
+                    if chunk:
+                        full_acc += chunk
+                        yield f"data: {json.dumps({'section_key': key, 'content': chunk})}\n\n"
 
-            unified_user_prompt = (
-                f"Tolong buatkan sekaligus sub-bab laporan berikut dalam 1 JSON Object tunggal.\n"
-                f"Keys yang WAJIB ada di JSON: {json.dumps(valid_keys)}\n\n"
-                f"Petunjuk Rinci Per Key:\n" + "\n\n".join(section_instructions)
-            )
-
-            full_llm_acc = ""
-            current_active_key = valid_keys[0] if valid_keys else ""
-
-            # Single LLM API Call to Provider
-            async for chunk in provider.generate_stream(BATCH_JSON_SYSTEM_PROMPT, unified_user_prompt):
-                if chunk:
-                    full_llm_acc += chunk
-                    # Send live chunk stream feedback for UI typing animation
-                    yield f"data: {json.dumps({'section_key': current_active_key, 'content': chunk})}\n\n"
-
-            # Parse Structured JSON Output from 1 single LLM response
-            parsed_json = {}
-            try:
-                parsed_json = extract_json_from_llm(full_llm_acc)
-            except Exception as parse_err:
-                print(f"[Batch JSON Parse Warning]: {parse_err}, using fallback parsing")
-
-            for key in valid_keys:
-                val = parsed_json.get(key) if isinstance(parsed_json, dict) else None
-                formatted_content = ""
-
-                if val is not None:
-                    if isinstance(val, str):
-                        formatted_content = val.strip()
-                    elif isinstance(val, list):
-                        if key == "job_descriptions":
-                            # Format list of job dicts or strings
-                            jobs_str_list = []
-                            for item in val:
-                                if isinstance(item, dict):
-                                    pos = item.get("posisi") or item.get("jabatan") or "Staf Operasional"
-                                    tasks = item.get("tugas") or []
-                                    if isinstance(tasks, list):
-                                        tasks_str = "\n".join([f"- {t}" for t in tasks])
-                                    else:
-                                        tasks_str = str(tasks)
-                                    jobs_str_list.append(f"[POSISI: {pos}]\n{tasks_str}")
-                                else:
-                                    jobs_str_list.append(str(item))
-                            formatted_content = "\n\n".join(jobs_str_list)
-                        else:
-                            formatted_content = "\n".join([str(x) for x in val])
-                    elif isinstance(val, dict):
-                        if key == "visi_misi":
-                            visi = val.get("visi", "")
-                            misi = val.get("misi", [])
-                            misi_str = "\n".join([f"- {m}" for m in misi]) if isinstance(misi, list) else str(misi)
-                            formatted_content = f"[VISI]\n{visi}\n\n[MISI]\n{misi_str}"
-                        else:
-                            formatted_content = json.dumps(val, ensure_ascii=False)
-                else:
-                    # Text delimiter fallback if JSON key wasn't explicitly populated
-                    sec_pattern = re.compile(rf'"{key}"\s*:\s*"(.*?)"(?=,\s*"|\s*}})', re.DOTALL)
-                    sec_match = sec_pattern.search(full_llm_acc)
-                    if sec_match:
-                        formatted_content = sec_match.group(1).replace(r'\n', '\n').replace(r'\"', '"')
-                    else:
-                        formatted_content = full_llm_acc[:500] if len(valid_keys) == 1 else ""
-
-                yield f"data: {json.dumps({'section_key': key, 'done': True, 'content': formatted_content})}\n\n"
+                yield f"data: {json.dumps({'section_key': key, 'done': True, 'content': full_acc.strip()})}\n\n"
 
             yield "data: [DONE]\n\n"
-
         except Exception as e:
             print(f"[SSE Batch AI Stream Error]: {type(e).__name__} - {e}")
             err_payload = json.dumps({"error": "Terjadi kendala saat menghasilkan konten AI batch. Silakan coba beberapa saat lagi."})
