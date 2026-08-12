@@ -51,12 +51,12 @@ export const SectionCorrectionCard: React.FC<SectionCorrectionCardProps> = ({
     <div
       style={{
         background: 'var(--amber-50, #fffbeb)',
-        border: '1.5px solid var(--amber-300, #fde68a)',
-        borderRadius: '12px',
+        borderLeft: '4px solid #d97706',
+        borderRadius: '8px',
         padding: 'clamp(0.65rem, 2.5vw, 1rem)',
         marginTop: '0.5rem',
         marginBottom: '0.85rem',
-        boxShadow: '0 4px 12px rgba(217, 119, 6, 0.08)',
+        boxShadow: 'none',
         width: '100%',
         minWidth: 0,
         boxSizing: 'border-box',
