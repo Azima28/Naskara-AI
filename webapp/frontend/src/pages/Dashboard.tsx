@@ -6,6 +6,7 @@ import type { DraftSummary } from '@/types/api'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import NotificationModal from '@/components/common/NotificationModal'
 import { MaintenanceBanner } from '@/components/common/MaintenanceBanner'
+import { isWizardComplete, isEditorComplete, findFirstInvalidField } from '@/utils/validationHelpers'
 import {
   IconPlus,
   IconPencil,
@@ -225,45 +226,129 @@ function DashboardInner() {
 
             {/* Draft List Items */}
             <div className="draft-grid">
-              {filteredDrafts.map((d) => (
-                <div key={d.id} className="draft-card-item">
-                  <div className="draft-card-item__header">
-                    <div className="draft-card-item__title-group">
-                      <h4>{d.title}</h4>
-                      <span className="draft-card-item__date">
-                        Diperbarui: {d.updated_at ? new Date(d.updated_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
+              {filteredDrafts.map((d) => {
+                const ctx = d.data
+                const wizardOK = ctx ? isWizardComplete(ctx) : false
+                const editorOK = ctx ? isEditorComplete(ctx) : false
+
+                const handleBlockedEditClick = (e: React.MouseEvent) => {
+                  e.preventDefault()
+                  if (!ctx) return
+                  const invalid = findFirstInvalidField(ctx)
+                  const detailMsg = invalid
+                    ? `Kolom WAJIB "${invalid.fieldLabel}" pada ${invalid.stepTitle} belum diisi.`
+                    : 'Form Data Wizard belum lengkap.'
+                  setModal({
+                    isOpen: true,
+                    title: '🔒 Form Data Wizard Belum Lengkap',
+                    message: `⚠️ Lengkapi Form Data Wizard terlebih dahulu sebelum membuka Editor. ${detailMsg}`,
+                    type: 'warning',
+                  })
+                }
+
+                const handleBlockedDownloadClick = (e: React.MouseEvent) => {
+                  e.preventDefault()
+                  if (!wizardOK) {
+                    const invalid = ctx ? findFirstInvalidField(ctx) : null
+                    const detailMsg = invalid
+                      ? `Kolom WAJIB "${invalid.fieldLabel}" pada ${invalid.stepTitle} belum diisi.`
+                      : 'Form Data Wizard belum lengkap.'
+                    setModal({
+                      isOpen: true,
+                      title: '🔒 Form Data Wizard Belum Lengkap',
+                      message: `⚠️ Form Data Wizard belum lengkap. ${detailMsg}`,
+                      type: 'warning',
+                    })
+                  } else {
+                    setModal({
+                      isOpen: true,
+                      title: '🔒 Draf Editor Belum Siap Unduh',
+                      message:
+                        '⚠️ Draf laporan belum memenuhi syarat Editor (minimal 2 sub-bab BAB I & 3 narasi terisi). Silakan klik "Edit & Rapikan Teks AI" untuk menyusun isi laporan terlebih dahulu.',
+                      type: 'warning',
+                    })
+                  }
+                }
+
+                return (
+                  <div key={d.id} className="draft-card-item">
+                    <div className="draft-card-item__header">
+                      <div className="draft-card-item__title-group">
+                        <h4>{d.title}</h4>
+                        <span className="draft-card-item__date">
+                          Diperbarui: {d.updated_at ? new Date(d.updated_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
+                        </span>
+                      </div>
+                      <span className={`status-badge ${wizardOK && editorOK ? 'status-badge--ready' : wizardOK ? 'status-badge--reviewing' : 'status-badge--draft'}`}>
+                        {wizardOK && editorOK ? 'Siap Diunduh (.docx)' : wizardOK ? 'Form Lengkap (Perlu Editor)' : 'Form Wizard Diisi'}
                       </span>
                     </div>
-                    <span className={`status-badge ${d.status === 'ready' ? 'status-badge--ready' : 'status-badge--draft'}`}>
-                      {d.status === 'ready' ? 'Siap Diunduh (.docx)' : 'Draf Diisi'}
-                    </span>
-                  </div>
 
-                  <div className="draft-card-item__actions">
-                    <Link to={`/wizard/${d.id}`} className="btn-sm btn-primary">
-                      <IconPencil size={14} style={{ marginRight: '0.3rem' }} /> Lanjutkan Isi Form Data
-                    </Link>
-                    <Link to={`/editor/${d.id}`} className="btn-sm btn-outline">
-                      <IconDocument size={14} style={{ marginRight: '0.3rem' }} /> Edit &amp; Rapikan Teks AI
-                    </Link>
-                    <button
-                      onClick={() => handleDownload(d.id)}
-                      disabled={downloadingId === d.id}
-                      className="btn-sm btn-outline"
-                      style={{ color: 'var(--green-700)', borderColor: 'var(--green-600)' }}
-                    >
-                      <IconDownload size={14} style={{ marginRight: '0.3rem' }} /> {downloadingId === d.id ? 'Mengunduh...' : 'Unduh .docx'}
-                    </button>
-                    <button
-                      onClick={() => handleDelete(d.id)}
-                      className="btn-sm btn-danger"
-                      title="Hapus Draft"
-                    >
-                      <IconTrash size={14} />
-                    </button>
+                    <div className="draft-card-item__actions">
+                      <Link to={`/wizard/${d.id}`} className="btn-sm btn-primary">
+                        <IconPencil size={14} style={{ marginRight: '0.3rem' }} /> Lanjutkan Isi Form Data
+                      </Link>
+
+                      {wizardOK ? (
+                        <Link to={`/editor/${d.id}`} className="btn-sm btn-outline">
+                          <IconDocument size={14} style={{ marginRight: '0.3rem' }} /> Edit &amp; Rapikan Teks AI
+                        </Link>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleBlockedEditClick}
+                          className="btn-sm"
+                          style={{
+                            opacity: 0.5,
+                            cursor: 'not-allowed',
+                            background: '#f1f5f9',
+                            color: '#94a3b8',
+                            border: '1px solid #cbd5e1',
+                          }}
+                          title="Lengkapi Form Data Wizard terlebih dahulu"
+                        >
+                          <IconDocument size={14} style={{ marginRight: '0.3rem' }} /> Edit &amp; Rapikan Teks AI 🔒
+                        </button>
+                      )}
+
+                      {wizardOK && editorOK ? (
+                        <button
+                          onClick={() => handleDownload(d.id)}
+                          disabled={downloadingId === d.id}
+                          className="btn-sm btn-outline"
+                          style={{ color: 'var(--green-700)', borderColor: 'var(--green-600)' }}
+                        >
+                          <IconDownload size={14} style={{ marginRight: '0.3rem' }} /> {downloadingId === d.id ? 'Mengunduh...' : 'Unduh .docx'}
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleBlockedDownloadClick}
+                          className="btn-sm"
+                          style={{
+                            opacity: 0.5,
+                            cursor: 'not-allowed',
+                            background: '#f1f5f9',
+                            color: '#94a3b8',
+                            border: '1px solid #cbd5e1',
+                          }}
+                          title={!wizardOK ? 'Form Data Wizard belum lengkap' : 'Draf laporan di Editor belum memenuhi syarat (minimal 2 sub-bab BAB I & 3 narasi)'}
+                        >
+                          <IconDownload size={14} style={{ marginRight: '0.3rem' }} /> Unduh .docx 🔒
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => handleDelete(d.id)}
+                        className="btn-sm btn-danger"
+                        title="Hapus Draft"
+                      >
+                        <IconTrash size={14} />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
 

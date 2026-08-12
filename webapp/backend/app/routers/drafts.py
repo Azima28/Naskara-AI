@@ -27,6 +27,7 @@ class DraftSummary(BaseModel):
     id: str
     title: str
     status: str
+    data: PklContext | None = None
     created_at: str
     updated_at: str
 
@@ -85,7 +86,8 @@ def _fmt(dt_obj: dt.datetime | None) -> str:
 
 
 def _to_summary(d: Draft) -> DraftSummary:
-    return DraftSummary(id=d.id, title=d.title, status=d.status,
+    ctx = PklContext.model_validate(d.data_json) if d.data_json else PklContext()
+    return DraftSummary(id=d.id, title=d.title, status=d.status, data=ctx,
                          created_at=_fmt(d.created_at), updated_at=_fmt(d.updated_at))
 
 

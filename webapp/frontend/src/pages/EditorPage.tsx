@@ -13,6 +13,7 @@ import { emptyContext } from '@/types/pkl'
 import { IconDocument, IconDownload, IconAlert, IconPencil, IconCheck } from '@/components/common/Icons'
 import { MaintenanceBanner } from '@/components/common/MaintenanceBanner'
 import { polishAcademicText, polishAcademicList } from '@/utils/textPolish'
+import { findFirstInvalidField } from '@/utils/validationHelpers'
 
 const ARRAY_SECTION_KEYS = [
   'tujuan',
@@ -178,6 +179,14 @@ function EditorInner() {
     setLoading(true)
     getDraft(draftId)
       .then((d) => {
+        // Guard check: if wizard data is incomplete, redirect immediately to /wizard
+        const invalid = findFirstInvalidField(d.data)
+        if (invalid) {
+          dirtyRef.current = false
+          nav(`/wizard/${draftId}?step=${invalid.stepIdx}&field=${invalid.fieldKey}&valError=true`, { replace: true })
+          return
+        }
+
         setCtx(d.data)
         setTitle(d.title)
         dirtyRef.current = false

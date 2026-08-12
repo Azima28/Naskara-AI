@@ -146,6 +146,7 @@ export interface DraftSummary {
   id: string
   title: string
   status: string
+  data?: import('./pkl').PklContext
   created_at: string
   updated_at: string
 }

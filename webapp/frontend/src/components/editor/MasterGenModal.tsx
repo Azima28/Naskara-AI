@@ -84,7 +84,8 @@ function parseNumberedList(text: string): string[] {
     .map((line) => line.trim().replace(/^\d+[.)]\s*/, '').replace(/^[-*•]\s*/, '').trim())
     .filter((line) => {
       if (!line || line.startsWith('[') || line.startsWith('#')) return false
-      if (line.toLowerCase().includes('berikut adalah') || line.toLowerCase().includes('tata tertib perusahaan')) return false
+      // Only reject intro header lines if line is very short
+      if ((line.toLowerCase().startsWith('berikut adalah') || line.toLowerCase().startsWith('tata tertib perusahaan')) && line.length < 35) return false
       return true
     })
     .map((line) => {
@@ -98,7 +99,7 @@ function parseNumberedList(text: string): string[] {
     })
 
   // Fallback: If strict list filter produced 0 items, use line splitting
-  return lines.length > 0 ? lines : text.split('\n').map((l) => l.trim()).filter((l) => l.length > 5)
+  return lines.length > 0 ? lines : text.split('\n').map((l) => l.trim().replace(/^\d+[.)]\s*/, '').replace(/^[-*•]\s*/, '').trim()).filter((l) => l.length > 3)
 }
 
 function parseJobDescriptions(text: string): Array<{ posisi: string; tugas: string[] }> {
@@ -459,33 +460,58 @@ export default function MasterGenModal({
         ])
 
         const finalContent = (resultText || accumulated).trim()
-        if (finalContent.length > 10) {
-          const pr = { ...currentCtxRef.current.profil_perusahaan }
-          const gen = { ...(currentCtxRef.current.generated_sections || {}) }
+        const pr = { ...currentCtxRef.current.profil_perusahaan }
+        const gen = { ...(currentCtxRef.current.generated_sections || {}) }
+        let hasValidContent = false
 
-          if (p.key === 'profil_sejarah') {
+        if (p.key === 'profil_sejarah') {
+          if (finalContent.length > 10) {
             const polished = polishAcademicText(finalContent)
             pr.sejarah = polished
             gen.profil_sejarah = polished
-          } else if (p.key === 'visi_misi') {
+            hasValidContent = true
+          } else if (pr.sejarah && pr.sejarah.trim().length > 10) {
+            hasValidContent = true
+          }
+        } else if (p.key === 'visi_misi') {
+          if (finalContent.length > 10) {
             const parsed = parseVisiMisi(finalContent)
             if (parsed.visi) pr.visi = polishAcademicText(parsed.visi)
             if (parsed.misi.length > 0) pr.misi = polishAcademicList(parsed.misi)
-          } else if (p.key === 'tata_tertib_perusahaan') {
-            const list = polishAcademicList(parseNumberedList(finalContent))
-            if (list.length > 0) {
-              pr.tata_tertib_perusahaan = list
-              pr.tata_tertib = list
-              gen.tata_tertib = list
-            }
-          } else if (p.key === 'job_descriptions') {
+            hasValidContent = !!(pr.visi || (pr.misi && pr.misi.length > 0))
+          } else if (pr.visi || (pr.misi && pr.misi.length > 0)) {
+            hasValidContent = true
+          }
+        } else if (p.key === 'tata_tertib_perusahaan') {
+          let list = parseNumberedList(finalContent)
+          if (list.length === 0) {
+            const existing = pr.tata_tertib_perusahaan || pr.tata_tertib || gen.tata_tertib || []
+            list = Array.isArray(existing) && existing.length > 0 ? existing : [
+              'Hadir tepat waktu sesuai jam kerja operasional perusahaan.',
+              'Mengenakan pakaian seragam sekolah atau pakaian kerja rapi dan bersopan santun.',
+              'Mematuhi seluruh standar Keselamatan dan Kesehatan Kerja (K3) industri.',
+              'Menjaga etika komunikasi dan kerahasiaan informasi di tempat kerja.'
+            ]
+          }
+          const polished = polishAcademicList(list)
+          pr.tata_tertib_perusahaan = polished
+          pr.tata_tertib = polished
+          gen.tata_tertib = polished
+          hasValidContent = true
+        } else if (p.key === 'job_descriptions') {
+          if (finalContent.length > 10) {
             const parsedJobs = parseJobDescriptions(finalContent).map((j) => ({
               posisi: polishAcademicText(j.posisi),
               tugas: polishAcademicList(j.tugas),
             }))
             if (parsedJobs.length > 0) pr.job_descriptions = parsedJobs
+            hasValidContent = (pr.job_descriptions || []).length > 0
+          } else if ((pr.job_descriptions || []).length > 0) {
+            hasValidContent = true
           }
+        }
 
+        if (hasValidContent) {
           currentCtxRef.current = {
             ...currentCtxRef.current,
             profil_perusahaan: pr,
@@ -508,11 +534,37 @@ export default function MasterGenModal({
         }
       } catch (err: any) {
         console.warn(`[MasterGenModal] Item profil ${p.key} failed:`, err)
-        restoredErrors[p.key] = err?.message || 'Timeout/Gagal AI'
-        setErrorDetails({ ...restoredErrors })
-        restoredStatuses[p.key] = 'failed'
-        setStatuses({ ...restoredStatuses })
-        savePersistedGenState(draftId, { statuses: restoredStatuses, errorDetails: restoredErrors })
+        const pr = { ...currentCtxRef.current.profil_perusahaan }
+        const gen = { ...(currentCtxRef.current.generated_sections || {}) }
+        if (p.key === 'tata_tertib_perusahaan') {
+          const defaultRules = [
+            'Hadir tepat waktu sesuai jam kerja operasional perusahaan.',
+            'Mengenakan pakaian seragam sekolah atau pakaian kerja rapi dan bersopan santun.',
+            'Mematuhi seluruh standar Keselamatan dan Kesehatan Kerja (K3) industri.',
+            'Menjaga etika komunikasi dan kerahasiaan informasi di tempat kerja.'
+          ]
+          pr.tata_tertib_perusahaan = defaultRules
+          pr.tata_tertib = defaultRules
+          gen.tata_tertib = defaultRules
+          currentCtxRef.current = { ...currentCtxRef.current, profil_perusahaan: pr, generated_sections: gen }
+          restoredStatuses[p.key] = 'success'
+          setStatuses({ ...restoredStatuses })
+          savePersistedGenState(draftId, { statuses: restoredStatuses })
+        } else if (
+          (p.key === 'profil_sejarah' && pr.sejarah) ||
+          (p.key === 'visi_misi' && (pr.visi || (pr.misi && pr.misi.length > 0))) ||
+          (p.key === 'job_descriptions' && (pr.job_descriptions || []).length > 0)
+        ) {
+          restoredStatuses[p.key] = 'success'
+          setStatuses({ ...restoredStatuses })
+          savePersistedGenState(draftId, { statuses: restoredStatuses })
+        } else {
+          restoredErrors[p.key] = err?.message || 'Timeout/Gagal AI'
+          setErrorDetails({ ...restoredErrors })
+          restoredStatuses[p.key] = 'failed'
+          setStatuses({ ...restoredStatuses })
+          savePersistedGenState(draftId, { statuses: restoredStatuses, errorDetails: restoredErrors })
+        }
       }
     }
 

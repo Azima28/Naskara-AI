@@ -411,6 +411,39 @@ async def generate_docx(
             },
         )
 
+    # 2.5 Check Editor Completeness Requirements (min 2 sub-bab BAB I & min 3 narrative sections)
+    gen = data.get("generated_sections", {}) or {}
+    prof = data.get("profil_perusahaan", {}) or {}
+
+    bab1_keys = ["latar_belakang", "tujuan_pkl", "profil_sejarah", "tata_tertib", "narasi_struktur"]
+    bab1_count = 0
+    for k in bab1_keys:
+        val = gen.get(k) or (prof.get("sejarah") if k == "profil_sejarah" else prof.get("tata_tertib_perusahaan") or prof.get("tata_tertib") if k == "tata_tertib" else None)
+        if isinstance(val, list) and len(val) > 0:
+            bab1_count += 1
+        elif isinstance(val, str) and val.strip():
+            bab1_count += 1
+
+    main_narrative_keys = {"latar_belakang", "tujuan_pkl", "profil_sejarah", "tata_tertib", "narasi_struktur", "landasan_teori", "pembahasan", "kesimpulan_saran"}
+    narrative_count = 0
+    for k, val in gen.items():
+        if k in main_narrative_keys or k.startswith("kegiatan_"):
+            if isinstance(val, list) and len(val) > 0:
+                narrative_count += 1
+            elif isinstance(val, str) and val.strip():
+                narrative_count += 1
+
+    if bab1_count < 2 or narrative_count < 3:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "message": "Draf laporan belum memenuhi syarat Editor (minimal 2 sub-bab BAB I & 3 narasi terisi). Silakan buat/generate narasi di Editor terlebih dahulu.",
+                "issues": [],
+                "requestions": [],
+                "score": validation.score,
+            },
+        )
+
     # 2.6 Daftar pustaka otomatis (config.auto_daftar_pustaka, default aktif):
     # coba AI dulu; kalau provider mati/dummy, penyusun standar yang mengisi.
     if not data.get("daftar_pustaka") and \
