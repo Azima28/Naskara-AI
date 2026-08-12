@@ -20,6 +20,7 @@ from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
 
+from ..config import OUTPUT_DIR
 from ..db import get_db
 from ..dependencies import get_current_user
 from ..models import Draft, User
@@ -489,13 +490,7 @@ async def generate_docx(
 
     # Save a permanent copy to 'hasil' folder for evaluation
     try:
-        project_root = Path(os.getcwd())
-        if project_root.name == "app":
-            project_root = project_root.parent.parent.parent
-        elif project_root.name == "backend":
-            project_root = project_root.parent.parent
-
-        hasil_dir = project_root / "hasil"
+        hasil_dir = OUTPUT_DIR.parent / "hasil"
         hasil_dir.mkdir(parents=True, exist_ok=True)
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

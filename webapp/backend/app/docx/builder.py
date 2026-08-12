@@ -1684,7 +1684,7 @@ def compute_toc_page_numbers_libreoffice(docx_path: str, sec_list: list[tuple[st
         # Jalankan LibreOffice headless update & konversi PDF
         cmd = [soffice_bin, "--headless", "--convert-to", "pdf", os.path.abspath(docx_path)]
         print(f"[TOC-LO] Running: {' '.join(cmd)}")
-        res = subprocess.run(cmd, capture_output=True, timeout=45, cwd=os.path.dirname(os.path.abspath(docx_path)))
+        res = subprocess.run(cmd, capture_output=True, timeout=15, cwd=os.path.dirname(os.path.abspath(docx_path)))
         print(f"[TOC-LO] returncode={res.returncode}, pdf_exists={os.path.exists(pdf_path)}")
         if res.returncode != 0:
             print(f"[TOC-LO] FAILED: stderr={res.stderr.decode(errors='ignore')[:300]}")
