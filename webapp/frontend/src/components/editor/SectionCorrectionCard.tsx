@@ -50,25 +50,57 @@ export const SectionCorrectionCard: React.FC<SectionCorrectionCardProps> = ({
   return (
     <div
       style={{
-        background: '#fffbe6',
-        border: '1.5px solid #ffe58f',
-        borderRadius: '10px',
-        padding: '16px',
-        marginTop: '12px',
-        marginBottom: '16px',
-        boxShadow: '0 2px 8px rgba(250, 173, 20, 0.08)',
+        background: 'var(--amber-50, #fffbeb)',
+        border: '1.5px solid var(--amber-300, #fde68a)',
+        borderRadius: '12px',
+        padding: 'clamp(0.65rem, 2.5vw, 1rem)',
+        marginTop: '0.5rem',
+        marginBottom: '0.85rem',
+        boxShadow: '0 4px 12px rgba(217, 119, 6, 0.08)',
+        width: '100%',
+        minWidth: 0,
+        boxSizing: 'border-box',
       }}
     >
       {/* Warning Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-        <IconAlert size={20} color="#d46b08" />
-        <h4 style={{ margin: 0, fontSize: '0.95rem', color: '#d46b08', fontWeight: 800 }}>
-          💡 Petunjuk Perbaikan Input Sub-bab '{sectionTitle}'
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '0.45rem',
+          marginBottom: '0.55rem',
+          flexWrap: 'wrap',
+          width: '100%',
+          boxSizing: 'border-box',
+        }}
+      >
+        <IconAlert size={18} color="#d97706" style={{ flexShrink: 0, marginTop: '2px' }} />
+        <h4
+          style={{
+            margin: 0,
+            fontSize: 'clamp(0.84rem, 2.8vw, 0.95rem)',
+            color: 'var(--amber-800, #92400e)',
+            fontWeight: 700,
+            wordBreak: 'break-word',
+            flex: 1,
+            minWidth: 0,
+            lineHeight: 1.35,
+          }}
+        >
+          Petunjuk Perbaikan Input Sub-bab &lsquo;{sectionTitle}&rsquo;
         </h4>
       </div>
 
       {/* Message Explanation */}
-      <p style={{ margin: '0 0 10px 0', fontSize: '0.86rem', color: '#873800', lineHeight: 1.5 }}>
+      <p
+        style={{
+          margin: '0 0 0.65rem',
+          fontSize: 'clamp(0.76rem, 2.2vw, 0.83rem)',
+          color: 'var(--amber-900, #78350f)',
+          lineHeight: 1.55,
+          wordBreak: 'break-word',
+        }}
+      >
         {errorDetail.message ||
           'Sistem AI menolak input ini karena terdeteksi mengandung obrolan santai atau di luar kegiatan PKL.'}
       </p>
@@ -78,14 +110,16 @@ export const SectionCorrectionCard: React.FC<SectionCorrectionCardProps> = ({
         <div
           style={{
             background: '#ffffff',
-            border: '1px solid #ffd591',
-            borderRadius: '6px',
-            padding: '8px 12px',
-            fontSize: '0.8rem',
-            color: '#595959',
-            fontFamily: 'monospace',
-            marginBottom: '14px',
+            border: '1px solid #fde68a',
+            borderRadius: '8px',
+            padding: '0.45rem 0.65rem',
+            fontSize: 'clamp(0.72rem, 2.1vw, 0.78rem)',
+            color: '#451a03',
+            fontFamily: 'Consolas, Monaco, "Courier New", monospace',
+            marginBottom: '0.75rem',
             wordBreak: 'break-word',
+            width: '100%',
+            boxSizing: 'border-box',
           }}
         >
           <strong>Input Anda Sebelumnya:</strong> &quot;{errorDetail.raw_input_snippet}&quot;
@@ -93,14 +127,23 @@ export const SectionCorrectionCard: React.FC<SectionCorrectionCardProps> = ({
       )}
 
       {/* 3 Resolution Options Panel */}
-      <div style={{ background: '#ffffff', borderRadius: '8px', border: '1px solid #ffe58f', padding: '12px' }}>
-        <strong style={{ fontSize: '0.84rem', color: '#d46b08', display: 'block', marginBottom: '8px' }}>
+      <div
+        style={{
+          background: '#ffffff',
+          borderRadius: '10px',
+          border: '1px solid #fde68a',
+          padding: 'clamp(0.6rem, 2.2vw, 0.85rem)',
+          width: '100%',
+          boxSizing: 'border-box',
+        }}
+      >
+        <strong style={{ fontSize: 'clamp(0.78rem, 2.3vw, 0.84rem)', color: '#92400e', display: 'block', marginBottom: '0.65rem' }}>
           Pilih 1 dari 3 Cara Penyelesaian Berikut:
         </strong>
 
         {/* Option A: Inline Re-prompt Fix */}
-        <div style={{ marginBottom: '14px', paddingBottom: '12px', borderBottom: '1px dashed #ffe58f' }}>
-          <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#262626', display: 'block', marginBottom: '4px' }}>
+        <div style={{ marginBottom: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px dashed #fde68a' }}>
+          <label style={{ fontSize: 'clamp(0.75rem, 2.2vw, 0.8rem)', fontWeight: 700, color: '#1c1917', display: 'block', marginBottom: '0.35rem', wordBreak: 'break-word' }}>
             Opsi 1: Tulis Ulang Teks / Instruksi Tambahan (Inline)
           </label>
           <textarea
@@ -110,42 +153,75 @@ export const SectionCorrectionCard: React.FC<SectionCorrectionCardProps> = ({
             onChange={(e) => setCustomInstruction(e.target.value)}
             style={{
               width: '100%',
-              fontSize: '0.82rem',
-              padding: '8px',
+              fontSize: 'clamp(0.76rem, 2.2vw, 0.83rem)',
+              padding: '0.45rem 0.6rem',
               borderRadius: '6px',
-              border: '1px solid #d9d9d9',
-              marginBottom: '6px',
+              border: '1px solid #cbd5e1',
+              marginBottom: '0.45rem',
+              fontFamily: 'inherit',
               boxSizing: 'border-box',
+              resize: 'vertical',
             }}
           />
           <button
             type="button"
             onClick={handleReGenerate}
             disabled={loading}
-            className="btn btn--primary btn--sm"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem' }}
+            className="btn-primary btn-sm"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.35rem',
+              fontSize: 'clamp(0.75rem, 2.2vw, 0.82rem)',
+              fontWeight: 700,
+              width: '100%',
+              padding: '0.45rem 0.8rem',
+              borderRadius: '6px',
+              background: 'var(--green-600, #187257)',
+              color: '#ffffff',
+              border: 'none',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.7 : 1,
+              boxSizing: 'border-box',
+            }}
           >
-            <IconSparkles size={14} /> {loading ? 'Memproses AI...' : 'Generate Ulang Sub-bab Ini'}
+            <IconSparkles size={14} style={{ flexShrink: 0 }} /> {loading ? 'Memproses AI...' : 'Generate Ulang Sub-bab Ini'}
           </button>
         </div>
 
         {/* Option B: Jump Back to Wizard Form */}
-        <div style={{ marginBottom: '14px', paddingBottom: '12px', borderBottom: '1px dashed #ffe58f' }}>
-          <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#262626', display: 'block', marginBottom: '4px' }}>
+        <div style={{ marginBottom: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px dashed #fde68a' }}>
+          <label style={{ fontSize: 'clamp(0.75rem, 2.2vw, 0.8rem)', fontWeight: 700, color: '#1c1917', display: 'block', marginBottom: '0.35rem', wordBreak: 'break-word' }}>
             Opsi 2: Edit Sumber Data Utama di Form Wizard
           </label>
           <a
             href={`/wizard/${draftId}?step=${wizardStep}`}
-            className="btn btn--outline btn--sm"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', textDecoration: 'none', color: '#d46b08', borderColor: '#ffd591' }}
+            className="btn-sm btn-outline"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.35rem',
+              fontSize: 'clamp(0.75rem, 2.2vw, 0.82rem)',
+              fontWeight: 700,
+              color: '#b45309',
+              borderColor: '#fde68a',
+              background: '#fffbeb',
+              borderRadius: '6px',
+              padding: '0.45rem 0.8rem',
+              textDecoration: 'none',
+              width: '100%',
+              boxSizing: 'border-box',
+            }}
           >
-            <IconPencil size={14} /> Kembali ke Form Wizard (Langkah {wizardStep}: {stepName})
+            <IconPencil size={14} style={{ flexShrink: 0 }} /> Kembali ke Form Wizard (Langkah {wizardStep}: {stepName})
           </a>
         </div>
 
         {/* Option C: Explicit Academic Fallback Trigger */}
         <div>
-          <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#262626', display: 'block', marginBottom: '4px' }}>
+          <label style={{ fontSize: 'clamp(0.75rem, 2.2vw, 0.8rem)', fontWeight: 700, color: '#1c1917', display: 'block', marginBottom: '0.35rem', wordBreak: 'break-word' }}>
             Opsi 3: Gunakan Templat Baku Akademik Jurusan (Fallback Rekomendasi SMKN4)
           </label>
           <button
@@ -154,10 +230,25 @@ export const SectionCorrectionCard: React.FC<SectionCorrectionCardProps> = ({
               onApplyFallback()
               onClearError()
             }}
-            className="btn btn--secondary btn--sm"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem' }}
+            className="btn-sm btn-outline"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.35rem',
+              fontSize: 'clamp(0.75rem, 2.2vw, 0.82rem)',
+              fontWeight: 700,
+              color: '#475569',
+              borderColor: '#cbd5e1',
+              background: '#f8fafc',
+              borderRadius: '6px',
+              padding: '0.45rem 0.8rem',
+              width: '100%',
+              boxSizing: 'border-box',
+              cursor: 'pointer',
+            }}
           >
-            <IconDocument size={14} /> Gunakan Templat Baku Akademik
+            <IconDocument size={14} style={{ flexShrink: 0 }} /> Gunakan Templat Baku Akademik
           </button>
         </div>
       </div>
