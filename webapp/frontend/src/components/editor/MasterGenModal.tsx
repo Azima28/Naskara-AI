@@ -285,6 +285,18 @@ export default function MasterGenModal({
         if (restoredStatuses[k] === 'generating') {
           restoredStatuses[k] = 'pending'
         }
+        // Verification: If stored as 'success' but context actually lacks content, force re-generation
+        const gen = currentCtxRef.current.generated_sections || {}
+        const pr = currentCtxRef.current.profil_perusahaan || {}
+        let hasData = !!gen[k]
+        if (k === 'profil_sejarah') hasData = !!(gen.profil_sejarah || pr.sejarah)
+        else if (k === 'visi_misi') hasData = !!(gen.visi_misi || pr.visi || (pr.misi && pr.misi.length > 0))
+        else if (k === 'tata_tertib_perusahaan') hasData = !!(gen.tata_tertib || gen.tata_tertib_perusahaan || pr.tata_tertib_perusahaan || pr.tata_tertib)
+        else if (k === 'job_descriptions') hasData = !!(gen.job_descriptions || (pr.job_descriptions && pr.job_descriptions.length > 0))
+
+        if (restoredStatuses[k] === 'success' && !hasData) {
+          restoredStatuses[k] = 'pending'
+        }
       })
       restoredErrors = saved.errorDetails || {}
       if (saved.activePhase) setActivePhase(saved.activePhase)
@@ -462,6 +474,7 @@ export default function MasterGenModal({
                 const parsed = parseVisiMisi(finalContent)
                 if (parsed.visi) pr.visi = polishAcademicText(parsed.visi)
                 if (parsed.misi.length > 0) pr.misi = polishAcademicList(parsed.misi)
+                gen.visi_misi = finalContent
                 hasValidContent = !!(pr.visi || (pr.misi && pr.misi.length > 0))
               } else if (pr.visi || (pr.misi && pr.misi.length > 0)) {
                 hasValidContent = true
@@ -481,6 +494,7 @@ export default function MasterGenModal({
               pr.tata_tertib_perusahaan = polished
               pr.tata_tertib = polished
               gen.tata_tertib = polished
+              gen.tata_tertib_perusahaan = polished
               hasValidContent = true
             } else if (pKey === 'job_descriptions') {
               if (finalContent.length > 10) {
@@ -489,6 +503,7 @@ export default function MasterGenModal({
                   tugas: polishAcademicList(j.tugas),
                 }))
                 if (parsedJobs.length > 0) pr.job_descriptions = parsedJobs
+                gen.job_descriptions = finalContent
                 hasValidContent = (pr.job_descriptions || []).length > 0
               } else if ((pr.job_descriptions || []).length > 0) {
                 hasValidContent = true
@@ -1038,9 +1053,18 @@ export default function MasterGenModal({
               type="button"
               className="btn-primary"
               disabled={!isDoneAll}
-              onClick={() => {
+              onClick={async () => {
                 dismissPersistedGenState(draftId)
-                onComplete(currentCtxRef.current)
+                try {
+                  const res = await updateDraft(draftId, { data: currentCtxRef.current, status: 'completed' })
+                  if (res?.data) {
+                    onComplete(res.data)
+                  } else {
+                    onComplete(currentCtxRef.current)
+                  }
+                } catch {
+                  onComplete(currentCtxRef.current)
+                }
                 onClose()
               }}
               style={{
