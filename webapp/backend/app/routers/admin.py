@@ -451,6 +451,104 @@ def force_delete_draft(
     return {"status": "success", "message": f"Draft '{title}' (ID: {draft_id}) telah dihapus."}
 
 
+@router.post("/users/{user_id}/inject-simulation")
+def inject_user_simulation_draft(
+    user_id: str,
+    req: Request,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+) -> dict[str, Any]:
+    """Mengisikan draf simulasi 100% lengkap (DATA_FULL) ke akun user terpilih."""
+    from data_full_complete import DATA_FULL
+    from sqlalchemy.orm.attributes import flag_modified
+
+    target_user = db.get(User, user_id)
+    if not target_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User tidak ditemukan.")
+
+    existing_draft = (
+        db.query(Draft)
+        .filter(Draft.user_id == target_user.id)
+        .order_by(Draft.updated_at.desc())
+        .first()
+    )
+
+    full_copy = dict(DATA_FULL)
+    if target_user.name:
+        siswa_copy = dict(full_copy.get("siswa", {}))
+        siswa_copy["nama"] = target_user.name
+        full_copy["siswa"] = siswa_copy
+
+    if existing_draft:
+        existing_draft.data_json = full_copy
+        existing_draft.status = "ready"
+        existing_draft.title = f"Laporan PKL - {target_user.name or target_user.email} (Full Simulation 100% Complete)"
+        flag_modified(existing_draft, "data_json")
+        existing_draft.version_id = (getattr(existing_draft, "version_id", 1) or 1) + 1
+        existing_draft.updated_at = dt.datetime.now(dt.timezone.utc)
+        db.commit()
+        db.refresh(existing_draft)
+        draft_res = existing_draft
+    else:
+        new_draft = Draft(
+            user_id=target_user.id,
+            title=f"Laporan PKL - {target_user.name or target_user.email} (Full Simulation 100% Complete)",
+            status="ready",
+            data_json=full_copy,
+        )
+        db.add(new_draft)
+        db.commit()
+        db.refresh(new_draft)
+        draft_res = new_draft
+
+    log_admin_action(db, admin, "DRAFT_INJECT_SIMULATION", target=draft_res.id, details={"user_email": target_user.email}, request=req)
+    return {
+        "status": "success",
+        "message": f"Draf simulasi 100% lengkap berhasil diisikan ke akun {target_user.email} (ID Draf: {draft_res.id}).",
+        "draft_id": draft_res.id,
+    }
+
+
+@router.post("/drafts/{draft_id}/inject-simulation")
+def inject_draft_simulation(
+    draft_id: str,
+    req: Request,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+) -> dict[str, Any]:
+    """Mengisikan data simulasi 100% lengkap (DATA_FULL) ke draf spesifik terpilih."""
+    from data_full_complete import DATA_FULL
+    from sqlalchemy.orm.attributes import flag_modified
+
+    target_draft = db.get(Draft, draft_id)
+    if not target_draft:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Draft tidak ditemukan.")
+
+    full_copy = dict(DATA_FULL)
+    user_name = target_draft.user.name if target_draft.user else ""
+    if user_name:
+        siswa_copy = dict(full_copy.get("siswa", {}))
+        siswa_copy["nama"] = user_name
+        full_copy["siswa"] = siswa_copy
+
+    target_draft.data_json = full_copy
+    target_draft.status = "ready"
+    if "(Full Simulation 100% Complete)" not in target_draft.title:
+        target_draft.title = f"{target_draft.title} (Full Simulation 100% Complete)"
+    flag_modified(target_draft, "data_json")
+    target_draft.version_id = (getattr(target_draft, "version_id", 1) or 1) + 1
+    target_draft.updated_at = dt.datetime.now(dt.timezone.utc)
+    db.commit()
+    db.refresh(target_draft)
+
+    log_admin_action(db, admin, "DRAFT_INJECT_SIMULATION", target=draft_id, details={"title": target_draft.title}, request=req)
+    return {
+        "status": "success",
+        "message": f"Data simulasi 100% lengkap berhasil diisikan ke draf '{target_draft.title}'.",
+        "draft_id": target_draft.id,
+    }
+
+
 # --------------------------------------------------------------------------- #
 # 4. Asset & Storage Audit                                                   #
 # --------------------------------------------------------------------------- #

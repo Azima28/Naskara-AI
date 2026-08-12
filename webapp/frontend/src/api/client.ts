@@ -561,6 +561,12 @@ export const resetUserPassword = (userId: string, newPassword: string) =>
 export const deleteUser = (userId: string) =>
   api.delete<{ status: string; message: string }>(`/admin/users/${userId}`).then((r) => r.data)
 
+export const adminInjectUserSimulation = (userId: string) =>
+  api.post<{ status: string; message: string; draft_id: string }>(`/admin/users/${userId}/inject-simulation`).then((r) => r.data)
+
+export const adminInjectDraftSimulation = (draftId: string) =>
+  api.post<{ status: string; message: string; draft_id: string }>(`/admin/drafts/${draftId}/inject-simulation`).then((r) => r.data)
+
 export const listAdminDrafts = (params?: { status_filter?: string; search?: string; skip?: number; limit?: number }) =>
   api.get<{ total: number; items: AdminDraftItem[] }>('/admin/drafts', { params }).then((r) => r.data)
 

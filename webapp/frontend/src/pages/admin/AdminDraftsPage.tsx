@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import {
+  adminInjectDraftSimulation,
   forceDeleteDraft,
   generateDocx,
   inspectAdminDraft,
@@ -97,6 +98,24 @@ export default function AdminDraftsPage() {
     }
   }
 
+  const handleInjectDraftSimulation = async (draft: AdminDraftItem) => {
+    try {
+      const res = await adminInjectDraftSimulation(draft.id)
+      setNotice({
+        title: 'Sukses Inject Data Simulasi 100%',
+        message: res.message || `Data simulasi 100% lengkap berhasil diisikan ke draf '${draft.title}'!`,
+        type: 'success',
+      })
+      loadDrafts()
+    } catch (err: any) {
+      setNotice({
+        title: 'Gagal Inject Simulasi',
+        message: err?.response?.data?.detail || 'Gagal mengisikan data simulasi.',
+        type: 'error',
+      })
+    }
+  }
+
   return (
     <div>
       <div style={{ marginBottom: '24px' }}>
@@ -188,6 +207,14 @@ export default function AdminDraftsPage() {
 
                   <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
+                      <button
+                        onClick={() => handleInjectDraftSimulation(d)}
+                        className="btn btn--outline btn--sm"
+                        style={{ fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '4px', borderColor: 'var(--green-600, #166534)', color: 'var(--green-800, #166534)', background: '#f0fdf4' }}
+                        title="Isikan data simulasi 100% lengkap ke draf ini"
+                      >
+                        🎁 Inject Data Full
+                      </button>
                       <button
                         onClick={() => handleInspect(d.id)}
                         className="btn btn--outline btn--sm"

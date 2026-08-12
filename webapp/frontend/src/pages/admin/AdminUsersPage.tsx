@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import {
+  adminInjectUserSimulation,
   createAdminUser,
   deleteUser,
   listAdminUsers,
@@ -128,6 +129,24 @@ export default function AdminUsersPage() {
     }
   }
 
+  const handleInjectUserSimulation = async (user: UserManagementItem) => {
+    try {
+      const res = await adminInjectUserSimulation(user.id)
+      setNotice({
+        title: 'Sukses Inject Draf Simulasi 100%',
+        message: res.message || `Draf simulasi 100% lengkap berhasil diisikan ke akun ${user.email}!`,
+        type: 'success',
+      })
+      loadUsers()
+    } catch (err: any) {
+      setNotice({
+        title: 'Gagal Inject Simulasi',
+        message: err?.response?.data?.detail || 'Gagal mengisikan draf simulasi.',
+        type: 'error',
+      })
+    }
+  }
+
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
@@ -243,6 +262,14 @@ export default function AdminUsersPage() {
 
                   <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                      <button
+                        onClick={() => handleInjectUserSimulation(u)}
+                        className="btn btn--outline btn--sm"
+                        style={{ fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '4px', borderColor: 'var(--green-600, #166534)', color: 'var(--green-800, #166534)', background: '#f0fdf4' }}
+                        title="Isikan draf simulasi 100% lengkap ke akun user ini"
+                      >
+                        🎁 Inject Draf Full
+                      </button>
                       <button
                         onClick={() => setResetTarget(u)}
                         className="btn btn--outline btn--sm"
