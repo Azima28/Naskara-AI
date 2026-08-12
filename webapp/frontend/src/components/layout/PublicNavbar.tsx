@@ -86,7 +86,7 @@ export default function PublicNavbar() {
                   Masuk
                 </Link>
                 <Link
-                  to="/register"
+                  to="/login"
                   className="btn-sm btn-primary btn-mobile-full"
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -123,7 +123,7 @@ export default function PublicNavbar() {
                 <Link to="/login" className="public-nav__link-login">
                   Masuk
                 </Link>
-                <Link to="/register" className="btn-sm btn-primary">
+                <Link to="/login" className="btn-sm btn-primary">
                   Buat Laporan Gratis
                 </Link>
               </div>

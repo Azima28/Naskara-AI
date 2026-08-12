@@ -19,7 +19,7 @@ export default function LandingPage() {
 
   const handleStartReport = () => {
     if (!token || !user) {
-      nav('/register')
+      nav('/login')
       return
     }
     nav('/dashboard')

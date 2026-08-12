@@ -17,9 +17,12 @@ import {
   IconShoppingBag,
 } from '@/components/common/Icons'
 
+import { useAuth } from '@/store/auth'
+
 type MajorKey = 'pplg' | 'tkj' | 'dkv' | 'upw' | 'ph' | 'tb' | 'busana' | 'mplb' | 'akl' | 'bdp'
 
 export default function FormatGuidePage() {
+  const { token } = useAuth()
   const [activeTab, setActiveTab] = useState<MajorKey>('pplg')
 
   const majors: { id: MajorKey; name: string; code: string }[] = [
@@ -278,7 +281,7 @@ export default function FormatGuidePage() {
           <div className="guide-cta">
             <h2>Siap Membuat Laporan PKL Presisi Tanpa Edit Format Manual?</h2>
             <p>Sistem kami akan menerapkan seluruh standar aturan di atas secara otomatis ke file Word Anda.</p>
-            <Link to="/register" className="btn-primary hero-btn-lg">
+            <Link to={token ? '/dashboard' : '/login'} className="btn-primary hero-btn-lg">
               <IconRocket size={18} style={{ marginRight: '0.4rem' }} /> Mulai Buat Laporan Sekarang (Gratis)
             </Link>
           </div>

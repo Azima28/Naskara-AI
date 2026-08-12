@@ -89,7 +89,7 @@ export default function AboutPage() {
           <div className="about-cta-box">
             <h3>Siap Menyusun Laporan PKL Sesuai Standar Akademik?</h3>
             <p>Gunakan Naskara gratis dan nikmati kemudahan pembuatan laporan siap cetak.</p>
-            <Link to={token ? '/dashboard' : '/register'} className="btn-primary hero-btn-lg">
+            <Link to={token ? '/dashboard' : '/login'} className="btn-primary hero-btn-lg">
               Buat Laporan Gratis Sekarang →
             </Link>
           </div>
