@@ -79,6 +79,61 @@ def sanitize_title(title: str | None) -> str:
     return html.escape(clean_stripped)
 
 
+def deep_merge_context(existing: dict, incoming: dict) -> dict:
+    """Smart Deep Merge:
+    Menggabungkan data_json lama (existing) dan baru (incoming).
+    - Jika incoming memiliki data non-kosong, gunakan data incoming (user mengedit/mengisi).
+    - Jika incoming bernilai kosong padahal existing memuat data non-kosong, PERTAHANKAN data existing agar data wizard user tidak terhapus.
+    - Selalu gabungkan generated_sections lama & baru.
+    """
+    if not existing:
+        return incoming or {}
+    if not incoming:
+        return existing or {}
+
+    result = dict(existing)
+
+    for key, new_val in incoming.items():
+        old_val = existing.get(key)
+
+        # 1. generated_sections: merge dict
+        if key == "generated_sections" and isinstance(old_val, dict) and isinstance(new_val, dict):
+            result[key] = {**old_val, **new_val}
+
+        # 2. Nested Dict (misal siswa, sekolah, perusahaan, pkl, profil_perusahaan, studi_kasus)
+        elif isinstance(old_val, dict) and isinstance(new_val, dict):
+            merged_sub = dict(old_val)
+            for sub_k, sub_v in new_val.items():
+                if sub_v or (isinstance(sub_v, (int, float, bool)) and sub_v is not None):
+                    merged_sub[sub_k] = sub_v
+                elif sub_k not in old_val:
+                    merged_sub[sub_k] = sub_v
+            result[key] = merged_sub
+
+        # 3. List (misal kegiatan, peralatan, kendala, pelajaran, misi, tata_tertib)
+        elif isinstance(old_val, list) and isinstance(new_val, list):
+            if len(new_val) > 0 and any(item for item in new_val if item):
+                result[key] = new_val
+            elif len(old_val) > 0 and (not new_val or len(new_val) == 0):
+                if new_val == [""] or new_val == []:
+                    result[key] = new_val
+                else:
+                    result[key] = old_val
+            else:
+                result[key] = new_val
+
+        # 4. Primitive Values
+        else:
+            if new_val or (isinstance(new_val, (int, float, bool)) and new_val is not None):
+                result[key] = new_val
+            elif old_val and not new_val:
+                result[key] = old_val
+            else:
+                result[key] = new_val
+
+    return result
+
+
 def _fmt(dt_obj: dt.datetime | None) -> str:
     if dt_obj is None:
         return ""
@@ -154,13 +209,10 @@ def update_draft(draft_id: str, payload: DraftUpdate, current: User = Depends(ge
         new_data = payload.data.model_dump(mode="json")
         existing_data = draft.data_json or {}
 
-        # SMART MERGE: Gabungkan generated_sections lama & baru agar draf tulisan AI tidak terhapus
-        existing_gen = existing_data.get("generated_sections") or {}
-        new_gen = new_data.get("generated_sections") or {}
-        merged_gen = {**existing_gen, **new_gen}
-        new_data["generated_sections"] = merged_gen
+        # SMART DEEP MERGE: Gabungkan konteks data & generated_sections lama dengan data baru
+        merged_data = deep_merge_context(existing_data, new_data)
 
-        draft.data_json = new_data
+        draft.data_json = merged_data
         flag_modified(draft, "data_json")
         draft.version_id = (getattr(draft, "version_id", 1) or 1) + 1
         draft.updated_at = dt.datetime.now(dt.timezone.utc)
