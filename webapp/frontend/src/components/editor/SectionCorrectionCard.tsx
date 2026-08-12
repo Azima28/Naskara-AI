@@ -188,7 +188,7 @@ export const SectionCorrectionCard: React.FC<SectionCorrectionCardProps> = ({
           </label>
           <a
             href={`/wizard/${draftId}?step=${wizardStep}`}
-            className="btn-sm btn-outline"
+            className="btn-sm"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -197,8 +197,8 @@ export const SectionCorrectionCard: React.FC<SectionCorrectionCardProps> = ({
               fontSize: 'clamp(0.75rem, 2.2vw, 0.82rem)',
               fontWeight: 700,
               color: '#b45309',
-              borderColor: '#fcd34d',
-              background: '#ffffff',
+              background: '#fef3c7',
+              border: 'none',
               borderRadius: '6px',
               padding: '0.45rem 0.8rem',
               textDecoration: 'none',
@@ -221,7 +221,7 @@ export const SectionCorrectionCard: React.FC<SectionCorrectionCardProps> = ({
               onApplyFallback()
               onClearError()
             }}
-            className="btn-sm btn-outline"
+            className="btn-sm"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -230,8 +230,8 @@ export const SectionCorrectionCard: React.FC<SectionCorrectionCardProps> = ({
               fontSize: 'clamp(0.75rem, 2.2vw, 0.82rem)',
               fontWeight: 700,
               color: '#475569',
-              borderColor: '#cbd5e1',
-              background: '#ffffff',
+              background: '#f1f5f9',
+              border: 'none',
               borderRadius: '6px',
               padding: '0.45rem 0.8rem',
               width: '100%',
