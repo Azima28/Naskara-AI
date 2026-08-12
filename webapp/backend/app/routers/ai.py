@@ -413,8 +413,8 @@ async def batch_draft_sections_stream(
                 buffer += chunk
 
                 while True:
-                    start_match = re.search(r'<<<START_SECTION:([a_zA_Z0_9_]+)>>>', buffer)
-                    end_match = re.search(r'<<<END_SECTION:([a_zA_Z0_9_]+)>>>', buffer)
+                    start_match = re.search(r'<<<START_SECTION:([a-zA-Z0-9_]+)>>>', buffer)
+                    end_match = re.search(r'<<<END_SECTION:([a-zA-Z0-9_]+)>>>', buffer)
 
                     first_match = None
                     is_start = False
