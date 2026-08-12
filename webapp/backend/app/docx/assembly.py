@@ -688,18 +688,18 @@ def _write_paragraphs(builder: PklDocBuilder, text: Any) -> None:
     oleh parser khusus di _write_kesimpulan_saran().
     """
     clean_text = _sanitize_ai_output(text)
-    deduped_paras: list[str] = []
+    seen_paras: set[str] = set()
     for para in (clean_text or "").split("\n"):
         stripped = para.strip()
         if not stripped:
             continue
         if stripped in ("[KESIMPULAN]", "[SARAN]"):
             continue
-        if deduped_paras and deduped_paras[-1] == stripped:
+        # Deduplikasi global per paragraf (> 30 karakter) untuk mencegah pengulangan blok teks
+        key = stripped.lower()
+        if len(key) > 30 and key in seen_paras:
             continue
-        deduped_paras.append(stripped)
-
-    for stripped in deduped_paras:
+        seen_paras.add(key)
         builder.add_body(stripped)
 
 
