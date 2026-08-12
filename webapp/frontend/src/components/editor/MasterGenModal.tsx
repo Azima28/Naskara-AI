@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { PklContext } from '@/types/pkl'
 import { draftSectionStream, updateDraft } from '@/api/client'
-import { IconCheck, IconAlert, IconSparkles, IconLightning } from '@/components/common/Icons'
+import { IconCheck, IconAlert, IconSparkles, IconLightning, IconRefresh } from '@/components/common/Icons'
 import { polishAcademicText, polishAcademicList } from '@/utils/textPolish'
 import { AiModelSelector } from '@/components/common/AiModelSelector'
 
@@ -955,7 +955,7 @@ export default function MasterGenModal({
                               gap: '0.2rem',
                             }}
                           >
-                            🔄 Coba Lagi
+                            <IconRefresh size={11} color="#b91c1c" style={{ flexShrink: 0 }} /> Coba Lagi
                           </button>
                         </span>
                       )}
@@ -999,9 +999,12 @@ export default function MasterGenModal({
                   borderColor: '#fca5a5',
                   background: '#ffffff',
                   fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
                 }}
               >
-                🔄 Coba Lagi Semua yang Gagal ({failedCount})
+                <IconRefresh size={14} color="#b91c1c" style={{ flexShrink: 0 }} /> Coba Lagi Semua yang Gagal ({failedCount})
               </button>
             )}
             <button
