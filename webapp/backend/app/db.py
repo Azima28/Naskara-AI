@@ -76,6 +76,12 @@ def init_db() -> None:
                 if "last_login" not in columns:
                     conn.exec_driver_sql("ALTER TABLE users ADD COLUMN last_login DATETIME;")
                     print("✅ Migrasi SQLite: Kolom 'last_login' berhasil ditambahkan ke tabel users.")
+
+                result_drafts = conn.exec_driver_sql("PRAGMA table_info(drafts);").fetchall()
+                draft_columns = [row[1] for row in result_drafts]
+                if "version_id" not in draft_columns:
+                    conn.exec_driver_sql("ALTER TABLE drafts ADD COLUMN version_id INTEGER DEFAULT 1 NOT NULL;")
+                    print("✅ Migrasi SQLite: Kolom 'version_id' berhasil ditambahkan ke tabel drafts.")
                 conn.commit()
             except Exception as e:
                 print(f"⚠️ Warning: Auto-migration SQLite error: {e}")

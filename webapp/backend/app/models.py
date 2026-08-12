@@ -78,7 +78,7 @@ class Draft(Base):
     status: Mapped[str] = mapped_column(String(32), default="collecting")  # mirror PklContext.status
     # PklContext utuh (18-key) sebagai dict → JSON column.
     data_json: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
-    version_id: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
+    version_id: Mapped[int] = mapped_column(Integer, default=1, nullable=False, server_default="1")
     created_at: Mapped[dt.datetime] = mapped_column(
         DateTime, default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False
     )
