@@ -341,6 +341,21 @@ def _get_prompt_for_section(key: str, ctx: dict) -> tuple[str, str]:
     return system, user_prompt
 
 
+BATCH_MASTER_SYSTEM_PROMPT = """Kamu adalah penulis & editor profesional laporan Praktik Kerja Lapangan (PKL) siswa SMK.
+Tugasmu adalah menyusun dan merapikan seluruh sub-bab laporan yang diminta secara sekaligus dalam SATU respon naratif tunggal.
+
+ATURAN FORMAT OBLIGATORI (SANGAT KETAT):
+1. JANGAN PERNAH gunakan format JSON, kurung kurawal {}, atau tanda kutip string JSON.
+2. Tuliskan narasi Bahasa Indonesia yang baku, formal, akademis (sesuai EYD/KBBI).
+3. Setiap kali kamu memulai penulisan satu sub-bab, kamu WAJIB membukanya dengan baris penanda persis:
+<<<START_SECTION:section_key>>>
+
+4. Setiap kali kamu menyelesaikan penulisan sub-bab tersebut, kamu WAJIB menutupnya dengan baris penanda persis:
+<<<END_SECTION:section_key>>>
+
+5. Tulis langsung paragraf atau poin narasi secara bersih di antara penanda <<<START_SECTION:key>>> dan <<<END_SECTION:key>>>. Jangan tambahkan teks apa pun di luar penanda tersebut."""
+
+
 class BatchDraftSectionRequest(BaseModel):
     section_keys: list[str]
     context_data: dict[str, Any]
@@ -352,7 +367,7 @@ async def batch_draft_sections_stream(
     req: BatchDraftSectionRequest,
     user: User = Depends(get_current_user)
 ):
-    """Stream token/chunk respon AI untuk sekumpulan section_keys dalam 1 HTTP request SSE tunggal per fase."""
+    """Stream token/chunk respon AI untuk sekumpulan section_keys dalam 1 HTTP request & 1 tunggal panggilan LLM API per fase."""
     if not isinstance(req.context_data, dict) or len(str(req.context_data)) > 100_000:
         raise HTTPException(status_code=400, detail="Data konteks terlalu besar (maksimal 100KB) atau format tidak valid.")
 
@@ -361,19 +376,109 @@ async def batch_draft_sections_stream(
 
     async def event_generator():
         try:
+            section_instructions = []
+            valid_keys = []
             for key in req.section_keys:
-                system, user_prompt = _get_prompt_for_section(key, ctx)
-                if not user_prompt.strip() and key in ["tata_tertib_perusahaan", "job_descriptions"]:
+                _, single_prompt = _get_prompt_for_section(key, ctx)
+                if not single_prompt.strip() and key in ["tata_tertib_perusahaan", "job_descriptions"]:
                     yield f"data: {json.dumps({'section_key': key, 'done': True, 'content': ''})}\n\n"
                     continue
+                valid_keys.append(key)
+                section_instructions.append(
+                    f"=== PETUNJUK SUB-BAB KEY: '{key}' ===\n"
+                    f"Buka dengan: <<<START_SECTION:{key}>>>\n"
+                    f"Aturan Penulisan:\n{single_prompt.strip()}\n"
+                    f"Tutup dengan: <<<END_SECTION:{key}>>>"
+                )
 
-                full_acc = ""
-                async for chunk in provider.generate_stream(system, user_prompt):
-                    if chunk:
-                        full_acc += chunk
-                        yield f"data: {json.dumps({'section_key': key, 'content': chunk})}\n\n"
+            if not valid_keys:
+                yield "data: [DONE]\n\n"
+                return
 
-                yield f"data: {json.dumps({'section_key': key, 'done': True, 'content': full_acc.strip()})}\n\n"
+            master_user_prompt = (
+                f"Tolong susun sekaligus {len(valid_keys)} sub-bab laporan berikut secara berurutan dalam 1 dokumen respon:\n"
+                f"Daftar key yang WAJIB dibuat: {', '.join(valid_keys)}\n\n"
+                + "\n\n".join(section_instructions)
+            )
+
+            buffer = ""
+            current_key = None
+            current_acc = ""
+            completed_keys = set()
+
+            # EXACTLY 1 LLM Call to Provider per phase
+            async for chunk in provider.generate_stream(BATCH_MASTER_SYSTEM_PROMPT, master_user_prompt):
+                if not chunk:
+                    continue
+                buffer += chunk
+
+                while True:
+                    start_match = re.search(r'<<<START_SECTION:([a_zA_Z0_9_]+)>>>', buffer)
+                    end_match = re.search(r'<<<END_SECTION:([a_zA_Z0_9_]+)>>>', buffer)
+
+                    first_match = None
+                    is_start = False
+
+                    if start_match and end_match:
+                        if start_match.start() < end_match.start():
+                            first_match = start_match
+                            is_start = True
+                        else:
+                            first_match = end_match
+                            is_start = False
+                    elif start_match:
+                        first_match = start_match
+                        is_start = True
+                    elif end_match:
+                        first_match = end_match
+                        is_start = False
+                    else:
+                        break
+
+                    pre_text = buffer[:first_match.start()]
+                    if current_key and pre_text:
+                        current_acc += pre_text
+                        yield f"data: {json.dumps({'section_key': current_key, 'content': pre_text})}\n\n"
+
+                    if not is_start or (current_key and current_key != first_match.group(1)):
+                        if current_key:
+                            clean_final = current_acc.strip()
+                            yield f"data: {json.dumps({'section_key': current_key, 'done': True, 'content': clean_final})}\n\n"
+                            completed_keys.add(current_key)
+                            current_key = None
+                            current_acc = ""
+
+                    if is_start:
+                        current_key = first_match.group(1)
+                        current_acc = ""
+
+                    buffer = buffer[first_match.end():]
+
+                if current_key and buffer:
+                    last_lt = buffer.rfind('<')
+                    if last_lt != -1 and (len(buffer) - last_lt) < 30:
+                        emit_text = buffer[:last_lt]
+                        buffer = buffer[last_lt:]
+                    else:
+                        emit_text = buffer
+                        buffer = ""
+
+                    if emit_text:
+                        current_acc += emit_text
+                        yield f"data: {json.dumps({'section_key': current_key, 'content': emit_text})}\n\n"
+
+            if current_key:
+                if buffer:
+                    clean_buf = re.sub(r'<<<END_SECTION:.*', '', buffer).strip()
+                    if clean_buf:
+                        current_acc += clean_buf
+                        yield f"data: {json.dumps({'section_key': current_key, 'content': clean_buf})}\n\n"
+                yield f"data: {json.dumps({'section_key': current_key, 'done': True, 'content': current_acc.strip()})}\n\n"
+                completed_keys.add(current_key)
+
+            for key in valid_keys:
+                if key not in completed_keys:
+                    yield f"data: {json.dumps({'section_key': key, 'done': True, 'content': ''})}\n\n"
 
             yield "data: [DONE]\n\n"
         except Exception as e:
