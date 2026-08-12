@@ -11,7 +11,7 @@ from pydantic import BaseModel
 from typing import Any
 
 from ..config import settings
-from ..dependencies import get_current_user
+from ..dependencies import get_current_user, require_admin
 from ..models import User
 from ..ai.client import get_ai_provider
 from ..prompts.base import SYSTEM_PROMPT_TEMPLATE
@@ -138,9 +138,9 @@ async def get_models(user: User = Depends(get_current_user)):
 @router.post("/models/active")
 async def set_active_model(
     req: SetActiveModelRequest,
-    user: User = Depends(get_current_user)
+    admin: User = Depends(require_admin)
 ):
-    """Mengubah model AI aktif bawaan sistem."""
+    """Mengubah model AI aktif bawaan sistem (Khusus Admin)."""
     model_name = req.model.strip()
     if model_name not in settings.ai_available_models:
         settings.ai_available_models.append(model_name)
@@ -155,9 +155,9 @@ async def set_active_model(
 @router.post("/models/add")
 async def add_model(
     req: AddModelRequest,
-    user: User = Depends(get_current_user)
+    admin: User = Depends(require_admin)
 ):
-    """Menambahkan model AI baru ke daftar opsi (opsional beserta Base URL khusus)."""
+    """Menambahkan model AI baru ke daftar opsi (opsional beserta Base URL khusus, Khusus Admin)."""
     model_name = req.model.strip()
     if model_name not in settings.ai_available_models:
         settings.ai_available_models.append(model_name)
