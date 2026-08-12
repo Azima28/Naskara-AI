@@ -274,12 +274,14 @@ function EditorInner() {
       let pr = { ...(prev.profil_perusahaan || {}) }
       if (key === 'profil_sejarah') {
         pr.sejarah = typeof content === 'string' ? content : content.join('\n')
-      } else if (key === 'tata_tertib') {
+      } else if (key === 'tata_tertib' || key === 'tata_tertib_perusahaan') {
         const list = Array.isArray(content)
           ? content
           : (content ? content.split('\n').filter(Boolean) : [])
         pr.tata_tertib_perusahaan = list
         pr.tata_tertib = list
+        gen.tata_tertib = content
+        gen.tata_tertib_perusahaan = content
       }
       return { ...prev, generated_sections: gen, profil_perusahaan: pr as any }
     })
@@ -833,32 +835,39 @@ function EditorInner() {
 
 function getSectionValue(ctx: PklContext, key: string): string | string[] {
   const gen = ctx.generated_sections || {}
-  const val = gen[key]
-  const hasVal = Array.isArray(val) ? val.length > 0 : !!(typeof val === 'string' && val.trim())
-  if (hasVal) {
-    return val
-  }
-  if (key === 'profil_sejarah') {
-    return gen.profil_sejarah || ctx.profil_perusahaan?.sejarah || ''
-  }
+
   if (key === 'tata_tertib' || key === 'tata_tertib_perusahaan') {
-    return gen.tata_tertib || gen.tata_tertib_perusahaan || ctx.profil_perusahaan?.tata_tertib_perusahaan || ctx.profil_perusahaan?.tata_tertib || ''
+    if ('tata_tertib' in gen) return gen.tata_tertib ?? ''
+    if ('tata_tertib_perusahaan' in gen) return gen.tata_tertib_perusahaan ?? ''
+    const prList = ctx.profil_perusahaan?.tata_tertib_perusahaan || ctx.profil_perusahaan?.tata_tertib
+    if (prList && prList.length > 0) return prList
+    return ''
   }
+
+  if (key === 'profil_sejarah') {
+    if ('profil_sejarah' in gen) return gen.profil_sejarah ?? ''
+    return ctx.profil_perusahaan?.sejarah || ''
+  }
+
   if (key === 'visi_misi') {
-    if (gen.visi_misi) return gen.visi_misi
+    if ('visi_misi' in gen) return gen.visi_misi ?? ''
     const visi = ctx.profil_perusahaan?.visi || ''
     const misi = ctx.profil_perusahaan?.misi || []
     if (visi || misi.length > 0) {
       return `[VISI]\n${visi}\n\n[MISI]\n${misi.join('\n')}`
     }
+    return ''
   }
+
   if (key === 'job_descriptions') {
-    if (gen.job_descriptions) return gen.job_descriptions as any
+    if ('job_descriptions' in gen) return gen.job_descriptions as any
     const jobs = ctx.profil_perusahaan?.job_descriptions || []
     if (jobs.length > 0) {
       return jobs.map((j) => `[POSISI: ${j.posisi}]\n${(j.tugas || []).join('\n')}`).join('\n\n')
     }
+    return ''
   }
+
   return gen[key] ?? ''
 }
 
