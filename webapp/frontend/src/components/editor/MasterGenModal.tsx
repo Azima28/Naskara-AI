@@ -39,38 +39,49 @@ const ARRAY_SECTION_KEYS = [
 
 // ── Helpers Parsing Output AI Pemolesan ───────────────────────────────────── //
 
+function isJunkLine(line: string): boolean {
+  if (!line) return true
+  const lower = line.toLowerCase().trim()
+  if (lower.includes('<<<') || lower.includes('>>>') || lower.includes('===') || lower.includes('section:')) return true
+  if (lower === '(tidak tersedia).' || lower === '(tidak tersedia)' || lower === 'tidak tersedia' || lower === 'tidak ada' || lower === 'none' || lower === 'n/a') return true
+  return false
+}
+
 function parseVisiMisi(text: string): { visi: string; misi: string[] } {
   let visi = ''
   const misi: string[] = []
   let mode: 'visi' | 'misi' | null = null
 
-  for (const line of text.split('\n')) {
+  const cleanText = (text || '').replace(/<<<.*?>>>/g, '').replace(/===.*?===/g, '').replace(/<<</g, '').replace(/>>>/g, '').trim()
+
+  for (const line of cleanText.split('\n')) {
     const trimmed = line.trim()
+    if (isJunkLine(trimmed)) continue
+
     if (trimmed === '[VISI]' || trimmed.toUpperCase().startsWith('VISI:')) {
       mode = 'visi'
       const content = trimmed.replace(/^\[VISI\]/i, '').replace(/^VISI:\s*/i, '').trim()
-      if (content) visi = content
+      if (content && !isJunkLine(content)) visi = content
       continue
     }
     if (trimmed === '[MISI]' || trimmed.toUpperCase().startsWith('MISI:')) {
       mode = 'misi'
       const content = trimmed.replace(/^\[MISI\]/i, '').replace(/^MISI:\s*/i, '').trim()
-      if (content) misi.push(content)
+      if (content && !isJunkLine(content)) misi.push(content)
       continue
     }
-    if (!trimmed) continue
 
     if (mode === 'visi' && !visi) {
-      visi = trimmed
+      if (!isJunkLine(trimmed)) visi = trimmed
     } else if (mode === 'misi') {
       const cleaned = trimmed.replace(/^\d+[.)]\s*/, '').replace(/^[-*•]\s*/, '').trim()
-      if (cleaned) misi.push(cleaned)
+      if (cleaned && !isJunkLine(cleaned)) misi.push(cleaned)
     }
   }
 
   // Fallback: If no explicit VISI/MISI headers found, use line splitting
   if (!visi && !misi.length) {
-    const lines = text.split('\n').map((l) => l.trim()).filter(Boolean)
+    const lines = cleanText.split('\n').map((l) => l.trim()).filter((l) => l && !isJunkLine(l))
     if (lines.length > 0) visi = lines[0]
     if (lines.length > 1) misi.push(...lines.slice(1))
   }
@@ -79,11 +90,12 @@ function parseVisiMisi(text: string): { visi: string; misi: string[] } {
 }
 
 function parseNumberedList(text: string): string[] {
-  const lines = text
+  const cleanText = (text || '').replace(/<<<.*?>>>/g, '').replace(/===.*?===/g, '').replace(/<<</g, '').replace(/>>>/g, '').trim()
+  const lines = cleanText
     .split('\n')
     .map((line) => line.trim().replace(/^\d+[.)]\s*/, '').replace(/^[-*•]\s*/, '').trim())
     .filter((line) => {
-      if (!line || line.startsWith('[') || line.startsWith('#')) return false
+      if (!line || line.startsWith('[') || line.startsWith('#') || isJunkLine(line)) return false
       // Only reject intro header lines if line is very short
       if ((line.toLowerCase().startsWith('berikut adalah') || line.toLowerCase().startsWith('tata tertib perusahaan')) && line.length < 35) return false
       return true
@@ -98,8 +110,7 @@ function parseNumberedList(text: string): string[] {
       return line
     })
 
-  // Fallback: If strict list filter produced 0 items, use line splitting
-  return lines.length > 0 ? lines : text.split('\n').map((l) => l.trim().replace(/^\d+[.)]\s*/, '').replace(/^[-*•]\s*/, '').trim()).filter((l) => l.length > 3)
+  return lines
 }
 
 function parseJobDescriptions(text: string): Array<{ posisi: string; tugas: string[] }> {
@@ -479,30 +490,26 @@ export default function MasterGenModal({
             } else if (pKey === 'visi_misi') {
               if (finalContent.length > 10) {
                 const parsed = parseVisiMisi(finalContent)
-                if (parsed.visi) pr.visi = polishAcademicText(parsed.visi)
-                if (parsed.misi.length > 0) pr.misi = polishAcademicList(parsed.misi)
+                if (parsed.visi && !isJunkLine(parsed.visi)) pr.visi = polishAcademicText(parsed.visi)
+                const cleanMisi = parsed.misi.filter((m) => !isJunkLine(m))
+                if (cleanMisi.length > 0) pr.misi = polishAcademicList(cleanMisi)
                 gen.visi_misi = finalContent
-                hasValidContent = !!(pr.visi || (pr.misi && pr.misi.length > 0))
+                hasValidContent = !!((pr.visi && !isJunkLine(pr.visi)) || (pr.misi && pr.misi.length > 0))
               } else if (pr.visi || (pr.misi && pr.misi.length > 0)) {
                 hasValidContent = true
               }
             } else if (pKey === 'tata_tertib_perusahaan') {
-              let list = parseNumberedList(finalContent)
-              if (list.length === 0) {
-                const existing = pr.tata_tertib_perusahaan || pr.tata_tertib || gen.tata_tertib || []
-                list = Array.isArray(existing) && existing.length > 0 ? existing : [
-                  'Hadir tepat waktu sesuai jam kerja operasional perusahaan.',
-                  'Mengenakan pakaian seragam sekolah atau pakaian kerja rapi dan bersopan santun.',
-                  'Mematuhi seluruh standar Keselamatan dan Kesehatan Kerja (K3) industri.',
-                  'Menjaga etika komunikasi dan kerahasiaan informasi di tempat kerja.'
-                ]
+              let list = parseNumberedList(finalContent).filter((item) => !isJunkLine(item))
+              if (list.length > 0) {
+                const polished = polishAcademicList(list)
+                pr.tata_tertib_perusahaan = polished
+                pr.tata_tertib = polished
+                gen.tata_tertib = polished
+                gen.tata_tertib_perusahaan = polished
+                hasValidContent = true
+              } else if ((pr.tata_tertib_perusahaan || pr.tata_tertib || []).length > 0) {
+                hasValidContent = true
               }
-              const polished = polishAcademicList(list)
-              pr.tata_tertib_perusahaan = polished
-              pr.tata_tertib = polished
-              gen.tata_tertib = polished
-              gen.tata_tertib_perusahaan = polished
-              hasValidContent = true
             } else if (pKey === 'job_descriptions') {
               if (finalContent.length > 10) {
                 const parsedJobs = parseJobDescriptions(finalContent).map((j) => ({

@@ -83,10 +83,13 @@ export function findFirstInvalidField(ctx?: PklContext | null): InvalidFieldResu
     return { stepIdx: 4, fieldKey: 'profil_perusahaan.misi', fieldLabel: 'Misi Perusahaan', stepTitle: 'Profil Perusahaan (BAB II)' }
   }
 
-  const ttRaw: any = ctx.profil_perusahaan?.tata_tertib_perusahaan || ctx.profil_perusahaan?.tata_tertib || []
+  const ttRaw: any = ctx.profil_perusahaan?.tata_tertib_perusahaan || ctx.profil_perusahaan?.tata_tertib || ctx.generated_sections?.tata_tertib || ctx.generated_sections?.tata_tertib_perusahaan || []
   const ttArr: string[] = Array.isArray(ttRaw) ? ttRaw : typeof ttRaw === 'string' && String(ttRaw).trim() ? [String(ttRaw)] : []
   if (ttArr.length === 0 || !filled(ttArr[0])) {
-    return { stepIdx: 4, fieldKey: 'profil_perusahaan.tata_tertib_perusahaan', fieldLabel: 'Tata Tertib Perusahaan', stepTitle: 'Profil Perusahaan (BAB II)' }
+    const gen = ctx.generated_sections || {}
+    if (!('tata_tertib' in gen) && !('tata_tertib_perusahaan' in gen)) {
+      return { stepIdx: 4, fieldKey: 'profil_perusahaan.tata_tertib_perusahaan', fieldLabel: 'Tata Tertib Perusahaan', stepTitle: 'Profil Perusahaan (BAB II)' }
+    }
   }
 
   const jkArr = Array.isArray(ctx.profil_perusahaan?.jam_kerja) ? ctx.profil_perusahaan.jam_kerja : []
