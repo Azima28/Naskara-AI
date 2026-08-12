@@ -70,6 +70,7 @@ export function TextField({
   name,
   fieldKey,
   id,
+  maxLength,
 }: {
   label: string
   value: string
@@ -83,6 +84,7 @@ export function TextField({
   name?: string
   fieldKey?: string
   id?: string
+  maxLength?: number
 }) {
   const fk = name || fieldKey
   const elemId = id || (fk ? `field-${fk}` : undefined)
@@ -103,6 +105,7 @@ export function TextField({
         name={fk}
         value={value}
         placeholder={placeholder}
+        maxLength={maxLength}
         onChange={(e) => onChange(e.target.value)}
         required={required || importance === 'wajib'}
         readOnly={readOnly}

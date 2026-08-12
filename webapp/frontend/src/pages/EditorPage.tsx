@@ -864,14 +864,16 @@ function buildSectionList(ctx: PklContext) {
     const kegiatan = ctx.kegiatan || []
     kegiatan.forEach((k) => {
       if (k.bidang) {
+        const bClean = k.bidang.length > 50 ? k.bidang.slice(0, 50) + '…' : k.bidang
         list.push({
           key: `kegiatan_${k.bidang.toLowerCase().replace(/\s+/g, '_')}_intro`,
-          title: `Pengantar Kegiatan: ${k.bidang}`,
+          title: `Pengantar Kegiatan: ${bClean}`,
         })
       }
     })
     if (ctx.studi_kasus?.judul) {
-      list.push({ key: 'studi_kasus_proses', title: `Proses: ${ctx.studi_kasus.judul}` })
+      const jClean = ctx.studi_kasus.judul.length > 60 ? ctx.studi_kasus.judul.slice(0, 60) + '…' : ctx.studi_kasus.judul
+      list.push({ key: 'studi_kasus_proses', title: `Proses: ${jClean}` })
     }
   }
   if (bab.length === 0 || bab.includes('PEMBAHASAN')) {

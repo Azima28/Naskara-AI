@@ -568,6 +568,10 @@ def _polish_task_detail(text: str) -> str:
     if t and not t.endswith(('.', '!', '?')):
         t += '.'
 
+    # Batasi maksimal 70 karakter untuk judul caption agar rapi di DAFTAR GAMBAR
+    if len(t) > 70:
+        t = t[:67].rstrip() + "..."
+
     return t
 
 
@@ -1987,6 +1991,8 @@ def _write_data_pengamatan(builder: PklDocBuilder, data: dict, bab_num: int) -> 
     studi_kasus = data.get("studi_kasus", {})
     if isinstance(studi_kasus, dict):
         sk_judul = (studi_kasus.get("judul") or "").strip()
+        if len(sk_judul) > 70:
+            sk_judul = sk_judul[:67].rstrip() + "..."
         sk_assets = studi_kasus.get("assets", [])
         sk_proses = (gen.get("studi_kasus_proses") or studi_kasus.get("proses_atau_formula") or "").strip()
         sk_latar = (studi_kasus.get("latar_belakang") or "").strip()
