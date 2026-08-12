@@ -226,8 +226,7 @@ async def draft_section(
                 break
         user_prompt = sections.prompt_pelaksanaan(ctx, bidang, deskripsi)
     elif key == "studi_kasus_proses":
-        studi = ctx.get("studi_kasus", {})
-        user_prompt = f"Buat paragraf naratif proses penyelesaian studi kasus/masalah berjudul '{studi.get('judul', '')}'. {jurusan_context}. Hindari penomoran list, gunakan gaya bercerita akademik."
+        user_prompt = ai_sections.prompt_studi_kasus_proses(ctx, jurusan_context)
     else:
         user_prompt = f"Buat narasi untuk bagian {key.replace('_', ' ')}. Ingat: Jangan pakai bullet point."
 
@@ -332,8 +331,7 @@ def _get_prompt_for_section(key: str, ctx: dict) -> tuple[str, str]:
                 break
         user_prompt = sections.prompt_pelaksanaan(ctx, bidang, deskripsi)
     elif key == "studi_kasus_proses":
-        studi = ctx.get("studi_kasus") or {}
-        user_prompt = f"Buat paragraf naratif proses penyelesaian studi kasus/masalah berjudul '{studi.get('judul', '')}'. {jurusan_context}. Hindari penomoran list, gunakan gaya bercerita akademik."
+        user_prompt = ai_sections.prompt_studi_kasus_proses(ctx, jurusan_context)
     else:
         user_prompt = f"Buat narasi untuk bagian {key.replace('_', ' ')}. Ingat: Jangan pakai bullet point."
 

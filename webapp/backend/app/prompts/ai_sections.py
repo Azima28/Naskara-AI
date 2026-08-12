@@ -292,6 +292,73 @@ def generate_default_daftar_pustaka(ctx: dict) -> list[dict]:
     return referensi
 
 
+# ── GAP 14: Sub-bab 4.3 Studi Kasus — narasi mengalir dengan Ground Truth utuh ──── #
+def prompt_studi_kasus_proses(ctx: dict, jurusan_context: str = "") -> str:
+    """Prompt AI untuk naskah narasi Sub-bab 4.3 Proses Penyelesaian Studi Kasus.
+
+    Menghubungkan konteks Step 6 (Divisi & Kegiatan) dengan data Step 7 (Topik Pekerjaan Utama,
+    Masalah Awal, Urutan Langkah Pengerjaan, Jenis Analisis Tabel & Data Angka Perbandingan, Hasil Akhir).
+    """
+    siswa = ctx.get("siswa", {})
+    perusahaan = ctx.get("perusahaan", {})
+    studi = ctx.get("studi_kasus") or {}
+    kegiatan = ctx.get("kegiatan", [])
+
+    sk_judul = (studi.get("judul") or "").strip()
+    sk_latar = (studi.get("latar_belakang") or "").strip()
+    sk_proses = (studi.get("proses_atau_formula") or "").strip()
+    sk_jenis = (studi.get("jenis_tabel") or "optimasi").strip()
+    sk_hasil = (studi.get("hasil") or "").strip()
+    sk_data_angka = studi.get("data_angka") or []
+
+    bidang_list = [k.get("bidang", "") for k in kegiatan if isinstance(k, dict) and k.get("bidang")]
+    bidang_str = ", ".join(bidang_list[:3]) if bidang_list else "operasional harian"
+
+    # Format data angka ke string terstruktur
+    angka_lines = []
+    for d in sk_data_angka:
+        if isinstance(d, dict):
+            lbl = d.get("label", "")
+            sebelum = d.get("sebelum") or d.get("nilai_awal") or ""
+            sesudah = d.get("sesudah") or d.get("nilai_akhir") or d.get("nilai") or ""
+            if sebelum and sesudah:
+                angka_lines.append(f"  - {lbl}: Sebelum ({sebelum}) ➔ Sesudah ({sesudah})")
+            elif sesudah:
+                angka_lines.append(f"  - {lbl}: {sesudah}")
+            elif lbl:
+                angka_lines.append(f"  - {lbl}")
+    data_angka_str = "\n".join(angka_lines) if angka_lines else "  (tidak diisi)"
+
+    return f"""Buat 2-3 paragraf naratif akademis yang mengalir untuk sub-bab "Proses Penyelesaian Studi Kasus / Pekerjaan Utama" dalam laporan PKL.
+
+DATA NYATA — GROUND TRUTH (Gunakan fakta ini sebagai SATU-SATUNYA sumber data):
+- Nama Siswa       : {siswa.get('nama', 'Penulis')}
+- Jurusan Siswa   : {siswa.get('jurusan', '') or '[tidak diisi]'}
+- Nama Perusahaan : {perusahaan.get('nama', '') or '[tidak diisi]'}
+- Divisi / Bidang : {bidang_str}
+- Judul Pekerjaan : {sk_judul or '[tidak diisi]'}
+- Masalah Awal    : {sk_latar or '[tidak diisi]'}
+- Langkah Kerja   : {sk_proses or '[tidak diisi]'}
+- Jenis Analisis  : {sk_jenis}
+- Data Angka Metrik:
+{data_angka_str}
+- Hasil Akhir     : {sk_hasil or '[tidak diisi]'}
+
+Konteks Jurusan (gunakan istilah teknis relevan):
+{jurusan_context}
+
+Instruksi WAJIB — SANGAT KETAT:
+1. Tulis 2-3 paragraf naratif akademis yang mengalir dan saling bertaut (kontinuitas dari kondisi awal ➔ langkah kerja ➔ perbandingan hasil angka ➔ kesimpulan dampak).
+2. Paragraf 1: Jelaskan peranan Penulis di divisi {bidang_str} dan urai kondisi masalah awal ("{sk_latar}") sebelum pekerjaan dilaksanakan.
+3. Paragraf 2: Ceritakan urutan langkah pengerjaan yang dilakukan Penulis ("{sk_proses}") secara mengalir dengan bahasa Indonesia baku KBBI (bukan berbentuk poin 1, 2, 3).
+4. Paragraf 3: Uraikan hasil perbandingan angka ("{data_angka_str}") dan dampak positif hasil akhirnya ("{sk_hasil}") sesuai standar industri {perusahaan.get('nama', 'perusahaan')}.
+5. DILARANG menggunakan kata 'saya' atau 'kami' — gunakan sudut pandang "Penulis".
+6. DILARANG mengarang nama orang, angka, atau alat baru yang tidak ada di data di atas.
+7. DILARANG menggunakan bullet point (*, -) atau heading (###).
+8. OUTPUT HANYA naskah paragraf laporan — tanpa label, tanpa penjelasan tambahan.
+"""
+
+
 # ======================================================================== #
 #  AUTO-POLISH PROMPTS — dipanggil otomatis saat Download, bukan manual    #
 #  Tujuan: merapikan/memformalkan input mentah user → kalimat akademik     #

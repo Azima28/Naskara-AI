@@ -12,7 +12,7 @@ from __future__ import annotations
 import datetime as dt
 import uuid
 
-from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, String, Text
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .db import Base
@@ -78,6 +78,7 @@ class Draft(Base):
     status: Mapped[str] = mapped_column(String(32), default="collecting")  # mirror PklContext.status
     # PklContext utuh (18-key) sebagai dict → JSON column.
     data_json: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+    version_id: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
     created_at: Mapped[dt.datetime] = mapped_column(
         DateTime, default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False
     )

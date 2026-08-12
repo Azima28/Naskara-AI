@@ -162,6 +162,7 @@ def update_draft(draft_id: str, payload: DraftUpdate, current: User = Depends(ge
 
         draft.data_json = new_data
         flag_modified(draft, "data_json")
+        draft.version_id = (draft.version_id or 1) + 1
         draft.updated_at = dt.datetime.now(dt.timezone.utc)
 
     db.commit()
