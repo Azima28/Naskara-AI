@@ -341,18 +341,16 @@ def _get_prompt_for_section(key: str, ctx: dict) -> tuple[str, str]:
     return system, user_prompt
 
 
-BATCH_SYSTEM_PROMPT = """Kamu adalah editor & penulis profesional untuk laporan Praktik Kerja Lapangan (PKL) siswa SMK.
-Tugasmu adalah menyusun dan merapikan seluruh sub-bab laporan yang diminta secara sekaligus dalam SATU respon tunggal.
+BATCH_JSON_SYSTEM_PROMPT = """Kamu adalah editor & penulis profesional untuk laporan Praktik Kerja Lapangan (PKL) siswa SMK.
+Tugasmu adalah menyusun dan merapikan seluruh sub-bab laporan yang diminta secara sekaligus dalam SATU RESPON JSON TUNGGAL.
 
-SISTEM FORMAT OBLIGATORI (WAJIB DITUTURI):
-Setiap kali kamu membuat satu sub-bab, kamu HARUS mengawalinya dengan baris header penanda persis seperti berikut:
-===SECTION:section_key===
-
-Dan menutup sub-bab tersebut dengan baris penanda persis seperti berikut:
-===END_SECTION:section_key===
-
-Gunakan Bahasa Indonesia baku akademis, formal, dan sesuai EYD/KBBI.
-Jangan menyertakan teks pembuka atau penutup di luar penanda ===SECTION:section_key=== dan ===END_SECTION:section_key===."""
+ATURAN UTAMA:
+1. Respon HARUS berupa JSON Object murni tanpa markdown (tanpa ```json ... ```), di mana SETIAP KEY di dalam JSON adalah nama section_key yang diminta.
+2. Bahasa yang digunakan baku, formal, akademis (EYD/KBBI).
+3. Jangan menyertakan kata sambutan atau teks di luar bracket JSON {"key": "konten"}.
+4. Untuk key yang membutuhkan list/poin (seperti tujuan_pkl, tata_tertib_perusahaan), kembalikan sebagai Array of Strings atau string yang dipisahkan baris baru.
+5. Untuk key visi_misi, kembalikan teks berformat [VISI] ... [MISI] ... atau JSON object {"visi": "...", "misi": [...]}.
+6. Untuk key job_descriptions, kembalikan array object [{"posisi": "...", "tugas": [...]}] atau teks berformat [POSISI: ...]."""
 
 
 class BatchDraftSectionRequest(BaseModel):
@@ -384,10 +382,7 @@ async def batch_draft_sections_stream(
                     continue
                 valid_keys.append(key)
                 section_instructions.append(
-                    f"=== PETUNJUK SUB-BAB KEY '{key}' ===\n"
-                    f"Tuliskan isi untuk penanda ===SECTION:{key}===\n"
-                    f"{single_prompt.strip()}\n"
-                    f"Tutup dengan ===END_SECTION:{key}==="
+                    f"Sub-bab key '{key}': {single_prompt.strip()}"
                 )
 
             if not valid_keys:
@@ -395,89 +390,74 @@ async def batch_draft_sections_stream(
                 return
 
             unified_user_prompt = (
-                f"Tolong buatkan secara sekaligus {len(valid_keys)} sub-bab laporan berikut dalam 1 dokumen respon:\n"
-                f"Daftar key: {', '.join(valid_keys)}\n\n"
-                + "\n\n".join(section_instructions)
+                f"Tolong buatkan sekaligus sub-bab laporan berikut dalam 1 JSON Object tunggal.\n"
+                f"Keys yang WAJIB ada di JSON: {json.dumps(valid_keys)}\n\n"
+                f"Petunjuk Rinci Per Key:\n" + "\n\n".join(section_instructions)
             )
 
-            buffer = ""
-            current_key = None
-            current_acc = ""
-            completed_keys = set()
+            full_llm_acc = ""
+            current_active_key = valid_keys[0] if valid_keys else ""
 
-            async for chunk in provider.generate_stream(BATCH_SYSTEM_PROMPT, unified_user_prompt):
-                if not chunk:
-                    continue
-                buffer += chunk
+            # Single LLM API Call to Provider
+            async for chunk in provider.generate_stream(BATCH_JSON_SYSTEM_PROMPT, unified_user_prompt):
+                if chunk:
+                    full_llm_acc += chunk
+                    # Send live chunk stream feedback for UI typing animation
+                    yield f"data: {json.dumps({'section_key': current_active_key, 'content': chunk})}\n\n"
 
-                while True:
-                    start_match = re.search(r'===SECTION:([a_zA_Z0_9_]+)===', buffer)
-                    end_match = re.search(r'===END_SECTION:([a_zA_Z0_9_]+)===', buffer)
-
-                    first_match = None
-                    is_start = False
-
-                    if start_match and end_match:
-                        if start_match.start() < end_match.start():
-                            first_match = start_match
-                            is_start = True
-                        else:
-                            first_match = end_match
-                            is_start = False
-                    elif start_match:
-                        first_match = start_match
-                        is_start = True
-                    elif end_match:
-                        first_match = end_match
-                        is_start = False
-                    else:
-                        break
-
-                    pre_text = buffer[:first_match.start()]
-                    if current_key and pre_text:
-                        current_acc += pre_text
-                        yield f"data: {json.dumps({'section_key': current_key, 'content': pre_text})}\n\n"
-
-                    if not is_start or (current_key and current_key != first_match.group(1)):
-                        if current_key:
-                            yield f"data: {json.dumps({'section_key': current_key, 'done': True, 'content': current_acc.strip()})}\n\n"
-                            completed_keys.add(current_key)
-                            current_key = None
-                            current_acc = ""
-
-                    if is_start:
-                        current_key = first_match.group(1)
-                        current_acc = ""
-
-                    buffer = buffer[first_match.end():]
-
-                if current_key and buffer:
-                    last_eq = buffer.rfind('=')
-                    if last_eq != -1 and (len(buffer) - last_eq) < 30:
-                        emit_text = buffer[:last_eq]
-                        buffer = buffer[last_eq:]
-                    else:
-                        emit_text = buffer
-                        buffer = ""
-
-                    if emit_text:
-                        current_acc += emit_text
-                        yield f"data: {json.dumps({'section_key': current_key, 'content': emit_text})}\n\n"
-
-            if current_key:
-                if buffer:
-                    clean_buf = re.sub(r'===END_SECTION:.*', '', buffer).strip()
-                    if clean_buf:
-                        current_acc += clean_buf
-                        yield f"data: {json.dumps({'section_key': current_key, 'content': clean_buf})}\n\n"
-                yield f"data: {json.dumps({'section_key': current_key, 'done': True, 'content': current_acc.strip()})}\n\n"
-                completed_keys.add(current_key)
+            # Parse Structured JSON Output from 1 single LLM response
+            parsed_json = {}
+            try:
+                parsed_json = extract_json_from_llm(full_llm_acc)
+            except Exception as parse_err:
+                print(f"[Batch JSON Parse Warning]: {parse_err}, using fallback parsing")
 
             for key in valid_keys:
-                if key not in completed_keys:
-                    yield f"data: {json.dumps({'section_key': key, 'done': True, 'content': ''})}\n\n"
+                val = parsed_json.get(key) if isinstance(parsed_json, dict) else None
+                formatted_content = ""
+
+                if val is not None:
+                    if isinstance(val, str):
+                        formatted_content = val.strip()
+                    elif isinstance(val, list):
+                        if key == "job_descriptions":
+                            # Format list of job dicts or strings
+                            jobs_str_list = []
+                            for item in val:
+                                if isinstance(item, dict):
+                                    pos = item.get("posisi") or item.get("jabatan") or "Staf Operasional"
+                                    tasks = item.get("tugas") or []
+                                    if isinstance(tasks, list):
+                                        tasks_str = "\n".join([f"- {t}" for t in tasks])
+                                    else:
+                                        tasks_str = str(tasks)
+                                    jobs_str_list.append(f"[POSISI: {pos}]\n{tasks_str}")
+                                else:
+                                    jobs_str_list.append(str(item))
+                            formatted_content = "\n\n".join(jobs_str_list)
+                        else:
+                            formatted_content = "\n".join([str(x) for x in val])
+                    elif isinstance(val, dict):
+                        if key == "visi_misi":
+                            visi = val.get("visi", "")
+                            misi = val.get("misi", [])
+                            misi_str = "\n".join([f"- {m}" for m in misi]) if isinstance(misi, list) else str(misi)
+                            formatted_content = f"[VISI]\n{visi}\n\n[MISI]\n{misi_str}"
+                        else:
+                            formatted_content = json.dumps(val, ensure_ascii=False)
+                else:
+                    # Text delimiter fallback if JSON key wasn't explicitly populated
+                    sec_pattern = re.compile(rf'"{key}"\s*:\s*"(.*?)"(?=,\s*"|\s*}})', re.DOTALL)
+                    sec_match = sec_pattern.search(full_llm_acc)
+                    if sec_match:
+                        formatted_content = sec_match.group(1).replace(r'\n', '\n').replace(r'\"', '"')
+                    else:
+                        formatted_content = full_llm_acc[:500] if len(valid_keys) == 1 else ""
+
+                yield f"data: {json.dumps({'section_key': key, 'done': True, 'content': formatted_content})}\n\n"
 
             yield "data: [DONE]\n\n"
+
         except Exception as e:
             print(f"[SSE Batch AI Stream Error]: {type(e).__name__} - {e}")
             err_payload = json.dumps({"error": "Terjadi kendala saat menghasilkan konten AI batch. Silakan coba beberapa saat lagi."})
