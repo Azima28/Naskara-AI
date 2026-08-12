@@ -2175,7 +2175,6 @@ function SectionEditor({
       const d = err?.response?.data?.detail
       const msg = (d && typeof d === 'object' ? d.message : d) || err?.message || 'Gagal membuat draf AI'
       if (onError) onError(msg)
-      else alert(msg)
     } finally {
       setLoading(false)
     }
@@ -2204,7 +2203,6 @@ function SectionEditor({
       const d = err?.response?.data?.detail
       const msg = (d && typeof d === 'object' ? d.message : d) || err?.message || 'Gagal memperbarui draf'
       if (onError) onError(msg)
-      else alert(msg)
     } finally {
       setLoading(false)
     }

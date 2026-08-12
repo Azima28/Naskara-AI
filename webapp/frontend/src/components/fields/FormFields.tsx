@@ -1,5 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { uploadAsset } from '@/api/client'
+import { IconTrash } from '@/components/common/Icons'
+import NotificationModal from '@/components/common/NotificationModal'
 
 /** Field primitives reusable di semua wizard step. */
 
@@ -412,6 +414,18 @@ export function StringArrayField({
   const fk = name || fieldKey
   const elemId = id || (fk ? `field-${fk}` : undefined)
 
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    onConfirm: () => void
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  })
+
   const effectiveItems = items && items.length > 0 ? items : ['']
 
   const update = (i: number, v: string) => {
@@ -421,15 +435,23 @@ export function StringArrayField({
   }
   const add = () => onChange([...effectiveItems, ''])
 
-  /**
-   * Konfirmasi hanya saat baris sudah berisi teks. Menghapus baris kosong tidak
-   * merugikan siapa pun, jadi tidak perlu diganggu dengan dialog.
-   */
   const remove = (i: number) => {
     const isi = effectiveItems[i]?.trim()
-    if (isi && !confirm(`Hapus ${itemNoun} ini?\n\n"${isi}"`)) return
-    const next = effectiveItems.filter((_, idx) => idx !== i)
-    onChange(next.length === 0 ? [''] : next)
+    const doRemove = () => {
+      const next = effectiveItems.filter((_, idx) => idx !== i)
+      onChange(next.length === 0 ? [''] : next)
+    }
+
+    if (isi) {
+      setConfirmModal({
+        isOpen: true,
+        title: `Hapus ${itemNoun}`,
+        message: `Apakah Anda yakin ingin menghapus ${itemNoun} ini?\n\n"${isi}"`,
+        onConfirm: doRemove,
+      })
+    } else {
+      doRemove()
+    }
   }
 
   return (
@@ -458,8 +480,9 @@ export function StringArrayField({
               onClick={() => remove(i)}
               aria-label={`Hapus ${itemNoun} ${i + 1}`}
               title={`Hapus ${itemNoun} ${i + 1}`}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
             >
-              ✕ Hapus
+              <IconTrash size={13} style={{ flexShrink: 0 }} /> Hapus
             </button>
           </div>
         ))}
@@ -467,6 +490,16 @@ export function StringArrayField({
           {addLabel}
         </button>
       </div>
+
+      <NotificationModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        type="warning"
+        confirmLabel="Hapus"
+        onConfirm={confirmModal.onConfirm}
+        onClose={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+      />
     </div>
   )
 }
@@ -484,6 +517,17 @@ export function ImageArrayUploadField({
 }) {
   const [loading, setLoading] = useState(false)
   const [err, setErr] = useState('')
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    onConfirm: () => void
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  })
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -501,8 +545,14 @@ export function ImageArrayUploadField({
   }
 
   const remove = (i: number) => {
-    if (!confirm(`Hapus gambar ini dari lampiran?\n\n${items[i]}`)) return
-    onChange(items.filter((_, idx) => idx !== i))
+    setConfirmModal({
+      isOpen: true,
+      title: 'Hapus Lampiran Gambar',
+      message: `Apakah Anda yakin ingin menghapus gambar ini dari lampiran?\n\n"${items[i]}"`,
+      onConfirm: () => {
+        onChange(items.filter((_, idx) => idx !== i))
+      },
+    })
   }
 
   return (
@@ -521,8 +571,9 @@ export function ImageArrayUploadField({
               onClick={() => remove(i)}
               aria-label={`Hapus gambar ${item}`}
               title="Hapus gambar ini"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
             >
-              ✕ Hapus
+              <IconTrash size={13} style={{ flexShrink: 0 }} /> Hapus
             </button>
           </div>
         ))}
@@ -539,6 +590,16 @@ export function ImageArrayUploadField({
         </div>
         {err && <span className="error" style={{ fontSize: '0.85rem' }}>{err}</span>}
       </div>
+
+      <NotificationModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        type="warning"
+        confirmLabel="Hapus"
+        onConfirm={confirmModal.onConfirm}
+        onClose={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+      />
     </div>
   )
 }
