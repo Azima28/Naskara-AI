@@ -15,6 +15,7 @@ Struktur BAB mengikuti Panduan Resmi SMKN 4 Bandar Lampung TP 2026-2027 (6 BAB):
 """
 from __future__ import annotations
 
+import json
 import logging
 import os
 from pathlib import Path
@@ -662,21 +663,43 @@ def _sanitize_ai_output(text: Any) -> str:
     return text_str.strip()
 
 
+def _dedupe_list(lst: list) -> list:
+    """Deduplikasi list item string secara presisi (menjaga urutan asli)."""
+    if not isinstance(lst, list):
+        return lst
+    seen = set()
+    result = []
+    for item in lst:
+        if isinstance(item, dict):
+            key = json.dumps(item, sort_keys=True)
+        else:
+            key = str(item).strip().lower()
+        if key and key not in seen:
+            seen.add(key)
+            result.append(item)
+    return result if result else lst
+
+
 def _write_paragraphs(builder: PklDocBuilder, text: Any) -> None:
     """Tulis blok teks multi-baris sebagai beberapa paragraf body.
 
-    Output AI disanitasi dulu sebelum ditulis ke dokumen.
+    Output AI disanitasi & dideduplikasi dulu sebelum ditulis ke dokumen.
     Baris [KESIMPULAN] dan [SARAN] dilewati karena ditangani
     oleh parser khusus di _write_kesimpulan_saran().
     """
     clean_text = _sanitize_ai_output(text)
+    deduped_paras: list[str] = []
     for para in (clean_text or "").split("\n"):
         stripped = para.strip()
         if not stripped:
             continue
-        # Skip tag markers — ditangani oleh parser lain
         if stripped in ("[KESIMPULAN]", "[SARAN]"):
             continue
+        if deduped_paras and deduped_paras[-1] == stripped:
+            continue
+        deduped_paras.append(stripped)
+
+    for stripped in deduped_paras:
         builder.add_body(stripped)
 
 
@@ -1713,7 +1736,7 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
         f"Usaha/Dunia Industri (DU/DI) dan dunia pendidikan. Adapun tujuan kegiatan "
         f"Praktik Kerja Lapangan (PKL) adalah:"
     ))
-    for i, t in enumerate(data.get("tujuan_pkl") or gen.get("tujuan_pkl") or DEFAULT_TUJUAN_PKL, 1):
+    for i, t in enumerate(_dedupe_list(data.get("tujuan_pkl") or gen.get("tujuan_pkl") or DEFAULT_TUJUAN_PKL), 1):
         builder.add_numbered(t, i)
     sub += 1
 
@@ -1748,7 +1771,7 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
                 builder.add_numbered(visi, 1)
             if misi:
                 builder.add_body("MISI", bold=True)
-                for i, m in enumerate(misi, 1):
+                for i, m in enumerate(_dedupe_list(misi), 1):
                     builder.add_numbered(m, i)
 
         # b) Profil Lokasi Praktik Kerja Lapangan — opsional
@@ -1799,6 +1822,7 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
                     profil.get("tata_tertib_perusahaan") or []
     if isinstance(tt_perusahaan, str):
         tt_perusahaan = [t.strip() for t in tt_perusahaan.split("\n") if t.strip()]
+    tt_perusahaan = _dedupe_list(tt_perusahaan)
 
     builder.add_sub_heading(bab_num, sub, judul.get("tata_tertib", "Tata Tertib Perusahaan"))
     builder.add_body(profil.get("tata_tertib_intro") or (
@@ -1861,7 +1885,7 @@ def _write_pendahuluan(builder: PklDocBuilder, data: dict, bab_num: int) -> None
     # ------------------------------------------------------------------ #
     # 1.6 Job Description — opsional, jumlah posisi & tugas bebas
     # ------------------------------------------------------------------ #
-    job_descs = profil.get("job_descriptions", [])
+    job_descs = _dedupe_list(profil.get("job_descriptions", []))
     if job_descs:
         nama_cabang = perusahaan.get("nama_cabang") or nama_prsh_full
         builder.add_sub_heading(bab_num, sub, f"Job Description {nama_cabang}")
