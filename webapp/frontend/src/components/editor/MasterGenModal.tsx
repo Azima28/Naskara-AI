@@ -500,28 +500,47 @@ export default function MasterGenModal({
               }
             } else if (pKey === 'tata_tertib_perusahaan') {
               let list = parseNumberedList(finalContent).filter((item) => !isJunkLine(item))
-              if (list.length > 0) {
-                const polished = polishAcademicList(list)
-                pr.tata_tertib_perusahaan = polished
-                pr.tata_tertib = polished
-                gen.tata_tertib = polished
-                gen.tata_tertib_perusahaan = polished
-                hasValidContent = true
-              } else if ((pr.tata_tertib_perusahaan || pr.tata_tertib || []).length > 0) {
-                hasValidContent = true
+              if (list.length === 0 && (pr.tata_tertib_perusahaan || pr.tata_tertib || []).length > 0) {
+                list = (pr.tata_tertib_perusahaan || pr.tata_tertib || []).filter((item) => !isJunkLine(item))
               }
+              if (list.length === 0) {
+                list = [
+                  'Menaati jam kerja dan hadir tepat waktu sesuai dengan ketentuan perusahaan.',
+                  'Menggunakan pakaian rapi, sopan, dan mengenakan tanda pengenal selama bertugas.',
+                  'Menjaga kebersihan, kerapian, dan keamanan alat kerja serta fasilitas perusahaan.',
+                  'Melaksanakan setiap tugas dan instruksi kerja yang diberikan oleh pembimbing lapangan dengan penuh tanggung jawab.',
+                ]
+              }
+              const polished = polishAcademicList(list)
+              pr.tata_tertib_perusahaan = polished
+              pr.tata_tertib = polished
+              gen.tata_tertib = polished
+              gen.tata_tertib_perusahaan = polished
+              hasValidContent = true
             } else if (pKey === 'job_descriptions') {
-              if (finalContent.length > 10) {
-                const parsedJobs = parseJobDescriptions(finalContent).map((j) => ({
-                  posisi: polishAcademicText(j.posisi),
-                  tugas: polishAcademicList(j.tugas),
-                }))
-                if (parsedJobs.length > 0) pr.job_descriptions = parsedJobs
-                gen.job_descriptions = finalContent
-                hasValidContent = (pr.job_descriptions || []).length > 0
-              } else if ((pr.job_descriptions || []).length > 0) {
-                hasValidContent = true
+              let parsedJobs = finalContent.length > 10 ? parseJobDescriptions(finalContent) : []
+              if (parsedJobs.length === 0 && (pr.job_descriptions || []).length > 0) {
+                parsedJobs = pr.job_descriptions
               }
+              if (parsedJobs.length === 0) {
+                parsedJobs = [
+                  {
+                    posisi: 'Staf Operasional / Teknisi Lapangan',
+                    tugas: [
+                      'Melaksanakan tugas operasional harian sesuai petunjuk pembimbing industri.',
+                      'Membantu proses pemeliharaan, perbaikan, dan pengujian perangkat kerja.',
+                      'Menyusun laporan pelaksanaan tugas harian secara teratur.',
+                    ],
+                  },
+                ]
+              }
+              const formattedJobs = parsedJobs.map((j) => ({
+                posisi: polishAcademicText(j.posisi),
+                tugas: polishAcademicList(j.tugas),
+              }))
+              pr.job_descriptions = formattedJobs
+              gen.job_descriptions = JSON.stringify(formattedJobs)
+              hasValidContent = true
             }
 
             if (hasValidContent) {
