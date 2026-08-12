@@ -448,12 +448,13 @@ export async function batchDraftSectionsStream(
             }
             const key = parsed.section_key
             if (key) {
-              if (parsed.content) {
+              if (parsed.done) {
+                const finalSectionText = parsed.content && parsed.content.trim() ? parsed.content : (results[key] || '')
+                results[key] = finalSectionText
+                onSectionDone(key, finalSectionText)
+              } else if (parsed.content) {
                 results[key] = (results[key] || '') + parsed.content
                 onSectionChunk(key, parsed.content)
-              }
-              if (parsed.done) {
-                onSectionDone(key, results[key] || parsed.content || '')
               }
             }
           } catch (e: any) {
