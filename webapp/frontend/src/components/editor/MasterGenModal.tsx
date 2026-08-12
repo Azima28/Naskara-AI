@@ -376,7 +376,8 @@ export default function MasterGenModal({
           },
           async (secKey, rawContent) => {
             streamAcc = ''
-            let parsedContent: string | string[] = rawContent
+            let cleanRaw = (typeof rawContent === 'string' ? rawContent : '').replace(/<<<.*?>>>/g, '').replace(/===.*?===/g, '').replace(/<<</g, '').replace(/>>>/g, '').trim()
+            let parsedContent: string | string[] = cleanRaw
             if (ARRAY_SECTION_KEYS.includes(secKey)) {
               const list = (typeof parsedContent === 'string' ? parsedContent : '')
                 .split('\n')
@@ -461,7 +462,7 @@ export default function MasterGenModal({
           },
           async (pKey, resultText) => {
             streamAcc = ''
-            const finalContent = (resultText || '').trim()
+            const finalContent = (resultText || '').replace(/<<<.*?>>>/g, '').replace(/===.*?===/g, '').replace(/<<</g, '').replace(/>>>/g, '').trim()
             const pr = { ...currentCtxRef.current.profil_perusahaan }
             const gen = { ...(currentCtxRef.current.generated_sections || {}) }
             let hasValidContent = false

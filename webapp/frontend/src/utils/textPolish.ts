@@ -5,7 +5,8 @@
 export function polishAcademicText(text: string): string {
   if (!text || typeof text !== 'string') return ''
 
-  let t = text.trim()
+  // Strip section delimiter markers automatically
+  let t = text.replace(/<<<.*?>>>/g, '').replace(/===.*?===/g, '').replace(/<<</g, '').replace(/>>>/g, '').trim()
   if (!t) return ''
 
   const replacements: [RegExp, string][] = [

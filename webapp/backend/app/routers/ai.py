@@ -413,8 +413,8 @@ async def batch_draft_sections_stream(
                 buffer += chunk
 
                 while True:
-                    start_match = re.search(r'<<<START_SECTION:([a-zA-Z0-9_]+)>>>', buffer)
-                    end_match = re.search(r'<<<END_SECTION:([a-zA-Z0-9_]+)>>>', buffer)
+                    start_match = re.search(r'<<<(?:\s*START_SECTION|SECTION)\s*:\s*([a-zA-Z0-9_]+)\s*>>>', buffer)
+                    end_match = re.search(r'<<<(?:\s*END_SECTION)\s*:\s*([a-zA-Z0-9_]+)\s*>>>', buffer)
 
                     first_match = None
                     is_start = False
@@ -442,7 +442,7 @@ async def batch_draft_sections_stream(
 
                     if not is_start or (current_key and current_key != first_match.group(1)):
                         if current_key:
-                            clean_final = current_acc.strip()
+                            clean_final = re.sub(r'<<<.*?>>>', '', current_acc).replace('<<<', '').replace('>>>', '').strip()
                             yield f"data: {json.dumps({'section_key': current_key, 'done': True, 'content': clean_final})}\n\n"
                             completed_keys.add(current_key)
                             current_key = None
@@ -456,7 +456,7 @@ async def batch_draft_sections_stream(
 
                 if current_key and buffer:
                     last_lt = buffer.rfind('<')
-                    if last_lt != -1 and (len(buffer) - last_lt) < 30:
+                    if last_lt != -1 and (len(buffer) - last_lt) < 35:
                         emit_text = buffer[:last_lt]
                         buffer = buffer[last_lt:]
                     else:
@@ -469,11 +469,12 @@ async def batch_draft_sections_stream(
 
             if current_key:
                 if buffer:
-                    clean_buf = re.sub(r'<<<END_SECTION:.*', '', buffer).strip()
+                    clean_buf = re.sub(r'<<<.*', '', buffer).strip()
                     if clean_buf:
                         current_acc += clean_buf
                         yield f"data: {json.dumps({'section_key': current_key, 'content': clean_buf})}\n\n"
-                yield f"data: {json.dumps({'section_key': current_key, 'done': True, 'content': current_acc.strip()})}\n\n"
+                clean_final = re.sub(r'<<<.*?>>>', '', current_acc).replace('<<<', '').replace('>>>', '').strip()
+                yield f"data: {json.dumps({'section_key': current_key, 'done': True, 'content': clean_final})}\n\n"
                 completed_keys.add(current_key)
 
             for key in valid_keys:
