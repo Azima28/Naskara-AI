@@ -1678,6 +1678,13 @@ def compute_toc_page_numbers_libreoffice(docx_path: str, sec_list: list[tuple[st
 
     pdf_path = os.path.splitext(os.path.abspath(docx_path))[0] + ".pdf"
 
+    def is_toc_line(line_str: str) -> bool:
+        """Cek apakah baris teks berasal dari tabel DAFTAR ISI (mengandung bintik leader ... atau angka di ujung)."""
+        s = line_str.strip()
+        if re.search(r"\.\.\.|\.\s\.\s\.|…|\.\.\.\.|\.\.", s):
+            return True
+        return False
+
     try:
         # Jalankan LibreOffice headless update & konversi PDF
         cmd = [soffice_bin, "--headless", "--convert-to", "pdf", os.path.abspath(docx_path)]
@@ -1702,23 +1709,29 @@ def compute_toc_page_numbers_libreoffice(docx_path: str, sec_list: list[tuple[st
             bab1_page = None
             for p in range(1, total_pdf_pages + 1):
                 txt_raw = pdf_doc[p - 1].get_text("text")
-                txt_clean = re.sub(r"\s+", " ", txt_raw).upper()
-                if "BAB I" in txt_clean and ("PENDAHULUAN" in txt_clean or "LATAR BELAKANG" in txt_clean):
-                    # Jika kata DAFTAR ISI ada di halaman ini, abaikan (itu tabel DAFTAR ISI sendiri)
-                    if "DAFTAR ISI" in txt_clean:
-                        continue
-                    bab1_page = p
+                lines = [l.strip() for l in txt_raw.split("\n") if l.strip()]
+                for l in lines:
+                    l_up = l.upper()
+                    if ("BAB I" in l_up or "BAB 1" in l_up) and ("PENDAHULUAN" in l_up or "LATAR BELAKANG" in l_up):
+                        if not is_toc_line(l):
+                            bab1_page = p
+                            break
+                if bab1_page:
                     break
 
             if not bab1_page:
                 for p in range(1, total_pdf_pages + 1):
-                    txt_clean = re.sub(r"\s+", " ", pdf_doc[p - 1].get_text("text")).upper()
-                    if "LATAR BELAKANG" in txt_clean and p >= 4:
-                        bab1_page = p
+                    txt_raw = pdf_doc[p - 1].get_text("text")
+                    lines = [l.strip() for l in txt_raw.split("\n") if l.strip()]
+                    for l in lines:
+                        if "LATAR BELAKANG" in l.upper() and p >= 4 and not is_toc_line(l):
+                            bab1_page = p
+                            break
+                    if bab1_page:
                         break
 
             if not bab1_page:
-                bab1_page = 6  # Fallback default halaman BAB I
+                bab1_page = 14  # Fallback default halaman BAB I
 
             if sec_list:
                 # 1. Map physical PDF page numbers for all section/BAB headings
@@ -1738,9 +1751,9 @@ def compute_toc_page_numbers_libreoffice(docx_path: str, sec_list: list[tuple[st
                 p_kata_peng = None
 
                 for p in range(1, total_pdf_pages + 1):
-                    txt_clean = re.sub(r"\s+", " ", pdf_doc[p - 1].get_text("text")).upper()
-                    if "DAFTAR ISI" in txt_clean and p < 12:
-                        continue
+                    txt_raw = pdf_doc[p - 1].get_text("text")
+                    txt_clean = re.sub(r"\s+", " ", txt_raw).upper()
+                    lines = [l.strip() for l in txt_raw.split("\n") if l.strip()]
 
                     if p < bab1_page:
                         if "PENGESAHAN" in txt_clean and ("INDUSTRI" in txt_clean or "TELKOM" in txt_clean or "PERUSAHAAN" in txt_clean) and not p_peng_ind:
@@ -1754,22 +1767,26 @@ def compute_toc_page_numbers_libreoffice(docx_path: str, sec_list: list[tuple[st
                         elif "KATA PENGANTAR" in txt_clean and not p_kata_peng:
                             p_kata_peng = p
                     else:
-                        if ("BAB I " in txt_clean or "BAB I\n" in txt_clean or "BAB 1" in txt_clean) and ("PENDAHULUAN" in txt_clean or "LATAR BELAKANG" in txt_clean) and not p_bab1:
-                            p_bab1 = p
-                        elif ("BAB II " in txt_clean or "BAB II\n" in txt_clean or "BAB 2" in txt_clean or "KEGIATAN DI INDUSTRI" in txt_clean or "KEGIATAN INDUSTRI" in txt_clean) and not p_bab2:
-                            p_bab2 = p
-                        elif ("BAB III " in txt_clean or "BAB III\n" in txt_clean or "BAB 3" in txt_clean or "TINJAUAN PUSTAKA" in txt_clean) and not p_bab3:
-                            p_bab3 = p
-                        elif ("BAB IV " in txt_clean or "BAB IV\n" in txt_clean or "BAB 4" in txt_clean or "DATA PENGAMATAN" in txt_clean) and not p_bab4:
-                            p_bab4 = p
-                        elif ("BAB V " in txt_clean or "BAB V\n" in txt_clean or "BAB 5" in txt_clean or "PEMBAHASAN" in txt_clean) and not p_bab5:
-                            p_bab5 = p
-                        elif ("BAB VI " in txt_clean or "BAB VI\n" in txt_clean or "BAB 6" in txt_clean or "KESIMPULAN" in txt_clean) and not p_bab6:
-                            p_bab6 = p
-                        elif "DAFTAR PUSTAKA" in txt_clean and not p_dp:
-                            p_dp = p
-                        elif "LAMPIRAN" in txt_clean and "DAFTAR" not in txt_clean and not p_lamp:
-                            p_lamp = p
+                        for l in lines:
+                            l_up = l.upper()
+                            if is_toc_line(l):
+                                continue
+                            if ("BAB I " in l_up or "BAB 1" in l_up) and ("PENDAHULUAN" in l_up or "LATAR BELAKANG" in l_up) and not p_bab1:
+                                p_bab1 = p
+                            elif ("BAB II " in l_up or "BAB 2" in l_up or "KEGIATAN DI INDUSTRI" in l_up or "KEGIATAN INDUSTRI" in l_up) and not p_bab2:
+                                p_bab2 = p
+                            elif ("BAB III " in l_up or "BAB 3" in l_up or "TINJAUAN PUSTAKA" in l_up) and not p_bab3:
+                                p_bab3 = p
+                            elif ("BAB IV " in l_up or "BAB 4" in l_up or "DATA PENGAMATAN" in l_up) and not p_bab4:
+                                p_bab4 = p
+                            elif ("BAB V " in l_up or "BAB 5" in l_up or "PEMBAHASAN" in l_up) and not p_bab5:
+                                p_bab5 = p
+                            elif ("BAB VI " in l_up or "BAB 6" in l_up or "KESIMPULAN" in l_up) and not p_bab6:
+                                p_bab6 = p
+                            elif "DAFTAR PUSTAKA" in l_up and not p_dp:
+                                p_dp = p
+                            elif "LAMPIRAN" in l_up and "DAFTAR" not in l_up and not p_lamp:
+                                p_lamp = p
 
                 sec_front_page = p_peng_ind or 3
 
@@ -1864,9 +1881,10 @@ def compute_toc_page_numbers_libreoffice(docx_path: str, sec_list: list[tuple[st
                     for p in search_range:
                         if p > total_pdf_pages:
                             break
-                        p_text = re.sub(r"\s+", " ", pdf_doc[p - 1].get_text("text")).upper()
-                        # Abaikan pencocokan di halaman DAFTAR ISI sendiri agar tidak mencocokkan judul di dalam tabel DAFTAR ISI
-                        if p < bab1_page and "DAFTAR ISI" in p_text:
+                        p_lines = [l.strip() for l in pdf_doc[p - 1].get_text("text").split("\n") if l.strip()]
+                        p_text = " ".join(p_lines).upper()
+                        # Abaikan jika baris tersebut adalah baris DAFTAR ISI
+                        if any(is_toc_line(l) for l in p_lines if sk_up in l.upper()):
                             continue
                         p_text_norm = re.sub(r"(\d+)\.\s+(\d+)", r"\1.\2", p_text)
 
@@ -1879,8 +1897,9 @@ def compute_toc_page_numbers_libreoffice(docx_path: str, sec_list: list[tuple[st
                         for p in search_range:
                             if p > total_pdf_pages:
                                 break
-                            p_text = re.sub(r"\s+", " ", pdf_doc[p - 1].get_text("text")).upper()
-                            if p < bab1_page and "DAFTAR ISI" in p_text:
+                            p_lines = [l.strip() for l in pdf_doc[p - 1].get_text("text").split("\n") if l.strip()]
+                            p_text = " ".join(p_lines).upper()
+                            if any(is_toc_line(l) for l in p_lines if ct_up in l.upper()):
                                 continue
                             if ct_up in p_text:
                                 found_page = p
