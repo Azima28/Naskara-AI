@@ -160,9 +160,8 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
           value={sk.judul}
           onChange={(v) => upd({ judul: v })}
           importance="wajib"
-          maxLength={70}
           placeholder={`Contoh (${jurusanExample.label}): "${jurusanExample.studiKasus.judul}"`}
-          hint="Tuliskan nama tugas atau proyek utama yang kamu tangani (Maksimal 70 karakter)."
+          hint="Tuliskan nama tugas atau proyek utama yang kamu tangani."
         />
         <TextareaField
           name="studi_kasus.latar_belakang"

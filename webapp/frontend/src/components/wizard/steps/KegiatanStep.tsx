@@ -122,7 +122,7 @@ export default function KegiatanStep({ ctx, set }: { ctx: PklContext; set: (p: P
           </div>
 
           <FieldGroup title={`Bidang ${ki + 1}`}>
-            <TextField label="Nama Bidang" value={k.bidang} onChange={(v) => updKegiatan(ki, { bidang: v })} importance="wajib" maxLength={70} placeholder="Operation" hint="Nama bidang/divisi (Maksimal 70 karakter)" />
+            <TextField label="Nama Bidang" value={k.bidang} onChange={(v) => updKegiatan(ki, { bidang: v })} importance="wajib" placeholder="Operation" />
             <TextareaField label="Deskripsi Umum" value={k.deskripsi_umum} onChange={(v) => updKegiatan(ki, { deskripsi_umum: v })} importance="opsional" hint="Gambaran umum pekerjaan di bidang ini" />
           </FieldGroup>
 
