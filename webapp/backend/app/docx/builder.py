@@ -323,11 +323,11 @@ class PklDocBuilder:
     #  Embed nomor halaman nyata ke Daftar Isi (tanpa butuh user update)  #
     # ------------------------------------------------------------------ #
     def embed_toc_page_numbers(self, pages: dict[str, str]) -> None:
-        """Update nomor halaman terestimasi/LibreOffice pada field PAGEREF tanpa menghapus field code.
+        """Tulis nomor halaman NYATA ke tiap entri Daftar Isi, Gambar & Lampiran.
 
-        ``pages`` = pemetaan ``bookmark → nomor halaman`` (mis. ``"1"`` / ``"ii"``).
-        Meng-update elemen <w:t> di dalam <w:fldSimple> sehingga nomor ter-cache akurat,
-        tetapi field PAGEREF & updateFields tetap UTUH agar Word dapat menghitung ulang secara dinamis.
+        ``pages`` = pemetaan ``bookmark → nomor halaman`` (mis. ``"1"`` /
+        ``"ii"``). Mengganti field PAGEREF dengan run teks murni berisi nomor eksak,
+        sehingga nomor halaman 100% terkunci dan akurat di semua platform & konverter PDF.
         """
         if not pages:
             return
@@ -341,20 +341,18 @@ class PklDocBuilder:
                 continue
             pg_val = str(pages[bookmark])
 
-            # Update teks <w:t> di dalam <w:fldSimple> tanpa menghapus field code
-            t_elems = elem_findall = fld.findall(".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}t")
-            if t_elems:
-                t_elems[0].text = _xml_escape(pg_val)
-            else:
-                r_xml = parse_xml(
-                    f'<w:r {nsdecls("w")}><w:rPr>'
-                    f'<w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>'
-                    f'<w:sz w:val="24"/></w:rPr>'
-                    f'<w:t>{_xml_escape(pg_val)}</w:t></w:r>'
-                )
-                fld.append(r_xml)
+            # Ganti fldSimple dengan run teks biasa yang terkunci
+            r_xml = parse_xml(
+                f'<w:r {nsdecls("w")}><w:rPr>'
+                f'<w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>'
+                f'<w:sz w:val="24"/></w:rPr>'
+                f'<w:t>{_xml_escape(pg_val)}</w:t></w:r>'
+            )
+            parent = fld.getparent()
+            if parent is not None:
+                parent.replace(fld, r_xml)
 
-        self.enable_update_fields()
+        self.clear_update_fields()
 
     def add_spacing(self, lines: int = 1, keep_with_next: bool = False) -> Any:
         last_p = None
@@ -1684,7 +1682,7 @@ def compute_toc_page_numbers_libreoffice(docx_path: str, sec_list: list[tuple[st
         # Jalankan LibreOffice headless update & konversi PDF
         cmd = [soffice_bin, "--headless", "--convert-to", "pdf", os.path.abspath(docx_path)]
         print(f"[TOC-LO] Running: {' '.join(cmd)}")
-        res = subprocess.run(cmd, capture_output=True, timeout=15, cwd=os.path.dirname(os.path.abspath(docx_path)))
+        res = subprocess.run(cmd, capture_output=True, timeout=30, cwd=os.path.dirname(os.path.abspath(docx_path)))
         print(f"[TOC-LO] returncode={res.returncode}, pdf_exists={os.path.exists(pdf_path)}")
         if res.returncode != 0:
             print(f"[TOC-LO] FAILED: stderr={res.stderr.decode(errors='ignore')[:300]}")
