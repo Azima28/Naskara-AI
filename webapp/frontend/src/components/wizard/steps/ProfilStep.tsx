@@ -36,7 +36,7 @@ interface Slot {
 /** Baca slot dari data tersimpan (jam & keterangan multi-baris). */
 function parseSlots(j: JamKerja): Slot[] {
   const jamLines = (j.jam || '').split('\n').map(x => x.trim()).filter(Boolean)
-  const ketLines = (j.keterangan || '').split('\n').map(x => x.trim())
+  const ketLines = (j.keterangan || '').split('\n')
   if (jamLines.length) {
     return jamLines.map((line, k) => {
       const range = line.match(/(\d{1,2}[.:]\d{2})\s*[-–]\s*(\d{1,2}[.:]\d{2})/)
