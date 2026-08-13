@@ -2266,19 +2266,26 @@ def _write_kesimpulan_saran(builder: PklDocBuilder, data: dict, bab_num: int) ->
     gen_kesimpulan = data.get("generated_sections", {}).get("kesimpulan_saran")
     if gen_kesimpulan:
         gen_kesimpulan_str = _ensure_str(gen_kesimpulan)
-        if "[KESIMPULAN]" in gen_kesimpulan_str.upper() or "[SARAN]" in gen_kesimpulan_str.upper():
+        if isinstance(gen_kesimpulan_str, str) and gen_kesimpulan_str.strip():
+            has_kes_heading = False
             for para in gen_kesimpulan_str.split("\n"):
                 para_str = para.strip()
                 if not para_str:
                     continue
                 clean_tag = re.sub(r'^[-\*•\s]*', '', para_str).rstrip('.').strip().upper()
                 if clean_tag == "[KESIMPULAN]":
-                    builder.add_sub_heading(bab_num, sub, judul.get("kesimpulan", "Kesimpulan"))
-                    sub += 1
+                    if not has_kes_heading:
+                        builder.add_sub_heading(bab_num, sub, judul.get("kesimpulan", "Kesimpulan"))
+                        sub += 1
+                        has_kes_heading = True
                 elif clean_tag == "[SARAN]":
                     builder.add_sub_heading(bab_num, sub, judul.get("saran", "Saran"))
                     sub += 1
                 else:
+                    if not has_kes_heading:
+                        builder.add_sub_heading(bab_num, sub, judul.get("kesimpulan", "Kesimpulan"))
+                        sub += 1
+                        has_kes_heading = True
                     clean_body = re.sub(r'^[-\*•]\s*', '', para_str).strip()
                     if clean_body:
                         builder.add_body(clean_body)

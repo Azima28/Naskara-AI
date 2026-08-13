@@ -71,7 +71,8 @@ export function cleanKesimpulanSaran(text: string | string[]): string {
     const tagUpper = unbulleted.replace(/\.$/, '').toUpperCase().trim()
 
     if (tagUpper === '[KESIMPULAN]') {
-      cleanedLines.push('[KESIMPULAN]')
+      // Buang tag [KESIMPULAN] agar tidak tampil di dalam text area editor
+      continue
     } else if (tagUpper === '[SARAN]') {
       if (cleanedLines.length > 0 && cleanedLines[cleanedLines.length - 1] !== '') {
         cleanedLines.push('')
@@ -82,5 +83,5 @@ export function cleanKesimpulanSaran(text: string | string[]): string {
     }
   }
 
-  return cleanedLines.join('\n')
+  return cleanedLines.join('\n').trim()
 }
