@@ -38,6 +38,57 @@ const TABEL_OPTIONS: {
   },
 ]
 
+interface JenisTabelConfig {
+  sectionTitle: string
+  sectionDesc: string
+  col1Label: string
+  col2Label: string
+  getCol2Placeholder: (sampleRow: any) => string
+}
+
+const JENIS_TABEL_CONFIG: Record<JenisTabel, JenisTabelConfig> = {
+  optimasi: {
+    sectionTitle: 'Tabel Data Angka Perbandingan (Sebelum ➔ Sesudah)',
+    sectionDesc: 'Bandingkan kondisi awal sebelum pekerjaan vs hasil akhir setelah dioptimasi/diperbaiki. (Bebas menggunakan satuan: detik, menit, jam, hari, MB, %, Rp, unit, dll.)',
+    col1Label: 'Parameter / Nama Yang Diukur',
+    col2Label: 'Hasil Perbandingan (Sebelum ➔ Sesudah)',
+    getCol2Placeholder: (s) =>
+      s?.sebelum && s?.sesudah
+        ? `Contoh: Sebelum ${s.sebelum} ➔ Sesudah ${s.sesudah}`
+        : `Contoh: Sebelum 3.8 Detik ➔ Sesudah 0.2 Detik`,
+  },
+  pencapaian: {
+    sectionTitle: 'Tabel Data Pencapaian Target Kerja (Target ➔ Realisasi)',
+    sectionDesc: 'Bandingkan target yang ditetapkan perusahaan/supervisor vs realisasi hasil pekerjaan yang kamu capai.',
+    col1Label: 'Indikator / Parameter Target',
+    col2Label: 'Pencapaian Kerja (Target ➔ Realisasi)',
+    getCol2Placeholder: (s) =>
+      s?.sebelum && s?.sesudah
+        ? `Contoh: ${s.sebelum} ➔ ${s.sesudah}`
+        : `Contoh: Target 20 Titik ➔ Realisasi 24 Titik`,
+  },
+  kesesuaian: {
+    sectionTitle: 'Tabel Data Kesesuaian Standar SOP (Standar SOP ➔ Lapangan)',
+    sectionDesc: 'Bandingkan ketentuan standar SOP / Teori sekolah vs fakta pelaksanaan riil di lapangan.',
+    col1Label: 'Prosedur / Standar Kerja',
+    col2Label: 'Kesesuaian Praktik (Standar SOP ➔ Lapangan)',
+    getCol2Placeholder: (s) =>
+      s?.sebelum && s?.sesudah
+        ? `Contoh: ${s.sebelum} ➔ ${s.sesudah}`
+        : `Contoh: SOP: Standar T568B ➔ Lapangan: 100% Lolos Tester`,
+  },
+  troubleshooting: {
+    sectionTitle: 'Tabel Data Troubleshooting (Masalah / Gejala ➔ Solusi)',
+    sectionDesc: 'Jelaskan kasus/gejala kerusakan yang ditemukan vs tindakan/solusi penanganan yang kamu lakukan.',
+    col1Label: 'Kasus / Gejala Kerusakan',
+    col2Label: 'Penanganan Masalah (Masalah ➔ Solusi)',
+    getCol2Placeholder: (s) =>
+      s?.sebelum && s?.sesudah
+        ? `Contoh: ${s.sebelum} ➔ ${s.sesudah}`
+        : `Contoh: Gejala: 8 PC Terisolasi ➔ Solusi: DHCP Lease Binding`,
+  },
+}
+
 export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p: Partial<PklContext>) => void }) {
   const [showAlurExample, setShowAlurExample] = useState(false)
   const sk = ctx.studi_kasus
@@ -50,8 +101,11 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
     }
   }, [])
 
-  const jurusanExample = getJurusanExample(ctx.siswa?.jurusan_key || ctx.siswa?.jurusan, sk.jenis_tabel || 'optimasi')
-  const sampleData = jurusanExample.studiKasus.data_angka
+  const activeJenis = (sk.jenis_tabel || 'optimasi') as JenisTabel
+  const currentConfig = JENIS_TABEL_CONFIG[activeJenis] || JENIS_TABEL_CONFIG.optimasi
+
+  const jurusanExample = getJurusanExample(ctx.siswa?.jurusan_key || ctx.siswa?.jurusan, activeJenis)
+  const sampleData = jurusanExample.studiKasus?.data_angka || []
   const sample1 = sampleData[0] || { label: 'Jumlah Dokumen / Unit Diproses', sebelum: '0 Berkas', sesudah: '45 Berkas', nilai: '45 Berkas' }
 
   const updAngka = (i: number, patch: Partial<DataAngka>) => {
@@ -251,10 +305,10 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
           </div>
 
           <span className="field__label">
-            Tabel Data Angka Perbandingan <span className="field__badge field__badge--opsional">OPSIONAL</span>
+            {currentConfig.sectionTitle} <span className="field__badge field__badge--opsional">OPSIONAL</span>
           </span>
           <p className="muted" style={{ margin: '0.25rem 0 0.85rem', fontSize: '0.88rem', lineHeight: 1.5 }}>
-            Ada hasil pekerjaanmu yang bisa dibandingkan sebelum dan sesudah diperbaiki? (Bebas menggunakan satuan: <strong>detik, menit, jam, hari, MB, %, Rp, unit, dll.</strong>)<br />
+            {currentConfig.sectionDesc}<br />
             Jika ada, tuliskan di sini. Jika tidak ada, bagian ini boleh dikosongkan.
           </p>
 
@@ -271,7 +325,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
                 <div key={i} className="array__row" style={{ alignItems: 'flex-start' }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <TextField
-                      label="Apa yang diukur / dibandingkan?"
+                      label={currentConfig.col1Label}
                       value={d.label}
                       onChange={(v) => updAngka(i, { label: v })}
                       placeholder={`Contoh: ${sampleRow.label}`}
@@ -279,10 +333,10 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <TextField
-                      label="Hasil Perbandingan (Sebelum ➔ Sesudah)"
+                      label={currentConfig.col2Label}
                       value={d.nilai}
                       onChange={(v) => updAngka(i, { nilai: v })}
-                      placeholder={`Contoh: Sebelum ${sampleRow.sebelum} ➔ Sesudah ${sampleRow.sesudah}`}
+                      placeholder={currentConfig.getCol2Placeholder(sampleRow)}
                     />
                   </div>
                   <button
