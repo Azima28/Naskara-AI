@@ -358,62 +358,95 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
             jenisTabel={sk.jenis_tabel || 'optimasi'}
           />
 
-          <div className="array">
+          {/* Responsive Data Angka Input Table / Mobile Cards */}
+          <div className="studi-kasus-table-container">
+            {/* Table Header (Desktop/Tablet) */}
+            <div className="studi-kasus-table-header">
+              <div className="col-num-desktop">#</div>
+              <div style={{ flex: 1, minWidth: 0 }}>{currentConfig.col1Label}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>{currentConfig.col2Label}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>{currentConfig.col3Label}</div>
+              <div className="col-action-desktop">Aksi</div>
+            </div>
+
+            {/* Repeater Rows */}
             {sk.data_angka.map((d, i) => {
               const sampleRow = sampleData[i % sampleData.length] || sample1
               return (
-                <div
-                  key={i}
-                  className="array__row"
-                  style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: '0.6rem',
-                    alignItems: 'flex-start',
-                    padding: '0.85rem 0.95rem',
-                    background: '#ffffff',
-                    border: '1px solid #cbd5e1',
-                    borderRadius: '8px',
-                    marginBottom: '0.5rem',
-                  }}
-                >
-                  <div style={{ flex: '1 1 200px', minWidth: 0 }}>
-                    <TextField
-                      label={currentConfig.col1Label}
+                <div key={i} className="studi-kasus-row-card">
+                  {/* Mobile Header Bar */}
+                  <div className="studi-kasus-row-mobile-header">
+                    <span className="row-badge">Data #{i + 1}</span>
+                    <button
+                      type="button"
+                      className="btn-sm btn-danger"
+                      onClick={() => {
+                        const next = sk.data_angka.filter((_, idx) => idx !== i)
+                        upd({ data_angka: next.length === 0 ? [emptyDataAngka()] : next })
+                      }}
+                      aria-label="Hapus baris data"
+                      title="Hapus baris ini"
+                      style={{ padding: '0.2rem 0.55rem', fontSize: '0.78rem' }}
+                    >
+                      ✕ Hapus
+                    </button>
+                  </div>
+
+                  {/* Desktop Row Number */}
+                  <div className="studi-kasus-col col-num-desktop">{i + 1}</div>
+
+                  {/* Field 1: Label / Parameter */}
+                  <div className="studi-kasus-col">
+                    <label className="mobile-field-label">{currentConfig.col1Label}</label>
+                    <input
+                      className="field__input"
+                      type="text"
                       value={d.label || ''}
-                      onChange={(v) => updAngka(i, { label: v })}
+                      onChange={(e) => updAngka(i, { label: e.target.value })}
                       placeholder={`Contoh: ${sampleRow.label}`}
                     />
                   </div>
-                  <div style={{ flex: '1 1 200px', minWidth: 0 }}>
-                    <TextField
-                      label={currentConfig.col2Label}
+
+                  {/* Field 2: Awal / Target / Standar SOP / Gejala */}
+                  <div className="studi-kasus-col">
+                    <label className="mobile-field-label">{currentConfig.col2Label}</label>
+                    <input
+                      className="field__input"
+                      type="text"
                       value={getAwalValue(d)}
-                      onChange={(v) => updAngka(i, { sebelum: v, nilai_awal: v })}
+                      onChange={(e) => updAngka(i, { sebelum: e.target.value, nilai_awal: e.target.value })}
                       placeholder={currentConfig.getCol2Placeholder(sampleRow)}
                     />
                   </div>
-                  <div style={{ flex: '1 1 200px', minWidth: 0 }}>
-                    <TextField
-                      label={currentConfig.col3Label}
+
+                  {/* Field 3: Akhir / Realisasi / Lapangan / Solusi */}
+                  <div className="studi-kasus-col">
+                    <label className="mobile-field-label">{currentConfig.col3Label}</label>
+                    <input
+                      className="field__input"
+                      type="text"
                       value={getAkhirValue(d)}
-                      onChange={(v) => updAngka(i, { sesudah: v, nilai_akhir: v })}
+                      onChange={(e) => updAngka(i, { sesudah: e.target.value, nilai_akhir: e.target.value })}
                       placeholder={currentConfig.getCol3Placeholder(sampleRow)}
                     />
                   </div>
-                  <button
-                    type="button"
-                    className="btn-sm btn-danger array__remove"
-                    onClick={() => {
-                      const next = sk.data_angka.filter((_, idx) => idx !== i)
-                      upd({ data_angka: next.length === 0 ? [emptyDataAngka()] : next })
-                    }}
-                    aria-label="Hapus baris data angka"
-                    title="Hapus baris ini"
-                    style={{ marginTop: '1.8rem', flexShrink: 0 }}
-                  >
-                    ✕ Hapus
-                  </button>
+
+                  {/* Desktop Action */}
+                  <div className="studi-kasus-col col-action-desktop">
+                    <button
+                      type="button"
+                      className="btn-sm btn-danger"
+                      onClick={() => {
+                        const next = sk.data_angka.filter((_, idx) => idx !== i)
+                        upd({ data_angka: next.length === 0 ? [emptyDataAngka()] : next })
+                      }}
+                      aria-label="Hapus baris data"
+                      title="Hapus baris ini"
+                      style={{ padding: '0.4rem 0.65rem', fontSize: '0.8rem' }}
+                    >
+                      ✕ Hapus
+                    </button>
+                  </div>
                 </div>
               )
             })}
@@ -421,6 +454,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
               type="button"
               className="btn-sm btn-outline array__add"
               onClick={() => upd({ data_angka: [...sk.data_angka, emptyDataAngka()] })}
+              style={{ marginTop: '0.4rem', alignSelf: 'flex-start' }}
             >
               + Tambah Data Perbandingan
             </button>

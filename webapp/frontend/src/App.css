@@ -766,6 +766,126 @@ input.field__input {
   margin-top: 0.25rem;
 }
 
+/* ── Studi Kasus Table & Mobile Card Responsive Layout ───────────────── */
+
+.studi-kasus-table-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.studi-kasus-table-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--paper-2, #ece8de);
+  border: 1px solid var(--line, #ddd6c8);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ink, #262521);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.studi-kasus-row-card {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.75rem;
+  background: #ffffff;
+  border: 1px solid var(--line-strong, #cbd5e1);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.studi-kasus-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.col-num-desktop {
+  flex: 0 0 28px !important;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink-soft, #64748b);
+}
+
+.col-action-desktop {
+  flex: 0 0 70px !important;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-field-label {
+  display: none;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ink, #334155);
+}
+
+.studi-kasus-row-mobile-header {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding-bottom: 0.35rem;
+  margin-bottom: 0.25rem;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.row-badge {
+  font-size: 0.74rem;
+  font-weight: 700;
+  background: var(--paper-2, #ece8de);
+  color: var(--ink-soft, #475569);
+  padding: 1px 7px;
+  border-radius: 4px;
+}
+
+/* Mobile responsive (screens <= 640px) */
+@media (max-width: 640px) {
+  .studi-kasus-table-header {
+    display: none !important;
+  }
+
+  .studi-kasus-row-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.45rem;
+    padding: 0.65rem 0.75rem;
+  }
+
+  .col-num-desktop,
+  .col-action-desktop {
+    display: none !important;
+  }
+
+  .studi-kasus-row-mobile-header {
+    display: flex !important;
+  }
+
+  .mobile-field-label {
+    display: block !important;
+  }
+
+  .studi-kasus-col {
+    width: 100%;
+  }
+
+  .studi-kasus-col .field__input {
+    height: 2.35rem !important;
+    padding: 0.4rem 0.6rem !important;
+    font-size: 0.85rem !important;
+  }
+}
+
 /* --- Nested card ----------------------------------------------------------- */
 
 .nested-card {
