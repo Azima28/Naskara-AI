@@ -835,8 +835,8 @@ function EditorInner() {
 function getSectionValue(ctx: PklContext, key: string): string | string[] {
   const gen = ctx.generated_sections || {}
 
-  if (key === 'kesimpulan_saran') {
-    const val = gen.kesimpulan_saran ?? (ctx.kesimpulan_user ? `[KESIMPULAN]\n${ctx.kesimpulan_user}\n\n[SARAN]\n${ctx.saran_user || ''}` : '')
+  if (key === 'kesimpulan_saran' || key === 'kesimpulan' || key === 'saran') {
+    const val = gen.kesimpulan_saran ?? gen.kesimpulan ?? (ctx.kesimpulan_user ? `${ctx.kesimpulan_user}\n\n${ctx.saran_user || ''}` : '')
     return cleanKesimpulanSaran(val)
   }
 
@@ -872,7 +872,11 @@ function getSectionValue(ctx: PklContext, key: string): string | string[] {
     return ''
   }
 
-  return gen[key] ?? ''
+  const raw = gen[key] ?? ''
+  if (typeof raw === 'string' && (raw.includes('[KESIMPULAN]') || raw.includes('[SARAN]'))) {
+    return cleanKesimpulanSaran(raw)
+  }
+  return raw
 }
 
 function buildSectionList(ctx: PklContext) {

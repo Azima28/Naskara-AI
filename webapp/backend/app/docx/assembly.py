@@ -2264,6 +2264,12 @@ def _write_kesimpulan_saran(builder: PklDocBuilder, data: dict, bab_num: int) ->
 
     # Kesimpulan & Saran from AI (format bertanda [KESIMPULAN] / [SARAN] atau list/string)
     gen_kesimpulan = data.get("generated_sections", {}).get("kesimpulan_saran")
+    if not gen_kesimpulan:
+        kes_u = _ensure_str(data.get("kesimpulan_user")).strip()
+        sar_u = _ensure_str(data.get("saran_user")).strip()
+        if kes_u or sar_u:
+            gen_kesimpulan = f"{kes_u}\n\n{sar_u}".strip()
+
     if gen_kesimpulan:
         gen_kesimpulan_str = _ensure_str(gen_kesimpulan)
         if isinstance(gen_kesimpulan_str, str) and gen_kesimpulan_str.strip():
@@ -2281,7 +2287,10 @@ def _write_kesimpulan_saran(builder: PklDocBuilder, data: dict, bab_num: int) ->
                     current_mode = "saran"
                     continue
 
-                clean_body = re.sub(r'^[-\*•]\s*', '', para).strip()
+                # Strip any inline [KESIMPULAN] or [SARAN] markers
+                clean_body = re.sub(r'\[\s*KESIMPULAN\s*\]:?', '', para, flags=re.IGNORECASE)
+                clean_body = re.sub(r'\[\s*SARAN\s*\]:?', '', clean_body, flags=re.IGNORECASE)
+                clean_body = re.sub(r'^[-\*•]\s*', '', clean_body).strip()
                 if not clean_body:
                     continue
 

@@ -56,33 +56,32 @@ export function polishAcademicList(list: string[]): string[] {
 
 /**
  * Pembersihan khusus untuk naskah Kesimpulan dan Saran (BAB VI).
- * Memastikan tag marker mentah seperti [KESIMPULAN] dan [SARAN] dibersihkan sepenuhnya
- * dari text area editor agar narasi terlihat bersih dan profesional.
+ * Memastikan seluruh tag marker mentah seperti [KESIMPULAN] dan [SARAN] (baik di baris tersendiri
+ * maupun yang menempel di awal paragraf) dibersihkan secara total menggunakan regex.
  */
 export function cleanKesimpulanSaran(text: string | string[]): string {
   const raw = Array.isArray(text) ? text.join('\n') : (text || '')
   if (!raw.trim()) return ''
 
-  const lines = raw.split('\n').map((l) => l.trim()).filter(Boolean)
+  // 1. Hapus seluruh tag marker [KESIMPULAN] dan [SARAN] beserta variasinya
+  let cleaned = raw
+    .replace(/\[\s*KESIMPULAN\s*\]:?/gi, '')
+    .replace(/\[\s*SARAN\s*\]:?/gi, '')
+    .replace(/\bKESIMPULAN:\s*/gi, '')
+    .replace(/\bSARAN:\s*/gi, '')
+    .replace(/\*\*\[KESIMPULAN\]\*\*:?/gi, '')
+    .replace(/\*\*\[SARAN\]\*\*:?/gi, '')
+
+  // 2. Bersihkan bullet point dan baris kosong berlebih
+  const lines = cleaned.split('\n').map((l) => l.trim()).filter(Boolean)
   const cleanedLines: string[] = []
 
   for (const line of lines) {
     const unbulleted = line.replace(/^[-\*•]\s*/, '').trim()
-    const tagUpper = unbulleted.replace(/\.$/, '').toUpperCase().trim()
-
-    // Buang tag marker [KESIMPULAN], [SARAN], KESIMPULAN:, SARAN: dll.
-    if (
-      tagUpper === '[KESIMPULAN]' ||
-      tagUpper === '[SARAN]' ||
-      tagUpper === 'KESIMPULAN' ||
-      tagUpper === 'SARAN' ||
-      tagUpper === 'KESIMPULAN:' ||
-      tagUpper === 'SARAN:'
-    ) {
-      continue
+    if (unbulleted) {
+      cleanedLines.push(unbulleted)
     }
-    cleanedLines.push(unbulleted)
   }
 
-  return cleanedLines.join('\n').trim()
+  return cleanedLines.join('\n\n').trim()
 }
