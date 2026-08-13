@@ -43,7 +43,9 @@ interface JenisTabelConfig {
   sectionDesc: string
   col1Label: string
   col2Label: string
+  col3Label: string
   getCol2Placeholder: (sampleRow: any) => string
+  getCol3Placeholder: (sampleRow: any) => string
 }
 
 const JENIS_TABEL_CONFIG: Record<JenisTabel, JenisTabelConfig> = {
@@ -51,42 +53,64 @@ const JENIS_TABEL_CONFIG: Record<JenisTabel, JenisTabelConfig> = {
     sectionTitle: 'Tabel Data Angka Perbandingan (Sebelum ➔ Sesudah)',
     sectionDesc: 'Bandingkan kondisi awal sebelum pekerjaan vs hasil akhir setelah dioptimasi/diperbaiki. (Bebas menggunakan satuan: detik, menit, jam, hari, MB, %, Rp, unit, dll.)',
     col1Label: 'Parameter / Nama Yang Diukur',
-    col2Label: 'Hasil Perbandingan (Sebelum ➔ Sesudah)',
-    getCol2Placeholder: (s) =>
-      s?.sebelum && s?.sesudah
-        ? `Contoh: Sebelum ${s.sebelum} ➔ Sesudah ${s.sesudah}`
-        : `Contoh: Sebelum 3.8 Detik ➔ Sesudah 0.2 Detik`,
+    col2Label: 'Kondisi Sebelum (Awal)',
+    col3Label: 'Kondisi Sesudah (Hasil Akhir)',
+    getCol2Placeholder: (s) => (s?.sebelum || s?.nilai_awal ? `Contoh: ${s.sebelum || s.nilai_awal}` : 'Contoh: 3.8 Detik'),
+    getCol3Placeholder: (s) => (s?.sesudah || s?.nilai_akhir ? `Contoh: ${s.sesudah || s.nilai_akhir}` : 'Contoh: 0.2 Detik'),
   },
   pencapaian: {
     sectionTitle: 'Tabel Data Pencapaian Target Kerja (Target ➔ Realisasi)',
     sectionDesc: 'Bandingkan target yang ditetapkan perusahaan/supervisor vs realisasi hasil pekerjaan yang kamu capai.',
     col1Label: 'Indikator / Parameter Target',
-    col2Label: 'Pencapaian Kerja (Target ➔ Realisasi)',
-    getCol2Placeholder: (s) =>
-      s?.sebelum && s?.sesudah
-        ? `Contoh: ${s.sebelum} ➔ ${s.sesudah}`
-        : `Contoh: Target 20 Titik ➔ Realisasi 24 Titik`,
+    col2Label: 'Target Perusahaan',
+    col3Label: 'Realisasi Pelaksanaan',
+    getCol2Placeholder: (s) => (s?.sebelum || s?.nilai_awal ? `Contoh: ${s.sebelum || s.nilai_awal}` : 'Contoh: Target 20 Titik'),
+    getCol3Placeholder: (s) => (s?.sesudah || s?.nilai_akhir ? `Contoh: ${s.sesudah || s.nilai_akhir}` : 'Contoh: Realisasi 24 Titik'),
   },
   kesesuaian: {
     sectionTitle: 'Tabel Data Kesesuaian Standar SOP (Standar SOP ➔ Lapangan)',
     sectionDesc: 'Bandingkan ketentuan standar SOP / Teori sekolah vs fakta pelaksanaan riil di lapangan.',
     col1Label: 'Prosedur / Standar Kerja',
-    col2Label: 'Kesesuaian Praktik (Standar SOP ➔ Lapangan)',
-    getCol2Placeholder: (s) =>
-      s?.sebelum && s?.sesudah
-        ? `Contoh: ${s.sebelum} ➔ ${s.sesudah}`
-        : `Contoh: SOP: Standar T568B ➔ Lapangan: 100% Lolos Tester`,
+    col2Label: 'Standar SOP / Teori',
+    col3Label: 'Pelaksanaan di Lapangan',
+    getCol2Placeholder: (s) => (s?.sebelum || s?.nilai_awal ? `Contoh: ${s.sebelum || s.nilai_awal}` : 'Contoh: Wajib 100% Lolos Rule'),
+    getCol3Placeholder: (s) => (s?.sesudah || s?.nilai_akhir ? `Contoh: ${s.sesudah || s.nilai_akhir}` : 'Contoh: 100% Clean Code'),
   },
   troubleshooting: {
     sectionTitle: 'Tabel Data Troubleshooting (Masalah / Gejala ➔ Solusi)',
     sectionDesc: 'Jelaskan kasus/gejala kerusakan yang ditemukan vs tindakan/solusi penanganan yang kamu lakukan.',
     col1Label: 'Kasus / Gejala Kerusakan',
-    col2Label: 'Penanganan Masalah (Masalah ➔ Solusi)',
-    getCol2Placeholder: (s) =>
-      s?.sebelum && s?.sesudah
-        ? `Contoh: ${s.sebelum} ➔ ${s.sesudah}`
-        : `Contoh: Gejala: 8 PC Terisolasi ➔ Solusi: DHCP Lease Binding`,
+    col2Label: 'Analisis Penyebab',
+    col3Label: 'Tindakan / Solusi',
+    getCol2Placeholder: (s) => (s?.sebelum || s?.nilai_awal ? `Contoh: ${s.sebelum || s.nilai_awal}` : 'Contoh: Penggunaan RAM > 90%'),
+    getCol3Placeholder: (s) => (s?.sesudah || s?.nilai_akhir ? `Contoh: ${s.sesudah || s.nilai_akhir}` : 'Contoh: Normal (RAM 35%)'),
   },
+}
+
+function getAwalValue(d: DataAngka): string {
+  if (d.sebelum !== undefined && d.sebelum !== '') return d.sebelum
+  if (d.nilai_awal !== undefined && d.nilai_awal !== '') return d.nilai_awal
+  if (!d.nilai) return ''
+  for (const delim of ['➔', '->', '→']) {
+    if (d.nilai.includes(delim)) {
+      const parts = d.nilai.split(delim)
+      return parts[0].replace(/^(sebelum|target|sop|gejala)[:\s]*/i, '').trim()
+    }
+  }
+  return d.nilai
+}
+
+function getAkhirValue(d: DataAngka): string {
+  if (d.sesudah !== undefined && d.sesudah !== '') return d.sesudah
+  if (d.nilai_akhir !== undefined && d.nilai_akhir !== '') return d.nilai_akhir
+  if (!d.nilai) return ''
+  for (const delim of ['➔', '->', '→']) {
+    if (d.nilai.includes(delim)) {
+      const parts = d.nilai.split(delim)
+      return (parts[1] || '').replace(/^(sesudah|realisasi|lapangan|solusi)[:\s]*/i, '').trim()
+    }
+  }
+  return ''
 }
 
 export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p: Partial<PklContext>) => void }) {
@@ -110,7 +134,23 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
 
   const updAngka = (i: number, patch: Partial<DataAngka>) => {
     const next = [...sk.data_angka]
-    next[i] = { ...next[i], ...patch }
+    const current = next[i] || emptyDataAngka()
+
+    const awal = patch.sebelum !== undefined ? patch.sebelum : (patch.nilai_awal !== undefined ? patch.nilai_awal : getAwalValue(current))
+    const akhir = patch.sesudah !== undefined ? patch.sesudah : (patch.nilai_akhir !== undefined ? patch.nilai_akhir : getAkhirValue(current))
+    const label = patch.label !== undefined ? patch.label : (current.label || '')
+
+    const updated: DataAngka = {
+      ...current,
+      label,
+      sebelum: awal,
+      nilai_awal: awal,
+      sesudah: akhir,
+      nilai_akhir: akhir,
+      nilai: awal && akhir ? `${awal} ➔ ${akhir}` : (awal || akhir || ''),
+    }
+
+    next[i] = updated
     upd({ data_angka: next })
   }
 
@@ -322,21 +362,43 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
             {sk.data_angka.map((d, i) => {
               const sampleRow = sampleData[i % sampleData.length] || sample1
               return (
-                <div key={i} className="array__row" style={{ alignItems: 'flex-start' }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  key={i}
+                  className="array__row"
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '0.6rem',
+                    alignItems: 'flex-start',
+                    padding: '0.85rem 0.95rem',
+                    background: '#ffffff',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '8px',
+                    marginBottom: '0.5rem',
+                  }}
+                >
+                  <div style={{ flex: '1 1 200px', minWidth: 0 }}>
                     <TextField
                       label={currentConfig.col1Label}
-                      value={d.label}
+                      value={d.label || ''}
                       onChange={(v) => updAngka(i, { label: v })}
                       placeholder={`Contoh: ${sampleRow.label}`}
                     />
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ flex: '1 1 200px', minWidth: 0 }}>
                     <TextField
                       label={currentConfig.col2Label}
-                      value={d.nilai}
-                      onChange={(v) => updAngka(i, { nilai: v })}
+                      value={getAwalValue(d)}
+                      onChange={(v) => updAngka(i, { sebelum: v, nilai_awal: v })}
                       placeholder={currentConfig.getCol2Placeholder(sampleRow)}
+                    />
+                  </div>
+                  <div style={{ flex: '1 1 200px', minWidth: 0 }}>
+                    <TextField
+                      label={currentConfig.col3Label}
+                      value={getAkhirValue(d)}
+                      onChange={(v) => updAngka(i, { sesudah: v, nilai_akhir: v })}
+                      placeholder={currentConfig.getCol3Placeholder(sampleRow)}
                     />
                   </div>
                   <button
@@ -348,7 +410,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
                     }}
                     aria-label="Hapus baris data angka"
                     title="Hapus baris ini"
-                    style={{ marginTop: '1.8rem' }}
+                    style={{ marginTop: '1.8rem', flexShrink: 0 }}
                   >
                     ✕ Hapus
                   </button>
