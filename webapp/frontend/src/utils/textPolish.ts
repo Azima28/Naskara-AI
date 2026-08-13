@@ -22,6 +22,11 @@ export function polishAcademicText(text: string): string {
     [/\bhandling\b/gi, 'penanganan'],
     [/\bmasukkin\b/gi, 'memasukkan'],
     [/\bi'm\b/gi, 'Penulis'],
+    [/\b[Nn]tegrasi\b/g, 'Integrasi'],
+    [/\b[Aa]plikas\b/g, 'Aplikasi'],
+    [/\b[Mm]engambangkan\b/g, 'Mengembangkan'],
+    [/\b[Pp]rogram\b/g, 'Program'],
+    [/\b[Pp]rosesh\b/g, 'Proses'],
   ]
 
   for (const [pattern, replacement] of replacements) {

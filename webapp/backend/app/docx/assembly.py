@@ -561,6 +561,17 @@ def _polish_task_detail(text: str) -> str:
     for pattern, replacement in replacements:
         t = re.sub(pattern, replacement, t, flags=re.IGNORECASE)
 
+    # Autocorrect typo umum pada input/output AI
+    typos = [
+        (r'\b[Nn]tegrasi\b', 'Integrasi'),
+        (r'\b[Aa]plikas\b', 'Aplikasi'),
+        (r'\b[Mm]engambangkan\b', 'Mengembangkan'),
+        (r'\b[Pp]ogram\b', 'Program'),
+        (r'\b[Pp]rosesh\b', 'Proses'),
+    ]
+    for pattern, replacement in typos:
+        t = re.sub(pattern, replacement, t)
+
     # Kapitalisasi huruf pertama
     if t and t[0].islower():
         t = t[0].upper() + t[1:]
@@ -1954,10 +1965,11 @@ def _write_kegiatan_industri(builder: PklDocBuilder, data: dict, bab_num: int) -
 
         if bidang:
             builder.add_lettered(bidang, _LETTERS[idx % 26] + ".", bold=True)
-            builder.add_body(
+            desc_text = (
                 k.get("deskripsi_umum")
                 or f"Adapun tugas yang penulis kerjakan dalam bidang {bidang} adalah:"
             )
+            builder.add_sub_item(desc_text, indent_level=0)
 
         n = 0
         for t in tugas_list:
