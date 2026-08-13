@@ -1257,11 +1257,29 @@ export function getJurusanExample(jurusanKey?: string, jenisTabel?: string): Jur
     const detectedKey = detectJurusanKey(key)
     base = JURUSAN_EXAMPLES[key] || JURUSAN_EXAMPLES[detectedKey] || JURUSAN_EXAMPLES['mplb']
   }
+  let studiKasus = base.studiKasus
   if (jenisTabel && base.studiKasusByJenis && base.studiKasusByJenis[jenisTabel]) {
-    return {
-      ...base,
-      studiKasus: base.studiKasusByJenis[jenisTabel],
-    }
+    studiKasus = base.studiKasusByJenis[jenisTabel]
   }
-  return base
+
+  const sanitizedDataAngka = (studiKasus.data_angka || []).map((item) => {
+    const awal = item.sebelum || item.nilai_awal || ''
+    const akhir = item.sesudah || item.nilai_akhir || item.nilai || ''
+    return {
+      ...item,
+      sebelum: awal,
+      nilai_awal: awal,
+      sesudah: akhir,
+      nilai_akhir: akhir,
+      nilai: awal && akhir ? `${awal} ➔ ${akhir}` : (item.nilai || awal || akhir),
+    }
+  })
+
+  return {
+    ...base,
+    studiKasus: {
+      ...studiKasus,
+      data_angka: sanitizedDataAngka,
+    },
+  }
 }

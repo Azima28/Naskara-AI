@@ -359,7 +359,7 @@ export default function StudiKasusStep({ ctx, set }: { ctx: PklContext; set: (p:
           />
 
           {/* Responsive Data Angka Input Table / Mobile Cards */}
-          <div className="studi-kasus-table-container">
+          <div className="studi-kasus-table-container" id="field-studi_kasus.data_angka" data-field="studi_kasus.data_angka">
             {/* Table Header (Desktop/Tablet) */}
             <div className="studi-kasus-table-header">
               <div className="col-num-desktop">#</div>

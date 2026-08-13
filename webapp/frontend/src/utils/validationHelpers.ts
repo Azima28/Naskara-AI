@@ -115,6 +115,17 @@ export function findFirstInvalidField(ctx?: PklContext | null): InvalidFieldResu
   if (!filled(ctx.studi_kasus?.hasil)) return { stepIdx: 6, fieldKey: 'studi_kasus.hasil', fieldLabel: 'Hasil Akhir Pekerjaan', stepTitle: 'Studi Kasus Teknis' }
   if (!ctx.studi_kasus?.jenis_tabel) return { stepIdx: 6, fieldKey: 'studi_kasus.jenis_tabel', fieldLabel: 'Pilihan Jenis Analisis Tabel (WAJIB DIPILIH)', stepTitle: 'Studi Kasus Teknis' }
 
+  const dataAngkaArr = Array.isArray(ctx.studi_kasus?.data_angka) ? ctx.studi_kasus.data_angka : []
+  if (dataAngkaArr.length === 0) {
+    return { stepIdx: 6, fieldKey: 'studi_kasus.data_angka', fieldLabel: 'Tabel Data Perbandingan (Minimal 1 Baris Data)', stepTitle: 'Studi Kasus Teknis' }
+  }
+  const firstRow = dataAngkaArr[0]
+  const firstAwal = firstRow?.sebelum || firstRow?.nilai_awal || ''
+  const firstAkhir = firstRow?.sesudah || firstRow?.nilai_akhir || ''
+  if (!filled(firstRow?.label) || (!filled(firstAwal) && !filled(firstAkhir) && !filled(firstRow?.nilai))) {
+    return { stepIdx: 6, fieldKey: 'studi_kasus.data_angka', fieldLabel: 'Tabel Data Perbandingan (Parameter & Nilai Wajib Diisi)', stepTitle: 'Studi Kasus Teknis' }
+  }
+
   // 7. Closing
   if (!filled(ctx.kesimpulan_user)) return { stepIdx: 7, fieldKey: 'kesimpulan_user', fieldLabel: 'Kesimpulan PKL', stepTitle: 'Penutup & Kesimpulan' }
   if (!filled(ctx.saran_user)) return { stepIdx: 7, fieldKey: 'saran_user', fieldLabel: 'Saran untuk Sekolah / Perusahaan', stepTitle: 'Penutup & Kesimpulan' }

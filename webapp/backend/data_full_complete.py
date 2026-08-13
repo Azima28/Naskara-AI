@@ -220,9 +220,24 @@ DATA_FULL: dict = {
         "judul": "Optimasi Performance Query Database MySQL pada Aplikasi POS Kasir",
         "latar_belakang": "Waktu eksekusi query pencarian laporan penjualan mengalami penurunan performa saat jumlah transaksi mencapai 50.000 data.",
         "proses_atau_formula": "Penambahan indexing pada kolom transaksi_id dan tanggal_transaksi serta optimasi JOIN query.",
+        "jenis_tabel": "optimasi",
         "data_angka": [
-            {"label": "Waktu Query Sebelum Optimasi", "nilai": "3.8 Detik"},
-            {"label": "Waktu Query Setelah Optimasi", "nilai": "0.2 Detik"}
+            {
+                "label": "Waktu Respon Query Database",
+                "sebelum": "3.8 Detik",
+                "nilai_awal": "3.8 Detik",
+                "sesudah": "0.2 Detik",
+                "nilai_akhir": "0.2 Detik",
+                "nilai": "3.8 Detik ➔ 0.2 Detik"
+            },
+            {
+                "label": "Ukuran Memory Usage Server",
+                "sebelum": "RAM > 90%",
+                "nilai_awal": "RAM > 90%",
+                "sesudah": "RAM 35% (Normal)",
+                "nilai_akhir": "RAM 35% (Normal)",
+                "nilai": "RAM > 90% ➔ RAM 35% (Normal)"
+            }
         ],
         "hasil": "Waktu komputasi laporan penjualan berhasil dipercepat hingga 94,7% dan beban CPU database berkurang drastis.",
         "assets": ["sim-lampiran-5.png"]
