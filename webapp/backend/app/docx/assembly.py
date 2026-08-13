@@ -2247,19 +2247,22 @@ def _write_kesimpulan_saran(builder: PklDocBuilder, data: dict, bab_num: int) ->
     gen_kesimpulan = data.get("generated_sections", {}).get("kesimpulan_saran")
     if gen_kesimpulan:
         gen_kesimpulan_str = _ensure_str(gen_kesimpulan)
-        if "[KESIMPULAN]" in gen_kesimpulan_str or "[SARAN]" in gen_kesimpulan_str:
+        if "[KESIMPULAN]" in gen_kesimpulan_str.upper() or "[SARAN]" in gen_kesimpulan_str.upper():
             for para in gen_kesimpulan_str.split("\n"):
                 para_str = para.strip()
                 if not para_str:
                     continue
-                if para_str == "[KESIMPULAN]":
+                clean_tag = re.sub(r'^[-\*•\s]*', '', para_str).rstrip('.').strip().upper()
+                if clean_tag == "[KESIMPULAN]":
                     builder.add_sub_heading(bab_num, sub, judul.get("kesimpulan", "Kesimpulan"))
                     sub += 1
-                elif para_str == "[SARAN]":
+                elif clean_tag == "[SARAN]":
                     builder.add_sub_heading(bab_num, sub, judul.get("saran", "Saran"))
                     sub += 1
                 else:
-                    builder.add_body(para_str)
+                    clean_body = re.sub(r'^[-\*•]\s*', '', para_str).strip()
+                    if clean_body:
+                        builder.add_body(clean_body)
             return
         elif isinstance(gen_kesimpulan, list):
             builder.add_sub_heading(bab_num, sub, judul.get("kesimpulan", "Kesimpulan"))

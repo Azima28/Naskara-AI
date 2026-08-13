@@ -12,7 +12,7 @@ import type { PklContext } from '@/types/pkl'
 import { emptyContext } from '@/types/pkl'
 import { IconDocument, IconDownload, IconAlert, IconPencil, IconCheck, IconBook, IconFolder, IconChecklist, IconChevronDown, IconChevronRight, IconSparkles } from '@/components/common/Icons'
 import { MaintenanceBanner } from '@/components/common/MaintenanceBanner'
-import { polishAcademicText, polishAcademicList } from '@/utils/textPolish'
+import { polishAcademicText, polishAcademicList, cleanKesimpulanSaran } from '@/utils/textPolish'
 import { findFirstInvalidField } from '@/utils/validationHelpers'
 
 const ARRAY_SECTION_KEYS = [
@@ -22,7 +22,6 @@ const ARRAY_SECTION_KEYS = [
   'kesimpulan',
   'saran',
   'rumusan_masalah',
-  'kesimpulan_saran',
 ]
 
 const MAIN_NARRATIVE_KEYS = [
@@ -835,6 +834,11 @@ function EditorInner() {
 
 function getSectionValue(ctx: PklContext, key: string): string | string[] {
   const gen = ctx.generated_sections || {}
+
+  if (key === 'kesimpulan_saran') {
+    const val = gen.kesimpulan_saran ?? (ctx.kesimpulan_user ? `[KESIMPULAN]\n${ctx.kesimpulan_user}\n\n[SARAN]\n${ctx.saran_user || ''}` : '')
+    return cleanKesimpulanSaran(val)
+  }
 
   if (key === 'tata_tertib' || key === 'tata_tertib_perusahaan') {
     if ('tata_tertib' in gen) return gen.tata_tertib ?? ''
@@ -2162,7 +2166,9 @@ function SectionEditor({
         }
       })
 
-      if (isArrayType) {
+      if (sectionKey === 'kesimpulan_saran') {
+        onChange(cleanKesimpulanSaran(resContent))
+      } else if (isArrayType) {
         const arr = resContent
           .split('\n')
           .map((s: string) => s.replace(/^[0-9]+\.\s*/, '').replace(/^-\s*/, '').replace(/^[a-z]\.\s*/, '').trim())
@@ -2188,7 +2194,9 @@ function SectionEditor({
     setLoading(true)
     try {
       const res = await regenerateSection(textValue, instruction)
-      if (isArrayType) {
+      if (sectionKey === 'kesimpulan_saran') {
+        onChange(cleanKesimpulanSaran(res.content))
+      } else if (isArrayType) {
         const arr = res.content
           .split('\n')
           .map((s) => s.replace(/^[0-9]+\.\s*/, '').replace(/^-\s*/, '').replace(/^[a-z]\.\s*/, '').trim())
@@ -2212,7 +2220,9 @@ function SectionEditor({
     setLoading(true)
     try {
       const res = await getAcademicFallback(sectionKey, ctx)
-      if (isArrayType) {
+      if (sectionKey === 'kesimpulan_saran') {
+        onChange(cleanKesimpulanSaran(res.content))
+      } else if (isArrayType) {
         const arr = res.content
           .split('\n')
           .map((s) => s.replace(/^[0-9]+\.\s*/, '').replace(/^-\s*/, '').replace(/^[a-z]\.\s*/, '').trim())

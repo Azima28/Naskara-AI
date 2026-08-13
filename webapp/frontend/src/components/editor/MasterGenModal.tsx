@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { PklContext } from '@/types/pkl'
 import { draftSectionStream, batchDraftSectionsStream, updateDraft } from '@/api/client'
 import { IconCheck, IconAlert, IconSparkles, IconLightning, IconRefresh } from '@/components/common/Icons'
-import { polishAcademicText, polishAcademicList } from '@/utils/textPolish'
+import { polishAcademicText, polishAcademicList, cleanKesimpulanSaran } from '@/utils/textPolish'
 import { AiModelSelector } from '@/components/common/AiModelSelector'
 
 export interface MasterGenModalProps {
@@ -34,7 +34,6 @@ const ARRAY_SECTION_KEYS = [
   'kesimpulan',
   'saran',
   'rumusan_masalah',
-  'kesimpulan_saran',
 ]
 
 // ── Helpers Parsing Output AI Pemolesan ───────────────────────────────────── //
@@ -389,7 +388,9 @@ export default function MasterGenModal({
             streamAcc = ''
             let cleanRaw = (typeof rawContent === 'string' ? rawContent : '').replace(/<<<.*?>>>/g, '').replace(/===.*?===/g, '').replace(/<<</g, '').replace(/>>>/g, '').trim()
             let parsedContent: string | string[] = cleanRaw
-            if (ARRAY_SECTION_KEYS.includes(secKey)) {
+            if (secKey === 'kesimpulan_saran') {
+              parsedContent = cleanKesimpulanSaran(cleanRaw)
+            } else if (ARRAY_SECTION_KEYS.includes(secKey)) {
               const list = (typeof parsedContent === 'string' ? parsedContent : '')
                 .split('\n')
                 .map((s: string) => s.replace(/^[0-9]+\.\s*/, '').replace(/^-\s*/, '').replace(/^[a-z]\.\s*/, '').trim())

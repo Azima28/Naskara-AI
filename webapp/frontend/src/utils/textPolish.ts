@@ -48,3 +48,34 @@ export function polishAcademicList(list: string[]): string[] {
   if (!Array.isArray(list)) return []
   return list.map((item) => polishAcademicText(item)).filter(Boolean)
 }
+
+/**
+ * Pembersihan khusus untuk naskah Kesimpulan dan Saran (BAB VI).
+ * Memastikan tag [KESIMPULAN] dan [SARAN] bersih tanpa awalan bullet (-), tanpa titik di tag,
+ * dan paragraf narasi di bawahnya bersih tanpa awalan (-).
+ */
+export function cleanKesimpulanSaran(text: string | string[]): string {
+  const raw = Array.isArray(text) ? text.join('\n') : (text || '')
+  if (!raw.trim()) return ''
+
+  const lines = raw.split('\n').map((l) => l.trim()).filter(Boolean)
+  const cleanedLines: string[] = []
+
+  for (const line of lines) {
+    const unbulleted = line.replace(/^[-\*•]\s*/, '').trim()
+    const tagUpper = unbulleted.replace(/\.$/, '').toUpperCase().trim()
+
+    if (tagUpper === '[KESIMPULAN]') {
+      cleanedLines.push('[KESIMPULAN]')
+    } else if (tagUpper === '[SARAN]') {
+      if (cleanedLines.length > 0 && cleanedLines[cleanedLines.length - 1] !== '') {
+        cleanedLines.push('')
+      }
+      cleanedLines.push('[SARAN]')
+    } else {
+      cleanedLines.push(unbulleted)
+    }
+  }
+
+  return cleanedLines.join('\n')
+}
