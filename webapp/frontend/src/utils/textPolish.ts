@@ -56,8 +56,8 @@ export function polishAcademicList(list: string[]): string[] {
 
 /**
  * Pembersihan khusus untuk naskah Kesimpulan dan Saran (BAB VI).
- * Memastikan tag [KESIMPULAN] dan [SARAN] bersih tanpa awalan bullet (-), tanpa titik di tag,
- * dan paragraf narasi di bawahnya bersih tanpa awalan (-).
+ * Memastikan tag marker mentah seperti [KESIMPULAN] dan [SARAN] dibersihkan sepenuhnya
+ * dari text area editor agar narasi terlihat bersih dan profesional.
  */
 export function cleanKesimpulanSaran(text: string | string[]): string {
   const raw = Array.isArray(text) ? text.join('\n') : (text || '')
@@ -70,17 +70,18 @@ export function cleanKesimpulanSaran(text: string | string[]): string {
     const unbulleted = line.replace(/^[-\*•]\s*/, '').trim()
     const tagUpper = unbulleted.replace(/\.$/, '').toUpperCase().trim()
 
-    if (tagUpper === '[KESIMPULAN]') {
-      // Buang tag [KESIMPULAN] agar tidak tampil di dalam text area editor
+    // Buang tag marker [KESIMPULAN], [SARAN], KESIMPULAN:, SARAN: dll.
+    if (
+      tagUpper === '[KESIMPULAN]' ||
+      tagUpper === '[SARAN]' ||
+      tagUpper === 'KESIMPULAN' ||
+      tagUpper === 'SARAN' ||
+      tagUpper === 'KESIMPULAN:' ||
+      tagUpper === 'SARAN:'
+    ) {
       continue
-    } else if (tagUpper === '[SARAN]') {
-      if (cleanedLines.length > 0 && cleanedLines[cleanedLines.length - 1] !== '') {
-        cleanedLines.push('')
-      }
-      cleanedLines.push('[SARAN]')
-    } else {
-      cleanedLines.push(unbulleted)
     }
+    cleanedLines.push(unbulleted)
   }
 
   return cleanedLines.join('\n').trim()

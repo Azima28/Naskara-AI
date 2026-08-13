@@ -2267,28 +2267,61 @@ def _write_kesimpulan_saran(builder: PklDocBuilder, data: dict, bab_num: int) ->
     if gen_kesimpulan:
         gen_kesimpulan_str = _ensure_str(gen_kesimpulan)
         if isinstance(gen_kesimpulan_str, str) and gen_kesimpulan_str.strip():
-            has_kes_heading = False
-            for para in gen_kesimpulan_str.split("\n"):
-                para_str = para.strip()
-                if not para_str:
+            lines = [l.strip() for l in gen_kesimpulan_str.split("\n") if l.strip()]
+            kes_paras = []
+            sar_paras = []
+            current_mode = "kesimpulan"
+
+            for para in lines:
+                clean_tag = re.sub(r'^[-\*•\s]*', '', para).rstrip('.').strip().upper()
+                if clean_tag in ["[KESIMPULAN]", "KESIMPULAN", "KESIMPULAN:"]:
+                    current_mode = "kesimpulan"
                     continue
-                clean_tag = re.sub(r'^[-\*•\s]*', '', para_str).rstrip('.').strip().upper()
-                if clean_tag == "[KESIMPULAN]":
-                    if not has_kes_heading:
-                        builder.add_sub_heading(bab_num, sub, judul.get("kesimpulan", "Kesimpulan"))
-                        sub += 1
-                        has_kes_heading = True
-                elif clean_tag == "[SARAN]":
-                    builder.add_sub_heading(bab_num, sub, judul.get("saran", "Saran"))
-                    sub += 1
+                elif clean_tag in ["[SARAN]", "SARAN", "SARAN:"]:
+                    current_mode = "saran"
+                    continue
+
+                clean_body = re.sub(r'^[-\*•]\s*', '', para).strip()
+                if not clean_body:
+                    continue
+
+                para_lower = clean_body.lower()
+                if current_mode == "kesimpulan" and (
+                    para_lower.startswith("bagi ") or
+                    para_lower.startswith("saran ") or
+                    para_lower.startswith("disarankan ") or
+                    para_lower.startswith("adapun saran")
+                ):
+                    current_mode = "saran"
+
+                if current_mode == "kesimpulan":
+                    kes_paras.append(clean_body)
                 else:
-                    if not has_kes_heading:
-                        builder.add_sub_heading(bab_num, sub, judul.get("kesimpulan", "Kesimpulan"))
-                        sub += 1
-                        has_kes_heading = True
-                    clean_body = re.sub(r'^[-\*•]\s*', '', para_str).strip()
-                    if clean_body:
-                        builder.add_body(clean_body)
+                    sar_paras.append(clean_body)
+
+            # Render Sub-bab 6.1 Kesimpulan
+            builder.add_sub_heading(bab_num, sub, judul.get("kesimpulan", "Kesimpulan"))
+            sub += 1
+            if kes_paras:
+                for kp in kes_paras:
+                    builder.add_body(kp)
+            else:
+                builder.add_body(
+                    "Berdasarkan pelaksanaan Praktik Kerja Lapangan, Penulis menyimpulkan bahwa "
+                    "kegiatan ini memberikan pengalaman industri yang nyata dan bermanfaat."
+                )
+
+            # Render Sub-bab 6.2 Saran
+            builder.add_sub_heading(bab_num, sub, judul.get("saran", "Saran"))
+            sub += 1
+            if sar_paras:
+                for sp in sar_paras:
+                    builder.add_body(sp)
+            else:
+                builder.add_body(
+                    "Diharapkan kerja sama antara sekolah dan perusahaan dapat terus ditingkatkan "
+                    "pada periode Praktik Kerja Lapangan mendatang."
+                )
             return
         elif isinstance(gen_kesimpulan, list):
             builder.add_sub_heading(bab_num, sub, judul.get("kesimpulan", "Kesimpulan"))
