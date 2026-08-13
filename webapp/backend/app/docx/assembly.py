@@ -956,9 +956,16 @@ def _parse_studi_kasus_table(studi_kasus: dict, bab_num: int = 4, tbl_idx: int =
 
     rows: list[list[str]] = []
     for row_idx, (l_text, awal_text, akhir_text) in enumerate(paired_items, 1):
-        if not l_text:
+        # Clean leading/trailing colons, dashes, bullets, and extra whitespace from table cell text
+        clean_lbl = re.sub(r'^[:\-\*•\s]+', '', str(l_text or '')).strip()
+        clean_lbl = re.sub(r'[:\s]+$', '', clean_lbl).strip()
+
+        clean_awal = re.sub(r'^[:\-\*•\s]+', '', str(awal_text or '')).strip()
+        clean_akhir = re.sub(r'^[:\-\*•\s]+', '', str(akhir_text or '')).strip()
+
+        if not clean_lbl:
             continue
-        rows.append([str(row_idx), l_text, awal_text, akhir_text])
+        rows.append([str(row_idx), clean_lbl, clean_awal or "-", clean_akhir or "-"])
 
     if not rows:
         return None

@@ -318,14 +318,21 @@ export default function JurusanDocxPreviewModal({
                   </tr>
                 </thead>
                 <tbody>
-                  {sk.data_angka.map((d, dIdx) => (
-                    <tr key={dIdx}>
-                      <td style={{ border: '1px solid #000000', padding: '5px 6px', textAlign: 'center' }}>{dIdx + 1}</td>
-                      <td style={{ border: '1px solid #000000', padding: '5px 8px' }}>{d.label}</td>
-                      <td style={{ border: '1px solid #000000', padding: '5px 8px' }}>{d.sebelum || d.nilai_awal || '-'}</td>
-                      <td style={{ border: '1px solid #000000', padding: '5px 8px', fontWeight: 'bold' }}>{d.sesudah || d.nilai_akhir || d.nilai || '-'}</td>
-                    </tr>
-                  ))}
+                  {sk.data_angka.map((d, dIdx) => {
+                    const cleanLabel = (d.label || '').replace(/^[:\-\*•\s]+/, '').replace(/[:\s]+$/, '')
+                    const rawAwal = d.sebelum || d.nilai_awal || '-'
+                    const cleanAwal = rawAwal.replace(/^[:\-\*•\s]+/, '')
+                    const rawAkhir = d.sesudah || d.nilai_akhir || d.nilai || '-'
+                    const cleanAkhir = rawAkhir.replace(/^[:\-\*•\s]+/, '')
+                    return (
+                      <tr key={dIdx}>
+                        <td style={{ border: '1px solid #000000', padding: '5px 6px', textAlign: 'center' }}>{dIdx + 1}</td>
+                        <td style={{ border: '1px solid #000000', padding: '5px 8px' }}>{cleanLabel}</td>
+                        <td style={{ border: '1px solid #000000', padding: '5px 8px' }}>{cleanAwal}</td>
+                        <td style={{ border: '1px solid #000000', padding: '5px 8px', fontWeight: 'bold' }}>{cleanAkhir}</td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
